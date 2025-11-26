@@ -51,7 +51,7 @@ A **Dataset** is a collection of samples stored efficiently as Parquet files. Da
 ## Installation
 
 ```bash
-pip install lightningrod
+pip install lightningrod-ai
 ```
 
 ## Quick Start
@@ -124,3 +124,15 @@ This pipeline will:
 MIT License - see LICENSE file for details
 
 
+## Development
+
+To Release a new version of the package increment the version number then run:
+
+```
+pip install build twine
+
+rm -rf dist/*
+
+python -m build
+python -m twine upload dist/*
+```
