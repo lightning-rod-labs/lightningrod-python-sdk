@@ -1,0 +1,940 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Lightning Rod Public API",
+    "description": "Public API for AI-powered forecasting - OpenAI compatible endpoints",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api/public/v1"
+    }
+  ],
+  "paths": {
+    "/openai/chat/completions": {
+      "post": {
+        "tags": [
+          "OpenAI Compatible"
+        ],
+        "summary": "Chat Completions",
+        "description": "OpenAI Compatible API Endpoint for Foresight Models. Does not currently support streaming.",
+        "operationId": "chat_completions_openai_chat_completions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatCompletionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatCompletionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/transform-jobs": {
+      "post": {
+        "tags": [
+          "Transform Jobs"
+        ],
+        "summary": "Create Transform Job",
+        "description": "Create a new transform job",
+        "operationId": "create_transform_job_transform_jobs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTransformJobRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformJob"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/transform-jobs/{job_id}": {
+      "get": {
+        "tags": [
+          "Transform Jobs"
+        ],
+        "summary": "Get Transform Job",
+        "description": "Get a transform job by ID",
+        "operationId": "get_transform_job_transform_jobs__job_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformJob"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/datasets/{dataset_id}": {
+      "get": {
+        "tags": [
+          "Datasets"
+        ],
+        "summary": "Get Dataset",
+        "description": "Get dataset metadata including ID, row count, and schema",
+        "operationId": "get_dataset_datasets__dataset_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Dataset Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetMetadata"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/datasets/{dataset_id}/download-url": {
+      "get": {
+        "tags": [
+          "Datasets"
+        ],
+        "summary": "Get Dataset Download Url",
+        "description": "Get a temporary signed URL to download the dataset parquet file",
+        "operationId": "get_dataset_download_url_datasets__dataset_id__download_url_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Dataset Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetDownloadUrlResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ChatCompletionRequest": {
+        "properties": {
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "ID of the model to use"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/ChatMessage"
+            },
+            "type": "array",
+            "title": "Messages",
+            "description": "A list of messages comprising the conversation so far"
+          },
+          "temperature": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temperature",
+            "description": "Sampling temperature between 0 and 2"
+          },
+          "max_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Tokens",
+            "description": "Maximum number of tokens to generate"
+          },
+          "top_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top P",
+            "description": "Nucleus sampling parameter"
+          },
+          "stream": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stream",
+            "description": "Whether to stream back partial progress",
+            "default": false
+          },
+          "n": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "N",
+            "description": "Number of chat completion choices to generate",
+            "default": 1
+          },
+          "stop": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop",
+            "description": "Up to 4 sequences where the API will stop generating"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model",
+          "messages"
+        ],
+        "title": "ChatCompletionRequest",
+        "examples": [
+          {
+            "messages": [
+              {
+                "content": "Will Bitcoin increase by more than 10% over the next 3 months?",
+                "role": "user"
+              }
+            ],
+            "model": "foresight-v1"
+          }
+        ]
+      },
+      "ChatCompletionResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "A unique identifier for the chat completion"
+          },
+          "object": {
+            "type": "string",
+            "const": "chat.completion",
+            "title": "Object",
+            "description": "The object type",
+            "default": "chat.completion"
+          },
+          "created": {
+            "type": "integer",
+            "title": "Created",
+            "description": "Unix timestamp of when the completion was created"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "The model used for the chat completion"
+          },
+          "choices": {
+            "items": {
+              "$ref": "#/components/schemas/Choice"
+            },
+            "type": "array",
+            "title": "Choices",
+            "description": "A list of chat completion choices"
+          },
+          "usage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Usage"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Usage statistics for the completion request"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "created",
+          "model",
+          "choices"
+        ],
+        "title": "ChatCompletionResponse"
+      },
+      "ChatMessage": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "description": "The role of the message author (system, user, or assistant)"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "The content of the message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "ChatMessage",
+        "examples": [
+          {
+            "content": "Will the S&P 500 close above 6000 by the end of 2025?",
+            "role": "user"
+          }
+        ]
+      },
+      "Choice": {
+        "properties": {
+          "index": {
+            "type": "integer",
+            "title": "Index",
+            "description": "The index of this choice"
+          },
+          "message": {
+            "$ref": "#/components/schemas/ResponseMessage",
+            "description": "The message generated by the model"
+          },
+          "finish_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finish Reason",
+            "description": "The reason the model stopped generating tokens"
+          }
+        },
+        "type": "object",
+        "required": [
+          "index",
+          "message"
+        ],
+        "title": "Choice"
+      },
+      "CreateTransformConfig": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/NewsSeedGenerator"
+          },
+          {
+            "$ref": "#/components/schemas/QuestionGenerator"
+          },
+          {
+            "$ref": "#/components/schemas/WebSearchLabeler"
+          },
+          {
+            "$ref": "#/components/schemas/QuestionPipeline"
+          },
+          {
+            "$ref": "#/components/schemas/Pipeline"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "config_type",
+          "mapping": {
+            "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator",
+            "PIPELINE": "#/components/schemas/Pipeline",
+            "QUESTION_GENERATOR": "#/components/schemas/QuestionGenerator",
+            "QUESTION_PIPELINE": "#/components/schemas/QuestionPipeline",
+            "WEB_SEARCH_LABELER": "#/components/schemas/WebSearchLabeler"
+          }
+        }
+      },
+      "CreateTransformJobRequest": {
+        "properties": {
+          "config": {
+            "$ref": "#/components/schemas/CreateTransformConfig"
+          },
+          "input_dataset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Dataset Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "config"
+        ],
+        "title": "CreateTransformJobRequest"
+      },
+      "DatasetDownloadUrlResponse": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url",
+          "expires_at",
+          "dataset_id",
+          "filename"
+        ],
+        "title": "DatasetDownloadUrlResponse"
+      },
+      "DatasetMetadata": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "num_rows": {
+            "type": "integer",
+            "title": "Num Rows"
+          },
+          "schema_base64": {
+            "type": "string",
+            "title": "Schema Base64"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "num_rows",
+          "schema_base64"
+        ],
+        "title": "DatasetMetadata"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "NewsSeedGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "NEWS_SEED_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "NEWS_SEED_GENERATOR"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start Date",
+            "description": "Start date for news search"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End Date",
+            "description": "End date for news search"
+          },
+          "search_query": {
+            "type": "string",
+            "title": "Search Query",
+            "description": "Search query for news articles"
+          },
+          "max_count": {
+            "type": "integer",
+            "title": "Max Count",
+            "description": "Maximum number of seeds to generate",
+            "default": 3
+          },
+          "articles_per_day": {
+            "type": "integer",
+            "title": "Articles Per Day",
+            "description": "Number of articles to fetch per day",
+            "default": 10
+          }
+        },
+        "type": "object",
+        "required": [
+          "start_date",
+          "end_date",
+          "search_query"
+        ],
+        "title": "NewsSeedGenerator"
+      },
+      "Pipeline": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "PIPELINE",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "PIPELINE"
+          },
+          "transform_configs": {
+            "items": {
+              "$ref": "#/components/schemas/TransformConfig"
+            },
+            "type": "array",
+            "title": "Transform Configs",
+            "description": "List of transform configs to execute in sequence"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transform_configs"
+        ],
+        "title": "Pipeline"
+      },
+      "QuestionGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "QUESTION_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "QUESTION_GENERATOR"
+          },
+          "instructions": {
+            "type": "string",
+            "title": "Instructions",
+            "description": "Instructions for question generation"
+          },
+          "examples": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Examples",
+            "description": "Example questions to guide generation"
+          },
+          "bad_examples": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Bad Examples",
+            "description": "Examples of questions to avoid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "instructions"
+        ],
+        "title": "QuestionGenerator"
+      },
+      "QuestionPipeline": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "QUESTION_PIPELINE",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "QUESTION_PIPELINE"
+          },
+          "seed_generator": {
+            "$ref": "#/components/schemas/NewsSeedGenerator",
+            "description": "Configuration for seed generation"
+          },
+          "question_generator": {
+            "$ref": "#/components/schemas/QuestionGenerator",
+            "description": "Configuration for question generation"
+          },
+          "labeler": {
+            "$ref": "#/components/schemas/WebSearchLabeler",
+            "description": "Configuration for labeling"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seed_generator",
+          "question_generator",
+          "labeler"
+        ],
+        "title": "QuestionPipeline"
+      },
+      "ResponseMessage": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "description": "The role of the message author"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "The content of the message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "ResponseMessage"
+      },
+      "TransformConfig": {
+        "properties": {
+          "config_type": {
+            "$ref": "#/components/schemas/TransformType"
+          }
+        },
+        "type": "object",
+        "required": [
+          "config_type"
+        ],
+        "title": "TransformConfig"
+      },
+      "TransformJob": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "organization_id": {
+            "type": "string",
+            "title": "Organization Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TransformJobStatus"
+          },
+          "modal_function_call_id": {
+            "type": "string",
+            "title": "Modal Function Call Id"
+          },
+          "modal_app_id": {
+            "type": "string",
+            "title": "Modal App Id"
+          },
+          "transform_config": {
+            "type": "string",
+            "title": "Transform Config"
+          },
+          "input_dataset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Dataset Id"
+          },
+          "output_dataset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Dataset Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "organization_id",
+          "status",
+          "modal_function_call_id",
+          "modal_app_id",
+          "transform_config",
+          "input_dataset_id",
+          "output_dataset_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "TransformJob"
+      },
+      "TransformJobStatus": {
+        "type": "string",
+        "enum": [
+          "RUNNING",
+          "COMPLETED",
+          "FAILED"
+        ],
+        "title": "TransformJobStatus"
+      },
+      "TransformType": {
+        "type": "string",
+        "enum": [
+          "NEWS_SEED_GENERATOR",
+          "QUESTION_GENERATOR",
+          "WEB_SEARCH_LABELER",
+          "PIPELINE",
+          "QUESTION_PIPELINE",
+          "SCULPT"
+        ],
+        "title": "TransformType"
+      },
+      "Usage": {
+        "properties": {
+          "prompt_tokens": {
+            "type": "integer",
+            "title": "Prompt Tokens",
+            "description": "Number of tokens in the prompt"
+          },
+          "completion_tokens": {
+            "type": "integer",
+            "title": "Completion Tokens",
+            "description": "Number of tokens in the completion"
+          },
+          "total_tokens": {
+            "type": "integer",
+            "title": "Total Tokens",
+            "description": "Total number of tokens used"
+          }
+        },
+        "type": "object",
+        "required": [
+          "prompt_tokens",
+          "completion_tokens",
+          "total_tokens"
+        ],
+        "title": "Usage"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WebSearchLabeler": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "WEB_SEARCH_LABELER",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "WEB_SEARCH_LABELER"
+          }
+        },
+        "type": "object",
+        "title": "WebSearchLabeler"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

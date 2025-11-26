@@ -1,0 +1,154 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, cast
+
+from attrs import define as _attrs_define
+from attrs import field as _attrs_field
+
+from ..types import UNSET, Unset
+
+if TYPE_CHECKING:
+    from ..models.news_seed_generator import NewsSeedGenerator
+    from ..models.pipeline import Pipeline
+    from ..models.question_generator import QuestionGenerator
+    from ..models.question_pipeline import QuestionPipeline
+    from ..models.web_search_labeler import WebSearchLabeler
+
+
+T = TypeVar("T", bound="CreateTransformJobRequest")
+
+
+@_attrs_define
+class CreateTransformJobRequest:
+    """
+    Attributes:
+        config (NewsSeedGenerator | Pipeline | QuestionGenerator | QuestionPipeline | WebSearchLabeler):
+        input_dataset_id (None | str | Unset):
+    """
+
+    config: NewsSeedGenerator | Pipeline | QuestionGenerator | QuestionPipeline | WebSearchLabeler
+    input_dataset_id: None | str | Unset = UNSET
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        from ..models.news_seed_generator import NewsSeedGenerator
+        from ..models.question_generator import QuestionGenerator
+        from ..models.question_pipeline import QuestionPipeline
+        from ..models.web_search_labeler import WebSearchLabeler
+
+        config: dict[str, Any]
+        if isinstance(self.config, NewsSeedGenerator):
+            config = self.config.to_dict()
+        elif isinstance(self.config, QuestionGenerator):
+            config = self.config.to_dict()
+        elif isinstance(self.config, WebSearchLabeler):
+            config = self.config.to_dict()
+        elif isinstance(self.config, QuestionPipeline):
+            config = self.config.to_dict()
+        else:
+            config = self.config.to_dict()
+
+        input_dataset_id: None | str | Unset
+        if isinstance(self.input_dataset_id, Unset):
+            input_dataset_id = UNSET
+        else:
+            input_dataset_id = self.input_dataset_id
+
+        field_dict: dict[str, Any] = {}
+        field_dict.update(self.additional_properties)
+        field_dict.update(
+            {
+                "config": config,
+            }
+        )
+        if input_dataset_id is not UNSET:
+            field_dict["input_dataset_id"] = input_dataset_id
+
+        return field_dict
+
+    @classmethod
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.news_seed_generator import NewsSeedGenerator
+        from ..models.pipeline import Pipeline
+        from ..models.question_generator import QuestionGenerator
+        from ..models.question_pipeline import QuestionPipeline
+        from ..models.web_search_labeler import WebSearchLabeler
+
+        d = dict(src_dict)
+
+        def _parse_config(
+            data: object,
+        ) -> NewsSeedGenerator | Pipeline | QuestionGenerator | QuestionPipeline | WebSearchLabeler:
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_create_transform_config_type_0 = NewsSeedGenerator.from_dict(data)
+
+                return componentsschemas_create_transform_config_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_create_transform_config_type_1 = QuestionGenerator.from_dict(data)
+
+                return componentsschemas_create_transform_config_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_create_transform_config_type_2 = WebSearchLabeler.from_dict(data)
+
+                return componentsschemas_create_transform_config_type_2
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_create_transform_config_type_3 = QuestionPipeline.from_dict(data)
+
+                return componentsschemas_create_transform_config_type_3
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            if not isinstance(data, dict):
+                raise TypeError()
+            componentsschemas_create_transform_config_type_4 = Pipeline.from_dict(data)
+
+            return componentsschemas_create_transform_config_type_4
+
+        config = _parse_config(d.pop("config"))
+
+        def _parse_input_dataset_id(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        input_dataset_id = _parse_input_dataset_id(d.pop("input_dataset_id", UNSET))
+
+        create_transform_job_request = cls(
+            config=config,
+            input_dataset_id=input_dataset_id,
+        )
+
+        create_transform_job_request.additional_properties = d
+        return create_transform_job_request
+
+    @property
+    def additional_keys(self) -> list[str]:
+        return list(self.additional_properties.keys())
+
+    def __getitem__(self, key: str) -> Any:
+        return self.additional_properties[key]
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        self.additional_properties[key] = value
+
+    def __delitem__(self, key: str) -> None:
+        del self.additional_properties[key]
+
+    def __contains__(self, key: str) -> bool:
+        return key in self.additional_properties

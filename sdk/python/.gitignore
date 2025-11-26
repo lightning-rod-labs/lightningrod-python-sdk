@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Temporary test file
+test_sdk.py
+
+# NOTE: We intentionally DO NOT ignore openapi/openapi.json
+# The OpenAPI spec is checked into git as the source of truth
+
+# NOTE: We intentionally DO NOT ignore src/lightningrod/_generated/
+# The generated code is checked into git so users don't need code generation tools
+
