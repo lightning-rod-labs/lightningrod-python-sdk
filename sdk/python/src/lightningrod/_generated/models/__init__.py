@@ -4,9 +4,11 @@ from .chat_completion_request import ChatCompletionRequest
 from .chat_completion_response import ChatCompletionResponse
 from .chat_message import ChatMessage
 from .choice import Choice
+from .create_dataset_from_upload_request import CreateDatasetFromUploadRequest
 from .create_transform_job_request import CreateTransformJobRequest
 from .dataset_download_url_response import DatasetDownloadUrlResponse
 from .dataset_metadata import DatasetMetadata
+from .dataset_upload_url_response import DatasetUploadUrlResponse
 from .http_validation_error import HTTPValidationError
 from .label import Label
 from .news_seed_generator import NewsSeedGenerator
@@ -32,9 +34,11 @@ __all__ = (
     "ChatCompletionResponse",
     "ChatMessage",
     "Choice",
+    "CreateDatasetFromUploadRequest",
     "CreateTransformJobRequest",
     "DatasetDownloadUrlResponse",
     "DatasetMetadata",
+    "DatasetUploadUrlResponse",
     "HTTPValidationError",
     "Label",
     "NewsSeedGenerator",

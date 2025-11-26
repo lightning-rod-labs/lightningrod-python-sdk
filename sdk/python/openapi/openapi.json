@@ -249,6 +249,80 @@
         }
       }
     },
+    "/datasets/upload-url": {
+      "post": {
+        "tags": [
+          "Datasets"
+        ],
+        "summary": "Get Dataset Upload Url",
+        "description": "Get a temporary signed URL to upload a parquet file",
+        "operationId": "get_dataset_upload_url_datasets_upload_url_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetUploadUrlResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/datasets/from-upload": {
+      "post": {
+        "tags": [
+          "Datasets"
+        ],
+        "summary": "Create Dataset From Upload",
+        "description": "Create a dataset from a previously uploaded parquet file",
+        "operationId": "create_dataset_from_upload_datasets_from_upload_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDatasetFromUploadRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetMetadata"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/samples/validate": {
       "post": {
         "tags": [
@@ -518,6 +592,19 @@
         ],
         "title": "Choice"
       },
+      "CreateDatasetFromUploadRequest": {
+        "properties": {
+          "upload_id": {
+            "type": "string",
+            "title": "Upload Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "upload_id"
+        ],
+        "title": "CreateDatasetFromUploadRequest"
+      },
       "CreateTransformConfig": {
         "oneOf": [
           {
@@ -621,6 +708,30 @@
           "schema_base64"
         ],
         "title": "DatasetMetadata"
+      },
+      "DatasetUploadUrlResponse": {
+        "properties": {
+          "upload_id": {
+            "type": "string",
+            "title": "Upload Id"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "upload_id",
+          "url",
+          "expires_at"
+        ],
+        "title": "DatasetUploadUrlResponse"
       },
       "HTTPValidationError": {
         "properties": {
