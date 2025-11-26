@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any, Literal, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
+
+if TYPE_CHECKING:
+    from ..models.question_filter import QuestionFilter
+
 
 T = TypeVar("T", bound="QuestionGenerator")
 
@@ -20,15 +24,19 @@ class QuestionGenerator:
             'QUESTION_GENERATOR'.
         examples (list[str] | Unset): Example questions to guide generation
         bad_examples (list[str] | Unset): Examples of questions to avoid
+        quality_filter (None | QuestionFilter | Unset): Optional quality filter to apply after question generation
     """
 
     instructions: str
     config_type: Literal["QUESTION_GENERATOR"] | Unset = "QUESTION_GENERATOR"
     examples: list[str] | Unset = UNSET
     bad_examples: list[str] | Unset = UNSET
+    quality_filter: None | QuestionFilter | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.question_filter import QuestionFilter
+
         instructions = self.instructions
 
         config_type = self.config_type
@@ -40,6 +48,14 @@ class QuestionGenerator:
         bad_examples: list[str] | Unset = UNSET
         if not isinstance(self.bad_examples, Unset):
             bad_examples = self.bad_examples
+
+        quality_filter: dict[str, Any] | None | Unset
+        if isinstance(self.quality_filter, Unset):
+            quality_filter = UNSET
+        elif isinstance(self.quality_filter, QuestionFilter):
+            quality_filter = self.quality_filter.to_dict()
+        else:
+            quality_filter = self.quality_filter
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -54,11 +70,15 @@ class QuestionGenerator:
             field_dict["examples"] = examples
         if bad_examples is not UNSET:
             field_dict["bad_examples"] = bad_examples
+        if quality_filter is not UNSET:
+            field_dict["quality_filter"] = quality_filter
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.question_filter import QuestionFilter
+
         d = dict(src_dict)
         instructions = d.pop("instructions")
 
@@ -70,11 +90,29 @@ class QuestionGenerator:
 
         bad_examples = cast(list[str], d.pop("bad_examples", UNSET))
 
+        def _parse_quality_filter(data: object) -> None | QuestionFilter | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                quality_filter_type_0 = QuestionFilter.from_dict(data)
+
+                return quality_filter_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | QuestionFilter | Unset, data)
+
+        quality_filter = _parse_quality_filter(d.pop("quality_filter", UNSET))
+
         question_generator = cls(
             instructions=instructions,
             config_type=config_type,
             examples=examples,
             bad_examples=bad_examples,
+            quality_filter=quality_filter,
         )
 
         question_generator.additional_properties = d

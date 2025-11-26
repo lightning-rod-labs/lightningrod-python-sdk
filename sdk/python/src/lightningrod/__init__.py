@@ -15,23 +15,25 @@ from lightningrod._generated.models import (
     NewsSeedGenerator,
     Pipeline,
     QuestionGenerator,
+    QuestionFilter,
     QuestionPipeline,
     WebSearchLabeler,
 )
 
 __version__ = "0.1.0"
 __all__ = [
-    "LightningRodClient",
-    "Dataset",
-    "AsyncLightningRodClient",
     "AsyncDataset",
+    "AsyncLightningRodClient",
+    "Dataset",
     "DatasetMetadata",
-    "TransformJob",
-    "TransformJobStatus",
+    "LightningRodClient",
     "NewsSeedGenerator",
     "Pipeline",
+    "QuestionFilter",
     "QuestionGenerator",
     "QuestionPipeline",
+    "TransformJob",
+    "TransformJobStatus",
     "WebSearchLabeler",
 ]
 

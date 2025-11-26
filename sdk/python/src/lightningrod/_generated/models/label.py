@@ -2,11 +2,17 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import Mapping
-from typing import Any, TypeVar, cast
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 from dateutil.parser import isoparse
+
+from ..types import UNSET, Unset
+
+if TYPE_CHECKING:
+    from ..models.label_input_data import LabelInputData
+
 
 T = TypeVar("T", bound="Label")
 
@@ -18,11 +24,13 @@ class Label:
         label (str):
         label_confidence (float):
         resolution_date (datetime.datetime | None):
+        input_data (LabelInputData | Unset):
     """
 
     label: str
     label_confidence: float
     resolution_date: datetime.datetime | None
+    input_data: LabelInputData | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -36,6 +44,10 @@ class Label:
         else:
             resolution_date = self.resolution_date
 
+        input_data: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.input_data, Unset):
+            input_data = self.input_data.to_dict()
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -45,11 +57,15 @@ class Label:
                 "resolution_date": resolution_date,
             }
         )
+        if input_data is not UNSET:
+            field_dict["input_data"] = input_data
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.label_input_data import LabelInputData
+
         d = dict(src_dict)
         label = d.pop("label")
 
@@ -70,10 +86,18 @@ class Label:
 
         resolution_date = _parse_resolution_date(d.pop("resolution_date"))
 
+        _input_data = d.pop("input_data", UNSET)
+        input_data: LabelInputData | Unset
+        if isinstance(_input_data, Unset):
+            input_data = UNSET
+        else:
+            input_data = LabelInputData.from_dict(_input_data)
+
         label = cls(
             label=label,
             label_confidence=label_confidence,
             resolution_date=resolution_date,
+            input_data=input_data,
         )
 
         label.additional_properties = d

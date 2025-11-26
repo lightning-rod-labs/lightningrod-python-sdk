@@ -748,6 +748,11 @@
       },
       "Label": {
         "properties": {
+          "input_data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Input Data"
+          },
           "label": {
             "type": "string",
             "title": "Label"
@@ -868,6 +873,11 @@
       },
       "Question": {
         "properties": {
+          "input_data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Input Data"
+          },
           "question_text": {
             "type": "string",
             "title": "Question Text"
@@ -878,6 +888,33 @@
           "question_text"
         ],
         "title": "Question"
+      },
+      "QuestionFilter": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "QUESTION_FILTER",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "QUESTION_FILTER"
+          },
+          "rubric": {
+            "type": "string",
+            "title": "Rubric",
+            "description": "Rubric for evaluating question quality",
+            "default": "Score the question from 0 to 1 based on these criteria:\n- Clear resolution criteria: The question must have an unambiguous way to determine yes/no\n- Specific and measurable: Avoids vague terms, includes concrete details\n- Appropriate timeframe: Has a clear resolution date or event trigger\n- Not self-referential: Does not reference the prediction itself\n- Grammatically correct: Well-formed, readable English"
+          },
+          "threshold": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Threshold",
+            "description": "Minimum score to keep a question",
+            "default": 0.7
+          }
+        },
+        "type": "object",
+        "title": "QuestionFilter"
       },
       "QuestionGenerator": {
         "properties": {
@@ -908,6 +945,17 @@
             "type": "array",
             "title": "Bad Examples",
             "description": "Examples of questions to avoid"
+          },
+          "quality_filter": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuestionFilter"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional quality filter to apply after question generation"
           }
         },
         "type": "object",
@@ -1020,6 +1068,11 @@
       },
       "Seed": {
         "properties": {
+          "input_data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Input Data"
+          },
           "seed_text": {
             "type": "string",
             "title": "Seed Text"
@@ -1153,6 +1206,9 @@
         "enum": [
           "NEWS_SEED_GENERATOR",
           "QUESTION_GENERATOR",
+          "QUESTION_FILTER",
+          "QUESTION_QUALITY_SCORER",
+          "SCORE_FILTER",
           "WEB_SEARCH_LABELER",
           "PIPELINE",
           "QUESTION_PIPELINE",
@@ -1251,6 +1307,12 @@
             "title": "Confidence Threshold",
             "description": "Minimum confidence threshold for including questions",
             "default": 0.5
+          },
+          "concurrency_limit": {
+            "type": "integer",
+            "title": "Concurrency Limit",
+            "description": "Maximum number of concurrent question processing tasks",
+            "default": 10
           }
         },
         "type": "object",

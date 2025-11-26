@@ -2,13 +2,17 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import Mapping
-from typing import Any, TypeVar, cast
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 from dateutil.parser import isoparse
 
 from ..types import UNSET, Unset
+
+if TYPE_CHECKING:
+    from ..models.seed_input_data import SeedInputData
+
 
 T = TypeVar("T", bound="Seed")
 
@@ -18,17 +22,23 @@ class Seed:
     """
     Attributes:
         seed_text (str):
+        input_data (SeedInputData | Unset):
         url (None | str | Unset):
         seed_creation_date (datetime.datetime | None | Unset):
     """
 
     seed_text: str
+    input_data: SeedInputData | Unset = UNSET
     url: None | str | Unset = UNSET
     seed_creation_date: datetime.datetime | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         seed_text = self.seed_text
+
+        input_data: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.input_data, Unset):
+            input_data = self.input_data.to_dict()
 
         url: None | str | Unset
         if isinstance(self.url, Unset):
@@ -51,6 +61,8 @@ class Seed:
                 "seed_text": seed_text,
             }
         )
+        if input_data is not UNSET:
+            field_dict["input_data"] = input_data
         if url is not UNSET:
             field_dict["url"] = url
         if seed_creation_date is not UNSET:
@@ -60,8 +72,17 @@ class Seed:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.seed_input_data import SeedInputData
+
         d = dict(src_dict)
         seed_text = d.pop("seed_text")
+
+        _input_data = d.pop("input_data", UNSET)
+        input_data: SeedInputData | Unset
+        if isinstance(_input_data, Unset):
+            input_data = UNSET
+        else:
+            input_data = SeedInputData.from_dict(_input_data)
 
         def _parse_url(data: object) -> None | str | Unset:
             if data is None:
@@ -91,6 +112,7 @@ class Seed:
 
         seed = cls(
             seed_text=seed_text,
+            input_data=input_data,
             url=url,
             seed_creation_date=seed_creation_date,
         )

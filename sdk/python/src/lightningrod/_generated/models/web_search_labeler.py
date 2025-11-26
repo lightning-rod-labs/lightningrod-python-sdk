@@ -18,16 +18,20 @@ class WebSearchLabeler:
         config_type (Literal['WEB_SEARCH_LABELER'] | Unset): Type of transform configuration Default:
             'WEB_SEARCH_LABELER'.
         confidence_threshold (float | Unset): Minimum confidence threshold for including questions Default: 0.5.
+        concurrency_limit (int | Unset): Maximum number of concurrent question processing tasks Default: 10.
     """
 
     config_type: Literal["WEB_SEARCH_LABELER"] | Unset = "WEB_SEARCH_LABELER"
     confidence_threshold: float | Unset = 0.5
+    concurrency_limit: int | Unset = 10
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         config_type = self.config_type
 
         confidence_threshold = self.confidence_threshold
+
+        concurrency_limit = self.concurrency_limit
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -36,6 +40,8 @@ class WebSearchLabeler:
             field_dict["config_type"] = config_type
         if confidence_threshold is not UNSET:
             field_dict["confidence_threshold"] = confidence_threshold
+        if concurrency_limit is not UNSET:
+            field_dict["concurrency_limit"] = concurrency_limit
 
         return field_dict
 
@@ -48,9 +54,12 @@ class WebSearchLabeler:
 
         confidence_threshold = d.pop("confidence_threshold", UNSET)
 
+        concurrency_limit = d.pop("concurrency_limit", UNSET)
+
         web_search_labeler = cls(
             config_type=config_type,
             confidence_threshold=confidence_threshold,
+            concurrency_limit=concurrency_limit,
         )
 
         web_search_labeler.additional_properties = d
