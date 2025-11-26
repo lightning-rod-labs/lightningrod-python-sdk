@@ -1,5 +1,5 @@
 import asyncio
-from typing import Optional
+from typing import List, Optional
 
 import pyarrow as pa
 
@@ -11,6 +11,7 @@ from lightningrod._generated.models import (
     QuestionPipeline,
     WebSearchLabeler,
 )
+from lightningrod._generated.models.sample import Sample
 from lightningrod.client import LightningRodClient, TransformConfig
 from lightningrod.async_dataset import AsyncDataset
 
@@ -97,6 +98,38 @@ class AsyncLightningRodClient:
         sync_dataset = await asyncio.to_thread(
             self._sync_client.create_dataset,
             table
+        )
+        return AsyncDataset(sync_dataset)
+    
+    async def create_dataset_from_samples(self, samples: List[Sample]) -> AsyncDataset:
+        """
+        Create a dataset from a list of Sample objects.
+        
+        This method:
+        1. Converts Sample objects to a flat PyArrow Table
+        2. Flattens nested objects (Seed, Question, Label) into top-level columns
+        3. Uploads the table to create a dataset
+        
+        All operations are run in a thread pool to avoid blocking the event loop.
+        
+        Args:
+            samples: List of Sample objects to convert and upload
+        
+        Returns:
+            AsyncDataset instance for the created dataset
+        
+        Raises:
+            Exception: If the upload or dataset creation fails
+        
+        Example:
+            >>> from lightningrod._generated.models import Sample, Seed, Question
+            >>> client = AsyncLightningRodClient(api_key="your-api-key")
+            >>> samples = [Sample(sample_id="1", seed=Seed(seed_text="text"), ...)]
+            >>> dataset = await client.create_dataset_from_samples(samples)
+        """
+        sync_dataset = await asyncio.to_thread(
+            self._sync_client.create_dataset_from_samples,
+            samples
         )
         return AsyncDataset(sync_dataset)
     

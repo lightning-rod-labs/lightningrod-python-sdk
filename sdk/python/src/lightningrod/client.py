@@ -1,8 +1,9 @@
 import base64
 import time
 from io import BytesIO
-from typing import Optional
+from typing import List, Optional
 
+import attrs
 import httpx
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -20,6 +21,11 @@ from lightningrod._generated.models import (
     WebSearchLabeler,
     HTTPValidationError,
 )
+from lightningrod._generated.models.sample import Sample
+from lightningrod._generated.models.seed import Seed
+from lightningrod._generated.models.question import Question
+from lightningrod._generated.models.label import Label
+from lightningrod._generated.types import UNSET
 from lightningrod._generated.api.datasets import get_dataset_datasets_dataset_id_get
 from lightningrod._generated.api.transform_jobs import (
     create_transform_job_transform_jobs_post,
@@ -159,6 +165,88 @@ class LightningRodClient:
             schema=schema,
             client=self
         )
+    
+    def create_dataset_from_samples(self, samples: List[Sample]) -> Dataset:
+        """
+        Create a dataset from a list of Sample objects.
+        
+        This method:
+        1. Converts Sample objects to a flat PyArrow Table
+        2. Flattens nested objects (Seed, Question, Label) into top-level columns
+        3. Uploads the table to create a dataset
+        
+        Args:
+            samples: List of Sample objects to convert and upload
+        
+        Returns:
+            Dataset instance for the created dataset
+        
+        Raises:
+            Exception: If the upload or dataset creation fails
+        
+        Example:
+            >>> from lightningrod._generated.models import Sample, Seed, Question
+            >>> client = LightningRodClient(api_key="your-api-key")
+            >>> samples = [Sample(sample_id="1", seed=Seed(seed_text="text"), ...)]
+            >>> dataset = client.create_dataset_from_samples(samples)
+        """
+        table: pa.Table = self._samples_to_table(samples)
+        return self.create_dataset(table)
+    
+    def _samples_to_table(self, samples: List[Sample]) -> pa.Table:
+        """Convert a list of Sample objects to a PyArrow Table."""
+        if not samples:
+            raise ValueError("Cannot create dataset from empty samples list")
+        
+        def get_field_names(cls: type) -> set[str]:
+            return {f.name for f in attrs.fields(cls) if f.name != "additional_properties"}
+        
+        seed_fields: set[str] = get_field_names(Seed)
+        question_fields: set[str] = get_field_names(Question)
+        label_fields: set[str] = get_field_names(Label)
+        
+        rows: List[dict] = []
+        all_columns: set[str] = set()
+        
+        for sample in samples:
+            row: dict = {"sample_id": sample.sample_id}
+            
+            if sample.seed is not None:
+                for field_name in seed_fields:
+                    value = getattr(sample.seed, field_name)
+                    if value is not UNSET:
+                        row[field_name] = value
+            
+            if sample.question is not None:
+                for field_name in question_fields:
+                    value = getattr(sample.question, field_name)
+                    if value is not UNSET:
+                        row[field_name] = value
+            
+            if sample.label is not None:
+                for field_name in label_fields:
+                    value = getattr(sample.label, field_name)
+                    if value is not UNSET:
+                        row[field_name] = value
+            
+            if sample.meta is not None:
+                meta_dict: dict = sample.meta.to_dict()
+                row.update(meta_dict)
+            
+            all_columns.update(row.keys())
+            rows.append(row)
+        
+        for row in rows:
+            for col in all_columns:
+                if col not in row:
+                    row[col] = None
+        
+        column_data: dict[str, list] = {col: [] for col in all_columns}
+        for row in rows:
+            for col in all_columns:
+                column_data[col].append(row[col])
+        
+        return pa.table(column_data)
     
     def run(
         self,
