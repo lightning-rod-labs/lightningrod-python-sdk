@@ -1,6 +1,7 @@
 import base64
 from typing import TYPE_CHECKING, List
 
+import attrs
 import fsspec
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -14,7 +15,6 @@ from lightningrod._generated.models.seed import Seed
 from lightningrod._generated.models.question import Question
 from lightningrod._generated.models.label import Label
 from lightningrod._generated.models.sample_meta import SampleMeta
-from lightningrod._generated.types import UNSET
 
 if TYPE_CHECKING:
     from lightningrod.client import LightningRodClient
@@ -129,10 +129,13 @@ class Dataset:
         table: pa.Table = self.to_arrow()
         samples: List[Sample] = []
         
-        seed_fields = {"seed_text", "url", "seed_creation_date"}
-        question_fields = {"question_text"}
-        label_fields = {"label", "label_confidence", "resolution_date"}
-        sample_fields = {"sample_id"}
+        def get_field_names(cls) -> set[str]:
+            return {f.name for f in attrs.fields(cls) if f.name != "additional_properties"}
+        
+        seed_fields = get_field_names(Seed)
+        question_fields = get_field_names(Question)
+        label_fields = get_field_names(Label)
+        sample_fields = get_field_names(Sample)
         
         known_columns = seed_fields | question_fields | label_fields | sample_fields
         available_columns = set(table.column_names)
