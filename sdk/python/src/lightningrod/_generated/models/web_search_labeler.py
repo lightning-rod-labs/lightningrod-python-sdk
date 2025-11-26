@@ -17,19 +17,25 @@ class WebSearchLabeler:
     Attributes:
         config_type (Literal['WEB_SEARCH_LABELER'] | Unset): Type of transform configuration Default:
             'WEB_SEARCH_LABELER'.
+        confidence_threshold (float | Unset): Minimum confidence threshold for including questions Default: 0.5.
     """
 
     config_type: Literal["WEB_SEARCH_LABELER"] | Unset = "WEB_SEARCH_LABELER"
+    confidence_threshold: float | Unset = 0.5
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         config_type = self.config_type
+
+        confidence_threshold = self.confidence_threshold
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
         if config_type is not UNSET:
             field_dict["config_type"] = config_type
+        if confidence_threshold is not UNSET:
+            field_dict["confidence_threshold"] = confidence_threshold
 
         return field_dict
 
@@ -40,8 +46,11 @@ class WebSearchLabeler:
         if config_type != "WEB_SEARCH_LABELER" and not isinstance(config_type, Unset):
             raise ValueError(f"config_type must match const 'WEB_SEARCH_LABELER', got '{config_type}'")
 
+        confidence_threshold = d.pop("confidence_threshold", UNSET)
+
         web_search_labeler = cls(
             config_type=config_type,
+            confidence_threshold=confidence_threshold,
         )
 
         web_search_labeler.additional_properties = d
