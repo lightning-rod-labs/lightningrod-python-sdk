@@ -1,5 +1,5 @@
 import base64
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 import fsspec
 import pyarrow as pa
@@ -9,6 +9,12 @@ from lightningrod._generated.api.datasets import (
     get_dataset_download_url_datasets_dataset_id_download_url_get,
 )
 from lightningrod._generated.models import DatasetDownloadUrlResponse, HTTPValidationError
+from lightningrod._generated.models.sample import Sample
+from lightningrod._generated.models.seed import Seed
+from lightningrod._generated.models.question import Question
+from lightningrod._generated.models.label import Label
+from lightningrod._generated.models.sample_meta import SampleMeta
+from lightningrod._generated.types import UNSET
 
 if TYPE_CHECKING:
     from lightningrod.client import LightningRodClient
@@ -94,4 +100,81 @@ class Dataset:
         with fsspec.open(url, mode="rb", cache_type="readahead", block_size=4*1024*1024) as f:
             table: pa.Table = pq.read_table(f)
         return table
+    
+    def to_samples(self) -> List[Sample]:
+        """
+        Download the dataset and convert it to a list of Sample objects.
+        
+        This method:
+        1. Downloads the dataset as a PyArrow Table
+        2. Parses each row into a structured Sample object
+        3. Maps flattened columns to nested structures (Seed, Question, Label)
+        
+        Column mappings:
+        - sample_id -> Sample.sample_id
+        - seed_text, url, seed_creation_date -> Sample.seed (Seed object)
+        - question_text -> Sample.question (Question object)
+        - label, label_confidence, resolution_date -> Sample.label (Label object)
+        - All other columns -> Sample.meta
+        
+        Returns:
+            List of Sample objects
+        
+        Example:
+            >>> client = LightningRodClient(api_key="your-api-key")
+            >>> dataset = client.get_dataset("dataset-123")
+            >>> samples = dataset.to_samples()
+            >>> print(f"First sample: {samples[0].sample_id}")
+        """
+        table: pa.Table = self.to_arrow()
+        samples: List[Sample] = []
+        
+        seed_fields = {"seed_text", "url", "seed_creation_date"}
+        question_fields = {"question_text"}
+        label_fields = {"label", "label_confidence", "resolution_date"}
+        sample_fields = {"sample_id"}
+        
+        known_columns = seed_fields | question_fields | label_fields | sample_fields
+        available_columns = set(table.column_names)
+        
+        for row_idx in range(len(table)):
+            row = {col: table[col][row_idx].as_py() for col in table.column_names}
+            
+            sample_id: str = row.get("sample_id", f"sample_{row_idx}")
+            
+            seed: Seed | None = None
+            seed_data = {k: v for k, v in row.items() if k in seed_fields and v is not None}
+            if seed_data and "seed_text" in seed_data:
+                for field in seed_fields:
+                    if field not in seed_data and field in available_columns:
+                        seed_data[field] = row.get(field)
+                seed = Seed.from_dict(seed_data)
+            
+            question: Question | None = None
+            question_data = {k: v for k, v in row.items() if k in question_fields and v is not None}
+            if question_data:
+                question = Question.from_dict(question_data)
+            
+            label: Label | None = None
+            label_data = {k: v for k, v in row.items() if k in label_fields and v is not None}
+            if label_data and "label" in label_data:
+                for field in label_fields:
+                    if field not in label_data and field in available_columns:
+                        label_data[field] = row.get(field)
+                label = Label.from_dict(label_data)
+            
+            meta_dict = {k: v for k, v in row.items() if k not in known_columns}
+            meta: SampleMeta = SampleMeta.from_dict(meta_dict)
+            
+            sample: Sample = Sample(
+                sample_id=sample_id,
+                seed=seed,
+                question=question,
+                label=label,
+                meta=meta,
+            )
+            
+            samples.append(sample)
+        
+        return samples
 

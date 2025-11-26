@@ -248,6 +248,48 @@
           }
         }
       }
+    },
+    "/samples/validate": {
+      "post": {
+        "tags": [
+          "Samples"
+        ],
+        "summary": "Validate Sample",
+        "description": "Validate a Sample object structure",
+        "operationId": "validate_sample_samples_validate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Sample"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateSampleResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -593,6 +635,37 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "Label": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "label_confidence": {
+            "type": "number",
+            "title": "Label Confidence"
+          },
+          "resolution_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "label_confidence",
+          "resolution_date"
+        ],
+        "title": "Label"
+      },
       "NewsSeedGenerator": {
         "properties": {
           "config_type": {
@@ -663,6 +736,19 @@
           "transform_configs"
         ],
         "title": "Pipeline"
+      },
+      "Question": {
+        "properties": {
+          "question_text": {
+            "type": "string",
+            "title": "Question Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question_text"
+        ],
+        "title": "Question"
       },
       "QuestionGenerator": {
         "properties": {
@@ -750,6 +836,94 @@
           "content"
         ],
         "title": "ResponseMessage"
+      },
+      "Sample": {
+        "properties": {
+          "sample_id": {
+            "type": "string",
+            "title": "Sample Id"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Seed"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "question": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Question"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "label": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Label"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Meta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sample_id",
+          "seed",
+          "question",
+          "label",
+          "meta"
+        ],
+        "title": "Sample"
+      },
+      "Seed": {
+        "properties": {
+          "seed_text": {
+            "type": "string",
+            "title": "Seed Text"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "seed_creation_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed Creation Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seed_text"
+        ],
+        "title": "Seed"
       },
       "TransformConfig": {
         "properties": {
@@ -882,6 +1056,24 @@
           "total_tokens"
         ],
         "title": "Usage"
+      },
+      "ValidateSampleResponse": {
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "title": "Valid"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "valid",
+          "message"
+        ],
+        "title": "ValidateSampleResponse"
       },
       "ValidationError": {
         "properties": {
