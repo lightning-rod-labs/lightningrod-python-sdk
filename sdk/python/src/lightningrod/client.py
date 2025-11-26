@@ -1,8 +1,11 @@
 import base64
 import time
+from io import BytesIO
 from typing import Optional
 
+import httpx
 import pyarrow as pa
+import pyarrow.parquet as pq
 
 from lightningrod._generated.client import AuthenticatedClient
 from lightningrod._generated.models import (
@@ -91,6 +94,68 @@ class LightningRodClient:
         return Dataset(
             id=dataset_metadata.id,
             num_rows=dataset_metadata.num_rows,
+            schema=schema,
+            client=self
+        )
+    
+    def create_dataset(self, table: pa.Table) -> Dataset:
+        """
+        Create a dataset by uploading a PyArrow Table.
+        
+        This method:
+        1. Requests a signed upload URL from the API
+        2. Serializes the table to Parquet format
+        3. Uploads the Parquet file to cloud storage
+        4. Creates a dataset record from the uploaded file
+        
+        Args:
+            table: PyArrow Table to upload
+        
+        Returns:
+            Dataset instance for the created dataset
+        
+        Raises:
+            Exception: If the upload or dataset creation fails
+        
+        Example:
+            >>> import pyarrow as pa
+            >>> client = LightningRodClient(api_key="your-api-key")
+            >>> table = pa.table({"col1": [1, 2, 3], "col2": ["a", "b", "c"]})
+            >>> dataset = client.create_dataset(table)
+            >>> print(f"Created dataset: {dataset.id}")
+        """
+        http_client: httpx.Client = self._generated_client.get_httpx_client()
+        
+        upload_url_response: httpx.Response = http_client.post("/datasets/upload-url")
+        upload_url_response.raise_for_status()
+        upload_url_data: dict = upload_url_response.json()
+        upload_id: str = upload_url_data["upload_id"]
+        signed_url: str = upload_url_data["url"]
+        
+        buffer = BytesIO()
+        pq.write_table(table, buffer)
+        parquet_bytes: bytes = buffer.getvalue()
+        
+        upload_response: httpx.Response = httpx.put(
+            signed_url,
+            content=parquet_bytes,
+            headers={"Content-Type": "application/octet-stream"}
+        )
+        upload_response.raise_for_status()
+        
+        create_response: httpx.Response = http_client.post(
+            "/datasets/from-upload",
+            json={"upload_id": upload_id}
+        )
+        create_response.raise_for_status()
+        dataset_data: dict = create_response.json()
+        
+        schema_bytes: bytes = base64.b64decode(dataset_data["schema_base64"])
+        schema: pa.Schema = pa.ipc.read_schema(pa.py_buffer(schema_bytes))
+        
+        return Dataset(
+            id=dataset_data["id"],
+            num_rows=dataset_data["num_rows"],
             schema=schema,
             client=self
         )

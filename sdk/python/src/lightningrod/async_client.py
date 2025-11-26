@@ -1,6 +1,8 @@
 import asyncio
 from typing import Optional
 
+import pyarrow as pa
+
 from lightningrod._generated.models import (
     TransformJob,
     NewsSeedGenerator,
@@ -61,6 +63,40 @@ class AsyncLightningRodClient:
         sync_dataset = await asyncio.to_thread(
             self._sync_client.get_dataset,
             dataset_id
+        )
+        return AsyncDataset(sync_dataset)
+    
+    async def create_dataset(self, table: pa.Table) -> AsyncDataset:
+        """
+        Create a dataset by uploading a PyArrow Table.
+        
+        This method:
+        1. Requests a signed upload URL from the API
+        2. Serializes the table to Parquet format
+        3. Uploads the Parquet file to cloud storage
+        4. Creates a dataset record from the uploaded file
+        
+        All operations are run in a thread pool to avoid blocking the event loop.
+        
+        Args:
+            table: PyArrow Table to upload
+        
+        Returns:
+            AsyncDataset instance for the created dataset
+        
+        Raises:
+            Exception: If the upload or dataset creation fails
+        
+        Example:
+            >>> import pyarrow as pa
+            >>> client = AsyncLightningRodClient(api_key="your-api-key")
+            >>> table = pa.table({"col1": [1, 2, 3], "col2": ["a", "b", "c"]})
+            >>> dataset = await client.create_dataset(table)
+            >>> print(f"Created dataset: {dataset.id}")
+        """
+        sync_dataset = await asyncio.to_thread(
+            self._sync_client.create_dataset,
+            table
         )
         return AsyncDataset(sync_dataset)
     
