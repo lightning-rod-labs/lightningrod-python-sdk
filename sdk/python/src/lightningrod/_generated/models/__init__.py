@@ -9,21 +9,22 @@ from .create_transform_job_request import CreateTransformJobRequest
 from .dataset_download_url_response import DatasetDownloadUrlResponse
 from .dataset_metadata import DatasetMetadata
 from .dataset_upload_url_response import DatasetUploadUrlResponse
+from .gdelt_seed_generator import GdeltSeedGenerator
 from .http_validation_error import HTTPValidationError
 from .label import Label
-from .label_input_data import LabelInputData
+from .label_passthrough_data import LabelPassthroughData
 from .news_seed_generator import NewsSeedGenerator
 from .pipeline import Pipeline
 from .question import Question
 from .question_filter import QuestionFilter
 from .question_generator import QuestionGenerator
-from .question_input_data import QuestionInputData
+from .question_passthrough_data import QuestionPassthroughData
 from .question_pipeline import QuestionPipeline
 from .response_message import ResponseMessage
 from .sample import Sample
 from .sample_meta import SampleMeta
 from .seed import Seed
-from .seed_input_data import SeedInputData
+from .seed_passthrough_data import SeedPassthroughData
 from .transform_config import TransformConfig
 from .transform_job import TransformJob
 from .transform_job_status import TransformJobStatus
@@ -43,21 +44,22 @@ __all__ = (
     "DatasetDownloadUrlResponse",
     "DatasetMetadata",
     "DatasetUploadUrlResponse",
+    "GdeltSeedGenerator",
     "HTTPValidationError",
     "Label",
-    "LabelInputData",
+    "LabelPassthroughData",
     "NewsSeedGenerator",
     "Pipeline",
     "Question",
     "QuestionFilter",
     "QuestionGenerator",
-    "QuestionInputData",
+    "QuestionPassthroughData",
     "QuestionPipeline",
     "ResponseMessage",
     "Sample",
     "SampleMeta",
     "Seed",
-    "SeedInputData",
+    "SeedPassthroughData",
     "TransformConfig",
     "TransformJob",
     "TransformJobStatus",

@@ -11,7 +11,7 @@ from dateutil.parser import isoparse
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.seed_input_data import SeedInputData
+    from ..models.seed_passthrough_data import SeedPassthroughData
 
 
 T = TypeVar("T", bound="Seed")
@@ -22,13 +22,13 @@ class Seed:
     """
     Attributes:
         seed_text (str):
-        input_data (SeedInputData | Unset):
+        passthrough_data (SeedPassthroughData | Unset):
         url (None | str | Unset):
         seed_creation_date (datetime.datetime | None | Unset):
     """
 
     seed_text: str
-    input_data: SeedInputData | Unset = UNSET
+    passthrough_data: SeedPassthroughData | Unset = UNSET
     url: None | str | Unset = UNSET
     seed_creation_date: datetime.datetime | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -36,9 +36,9 @@ class Seed:
     def to_dict(self) -> dict[str, Any]:
         seed_text = self.seed_text
 
-        input_data: dict[str, Any] | Unset = UNSET
-        if not isinstance(self.input_data, Unset):
-            input_data = self.input_data.to_dict()
+        passthrough_data: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.passthrough_data, Unset):
+            passthrough_data = self.passthrough_data.to_dict()
 
         url: None | str | Unset
         if isinstance(self.url, Unset):
@@ -61,8 +61,8 @@ class Seed:
                 "seed_text": seed_text,
             }
         )
-        if input_data is not UNSET:
-            field_dict["input_data"] = input_data
+        if passthrough_data is not UNSET:
+            field_dict["passthrough_data"] = passthrough_data
         if url is not UNSET:
             field_dict["url"] = url
         if seed_creation_date is not UNSET:
@@ -72,17 +72,17 @@ class Seed:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.seed_input_data import SeedInputData
+        from ..models.seed_passthrough_data import SeedPassthroughData
 
         d = dict(src_dict)
         seed_text = d.pop("seed_text")
 
-        _input_data = d.pop("input_data", UNSET)
-        input_data: SeedInputData | Unset
-        if isinstance(_input_data, Unset):
-            input_data = UNSET
+        _passthrough_data = d.pop("passthrough_data", UNSET)
+        passthrough_data: SeedPassthroughData | Unset
+        if isinstance(_passthrough_data, Unset):
+            passthrough_data = UNSET
         else:
-            input_data = SeedInputData.from_dict(_input_data)
+            passthrough_data = SeedPassthroughData.from_dict(_passthrough_data)
 
         def _parse_url(data: object) -> None | str | Unset:
             if data is None:
@@ -112,7 +112,7 @@ class Seed:
 
         seed = cls(
             seed_text=seed_text,
-            input_data=input_data,
+            passthrough_data=passthrough_data,
             url=url,
             seed_creation_date=seed_creation_date,
         )

@@ -9,6 +9,7 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
+    from ..models.gdelt_seed_generator import GdeltSeedGenerator
     from ..models.news_seed_generator import NewsSeedGenerator
     from ..models.question_generator import QuestionGenerator
     from ..models.web_search_labeler import WebSearchLabeler
@@ -21,21 +22,27 @@ T = TypeVar("T", bound="QuestionPipeline")
 class QuestionPipeline:
     """
     Attributes:
-        seed_generator (NewsSeedGenerator):
+        seed_generator (GdeltSeedGenerator | NewsSeedGenerator): Configuration for seed generation
         question_generator (QuestionGenerator):
         labeler (WebSearchLabeler):
         config_type (Literal['QUESTION_PIPELINE'] | Unset): Type of transform configuration Default:
             'QUESTION_PIPELINE'.
     """
 
-    seed_generator: NewsSeedGenerator
+    seed_generator: GdeltSeedGenerator | NewsSeedGenerator
     question_generator: QuestionGenerator
     labeler: WebSearchLabeler
     config_type: Literal["QUESTION_PIPELINE"] | Unset = "QUESTION_PIPELINE"
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        seed_generator = self.seed_generator.to_dict()
+        from ..models.news_seed_generator import NewsSeedGenerator
+
+        seed_generator: dict[str, Any]
+        if isinstance(self.seed_generator, NewsSeedGenerator):
+            seed_generator = self.seed_generator.to_dict()
+        else:
+            seed_generator = self.seed_generator.to_dict()
 
         question_generator = self.question_generator.to_dict()
 
@@ -59,12 +66,29 @@ class QuestionPipeline:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.gdelt_seed_generator import GdeltSeedGenerator
         from ..models.news_seed_generator import NewsSeedGenerator
         from ..models.question_generator import QuestionGenerator
         from ..models.web_search_labeler import WebSearchLabeler
 
         d = dict(src_dict)
-        seed_generator = NewsSeedGenerator.from_dict(d.pop("seed_generator"))
+
+        def _parse_seed_generator(data: object) -> GdeltSeedGenerator | NewsSeedGenerator:
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                seed_generator_type_0 = NewsSeedGenerator.from_dict(data)
+
+                return seed_generator_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            if not isinstance(data, dict):
+                raise TypeError()
+            seed_generator_type_1 = GdeltSeedGenerator.from_dict(data)
+
+            return seed_generator_type_1
+
+        seed_generator = _parse_seed_generator(d.pop("seed_generator"))
 
         question_generator = QuestionGenerator.from_dict(d.pop("question_generator"))
 

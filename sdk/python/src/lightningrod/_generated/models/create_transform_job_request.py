@@ -9,6 +9,7 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
+    from ..models.gdelt_seed_generator import GdeltSeedGenerator
     from ..models.news_seed_generator import NewsSeedGenerator
     from ..models.pipeline import Pipeline
     from ..models.question_generator import QuestionGenerator
@@ -23,15 +24,17 @@ T = TypeVar("T", bound="CreateTransformJobRequest")
 class CreateTransformJobRequest:
     """
     Attributes:
-        config (NewsSeedGenerator | Pipeline | QuestionGenerator | QuestionPipeline | WebSearchLabeler):
+        config (GdeltSeedGenerator | NewsSeedGenerator | Pipeline | QuestionGenerator | QuestionPipeline |
+            WebSearchLabeler):
         input_dataset_id (None | str | Unset):
     """
 
-    config: NewsSeedGenerator | Pipeline | QuestionGenerator | QuestionPipeline | WebSearchLabeler
+    config: GdeltSeedGenerator | NewsSeedGenerator | Pipeline | QuestionGenerator | QuestionPipeline | WebSearchLabeler
     input_dataset_id: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.gdelt_seed_generator import GdeltSeedGenerator
         from ..models.news_seed_generator import NewsSeedGenerator
         from ..models.question_generator import QuestionGenerator
         from ..models.question_pipeline import QuestionPipeline
@@ -39,6 +42,8 @@ class CreateTransformJobRequest:
 
         config: dict[str, Any]
         if isinstance(self.config, NewsSeedGenerator):
+            config = self.config.to_dict()
+        elif isinstance(self.config, GdeltSeedGenerator):
             config = self.config.to_dict()
         elif isinstance(self.config, QuestionGenerator):
             config = self.config.to_dict()
@@ -69,6 +74,7 @@ class CreateTransformJobRequest:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.gdelt_seed_generator import GdeltSeedGenerator
         from ..models.news_seed_generator import NewsSeedGenerator
         from ..models.pipeline import Pipeline
         from ..models.question_generator import QuestionGenerator
@@ -79,7 +85,9 @@ class CreateTransformJobRequest:
 
         def _parse_config(
             data: object,
-        ) -> NewsSeedGenerator | Pipeline | QuestionGenerator | QuestionPipeline | WebSearchLabeler:
+        ) -> (
+            GdeltSeedGenerator | NewsSeedGenerator | Pipeline | QuestionGenerator | QuestionPipeline | WebSearchLabeler
+        ):
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
@@ -91,7 +99,7 @@ class CreateTransformJobRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_1 = QuestionGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_1 = GdeltSeedGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_1
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -99,7 +107,7 @@ class CreateTransformJobRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_2 = WebSearchLabeler.from_dict(data)
+                componentsschemas_create_transform_config_type_2 = QuestionGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_2
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -107,16 +115,24 @@ class CreateTransformJobRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_3 = QuestionPipeline.from_dict(data)
+                componentsschemas_create_transform_config_type_3 = WebSearchLabeler.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_3
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_create_transform_config_type_4 = QuestionPipeline.from_dict(data)
+
+                return componentsschemas_create_transform_config_type_4
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
             if not isinstance(data, dict):
                 raise TypeError()
-            componentsschemas_create_transform_config_type_4 = Pipeline.from_dict(data)
+            componentsschemas_create_transform_config_type_5 = Pipeline.from_dict(data)
 
-            return componentsschemas_create_transform_config_type_4
+            return componentsschemas_create_transform_config_type_5
 
         config = _parse_config(d.pop("config"))
 

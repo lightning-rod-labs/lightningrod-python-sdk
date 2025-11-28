@@ -9,7 +9,7 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.question_input_data import QuestionInputData
+    from ..models.question_passthrough_data import QuestionPassthroughData
 
 
 T = TypeVar("T", bound="Question")
@@ -20,19 +20,19 @@ class Question:
     """
     Attributes:
         question_text (str):
-        input_data (QuestionInputData | Unset):
+        passthrough_data (QuestionPassthroughData | Unset):
     """
 
     question_text: str
-    input_data: QuestionInputData | Unset = UNSET
+    passthrough_data: QuestionPassthroughData | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         question_text = self.question_text
 
-        input_data: dict[str, Any] | Unset = UNSET
-        if not isinstance(self.input_data, Unset):
-            input_data = self.input_data.to_dict()
+        passthrough_data: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.passthrough_data, Unset):
+            passthrough_data = self.passthrough_data.to_dict()
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -41,28 +41,28 @@ class Question:
                 "question_text": question_text,
             }
         )
-        if input_data is not UNSET:
-            field_dict["input_data"] = input_data
+        if passthrough_data is not UNSET:
+            field_dict["passthrough_data"] = passthrough_data
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.question_input_data import QuestionInputData
+        from ..models.question_passthrough_data import QuestionPassthroughData
 
         d = dict(src_dict)
         question_text = d.pop("question_text")
 
-        _input_data = d.pop("input_data", UNSET)
-        input_data: QuestionInputData | Unset
-        if isinstance(_input_data, Unset):
-            input_data = UNSET
+        _passthrough_data = d.pop("passthrough_data", UNSET)
+        passthrough_data: QuestionPassthroughData | Unset
+        if isinstance(_passthrough_data, Unset):
+            passthrough_data = UNSET
         else:
-            input_data = QuestionInputData.from_dict(_input_data)
+            passthrough_data = QuestionPassthroughData.from_dict(_passthrough_data)
 
         question = cls(
             question_text=question_text,
-            input_data=input_data,
+            passthrough_data=passthrough_data,
         )
 
         question.additional_properties = d

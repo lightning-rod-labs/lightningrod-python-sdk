@@ -17,12 +17,12 @@ class WebSearchLabeler:
     Attributes:
         config_type (Literal['WEB_SEARCH_LABELER'] | Unset): Type of transform configuration Default:
             'WEB_SEARCH_LABELER'.
-        confidence_threshold (float | Unset): Minimum confidence threshold for including questions Default: 0.5.
+        confidence_threshold (float | Unset): Minimum confidence threshold for including questions Default: 0.9.
         concurrency_limit (int | Unset): Maximum number of concurrent question processing tasks Default: 10.
     """
 
     config_type: Literal["WEB_SEARCH_LABELER"] | Unset = "WEB_SEARCH_LABELER"
-    confidence_threshold: float | Unset = 0.5
+    confidence_threshold: float | Unset = 0.9
     concurrency_limit: int | Unset = 10
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
