@@ -611,6 +611,9 @@
             "$ref": "#/components/schemas/NewsSeedGenerator"
           },
           {
+            "$ref": "#/components/schemas/GdeltSeedGenerator"
+          },
+          {
             "$ref": "#/components/schemas/QuestionGenerator"
           },
           {
@@ -626,6 +629,7 @@
         "discriminator": {
           "propertyName": "config_type",
           "mapping": {
+            "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
             "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator",
             "PIPELINE": "#/components/schemas/Pipeline",
             "QUESTION_GENERATOR": "#/components/schemas/QuestionGenerator",
@@ -733,6 +737,71 @@
         ],
         "title": "DatasetUploadUrlResponse"
       },
+      "GdeltSeedGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "GDELT_SEED_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "GDELT_SEED_GENERATOR"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start Date",
+            "description": "Start date for seed search"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End Date",
+            "description": "End date for seed search"
+          },
+          "interval_duration_days": {
+            "type": "integer",
+            "title": "Interval Duration Days",
+            "description": "Duration of each interval in days"
+          },
+          "max_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Count",
+            "description": "Maximum number of seeds to generate. If None, process all intervals concurrently"
+          },
+          "concurrency_limit": {
+            "type": "integer",
+            "title": "Concurrency Limit",
+            "description": "Maximum number of concurrent intervals when max_count is None",
+            "default": 5
+          },
+          "articles_per_interval": {
+            "type": "integer",
+            "title": "Articles Per Interval",
+            "description": "Number of articles to fetch per interval from BigQuery",
+            "default": 1000
+          },
+          "scrape_concurrency_limit": {
+            "type": "integer",
+            "title": "Scrape Concurrency Limit",
+            "description": "Maximum number of concurrent scraping requests",
+            "default": 50
+          }
+        },
+        "type": "object",
+        "required": [
+          "start_date",
+          "end_date",
+          "interval_duration_days"
+        ],
+        "title": "GdeltSeedGenerator"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -748,10 +817,10 @@
       },
       "Label": {
         "properties": {
-          "input_data": {
+          "passthrough_data": {
             "additionalProperties": true,
             "type": "object",
-            "title": "Input Data"
+            "title": "Passthrough Data"
           },
           "label": {
             "type": "string",
@@ -795,23 +864,18 @@
             "type": "string",
             "format": "date-time",
             "title": "Start Date",
-            "description": "Start date for news search"
+            "description": "Start date for seed search"
           },
           "end_date": {
             "type": "string",
             "format": "date-time",
             "title": "End Date",
-            "description": "End date for news search"
+            "description": "End date for seed search"
           },
           "interval_duration_days": {
             "type": "integer",
             "title": "Interval Duration Days",
             "description": "Duration of each interval in days"
-          },
-          "search_query": {
-            "type": "string",
-            "title": "Search Query",
-            "description": "Search query for news articles"
           },
           "max_count": {
             "anyOf": [
@@ -825,17 +889,22 @@
             "title": "Max Count",
             "description": "Maximum number of seeds to generate. If None, process all intervals concurrently"
           },
-          "articles_per_interval": {
-            "type": "integer",
-            "title": "Articles Per Interval",
-            "description": "Number of articles to fetch per interval (max 100)",
-            "default": 10
-          },
           "concurrency_limit": {
             "type": "integer",
             "title": "Concurrency Limit",
             "description": "Maximum number of concurrent intervals when max_count is None",
             "default": 5
+          },
+          "search_query": {
+            "type": "string",
+            "title": "Search Query",
+            "description": "Search query for news articles"
+          },
+          "articles_per_interval": {
+            "type": "integer",
+            "title": "Articles Per Interval",
+            "description": "Number of articles to fetch per interval (max 100)",
+            "default": 10
           }
         },
         "type": "object",
@@ -873,10 +942,10 @@
       },
       "Question": {
         "properties": {
-          "input_data": {
+          "passthrough_data": {
             "additionalProperties": true,
             "type": "object",
-            "title": "Input Data"
+            "title": "Passthrough Data"
           },
           "question_text": {
             "type": "string",
@@ -974,8 +1043,23 @@
             "default": "QUESTION_PIPELINE"
           },
           "seed_generator": {
-            "$ref": "#/components/schemas/NewsSeedGenerator",
-            "description": "Configuration for seed generation"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/NewsSeedGenerator"
+              },
+              {
+                "$ref": "#/components/schemas/GdeltSeedGenerator"
+              }
+            ],
+            "title": "Seed Generator",
+            "description": "Configuration for seed generation",
+            "discriminator": {
+              "propertyName": "config_type",
+              "mapping": {
+                "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
+                "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator"
+              }
+            }
           },
           "question_generator": {
             "$ref": "#/components/schemas/QuestionGenerator",
@@ -1068,10 +1152,10 @@
       },
       "Seed": {
         "properties": {
-          "input_data": {
+          "passthrough_data": {
             "additionalProperties": true,
             "type": "object",
-            "title": "Input Data"
+            "title": "Passthrough Data"
           },
           "seed_text": {
             "type": "string",
@@ -1205,6 +1289,7 @@
         "type": "string",
         "enum": [
           "NEWS_SEED_GENERATOR",
+          "GDELT_SEED_GENERATOR",
           "QUESTION_GENERATOR",
           "QUESTION_FILTER",
           "QUESTION_QUALITY_SCORER",
@@ -1306,7 +1391,7 @@
             "type": "number",
             "title": "Confidence Threshold",
             "description": "Minimum confidence threshold for including questions",
-            "default": 0.5
+            "default": 0.9
           },
           "concurrency_limit": {
             "type": "integer",
