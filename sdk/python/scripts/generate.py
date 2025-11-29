@@ -32,8 +32,8 @@ def fetch_openapi_spec() -> dict:
     except URLError as e:
         print(f"✗ Failed to fetch OpenAPI spec: {e}")
         print("\nMake sure the API server is running:")
-        print("  cd prediction_api")
-        print("  uvicorn prediction_api.main:app --reload --port 8080")
+        print("  cd lightningrod_api")
+        print("  uvicorn lightningrod_api.main:app --reload --port 8080")
         sys.exit(1)
 
 
