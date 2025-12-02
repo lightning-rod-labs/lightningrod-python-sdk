@@ -617,6 +617,9 @@
             "$ref": "#/components/schemas/QuestionGenerator"
           },
           {
+            "$ref": "#/components/schemas/ForwardLookingQuestionGenerator"
+          },
+          {
             "$ref": "#/components/schemas/WebSearchLabeler"
           },
           {
@@ -629,6 +632,7 @@
         "discriminator": {
           "propertyName": "config_type",
           "mapping": {
+            "FORWARD_LOOKING_QUESTION_GENERATOR": "#/components/schemas/ForwardLookingQuestionGenerator",
             "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
             "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator",
             "PIPELINE": "#/components/schemas/Pipeline",
@@ -736,6 +740,54 @@
           "expires_at"
         ],
         "title": "DatasetUploadUrlResponse"
+      },
+      "ForwardLookingQuestionGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "FORWARD_LOOKING_QUESTION_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "FORWARD_LOOKING_QUESTION_GENERATOR"
+          },
+          "instructions": {
+            "type": "string",
+            "title": "Instructions",
+            "description": "Instructions for question generation"
+          },
+          "examples": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Examples",
+            "description": "Example questions to guide generation"
+          },
+          "bad_examples": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Bad Examples",
+            "description": "Examples of questions to avoid"
+          },
+          "quality_filter": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuestionFilter"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional quality filter to apply after question generation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "instructions"
+        ],
+        "title": "ForwardLookingQuestionGenerator"
       },
       "GdeltSeedGenerator": {
         "properties": {
@@ -1062,8 +1114,23 @@
             }
           },
           "question_generator": {
-            "$ref": "#/components/schemas/QuestionGenerator",
-            "description": "Configuration for question generation"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/QuestionGenerator"
+              },
+              {
+                "$ref": "#/components/schemas/ForwardLookingQuestionGenerator"
+              }
+            ],
+            "title": "Question Generator",
+            "description": "Configuration for question generation",
+            "discriminator": {
+              "propertyName": "config_type",
+              "mapping": {
+                "FORWARD_LOOKING_QUESTION_GENERATOR": "#/components/schemas/ForwardLookingQuestionGenerator",
+                "QUESTION_GENERATOR": "#/components/schemas/QuestionGenerator"
+              }
+            }
           },
           "labeler": {
             "$ref": "#/components/schemas/WebSearchLabeler",
@@ -1291,6 +1358,7 @@
           "NEWS_SEED_GENERATOR",
           "GDELT_SEED_GENERATOR",
           "QUESTION_GENERATOR",
+          "FORWARD_LOOKING_QUESTION_GENERATOR",
           "QUESTION_FILTER",
           "QUESTION_QUALITY_SCORER",
           "SCORE_FILTER",

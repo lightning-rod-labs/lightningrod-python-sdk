@@ -9,6 +9,7 @@ from .create_transform_job_request import CreateTransformJobRequest
 from .dataset_download_url_response import DatasetDownloadUrlResponse
 from .dataset_metadata import DatasetMetadata
 from .dataset_upload_url_response import DatasetUploadUrlResponse
+from .forward_looking_question_generator import ForwardLookingQuestionGenerator
 from .gdelt_seed_generator import GdeltSeedGenerator
 from .http_validation_error import HTTPValidationError
 from .label import Label
@@ -44,6 +45,7 @@ __all__ = (
     "DatasetDownloadUrlResponse",
     "DatasetMetadata",
     "DatasetUploadUrlResponse",
+    "ForwardLookingQuestionGenerator",
     "GdeltSeedGenerator",
     "HTTPValidationError",
     "Label",

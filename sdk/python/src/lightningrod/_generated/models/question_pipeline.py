@@ -9,6 +9,7 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
+    from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
     from ..models.gdelt_seed_generator import GdeltSeedGenerator
     from ..models.news_seed_generator import NewsSeedGenerator
     from ..models.question_generator import QuestionGenerator
@@ -23,20 +24,21 @@ class QuestionPipeline:
     """
     Attributes:
         seed_generator (GdeltSeedGenerator | NewsSeedGenerator): Configuration for seed generation
-        question_generator (QuestionGenerator):
+        question_generator (ForwardLookingQuestionGenerator | QuestionGenerator): Configuration for question generation
         labeler (WebSearchLabeler):
         config_type (Literal['QUESTION_PIPELINE'] | Unset): Type of transform configuration Default:
             'QUESTION_PIPELINE'.
     """
 
     seed_generator: GdeltSeedGenerator | NewsSeedGenerator
-    question_generator: QuestionGenerator
+    question_generator: ForwardLookingQuestionGenerator | QuestionGenerator
     labeler: WebSearchLabeler
     config_type: Literal["QUESTION_PIPELINE"] | Unset = "QUESTION_PIPELINE"
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.news_seed_generator import NewsSeedGenerator
+        from ..models.question_generator import QuestionGenerator
 
         seed_generator: dict[str, Any]
         if isinstance(self.seed_generator, NewsSeedGenerator):
@@ -44,7 +46,11 @@ class QuestionPipeline:
         else:
             seed_generator = self.seed_generator.to_dict()
 
-        question_generator = self.question_generator.to_dict()
+        question_generator: dict[str, Any]
+        if isinstance(self.question_generator, QuestionGenerator):
+            question_generator = self.question_generator.to_dict()
+        else:
+            question_generator = self.question_generator.to_dict()
 
         labeler = self.labeler.to_dict()
 
@@ -66,6 +72,7 @@ class QuestionPipeline:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
         from ..models.gdelt_seed_generator import GdeltSeedGenerator
         from ..models.news_seed_generator import NewsSeedGenerator
         from ..models.question_generator import QuestionGenerator
@@ -90,7 +97,22 @@ class QuestionPipeline:
 
         seed_generator = _parse_seed_generator(d.pop("seed_generator"))
 
-        question_generator = QuestionGenerator.from_dict(d.pop("question_generator"))
+        def _parse_question_generator(data: object) -> ForwardLookingQuestionGenerator | QuestionGenerator:
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                question_generator_type_0 = QuestionGenerator.from_dict(data)
+
+                return question_generator_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            if not isinstance(data, dict):
+                raise TypeError()
+            question_generator_type_1 = ForwardLookingQuestionGenerator.from_dict(data)
+
+            return question_generator_type_1
+
+        question_generator = _parse_question_generator(d.pop("question_generator"))
 
         labeler = WebSearchLabeler.from_dict(d.pop("labeler"))
 
