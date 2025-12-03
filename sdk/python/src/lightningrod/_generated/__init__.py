@@ -1,4 +1,4 @@
-"""A client library for accessing Lightning Rod Public API"""
+"""A client library for accessing LightningRod API"""
 
 from .client import AuthenticatedClient, Client
 

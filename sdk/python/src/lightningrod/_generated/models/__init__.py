@@ -9,6 +9,7 @@ from .create_transform_job_request import CreateTransformJobRequest
 from .dataset_download_url_response import DatasetDownloadUrlResponse
 from .dataset_metadata import DatasetMetadata
 from .dataset_upload_url_response import DatasetUploadUrlResponse
+from .filter_criteria import FilterCriteria
 from .forward_looking_question_generator import ForwardLookingQuestionGenerator
 from .gdelt_seed_generator import GdeltSeedGenerator
 from .http_validation_error import HTTPValidationError
@@ -17,7 +18,6 @@ from .label_passthrough_data import LabelPassthroughData
 from .news_seed_generator import NewsSeedGenerator
 from .pipeline import Pipeline
 from .question import Question
-from .question_filter import QuestionFilter
 from .question_generator import QuestionGenerator
 from .question_passthrough_data import QuestionPassthroughData
 from .question_pipeline import QuestionPipeline
@@ -45,6 +45,7 @@ __all__ = (
     "DatasetDownloadUrlResponse",
     "DatasetMetadata",
     "DatasetUploadUrlResponse",
+    "FilterCriteria",
     "ForwardLookingQuestionGenerator",
     "GdeltSeedGenerator",
     "HTTPValidationError",
@@ -53,7 +54,6 @@ __all__ = (
     "NewsSeedGenerator",
     "Pipeline",
     "Question",
-    "QuestionFilter",
     "QuestionGenerator",
     "QuestionPassthroughData",
     "QuestionPipeline",

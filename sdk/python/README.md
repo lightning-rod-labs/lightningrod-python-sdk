@@ -77,7 +77,7 @@ from lightningrod.pipelines import QuestionGenerationPipeline
 from lightningrod.transforms import (
     NewsSeedGenerator,
     AIQuestionGenerator,
-    QuestionFilter,
+    FilterCriteria,
     WebSearchLabeler
 )
 
@@ -96,7 +96,10 @@ pipeline = QuestionGenerationPipeline(
             "Will Arsenal finish above Tottenham in the 2025-26 season?"
         ],
         bad_examples=["Who won the match?"],
-        filter=QuestionFilter(threshold_score=5),
+        filter=FilterCriteria(
+            rubric="The question should be about Premier League soccer",
+            min_score=0.5
+        ),
     ),
     labeler=WebSearchLabeler(
         confidence_threshold=0.5

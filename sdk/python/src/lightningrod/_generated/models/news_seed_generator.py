@@ -2,13 +2,17 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import Mapping
-from typing import Any, Literal, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 from dateutil.parser import isoparse
 
 from ..types import UNSET, Unset
+
+if TYPE_CHECKING:
+    from ..models.filter_criteria import FilterCriteria
+
 
 T = TypeVar("T", bound="NewsSeedGenerator")
 
@@ -26,6 +30,11 @@ class NewsSeedGenerator:
         max_count (int | None | Unset): Maximum number of seeds to generate. If None, process all intervals concurrently
         concurrency_limit (int | Unset): Maximum number of concurrent intervals when max_count is None Default: 5.
         articles_per_interval (int | Unset): Number of articles to fetch per interval (max 100) Default: 10.
+        filter_criteria (FilterCriteria | list[FilterCriteria] | None | Unset): Optional criteria for filtering news
+            snippets before scraping
+        source_domain (list[str] | None | str | Unset): Optional URL source of the news articles, e.g.
+            'https://reuters.com/business', if multiple sources are provided, multiple searchers will be done for each
+            interval
     """
 
     start_date: datetime.datetime
@@ -36,9 +45,13 @@ class NewsSeedGenerator:
     max_count: int | None | Unset = UNSET
     concurrency_limit: int | Unset = 5
     articles_per_interval: int | Unset = 10
+    filter_criteria: FilterCriteria | list[FilterCriteria] | None | Unset = UNSET
+    source_domain: list[str] | None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.filter_criteria import FilterCriteria
+
         start_date = self.start_date.isoformat()
 
         end_date = self.end_date.isoformat()
@@ -59,6 +72,29 @@ class NewsSeedGenerator:
 
         articles_per_interval = self.articles_per_interval
 
+        filter_criteria: dict[str, Any] | list[dict[str, Any]] | None | Unset
+        if isinstance(self.filter_criteria, Unset):
+            filter_criteria = UNSET
+        elif isinstance(self.filter_criteria, FilterCriteria):
+            filter_criteria = self.filter_criteria.to_dict()
+        elif isinstance(self.filter_criteria, list):
+            filter_criteria = []
+            for filter_criteria_type_1_item_data in self.filter_criteria:
+                filter_criteria_type_1_item = filter_criteria_type_1_item_data.to_dict()
+                filter_criteria.append(filter_criteria_type_1_item)
+
+        else:
+            filter_criteria = self.filter_criteria
+
+        source_domain: list[str] | None | str | Unset
+        if isinstance(self.source_domain, Unset):
+            source_domain = UNSET
+        elif isinstance(self.source_domain, list):
+            source_domain = self.source_domain
+
+        else:
+            source_domain = self.source_domain
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -77,11 +113,17 @@ class NewsSeedGenerator:
             field_dict["concurrency_limit"] = concurrency_limit
         if articles_per_interval is not UNSET:
             field_dict["articles_per_interval"] = articles_per_interval
+        if filter_criteria is not UNSET:
+            field_dict["filter_criteria"] = filter_criteria
+        if source_domain is not UNSET:
+            field_dict["source_domain"] = source_domain
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.filter_criteria import FilterCriteria
+
         d = dict(src_dict)
         start_date = isoparse(d.pop("start_date"))
 
@@ -108,6 +150,53 @@ class NewsSeedGenerator:
 
         articles_per_interval = d.pop("articles_per_interval", UNSET)
 
+        def _parse_filter_criteria(data: object) -> FilterCriteria | list[FilterCriteria] | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                filter_criteria_type_0 = FilterCriteria.from_dict(data)
+
+                return filter_criteria_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                filter_criteria_type_1 = []
+                _filter_criteria_type_1 = data
+                for filter_criteria_type_1_item_data in _filter_criteria_type_1:
+                    filter_criteria_type_1_item = FilterCriteria.from_dict(filter_criteria_type_1_item_data)
+
+                    filter_criteria_type_1.append(filter_criteria_type_1_item)
+
+                return filter_criteria_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(FilterCriteria | list[FilterCriteria] | None | Unset, data)
+
+        filter_criteria = _parse_filter_criteria(d.pop("filter_criteria", UNSET))
+
+        def _parse_source_domain(data: object) -> list[str] | None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                source_domain_type_1 = cast(list[str], data)
+
+                return source_domain_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(list[str] | None | str | Unset, data)
+
+        source_domain = _parse_source_domain(d.pop("source_domain", UNSET))
+
         news_seed_generator = cls(
             start_date=start_date,
             end_date=end_date,
@@ -117,6 +206,8 @@ class NewsSeedGenerator:
             max_count=max_count,
             concurrency_limit=concurrency_limit,
             articles_per_interval=articles_per_interval,
+            filter_criteria=filter_criteria,
+            source_domain=source_domain,
         )
 
         news_seed_generator.additional_properties = d

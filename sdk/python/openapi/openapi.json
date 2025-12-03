@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Lightning Rod Public API",
-    "description": "Public API for AI-powered forecasting - OpenAI compatible endpoints",
+    "title": "LightningRod API",
+    "description": "Generate verified, grounded datasets at scale for LLM fine-tuning and evaluation",
     "version": "1.0.0"
   },
   "servers": [
@@ -741,6 +741,35 @@
         ],
         "title": "DatasetUploadUrlResponse"
       },
+      "FilterCriteria": {
+        "properties": {
+          "rubric": {
+            "type": "string",
+            "title": "Rubric",
+            "description": "Scoring rubric/prompt for evaluating content"
+          },
+          "min_score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Min Score",
+            "description": "Minimum score threshold",
+            "default": 0.5
+          },
+          "model_name": {
+            "type": "string",
+            "title": "Model Name",
+            "description": "Name of the model (in openrouter) to use for scoring",
+            "default": "openai/gpt-4.1-mini"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rubric"
+        ],
+        "title": "FilterCriteria",
+        "description": "Reusable filter criteria for LLM-based content scoring and filtering."
+      },
       "ForwardLookingQuestionGenerator": {
         "properties": {
           "config_type": {
@@ -774,7 +803,7 @@
           "quality_filter": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/QuestionFilter"
+                "$ref": "#/components/schemas/FilterCriteria"
               },
               {
                 "type": "null"
@@ -957,6 +986,42 @@
             "title": "Articles Per Interval",
             "description": "Number of articles to fetch per interval (max 100)",
             "default": 10
+          },
+          "filter_criteria": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FilterCriteria"
+              },
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FilterCriteria"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filter Criteria",
+            "description": "Optional criteria for filtering news snippets before scraping"
+          },
+          "source_domain": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Domain",
+            "description": "Optional URL source of the news articles, e.g. 'https://reuters.com/business', if multiple sources are provided, multiple searchers will be done for each interval"
           }
         },
         "type": "object",
@@ -1010,33 +1075,6 @@
         ],
         "title": "Question"
       },
-      "QuestionFilter": {
-        "properties": {
-          "config_type": {
-            "type": "string",
-            "const": "QUESTION_FILTER",
-            "title": "Config Type",
-            "description": "Type of transform configuration",
-            "default": "QUESTION_FILTER"
-          },
-          "rubric": {
-            "type": "string",
-            "title": "Rubric",
-            "description": "Rubric for evaluating question quality",
-            "default": "Score the question from 0 to 1 based on these criteria:\n- Clear resolution criteria: The question must have an unambiguous way to determine yes/no\n- Specific and measurable: Avoids vague terms, includes concrete details\n- Appropriate timeframe: Has a clear resolution date or event trigger\n- Not self-referential: Does not reference the prediction itself\n- Grammatically correct: Well-formed, readable English"
-          },
-          "threshold": {
-            "type": "number",
-            "maximum": 1.0,
-            "minimum": 0.0,
-            "title": "Threshold",
-            "description": "Minimum score to keep a question",
-            "default": 0.7
-          }
-        },
-        "type": "object",
-        "title": "QuestionFilter"
-      },
       "QuestionGenerator": {
         "properties": {
           "config_type": {
@@ -1070,7 +1108,7 @@
           "quality_filter": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/QuestionFilter"
+                "$ref": "#/components/schemas/FilterCriteria"
               },
               {
                 "type": "null"
@@ -1359,9 +1397,9 @@
           "GDELT_SEED_GENERATOR",
           "QUESTION_GENERATOR",
           "FORWARD_LOOKING_QUESTION_GENERATOR",
-          "QUESTION_FILTER",
           "QUESTION_QUALITY_SCORER",
           "SCORE_FILTER",
+          "FILTER_CRITERIA",
           "WEB_SEARCH_LABELER",
           "PIPELINE",
           "QUESTION_PIPELINE",

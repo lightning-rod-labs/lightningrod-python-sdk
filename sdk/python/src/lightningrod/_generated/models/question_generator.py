@@ -9,7 +9,7 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.question_filter import QuestionFilter
+    from ..models.filter_criteria import FilterCriteria
 
 
 T = TypeVar("T", bound="QuestionGenerator")
@@ -24,18 +24,18 @@ class QuestionGenerator:
             'QUESTION_GENERATOR'.
         examples (list[str] | Unset): Example questions to guide generation
         bad_examples (list[str] | Unset): Examples of questions to avoid
-        quality_filter (None | QuestionFilter | Unset): Optional quality filter to apply after question generation
+        quality_filter (FilterCriteria | None | Unset): Optional quality filter to apply after question generation
     """
 
     instructions: str
     config_type: Literal["QUESTION_GENERATOR"] | Unset = "QUESTION_GENERATOR"
     examples: list[str] | Unset = UNSET
     bad_examples: list[str] | Unset = UNSET
-    quality_filter: None | QuestionFilter | Unset = UNSET
+    quality_filter: FilterCriteria | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.question_filter import QuestionFilter
+        from ..models.filter_criteria import FilterCriteria
 
         instructions = self.instructions
 
@@ -52,7 +52,7 @@ class QuestionGenerator:
         quality_filter: dict[str, Any] | None | Unset
         if isinstance(self.quality_filter, Unset):
             quality_filter = UNSET
-        elif isinstance(self.quality_filter, QuestionFilter):
+        elif isinstance(self.quality_filter, FilterCriteria):
             quality_filter = self.quality_filter.to_dict()
         else:
             quality_filter = self.quality_filter
@@ -77,7 +77,7 @@ class QuestionGenerator:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.question_filter import QuestionFilter
+        from ..models.filter_criteria import FilterCriteria
 
         d = dict(src_dict)
         instructions = d.pop("instructions")
@@ -90,7 +90,7 @@ class QuestionGenerator:
 
         bad_examples = cast(list[str], d.pop("bad_examples", UNSET))
 
-        def _parse_quality_filter(data: object) -> None | QuestionFilter | Unset:
+        def _parse_quality_filter(data: object) -> FilterCriteria | None | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -98,12 +98,12 @@ class QuestionGenerator:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                quality_filter_type_0 = QuestionFilter.from_dict(data)
+                quality_filter_type_0 = FilterCriteria.from_dict(data)
 
                 return quality_filter_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(None | QuestionFilter | Unset, data)
+            return cast(FilterCriteria | None | Unset, data)
 
         quality_filter = _parse_quality_filter(d.pop("quality_filter", UNSET))
 
