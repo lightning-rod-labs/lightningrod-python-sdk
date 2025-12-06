@@ -66,4 +66,28 @@ class TransformPipeline:
             >>> print(f"Job ID: {job.id}")
         """
         return self._client.submit(self._config, dataset)
+    
+    def batch(self, size: int, dataset: Optional["Dataset"] = None) -> "Dataset":
+        """
+        Execute the transform with a batch size limit and wait for completion.
+        
+        For seed generators (NewsSeedGenerator, GdeltSeedGenerator), limits the
+        number of seeds generated. For transforms with input datasets, limits
+        the number of input rows processed.
+        
+        Args:
+            size: Maximum number of items to process
+            dataset: Optional input dataset. If None, the transform runs without input data.
+        
+        Returns:
+            Dataset instance for the output dataset
+        
+        Raises:
+            Exception: If the job fails or API returns an error
+        
+        Example:
+            >>> output = client.pipeline(config).batch(100)
+            >>> output = client.pipeline(config).batch(100, input_dataset)
+        """
+        return self._client.run(self._config, dataset, batch_size=size)
 

@@ -66,4 +66,28 @@ class AsyncTransformPipeline:
             >>> print(f"Job ID: {job.id}")
         """
         return await self._client.submit(self._config, dataset)
+    
+    async def batch(self, size: int, dataset: Optional["AsyncDataset"] = None) -> "AsyncDataset":
+        """
+        Execute the transform with a batch size limit and wait for completion.
+        
+        For seed generators (NewsSeedGenerator, GdeltSeedGenerator), limits the
+        number of seeds generated. For transforms with input datasets, limits
+        the number of input rows processed.
+        
+        Args:
+            size: Maximum number of items to process
+            dataset: Optional input dataset. If None, the transform runs without input data.
+        
+        Returns:
+            AsyncDataset instance for the output dataset
+        
+        Raises:
+            Exception: If the job fails or API returns an error
+        
+        Example:
+            >>> output = await client.pipeline(config).batch(100)
+            >>> output = await client.pipeline(config).batch(100, input_dataset)
+        """
+        return await self._client.run(self._config, dataset, batch_size=size)
 

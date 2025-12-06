@@ -29,6 +29,7 @@ class CreateTransformJobRequest:
         config (ForwardLookingQuestionGenerator | GdeltSeedGenerator | NewsSeedGenerator | Pipeline |
             QuestionAndLabelGenerator | QuestionGenerator | QuestionPipeline | WebSearchLabeler):
         input_dataset_id (None | str | Unset):
+        batch_size (int | None | Unset):
     """
 
     config: (
@@ -42,6 +43,7 @@ class CreateTransformJobRequest:
         | WebSearchLabeler
     )
     input_dataset_id: None | str | Unset = UNSET
+    batch_size: int | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -77,6 +79,12 @@ class CreateTransformJobRequest:
         else:
             input_dataset_id = self.input_dataset_id
 
+        batch_size: int | None | Unset
+        if isinstance(self.batch_size, Unset):
+            batch_size = UNSET
+        else:
+            batch_size = self.batch_size
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -86,6 +94,8 @@ class CreateTransformJobRequest:
         )
         if input_dataset_id is not UNSET:
             field_dict["input_dataset_id"] = input_dataset_id
+        if batch_size is not UNSET:
+            field_dict["batch_size"] = batch_size
 
         return field_dict
 
@@ -187,9 +197,19 @@ class CreateTransformJobRequest:
 
         input_dataset_id = _parse_input_dataset_id(d.pop("input_dataset_id", UNSET))
 
+        def _parse_batch_size(data: object) -> int | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(int | None | Unset, data)
+
+        batch_size = _parse_batch_size(d.pop("batch_size", UNSET))
+
         create_transform_job_request = cls(
             config=config,
             input_dataset_id=input_dataset_id,
+            batch_size=batch_size,
         )
 
         create_transform_job_request.additional_properties = d

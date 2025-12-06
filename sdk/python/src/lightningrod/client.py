@@ -394,7 +394,8 @@ class LightningRodClient:
     def run(
         self,
         config: TransformConfig,
-        dataset: Optional[Dataset] = None
+        dataset: Optional[Dataset] = None,
+        batch_size: Optional[int] = None
     ) -> Dataset:
         """
         Submit a transform job and wait for it to complete.
@@ -407,6 +408,8 @@ class LightningRodClient:
         Args:
             config: Transform configuration (NewsSeedGenerator, Pipeline, etc.)
             dataset: Optional input dataset. If None, the transform runs without input data.
+            batch_size: Optional batch size limit. For seed generators, limits output count.
+                For transforms with input datasets, limits input rows.
         
         Returns:
             Dataset instance for the output dataset
@@ -420,7 +423,7 @@ class LightningRodClient:
             >>> config = QuestionPipeline(config_type="QUESTION_PIPELINE", ...)
             >>> output_dataset = client.run(config)
         """
-        job: TransformJob = self.submit(config, dataset)
+        job: TransformJob = self.submit(config, dataset, batch_size)
         
         while job.status == TransformJobStatus.RUNNING:
             time.sleep(15)
@@ -443,7 +446,8 @@ class LightningRodClient:
     def submit(
         self,
         config: TransformConfig,
-        dataset: Optional[Dataset] = None
+        dataset: Optional[Dataset] = None,
+        batch_size: Optional[int] = None
     ) -> TransformJob:
         """
         Submit a transform job without waiting for completion.
@@ -451,6 +455,8 @@ class LightningRodClient:
         Args:
             config: Transform configuration (NewsSeedGenerator, Pipeline, etc.)
             dataset: Optional input dataset. If None, the transform runs without input data.
+            batch_size: Optional batch size limit. For seed generators, limits output count.
+                For transforms with input datasets, limits input rows.
         
         Returns:
             TransformJob instance representing the submitted job
@@ -467,7 +473,8 @@ class LightningRodClient:
         """
         request: CreateTransformJobRequest = CreateTransformJobRequest(
             config=config,
-            input_dataset_id=dataset.id if dataset else None
+            input_dataset_id=dataset.id if dataset else None,
+            batch_size=batch_size
         )
         
         response = create_transform_job_transform_jobs_post.sync(

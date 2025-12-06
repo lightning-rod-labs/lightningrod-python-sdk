@@ -271,7 +271,8 @@ class AsyncLightningRodClient:
     async def run(
         self,
         config: TransformConfig,
-        dataset: Optional[AsyncDataset] = None
+        dataset: Optional[AsyncDataset] = None,
+        batch_size: Optional[int] = None
     ) -> AsyncDataset:
         """
         Submit a transform job and wait for it to complete.
@@ -286,6 +287,8 @@ class AsyncLightningRodClient:
         Args:
             config: Transform configuration (NewsSeedGenerator, Pipeline, etc.)
             dataset: Optional input dataset. If None, the transform runs without input data.
+            batch_size: Optional batch size limit. For seed generators, limits output count.
+                For transforms with input datasets, limits input rows.
         
         Returns:
             AsyncDataset instance for the output dataset
@@ -304,7 +307,8 @@ class AsyncLightningRodClient:
         result_sync_dataset = await asyncio.to_thread(
             self._sync_client.run,
             config,
-            sync_dataset
+            sync_dataset,
+            batch_size
         )
         
         return AsyncDataset(result_sync_dataset)
@@ -312,7 +316,8 @@ class AsyncLightningRodClient:
     async def submit(
         self,
         config: TransformConfig,
-        dataset: Optional[AsyncDataset] = None
+        dataset: Optional[AsyncDataset] = None,
+        batch_size: Optional[int] = None
     ) -> TransformJob:
         """
         Submit a transform job without waiting for completion.
@@ -320,6 +325,8 @@ class AsyncLightningRodClient:
         Args:
             config: Transform configuration (NewsSeedGenerator, Pipeline, etc.)
             dataset: Optional input dataset. If None, the transform runs without input data.
+            batch_size: Optional batch size limit. For seed generators, limits output count.
+                For transforms with input datasets, limits input rows.
         
         Returns:
             TransformJob instance representing the submitted job
@@ -339,5 +346,6 @@ class AsyncLightningRodClient:
         return await asyncio.to_thread(
             self._sync_client.submit,
             config,
-            sync_dataset
+            sync_dataset,
+            batch_size
         )

@@ -714,6 +714,17 @@
               }
             ],
             "title": "Input Dataset Id"
+          },
+          "batch_size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Batch Size"
           }
         },
         "type": "object",
