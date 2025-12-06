@@ -10,6 +10,7 @@ from lightningrod.async_client import AsyncLightningRodClient
 from lightningrod.async_dataset import AsyncDataset
 from lightningrod.pipeline import TransformPipeline
 from lightningrod.async_pipeline import AsyncTransformPipeline
+from lightningrod.answer_types import AnswerTypes
 from lightningrod._generated.models import (
     AnswerType,
     AnswerTypeEnum,
@@ -21,8 +22,10 @@ from lightningrod._generated.models import (
     NewsContextGenerator,
     Pipeline,
     QuestionGenerator,
+    QuestionAndLabelGenerator,
     ForwardLookingQuestionGenerator,
     QuestionPipeline,
+    QuestionRenderer,
     WebSearchLabeler,
     FilterCriteria,
 )
@@ -31,6 +34,7 @@ __version__ = "0.1.0"
 __all__ = [
     "AnswerType",
     "AnswerTypeEnum",
+    "AnswerTypes",
     "AsyncDataset",
     "AsyncLightningRodClient",
     "AsyncTransformPipeline",
@@ -43,8 +47,10 @@ __all__ = [
     "NewsContextGenerator",
     "NewsSeedGenerator",
     "Pipeline",
+    "QuestionAndLabelGenerator",
     "QuestionGenerator",
     "QuestionPipeline",
+    "QuestionRenderer",
     "TransformJob",
     "TransformJobStatus",
     "TransformPipeline",

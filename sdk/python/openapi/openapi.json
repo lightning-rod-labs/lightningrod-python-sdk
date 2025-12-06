@@ -1424,6 +1424,9 @@
               },
               {
                 "$ref": "#/components/schemas/ForwardLookingQuestionGenerator"
+              },
+              {
+                "$ref": "#/components/schemas/QuestionAndLabelGenerator"
               }
             ],
             "title": "Question Generator",
@@ -1432,13 +1435,21 @@
               "propertyName": "config_type",
               "mapping": {
                 "FORWARD_LOOKING_QUESTION_GENERATOR": "#/components/schemas/ForwardLookingQuestionGenerator",
+                "QUESTION_AND_LABEL_GENERATOR": "#/components/schemas/QuestionAndLabelGenerator",
                 "QUESTION_GENERATOR": "#/components/schemas/QuestionGenerator"
               }
             }
           },
           "labeler": {
-            "$ref": "#/components/schemas/WebSearchLabeler",
-            "description": "Configuration for labeling"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WebSearchLabeler"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Configuration for labeling. Not needed when using QuestionAndLabelGenerator."
           },
           "context_generators": {
             "anyOf": [
@@ -1465,24 +1476,12 @@
               }
             ],
             "description": "Optional configuration for rendering the final prompt"
-          },
-          "answer_type": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/AnswerType"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "The type of answer expected, flows to question generator and renderer"
           }
         },
         "type": "object",
         "required": [
           "seed_generator",
-          "question_generator",
-          "labeler"
+          "question_generator"
         ],
         "title": "QuestionPipeline"
       },
