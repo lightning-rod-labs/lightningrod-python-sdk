@@ -33,6 +33,7 @@ from lightningrod._generated.api.transform_jobs import (
     get_transform_job_transform_jobs_job_id_get,
 )
 from lightningrod.dataset import Dataset
+from lightningrod.pipeline import TransformPipeline
 
 TransformConfig = NewsSeedGenerator | Pipeline | QuestionGenerator | QuestionPipeline | WebSearchLabeler
 
@@ -369,6 +370,26 @@ class LightningRodClient:
     def datasets(self) -> Datasets:
         """Access dataset operations."""
         return self._datasets
+    
+    def pipeline(self, config: TransformConfig) -> TransformPipeline:
+        """
+        Create a pipeline builder for executing transforms.
+        
+        This provides a fluent API for running transforms:
+        client.pipeline(config).run(dataset)
+        
+        Args:
+            config: Transform configuration (NewsSeedGenerator, Pipeline, etc.)
+        
+        Returns:
+            TransformPipeline instance for chaining
+        
+        Example:
+            >>> client = LightningRodClient(api_key="your-api-key")
+            >>> config = NewsSeedGenerator(...)
+            >>> dataset = client.pipeline(config).run()
+        """
+        return TransformPipeline(self, config)
     
     def run(
         self,

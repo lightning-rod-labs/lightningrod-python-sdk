@@ -17,6 +17,7 @@ from lightningrod._generated.models.question import Question
 from lightningrod._generated.models.label import Label
 from lightningrod.client import LightningRodClient, TransformConfig
 from lightningrod.async_dataset import AsyncDataset
+from lightningrod.async_pipeline import AsyncTransformPipeline
 
 
 class AsyncDatasets:
@@ -246,6 +247,26 @@ class AsyncLightningRodClient:
     def datasets(self) -> AsyncDatasets:
         """Access dataset operations."""
         return self._datasets
+    
+    def pipeline(self, config: TransformConfig) -> AsyncTransformPipeline:
+        """
+        Create a pipeline builder for executing transforms.
+        
+        This provides a fluent API for running transforms:
+        await client.pipeline(config).run(dataset)
+        
+        Args:
+            config: Transform configuration (NewsSeedGenerator, Pipeline, etc.)
+        
+        Returns:
+            AsyncTransformPipeline instance for chaining
+        
+        Example:
+            >>> client = AsyncLightningRodClient(api_key="your-api-key")
+            >>> config = NewsSeedGenerator(...)
+            >>> dataset = await client.pipeline(config).run()
+        """
+        return AsyncTransformPipeline(self, config)
     
     async def run(
         self,

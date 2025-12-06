@@ -8,6 +8,8 @@ from lightningrod.client import LightningRodClient
 from lightningrod.dataset import Dataset
 from lightningrod.async_client import AsyncLightningRodClient
 from lightningrod.async_dataset import AsyncDataset
+from lightningrod.pipeline import TransformPipeline
+from lightningrod.async_pipeline import AsyncTransformPipeline
 from lightningrod._generated.models import (
     DatasetMetadata,
     TransformJob,
@@ -26,6 +28,7 @@ __version__ = "0.1.0"
 __all__ = [
     "AsyncDataset",
     "AsyncLightningRodClient",
+    "AsyncTransformPipeline",
     "Dataset",
     "DatasetMetadata",
     "FilterCriteria",
@@ -38,6 +41,7 @@ __all__ = [
     "QuestionPipeline",
     "TransformJob",
     "TransformJobStatus",
+    "TransformPipeline",
     "WebSearchLabeler",
 ]
 
