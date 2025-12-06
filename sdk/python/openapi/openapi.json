@@ -844,33 +844,6 @@
         "title": "FilterCriteria",
         "description": "Reusable filter criteria for LLM-based content scoring and filtering."
       },
-      "FilterCriteriaConfig": {
-        "properties": {
-          "config_type": {
-            "type": "string",
-            "const": "FILTER_CRITERIA",
-            "title": "Config Type",
-            "description": "Type of transform configuration",
-            "default": "FILTER_CRITERIA"
-          },
-          "filter_criteria": {
-            "$ref": "#/components/schemas/FilterCriteria",
-            "description": "Criteria for filtering content"
-          },
-          "input_column": {
-            "type": "string",
-            "title": "Input Column",
-            "description": "Column name to evaluate for filtering",
-            "default": "question_text"
-          }
-        },
-        "type": "object",
-        "required": [
-          "filter_criteria"
-        ],
-        "title": "FilterCriteriaConfig",
-        "description": "Configuration for the FilterCriteria transform."
-      },
       "ForwardLookingQuestionGenerator": {
         "properties": {
           "config_type": {
@@ -881,9 +854,16 @@
             "default": "FORWARD_LOOKING_QUESTION_GENERATOR"
           },
           "instructions": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Instructions",
-            "description": "Instructions for question generation"
+            "description": "Additional instructions for question generation. If not provided, uses sensible defaults."
           },
           "examples": {
             "items": {
@@ -901,7 +881,7 @@
             "title": "Bad Examples",
             "description": "Examples of questions to avoid"
           },
-          "quality_filter": {
+          "filter": {
             "anyOf": [
               {
                 "$ref": "#/components/schemas/FilterCriteria"
@@ -916,8 +896,8 @@
                 "type": "null"
               }
             ],
-            "title": "Quality Filter",
-            "description": "Optional quality filter to apply after question generation"
+            "title": "Filter",
+            "description": "Optional filter criteria to apply after question generation"
           },
           "include_default_filter": {
             "type": "boolean",
@@ -927,9 +907,6 @@
           }
         },
         "type": "object",
-        "required": [
-          "instructions"
-        ],
         "title": "ForwardLookingQuestionGenerator"
       },
       "GdeltSeedGenerator": {
@@ -1300,19 +1277,37 @@
           "filter": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/FilterCriteriaConfig"
+                "$ref": "#/components/schemas/FilterCriteria"
+              },
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FilterCriteria"
+                },
+                "type": "array"
               },
               {
                 "type": "null"
               }
             ],
-            "description": "Optional filter to apply after question generation"
+            "title": "Filter",
+            "description": "Optional filter criteria to apply after question generation"
           },
           "questions_per_seed": {
             "type": "integer",
             "title": "Questions Per Seed",
             "description": "Number of question/label pairs to generate per seed",
             "default": 1
+          },
+          "answer_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The type of answer expected for generated questions"
           }
         },
         "type": "object",
@@ -1361,10 +1356,17 @@
                 "$ref": "#/components/schemas/FilterCriteria"
               },
               {
+                "items": {
+                  "$ref": "#/components/schemas/FilterCriteria"
+                },
+                "type": "array"
+              },
+              {
                 "type": "null"
               }
             ],
-            "description": "Optional filter to apply after question generation"
+            "title": "Filter",
+            "description": "Optional filter criteria to apply after question generation"
           },
           "questions_per_seed": {
             "type": "integer",
@@ -1494,10 +1496,16 @@
             "default": "QUESTION_RENDERER"
           },
           "template": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Template",
-            "description": "Template for rendering the prompt. Supports any column name as a placeholder (e.g., {question_text}). Special placeholders: {context} renders context objects, {answer_instructions} renders answer type instructions.",
-            "default": "<question>{question_text}</question>\n\n<context>{context}</context>\n\n<answer_instructions>{answer_instructions}</answer_instructions>"
+            "description": "Custom template for rendering the prompt. If not provided, dynamically builds based on available content. Supports any column name as a placeholder (e.g., {question_text}). Special placeholders: {context} renders context objects, {answer_instructions} renders answer type instructions."
           },
           "answer_type": {
             "anyOf": [

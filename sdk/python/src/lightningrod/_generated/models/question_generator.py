@@ -26,7 +26,8 @@ class QuestionGenerator:
             defaults.
         examples (list[str] | Unset): Example questions to guide generation
         bad_examples (list[str] | Unset): Examples of questions to avoid
-        filter_ (FilterCriteria | None | Unset): Optional filter to apply after question generation
+        filter_ (FilterCriteria | list[FilterCriteria] | None | Unset): Optional filter criteria to apply after question
+            generation
         questions_per_seed (int | Unset): Number of questions to generate per seed Default: 1.
         answer_type (AnswerType | None | Unset): The type of answer expected for generated questions
     """
@@ -35,7 +36,7 @@ class QuestionGenerator:
     instructions: None | str | Unset = UNSET
     examples: list[str] | Unset = UNSET
     bad_examples: list[str] | Unset = UNSET
-    filter_: FilterCriteria | None | Unset = UNSET
+    filter_: FilterCriteria | list[FilterCriteria] | None | Unset = UNSET
     questions_per_seed: int | Unset = 1
     answer_type: AnswerType | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -60,11 +61,17 @@ class QuestionGenerator:
         if not isinstance(self.bad_examples, Unset):
             bad_examples = self.bad_examples
 
-        filter_: dict[str, Any] | None | Unset
+        filter_: dict[str, Any] | list[dict[str, Any]] | None | Unset
         if isinstance(self.filter_, Unset):
             filter_ = UNSET
         elif isinstance(self.filter_, FilterCriteria):
             filter_ = self.filter_.to_dict()
+        elif isinstance(self.filter_, list):
+            filter_ = []
+            for filter_type_1_item_data in self.filter_:
+                filter_type_1_item = filter_type_1_item_data.to_dict()
+                filter_.append(filter_type_1_item)
+
         else:
             filter_ = self.filter_
 
@@ -121,7 +128,7 @@ class QuestionGenerator:
 
         bad_examples = cast(list[str], d.pop("bad_examples", UNSET))
 
-        def _parse_filter_(data: object) -> FilterCriteria | None | Unset:
+        def _parse_filter_(data: object) -> FilterCriteria | list[FilterCriteria] | None | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -134,7 +141,20 @@ class QuestionGenerator:
                 return filter_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(FilterCriteria | None | Unset, data)
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                filter_type_1 = []
+                _filter_type_1 = data
+                for filter_type_1_item_data in _filter_type_1:
+                    filter_type_1_item = FilterCriteria.from_dict(filter_type_1_item_data)
+
+                    filter_type_1.append(filter_type_1_item)
+
+                return filter_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(FilterCriteria | list[FilterCriteria] | None | Unset, data)
 
         filter_ = _parse_filter_(d.pop("filter", UNSET))
 

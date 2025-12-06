@@ -17,21 +17,18 @@ T = TypeVar("T", bound="QuestionRenderer")
 
 @_attrs_define
 class QuestionRenderer:
-    r"""
+    """
     Attributes:
         config_type (Literal['QUESTION_RENDERER'] | Unset): Type of transform configuration Default:
             'QUESTION_RENDERER'.
-        template (str | Unset): Template for rendering the prompt. Supports any column name as a placeholder (e.g.,
-            {question_text}). Special placeholders: {context} renders context objects, {answer_instructions} renders answer
-            type instructions. Default: '<question>{question_text}</question>\n\n<context>{context}</context>\n\n<answer_ins
-            tructions>{answer_instructions}</answer_instructions>'.
+        template (None | str | Unset): Custom template for rendering the prompt. If not provided, dynamically builds
+            based on available content. Supports any column name as a placeholder (e.g., {question_text}). Special
+            placeholders: {context} renders context objects, {answer_instructions} renders answer type instructions.
         answer_type (AnswerType | None | Unset): The type of answer expected, used to render answer instructions
     """
 
     config_type: Literal["QUESTION_RENDERER"] | Unset = "QUESTION_RENDERER"
-    template: str | Unset = (
-        "<question>{question_text}</question>\n\n<context>{context}</context>\n\n<answer_instructions>{answer_instructions}</answer_instructions>"
-    )
+    template: None | str | Unset = UNSET
     answer_type: AnswerType | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -40,7 +37,11 @@ class QuestionRenderer:
 
         config_type = self.config_type
 
-        template = self.template
+        template: None | str | Unset
+        if isinstance(self.template, Unset):
+            template = UNSET
+        else:
+            template = self.template
 
         answer_type: dict[str, Any] | None | Unset
         if isinstance(self.answer_type, Unset):
@@ -71,7 +72,14 @@ class QuestionRenderer:
         if config_type != "QUESTION_RENDERER" and not isinstance(config_type, Unset):
             raise ValueError(f"config_type must match const 'QUESTION_RENDERER', got '{config_type}'")
 
-        template = d.pop("template", UNSET)
+        def _parse_template(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        template = _parse_template(d.pop("template", UNSET))
 
         def _parse_answer_type(data: object) -> AnswerType | None | Unset:
             if data is None:

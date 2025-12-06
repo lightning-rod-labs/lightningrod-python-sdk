@@ -12,7 +12,6 @@ from .dataset_download_url_response import DatasetDownloadUrlResponse
 from .dataset_metadata import DatasetMetadata
 from .dataset_upload_url_response import DatasetUploadUrlResponse
 from .filter_criteria import FilterCriteria
-from .filter_criteria_config import FilterCriteriaConfig
 from .forward_looking_question_generator import ForwardLookingQuestionGenerator
 from .gdelt_seed_generator import GdeltSeedGenerator
 from .http_validation_error import HTTPValidationError
@@ -56,7 +55,6 @@ __all__ = (
     "DatasetMetadata",
     "DatasetUploadUrlResponse",
     "FilterCriteria",
-    "FilterCriteriaConfig",
     "ForwardLookingQuestionGenerator",
     "GdeltSeedGenerator",
     "HTTPValidationError",

@@ -19,31 +19,36 @@ T = TypeVar("T", bound="ForwardLookingQuestionGenerator")
 class ForwardLookingQuestionGenerator:
     """
     Attributes:
-        instructions (str): Instructions for question generation
         config_type (Literal['FORWARD_LOOKING_QUESTION_GENERATOR'] | Unset): Type of transform configuration Default:
             'FORWARD_LOOKING_QUESTION_GENERATOR'.
+        instructions (None | str | Unset): Additional instructions for question generation. If not provided, uses
+            sensible defaults.
         examples (list[str] | Unset): Example questions to guide generation
         bad_examples (list[str] | Unset): Examples of questions to avoid
-        quality_filter (FilterCriteria | list[FilterCriteria] | None | Unset): Optional quality filter to apply after
-            question generation
+        filter_ (FilterCriteria | list[FilterCriteria] | None | Unset): Optional filter criteria to apply after question
+            generation
         include_default_filter (bool | Unset): Whether to include the default filter for generated questions Default:
             True.
     """
 
-    instructions: str
     config_type: Literal["FORWARD_LOOKING_QUESTION_GENERATOR"] | Unset = "FORWARD_LOOKING_QUESTION_GENERATOR"
+    instructions: None | str | Unset = UNSET
     examples: list[str] | Unset = UNSET
     bad_examples: list[str] | Unset = UNSET
-    quality_filter: FilterCriteria | list[FilterCriteria] | None | Unset = UNSET
+    filter_: FilterCriteria | list[FilterCriteria] | None | Unset = UNSET
     include_default_filter: bool | Unset = True
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.filter_criteria import FilterCriteria
 
-        instructions = self.instructions
-
         config_type = self.config_type
+
+        instructions: None | str | Unset
+        if isinstance(self.instructions, Unset):
+            instructions = UNSET
+        else:
+            instructions = self.instructions
 
         examples: list[str] | Unset = UNSET
         if not isinstance(self.examples, Unset):
@@ -53,37 +58,35 @@ class ForwardLookingQuestionGenerator:
         if not isinstance(self.bad_examples, Unset):
             bad_examples = self.bad_examples
 
-        quality_filter: dict[str, Any] | list[dict[str, Any]] | None | Unset
-        if isinstance(self.quality_filter, Unset):
-            quality_filter = UNSET
-        elif isinstance(self.quality_filter, FilterCriteria):
-            quality_filter = self.quality_filter.to_dict()
-        elif isinstance(self.quality_filter, list):
-            quality_filter = []
-            for quality_filter_type_1_item_data in self.quality_filter:
-                quality_filter_type_1_item = quality_filter_type_1_item_data.to_dict()
-                quality_filter.append(quality_filter_type_1_item)
+        filter_: dict[str, Any] | list[dict[str, Any]] | None | Unset
+        if isinstance(self.filter_, Unset):
+            filter_ = UNSET
+        elif isinstance(self.filter_, FilterCriteria):
+            filter_ = self.filter_.to_dict()
+        elif isinstance(self.filter_, list):
+            filter_ = []
+            for filter_type_1_item_data in self.filter_:
+                filter_type_1_item = filter_type_1_item_data.to_dict()
+                filter_.append(filter_type_1_item)
 
         else:
-            quality_filter = self.quality_filter
+            filter_ = self.filter_
 
         include_default_filter = self.include_default_filter
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "instructions": instructions,
-            }
-        )
+        field_dict.update({})
         if config_type is not UNSET:
             field_dict["config_type"] = config_type
+        if instructions is not UNSET:
+            field_dict["instructions"] = instructions
         if examples is not UNSET:
             field_dict["examples"] = examples
         if bad_examples is not UNSET:
             field_dict["bad_examples"] = bad_examples
-        if quality_filter is not UNSET:
-            field_dict["quality_filter"] = quality_filter
+        if filter_ is not UNSET:
+            field_dict["filter"] = filter_
         if include_default_filter is not UNSET:
             field_dict["include_default_filter"] = include_default_filter
 
@@ -94,17 +97,24 @@ class ForwardLookingQuestionGenerator:
         from ..models.filter_criteria import FilterCriteria
 
         d = dict(src_dict)
-        instructions = d.pop("instructions")
-
         config_type = cast(Literal["FORWARD_LOOKING_QUESTION_GENERATOR"] | Unset, d.pop("config_type", UNSET))
         if config_type != "FORWARD_LOOKING_QUESTION_GENERATOR" and not isinstance(config_type, Unset):
             raise ValueError(f"config_type must match const 'FORWARD_LOOKING_QUESTION_GENERATOR', got '{config_type}'")
+
+        def _parse_instructions(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        instructions = _parse_instructions(d.pop("instructions", UNSET))
 
         examples = cast(list[str], d.pop("examples", UNSET))
 
         bad_examples = cast(list[str], d.pop("bad_examples", UNSET))
 
-        def _parse_quality_filter(data: object) -> FilterCriteria | list[FilterCriteria] | None | Unset:
+        def _parse_filter_(data: object) -> FilterCriteria | list[FilterCriteria] | None | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -112,36 +122,36 @@ class ForwardLookingQuestionGenerator:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                quality_filter_type_0 = FilterCriteria.from_dict(data)
+                filter_type_0 = FilterCriteria.from_dict(data)
 
-                return quality_filter_type_0
+                return filter_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
             try:
                 if not isinstance(data, list):
                     raise TypeError()
-                quality_filter_type_1 = []
-                _quality_filter_type_1 = data
-                for quality_filter_type_1_item_data in _quality_filter_type_1:
-                    quality_filter_type_1_item = FilterCriteria.from_dict(quality_filter_type_1_item_data)
+                filter_type_1 = []
+                _filter_type_1 = data
+                for filter_type_1_item_data in _filter_type_1:
+                    filter_type_1_item = FilterCriteria.from_dict(filter_type_1_item_data)
 
-                    quality_filter_type_1.append(quality_filter_type_1_item)
+                    filter_type_1.append(filter_type_1_item)
 
-                return quality_filter_type_1
+                return filter_type_1
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
             return cast(FilterCriteria | list[FilterCriteria] | None | Unset, data)
 
-        quality_filter = _parse_quality_filter(d.pop("quality_filter", UNSET))
+        filter_ = _parse_filter_(d.pop("filter", UNSET))
 
         include_default_filter = d.pop("include_default_filter", UNSET)
 
         forward_looking_question_generator = cls(
-            instructions=instructions,
             config_type=config_type,
+            instructions=instructions,
             examples=examples,
             bad_examples=bad_examples,
-            quality_filter=quality_filter,
+            filter_=filter_,
             include_default_filter=include_default_filter,
         )
 
