@@ -368,6 +368,83 @@
   },
   "components": {
     "schemas": {
+      "AnswerType": {
+        "properties": {
+          "answer_type": {
+            "$ref": "#/components/schemas/AnswerTypeEnum",
+            "description": "The type of answer expected for this question"
+          },
+          "instruction": {
+            "type": "string",
+            "title": "Instruction",
+            "description": "Instructions describing how the answer should be given"
+          },
+          "format_instruction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Format Instruction",
+            "description": "Custom format instructions for parsing the answer. If not set, uses default based on answer_type."
+          },
+          "labeler_instruction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Labeler Instruction",
+            "description": "Custom instructions for the labeler. If not set, uses default based on answer_type."
+          },
+          "question_generation_guidance": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question Generation Guidance",
+            "description": "Custom guidance for generating questions of this type. If not set, uses default based on answer_type."
+          },
+          "question_field_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question Field Description",
+            "description": "Custom description for the question_text field in structured output. If not set, uses default based on answer_type."
+          }
+        },
+        "type": "object",
+        "required": [
+          "answer_type",
+          "instruction"
+        ],
+        "title": "AnswerType"
+      },
+      "AnswerTypeEnum": {
+        "type": "string",
+        "enum": [
+          "BINARY",
+          "MULTIPLE_CHOICE",
+          "CONTINUOUS",
+          "FREE_RESPONSE"
+        ],
+        "title": "AnswerTypeEnum"
+      },
       "ChatCompletionRequest": {
         "properties": {
           "model": {
@@ -608,25 +685,28 @@
       "CreateTransformConfig": {
         "oneOf": [
           {
-            "$ref": "#/components/schemas/NewsSeedGenerator"
+            "$ref": "#/components/schemas/ForwardLookingQuestionGenerator"
           },
           {
             "$ref": "#/components/schemas/GdeltSeedGenerator"
           },
           {
+            "$ref": "#/components/schemas/NewsSeedGenerator"
+          },
+          {
+            "$ref": "#/components/schemas/Pipeline"
+          },
+          {
+            "$ref": "#/components/schemas/QuestionAndLabelGenerator"
+          },
+          {
             "$ref": "#/components/schemas/QuestionGenerator"
-          },
-          {
-            "$ref": "#/components/schemas/ForwardLookingQuestionGenerator"
-          },
-          {
-            "$ref": "#/components/schemas/WebSearchLabeler"
           },
           {
             "$ref": "#/components/schemas/QuestionPipeline"
           },
           {
-            "$ref": "#/components/schemas/Pipeline"
+            "$ref": "#/components/schemas/WebSearchLabeler"
           }
         ],
         "discriminator": {
@@ -636,6 +716,7 @@
             "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
             "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator",
             "PIPELINE": "#/components/schemas/Pipeline",
+            "QUESTION_AND_LABEL_GENERATOR": "#/components/schemas/QuestionAndLabelGenerator",
             "QUESTION_GENERATOR": "#/components/schemas/QuestionGenerator",
             "QUESTION_PIPELINE": "#/components/schemas/QuestionPipeline",
             "WEB_SEARCH_LABELER": "#/components/schemas/WebSearchLabeler"
@@ -770,6 +851,33 @@
         "title": "FilterCriteria",
         "description": "Reusable filter criteria for LLM-based content scoring and filtering."
       },
+      "FilterCriteriaConfig": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "FILTER_CRITERIA",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "FILTER_CRITERIA"
+          },
+          "filter_criteria": {
+            "$ref": "#/components/schemas/FilterCriteria",
+            "description": "Criteria for filtering content"
+          },
+          "input_column": {
+            "type": "string",
+            "title": "Input Column",
+            "description": "Column name to evaluate for filtering",
+            "default": "question_text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filter_criteria"
+        ],
+        "title": "FilterCriteriaConfig",
+        "description": "Configuration for the FilterCriteria transform."
+      },
       "ForwardLookingQuestionGenerator": {
         "properties": {
           "config_type": {
@@ -806,10 +914,23 @@
                 "$ref": "#/components/schemas/FilterCriteria"
               },
               {
+                "items": {
+                  "$ref": "#/components/schemas/FilterCriteria"
+                },
+                "type": "array"
+              },
+              {
                 "type": "null"
               }
             ],
+            "title": "Quality Filter",
             "description": "Optional quality filter to apply after question generation"
+          },
+          "include_default_filter": {
+            "type": "boolean",
+            "title": "Include Default Filter",
+            "description": "Whether to include the default filter for generated questions",
+            "default": true
           }
         },
         "type": "object",
@@ -977,14 +1098,24 @@
             "default": 5
           },
           "search_query": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ],
             "title": "Search Query",
-            "description": "Search query for news articles"
+            "description": "Search query for news articles. If multiple queries are provided, a separate search will be done for each query."
           },
-          "articles_per_interval": {
+          "articles_per_search": {
             "type": "integer",
-            "title": "Articles Per Interval",
-            "description": "Number of articles to fetch per interval (max 100)",
+            "title": "Articles Per Search",
+            "description": "Number of articles to fetch per search (max 100). Each query/domain combination is a separate search.",
             "default": 10
           },
           "filter_criteria": {
@@ -1075,6 +1206,60 @@
         ],
         "title": "Question"
       },
+      "QuestionAndLabelGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "QUESTION_AND_LABEL_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "QUESTION_AND_LABEL_GENERATOR"
+          },
+          "instructions": {
+            "type": "string",
+            "title": "Instructions",
+            "description": "Instructions for question and label generation"
+          },
+          "examples": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Examples",
+            "description": "Example questions with labels to guide generation"
+          },
+          "bad_examples": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Bad Examples",
+            "description": "Examples of questions/labels to avoid"
+          },
+          "filter": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FilterCriteriaConfig"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional filter to apply after question generation"
+          },
+          "questions_per_seed": {
+            "type": "integer",
+            "title": "Questions Per Seed",
+            "description": "Number of question/label pairs to generate per seed",
+            "default": 1
+          }
+        },
+        "type": "object",
+        "required": [
+          "instructions"
+        ],
+        "title": "QuestionAndLabelGenerator"
+      },
       "QuestionGenerator": {
         "properties": {
           "config_type": {
@@ -1105,7 +1290,7 @@
             "title": "Bad Examples",
             "description": "Examples of questions to avoid"
           },
-          "quality_filter": {
+          "filter": {
             "anyOf": [
               {
                 "$ref": "#/components/schemas/FilterCriteria"
@@ -1114,7 +1299,24 @@
                 "type": "null"
               }
             ],
-            "description": "Optional quality filter to apply after question generation"
+            "description": "Optional filter to apply after question generation"
+          },
+          "questions_per_seed": {
+            "type": "integer",
+            "title": "Questions Per Seed",
+            "description": "Number of questions to generate per seed",
+            "default": 1
+          },
+          "answer_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The type of answer expected for generated questions"
           }
         },
         "type": "object",
@@ -1173,6 +1375,28 @@
           "labeler": {
             "$ref": "#/components/schemas/WebSearchLabeler",
             "description": "Configuration for labeling"
+          },
+          "renderer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuestionRenderer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional configuration for rendering the final prompt"
+          },
+          "answer_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The type of answer expected, flows to question generator and renderer"
           }
         },
         "type": "object",
@@ -1182,6 +1406,36 @@
           "labeler"
         ],
         "title": "QuestionPipeline"
+      },
+      "QuestionRenderer": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "QUESTION_RENDERER",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "QUESTION_RENDERER"
+          },
+          "template": {
+            "type": "string",
+            "title": "Template",
+            "description": "Template for rendering the prompt. Supports any column name as a placeholder (e.g., {question_text}). Special placeholders: {context} renders context objects, {answer_instructions} renders answer type instructions.",
+            "default": "<question>{question_text}</question>\n\n<context>{context}</context>\n\n<answer_instructions>{answer_instructions}</answer_instructions>"
+          },
+          "answer_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The type of answer expected, used to render answer instructions"
+          }
+        },
+        "type": "object",
+        "title": "QuestionRenderer"
       },
       "ResponseMessage": {
         "properties": {
@@ -1205,10 +1459,6 @@
       },
       "Sample": {
         "properties": {
-          "sample_id": {
-            "type": "string",
-            "title": "Sample Id"
-          },
           "seed": {
             "anyOf": [
               {
@@ -1239,20 +1489,25 @@
               }
             ]
           },
+          "prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt"
+          },
           "meta": {
             "additionalProperties": true,
             "type": "object",
-            "title": "Meta"
+            "title": "Meta",
+            "default": {}
           }
         },
         "type": "object",
-        "required": [
-          "sample_id",
-          "seed",
-          "question",
-          "label",
-          "meta"
-        ],
         "title": "Sample"
       },
       "Seed": {
@@ -1288,6 +1543,17 @@
               }
             ],
             "title": "Seed Creation Date"
+          },
+          "search_query": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Search Query"
           }
         },
         "type": "object",
@@ -1396,14 +1662,18 @@
           "NEWS_SEED_GENERATOR",
           "GDELT_SEED_GENERATOR",
           "QUESTION_GENERATOR",
+          "QUESTION_AND_LABEL_GENERATOR",
+          "QUESTION_FILTER",
           "FORWARD_LOOKING_QUESTION_GENERATOR",
           "QUESTION_QUALITY_SCORER",
           "SCORE_FILTER",
           "FILTER_CRITERIA",
           "WEB_SEARCH_LABELER",
+          "NEWS_CONTEXT_GENERATOR",
           "PIPELINE",
           "QUESTION_PIPELINE",
-          "SCULPT"
+          "SCULPT",
+          "QUESTION_RENDERER"
         ],
         "title": "TransformType"
       },
@@ -1504,6 +1774,17 @@
             "title": "Concurrency Limit",
             "description": "Maximum number of concurrent question processing tasks",
             "default": 10
+          },
+          "answer_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The type of answer expected, used to guide the labeler"
           }
         },
         "type": "object",

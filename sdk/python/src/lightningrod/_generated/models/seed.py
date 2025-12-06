@@ -25,12 +25,14 @@ class Seed:
         passthrough_data (SeedPassthroughData | Unset):
         url (None | str | Unset):
         seed_creation_date (datetime.datetime | None | Unset):
+        search_query (None | str | Unset):
     """
 
     seed_text: str
     passthrough_data: SeedPassthroughData | Unset = UNSET
     url: None | str | Unset = UNSET
     seed_creation_date: datetime.datetime | None | Unset = UNSET
+    search_query: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -54,6 +56,12 @@ class Seed:
         else:
             seed_creation_date = self.seed_creation_date
 
+        search_query: None | str | Unset
+        if isinstance(self.search_query, Unset):
+            search_query = UNSET
+        else:
+            search_query = self.search_query
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -67,6 +75,8 @@ class Seed:
             field_dict["url"] = url
         if seed_creation_date is not UNSET:
             field_dict["seed_creation_date"] = seed_creation_date
+        if search_query is not UNSET:
+            field_dict["search_query"] = search_query
 
         return field_dict
 
@@ -110,11 +120,21 @@ class Seed:
 
         seed_creation_date = _parse_seed_creation_date(d.pop("seed_creation_date", UNSET))
 
+        def _parse_search_query(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        search_query = _parse_search_query(d.pop("search_query", UNSET))
+
         seed = cls(
             seed_text=seed_text,
             passthrough_data=passthrough_data,
             url=url,
             seed_creation_date=seed_creation_date,
+            search_query=search_query,
         )
 
         seed.additional_properties = d

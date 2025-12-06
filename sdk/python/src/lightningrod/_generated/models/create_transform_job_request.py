@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from ..models.gdelt_seed_generator import GdeltSeedGenerator
     from ..models.news_seed_generator import NewsSeedGenerator
     from ..models.pipeline import Pipeline
+    from ..models.question_and_label_generator import QuestionAndLabelGenerator
     from ..models.question_generator import QuestionGenerator
     from ..models.question_pipeline import QuestionPipeline
     from ..models.web_search_labeler import WebSearchLabeler
@@ -25,8 +26,8 @@ T = TypeVar("T", bound="CreateTransformJobRequest")
 class CreateTransformJobRequest:
     """
     Attributes:
-        config (ForwardLookingQuestionGenerator | GdeltSeedGenerator | NewsSeedGenerator | Pipeline | QuestionGenerator
-            | QuestionPipeline | WebSearchLabeler):
+        config (ForwardLookingQuestionGenerator | GdeltSeedGenerator | NewsSeedGenerator | Pipeline |
+            QuestionAndLabelGenerator | QuestionGenerator | QuestionPipeline | WebSearchLabeler):
         input_dataset_id (None | str | Unset):
     """
 
@@ -35,6 +36,7 @@ class CreateTransformJobRequest:
         | GdeltSeedGenerator
         | NewsSeedGenerator
         | Pipeline
+        | QuestionAndLabelGenerator
         | QuestionGenerator
         | QuestionPipeline
         | WebSearchLabeler
@@ -46,20 +48,23 @@ class CreateTransformJobRequest:
         from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
         from ..models.gdelt_seed_generator import GdeltSeedGenerator
         from ..models.news_seed_generator import NewsSeedGenerator
+        from ..models.pipeline import Pipeline
+        from ..models.question_and_label_generator import QuestionAndLabelGenerator
         from ..models.question_generator import QuestionGenerator
         from ..models.question_pipeline import QuestionPipeline
-        from ..models.web_search_labeler import WebSearchLabeler
 
         config: dict[str, Any]
-        if isinstance(self.config, NewsSeedGenerator):
+        if isinstance(self.config, ForwardLookingQuestionGenerator):
             config = self.config.to_dict()
         elif isinstance(self.config, GdeltSeedGenerator):
             config = self.config.to_dict()
+        elif isinstance(self.config, NewsSeedGenerator):
+            config = self.config.to_dict()
+        elif isinstance(self.config, Pipeline):
+            config = self.config.to_dict()
+        elif isinstance(self.config, QuestionAndLabelGenerator):
+            config = self.config.to_dict()
         elif isinstance(self.config, QuestionGenerator):
-            config = self.config.to_dict()
-        elif isinstance(self.config, ForwardLookingQuestionGenerator):
-            config = self.config.to_dict()
-        elif isinstance(self.config, WebSearchLabeler):
             config = self.config.to_dict()
         elif isinstance(self.config, QuestionPipeline):
             config = self.config.to_dict()
@@ -90,6 +95,7 @@ class CreateTransformJobRequest:
         from ..models.gdelt_seed_generator import GdeltSeedGenerator
         from ..models.news_seed_generator import NewsSeedGenerator
         from ..models.pipeline import Pipeline
+        from ..models.question_and_label_generator import QuestionAndLabelGenerator
         from ..models.question_generator import QuestionGenerator
         from ..models.question_pipeline import QuestionPipeline
         from ..models.web_search_labeler import WebSearchLabeler
@@ -103,6 +109,7 @@ class CreateTransformJobRequest:
             | GdeltSeedGenerator
             | NewsSeedGenerator
             | Pipeline
+            | QuestionAndLabelGenerator
             | QuestionGenerator
             | QuestionPipeline
             | WebSearchLabeler
@@ -110,7 +117,7 @@ class CreateTransformJobRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_0 = NewsSeedGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_0 = ForwardLookingQuestionGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -126,7 +133,7 @@ class CreateTransformJobRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_2 = QuestionGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_2 = NewsSeedGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_2
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -134,7 +141,7 @@ class CreateTransformJobRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_3 = ForwardLookingQuestionGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_3 = Pipeline.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_3
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -142,7 +149,7 @@ class CreateTransformJobRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_4 = WebSearchLabeler.from_dict(data)
+                componentsschemas_create_transform_config_type_4 = QuestionAndLabelGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_4
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -150,16 +157,24 @@ class CreateTransformJobRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_5 = QuestionPipeline.from_dict(data)
+                componentsschemas_create_transform_config_type_5 = QuestionGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_5
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_create_transform_config_type_6 = QuestionPipeline.from_dict(data)
+
+                return componentsschemas_create_transform_config_type_6
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
             if not isinstance(data, dict):
                 raise TypeError()
-            componentsschemas_create_transform_config_type_6 = Pipeline.from_dict(data)
+            componentsschemas_create_transform_config_type_7 = WebSearchLabeler.from_dict(data)
 
-            return componentsschemas_create_transform_config_type_6
+            return componentsschemas_create_transform_config_type_7
 
         config = _parse_config(d.pop("config"))
 

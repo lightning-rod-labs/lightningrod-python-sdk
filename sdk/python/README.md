@@ -139,3 +139,5 @@ rm -rf dist/*
 python -m build
 python -m twine upload dist/*
 ```
+
+To re-generate the python client make sure the development server is running and run python scripts/generate.py

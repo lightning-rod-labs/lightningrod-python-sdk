@@ -24,14 +24,18 @@ class ForwardLookingQuestionGenerator:
             'FORWARD_LOOKING_QUESTION_GENERATOR'.
         examples (list[str] | Unset): Example questions to guide generation
         bad_examples (list[str] | Unset): Examples of questions to avoid
-        quality_filter (FilterCriteria | None | Unset): Optional quality filter to apply after question generation
+        quality_filter (FilterCriteria | list[FilterCriteria] | None | Unset): Optional quality filter to apply after
+            question generation
+        include_default_filter (bool | Unset): Whether to include the default filter for generated questions Default:
+            True.
     """
 
     instructions: str
     config_type: Literal["FORWARD_LOOKING_QUESTION_GENERATOR"] | Unset = "FORWARD_LOOKING_QUESTION_GENERATOR"
     examples: list[str] | Unset = UNSET
     bad_examples: list[str] | Unset = UNSET
-    quality_filter: FilterCriteria | None | Unset = UNSET
+    quality_filter: FilterCriteria | list[FilterCriteria] | None | Unset = UNSET
+    include_default_filter: bool | Unset = True
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -49,13 +53,21 @@ class ForwardLookingQuestionGenerator:
         if not isinstance(self.bad_examples, Unset):
             bad_examples = self.bad_examples
 
-        quality_filter: dict[str, Any] | None | Unset
+        quality_filter: dict[str, Any] | list[dict[str, Any]] | None | Unset
         if isinstance(self.quality_filter, Unset):
             quality_filter = UNSET
         elif isinstance(self.quality_filter, FilterCriteria):
             quality_filter = self.quality_filter.to_dict()
+        elif isinstance(self.quality_filter, list):
+            quality_filter = []
+            for quality_filter_type_1_item_data in self.quality_filter:
+                quality_filter_type_1_item = quality_filter_type_1_item_data.to_dict()
+                quality_filter.append(quality_filter_type_1_item)
+
         else:
             quality_filter = self.quality_filter
+
+        include_default_filter = self.include_default_filter
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -72,6 +84,8 @@ class ForwardLookingQuestionGenerator:
             field_dict["bad_examples"] = bad_examples
         if quality_filter is not UNSET:
             field_dict["quality_filter"] = quality_filter
+        if include_default_filter is not UNSET:
+            field_dict["include_default_filter"] = include_default_filter
 
         return field_dict
 
@@ -90,7 +104,7 @@ class ForwardLookingQuestionGenerator:
 
         bad_examples = cast(list[str], d.pop("bad_examples", UNSET))
 
-        def _parse_quality_filter(data: object) -> FilterCriteria | None | Unset:
+        def _parse_quality_filter(data: object) -> FilterCriteria | list[FilterCriteria] | None | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -103,9 +117,24 @@ class ForwardLookingQuestionGenerator:
                 return quality_filter_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(FilterCriteria | None | Unset, data)
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                quality_filter_type_1 = []
+                _quality_filter_type_1 = data
+                for quality_filter_type_1_item_data in _quality_filter_type_1:
+                    quality_filter_type_1_item = FilterCriteria.from_dict(quality_filter_type_1_item_data)
+
+                    quality_filter_type_1.append(quality_filter_type_1_item)
+
+                return quality_filter_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(FilterCriteria | list[FilterCriteria] | None | Unset, data)
 
         quality_filter = _parse_quality_filter(d.pop("quality_filter", UNSET))
+
+        include_default_filter = d.pop("include_default_filter", UNSET)
 
         forward_looking_question_generator = cls(
             instructions=instructions,
@@ -113,6 +142,7 @@ class ForwardLookingQuestionGenerator:
             examples=examples,
             bad_examples=bad_examples,
             quality_filter=quality_filter,
+            include_default_filter=include_default_filter,
         )
 
         forward_looking_question_generator.additional_properties = d

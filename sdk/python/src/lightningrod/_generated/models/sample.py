@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Any, TypeVar, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..types import UNSET, Unset
+
 if TYPE_CHECKING:
     from ..models.label import Label
     from ..models.question import Question
@@ -20,18 +22,18 @@ T = TypeVar("T", bound="Sample")
 class Sample:
     """
     Attributes:
-        sample_id (str):
-        seed (None | Seed):
-        question (None | Question):
-        label (Label | None):
-        meta (SampleMeta):
+        seed (None | Seed | Unset):
+        question (None | Question | Unset):
+        label (Label | None | Unset):
+        prompt (None | str | Unset):
+        meta (SampleMeta | Unset):
     """
 
-    sample_id: str
-    seed: None | Seed
-    question: None | Question
-    label: Label | None
-    meta: SampleMeta
+    seed: None | Seed | Unset = UNSET
+    question: None | Question | Unset = UNSET
+    label: Label | None | Unset = UNSET
+    prompt: None | str | Unset = UNSET
+    meta: SampleMeta | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -39,39 +41,53 @@ class Sample:
         from ..models.question import Question
         from ..models.seed import Seed
 
-        sample_id = self.sample_id
-
-        seed: dict[str, Any] | None
-        if isinstance(self.seed, Seed):
+        seed: dict[str, Any] | None | Unset
+        if isinstance(self.seed, Unset):
+            seed = UNSET
+        elif isinstance(self.seed, Seed):
             seed = self.seed.to_dict()
         else:
             seed = self.seed
 
-        question: dict[str, Any] | None
-        if isinstance(self.question, Question):
+        question: dict[str, Any] | None | Unset
+        if isinstance(self.question, Unset):
+            question = UNSET
+        elif isinstance(self.question, Question):
             question = self.question.to_dict()
         else:
             question = self.question
 
-        label: dict[str, Any] | None
-        if isinstance(self.label, Label):
+        label: dict[str, Any] | None | Unset
+        if isinstance(self.label, Unset):
+            label = UNSET
+        elif isinstance(self.label, Label):
             label = self.label.to_dict()
         else:
             label = self.label
 
-        meta = self.meta.to_dict()
+        prompt: None | str | Unset
+        if isinstance(self.prompt, Unset):
+            prompt = UNSET
+        else:
+            prompt = self.prompt
+
+        meta: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.meta, Unset):
+            meta = self.meta.to_dict()
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "sample_id": sample_id,
-                "seed": seed,
-                "question": question,
-                "label": label,
-                "meta": meta,
-            }
-        )
+        field_dict.update({})
+        if seed is not UNSET:
+            field_dict["seed"] = seed
+        if question is not UNSET:
+            field_dict["question"] = question
+        if label is not UNSET:
+            field_dict["label"] = label
+        if prompt is not UNSET:
+            field_dict["prompt"] = prompt
+        if meta is not UNSET:
+            field_dict["meta"] = meta
 
         return field_dict
 
@@ -83,10 +99,11 @@ class Sample:
         from ..models.seed import Seed
 
         d = dict(src_dict)
-        sample_id = d.pop("sample_id")
 
-        def _parse_seed(data: object) -> None | Seed:
+        def _parse_seed(data: object) -> None | Seed | Unset:
             if data is None:
+                return data
+            if isinstance(data, Unset):
                 return data
             try:
                 if not isinstance(data, dict):
@@ -96,12 +113,14 @@ class Sample:
                 return seed_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(None | Seed, data)
+            return cast(None | Seed | Unset, data)
 
-        seed = _parse_seed(d.pop("seed"))
+        seed = _parse_seed(d.pop("seed", UNSET))
 
-        def _parse_question(data: object) -> None | Question:
+        def _parse_question(data: object) -> None | Question | Unset:
             if data is None:
+                return data
+            if isinstance(data, Unset):
                 return data
             try:
                 if not isinstance(data, dict):
@@ -111,12 +130,14 @@ class Sample:
                 return question_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(None | Question, data)
+            return cast(None | Question | Unset, data)
 
-        question = _parse_question(d.pop("question"))
+        question = _parse_question(d.pop("question", UNSET))
 
-        def _parse_label(data: object) -> Label | None:
+        def _parse_label(data: object) -> Label | None | Unset:
             if data is None:
+                return data
+            if isinstance(data, Unset):
                 return data
             try:
                 if not isinstance(data, dict):
@@ -126,17 +147,31 @@ class Sample:
                 return label_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(Label | None, data)
+            return cast(Label | None | Unset, data)
 
-        label = _parse_label(d.pop("label"))
+        label = _parse_label(d.pop("label", UNSET))
 
-        meta = SampleMeta.from_dict(d.pop("meta"))
+        def _parse_prompt(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        prompt = _parse_prompt(d.pop("prompt", UNSET))
+
+        _meta = d.pop("meta", UNSET)
+        meta: SampleMeta | Unset
+        if isinstance(_meta, Unset):
+            meta = UNSET
+        else:
+            meta = SampleMeta.from_dict(_meta)
 
         sample = cls(
-            sample_id=sample_id,
             seed=seed,
             question=question,
             label=label,
+            prompt=prompt,
             meta=meta,
         )
 
