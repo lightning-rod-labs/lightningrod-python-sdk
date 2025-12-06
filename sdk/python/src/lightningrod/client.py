@@ -6,6 +6,7 @@ from typing import List, Optional
 import attrs
 import httpx
 import pyarrow as pa
+import pyarrow.csv as pa_csv
 import pyarrow.parquet as pq
 
 from lightningrod._generated.client import AuthenticatedClient
@@ -36,37 +37,22 @@ from lightningrod.dataset import Dataset
 TransformConfig = NewsSeedGenerator | Pipeline | QuestionGenerator | QuestionPipeline | WebSearchLabeler
 
 
-class LightningRodClient:
+class Datasets:
     """
-    Python client for the Lightning Rod API.
+    Dataset operations for Lightning Rod.
     
-    This client provides access to Lightning Rod's AI-powered forecasting
-    dataset generation platform.
-    
-    Args:
-        api_key: Your Lightning Rod API key
-        base_url: Base URL for the API (defaults to production)
+    Access via client.datasets property.
     
     Example:
         >>> client = LightningRodClient(api_key="your-api-key")
-        >>> dataset = client.get_dataset("dataset-123")
+        >>> dataset = client.datasets.get("dataset-123")
+        >>> new_dataset = client.datasets.from_csv("data.csv")
     """
     
-    def __init__(
-        self,
-        api_key: str,
-        base_url: str = "https://api.lightningrod.ai/api/public/v1"
-    ):
-        self.api_key: str = api_key
-        self.base_url: str = base_url.rstrip("/")
-        self._generated_client: AuthenticatedClient = AuthenticatedClient(
-            base_url=self.base_url,
-            token=api_key,
-            prefix="Bearer",
-            auth_header_name="Authorization",
-        )
+    def __init__(self, client: "LightningRodClient"):
+        self._client = client
     
-    def get_dataset(self, dataset_id: str) -> Dataset:
+    def get(self, dataset_id: str) -> Dataset:
         """
         Get a dataset by its ID.
         
@@ -81,12 +67,12 @@ class LightningRodClient:
         
         Example:
             >>> client = LightningRodClient(api_key="your-api-key")
-            >>> dataset = client.get_dataset("dataset-123")
+            >>> dataset = client.datasets.get("dataset-123")
             >>> table = dataset.to_arrow()
         """
         dataset_metadata: DatasetMetadata | HTTPValidationError | None = get_dataset_datasets_dataset_id_get.sync(
             dataset_id=dataset_id,
-            client=self._generated_client,
+            client=self._client._generated_client,
         )
         
         if isinstance(dataset_metadata, HTTPValidationError):
@@ -101,10 +87,10 @@ class LightningRodClient:
             id=dataset_metadata.id,
             num_rows=dataset_metadata.num_rows,
             schema=schema,
-            client=self
+            client=self._client
         )
     
-    def create_dataset(self, table: pa.Table) -> Dataset:
+    def from_pyarrow(self, table: pa.Table) -> Dataset:
         """
         Create a dataset by uploading a PyArrow Table.
         
@@ -127,10 +113,10 @@ class LightningRodClient:
             >>> import pyarrow as pa
             >>> client = LightningRodClient(api_key="your-api-key")
             >>> table = pa.table({"col1": [1, 2, 3], "col2": ["a", "b", "c"]})
-            >>> dataset = client.create_dataset(table)
+            >>> dataset = client.datasets.from_pyarrow(table)
             >>> print(f"Created dataset: {dataset.id}")
         """
-        http_client: httpx.Client = self._generated_client.get_httpx_client()
+        http_client: httpx.Client = self._client._generated_client.get_httpx_client()
         
         upload_url_response: httpx.Response = http_client.post("/datasets/upload-url")
         upload_url_response.raise_for_status()
@@ -163,10 +149,10 @@ class LightningRodClient:
             id=dataset_data["id"],
             num_rows=dataset_data["num_rows"],
             schema=schema,
-            client=self
+            client=self._client
         )
     
-    def create_dataset_from_samples(self, samples: List[Sample]) -> Dataset:
+    def from_samples(self, samples: List[Sample]) -> Dataset:
         """
         Create a dataset from a list of Sample objects.
         
@@ -188,10 +174,102 @@ class LightningRodClient:
             >>> from lightningrod._generated.models import Sample, Seed, Question
             >>> client = LightningRodClient(api_key="your-api-key")
             >>> samples = [Sample(sample_id="1", seed=Seed(seed_text="text"), ...)]
-            >>> dataset = client.create_dataset_from_samples(samples)
+            >>> dataset = client.datasets.from_samples(samples)
         """
         table: pa.Table = self._samples_to_table(samples)
-        return self.create_dataset(table)
+        return self.from_pyarrow(table)
+    
+    def from_csv(self, path: str) -> Dataset:
+        """
+        Create a dataset from a CSV file.
+        
+        Args:
+            path: Path to the CSV file
+        
+        Returns:
+            Dataset instance for the created dataset
+        
+        Raises:
+            Exception: If the file cannot be read or upload fails
+        
+        Example:
+            >>> client = LightningRodClient(api_key="your-api-key")
+            >>> dataset = client.datasets.from_csv("data.csv")
+            >>> print(f"Created dataset: {dataset.id}")
+        """
+        table: pa.Table = pa_csv.read_csv(path)
+        return self.from_pyarrow(table)
+    
+    def from_pandas(self, df: "pandas.DataFrame") -> Dataset:
+        """
+        Create a dataset from a Pandas DataFrame.
+        
+        Args:
+            df: Pandas DataFrame to upload
+        
+        Returns:
+            Dataset instance for the created dataset
+        
+        Raises:
+            Exception: If the conversion or upload fails
+        
+        Example:
+            >>> import pandas as pd
+            >>> client = LightningRodClient(api_key="your-api-key")
+            >>> df = pd.DataFrame({"col1": [1, 2, 3], "col2": ["a", "b", "c"]})
+            >>> dataset = client.datasets.from_pandas(df)
+            >>> print(f"Created dataset: {dataset.id}")
+        """
+        table: pa.Table = pa.Table.from_pandas(df)
+        return self.from_pyarrow(table)
+    
+    def from_lists(
+        self,
+        seeds: List[Seed],
+        questions: List[Question],
+        labels: List[Label]
+    ) -> Dataset:
+        """
+        Create a dataset from parallel lists of Seeds, Questions, and Labels.
+        
+        All lists must be the same length. Each index represents one sample.
+        
+        Args:
+            seeds: List of Seed objects
+            questions: List of Question objects
+            labels: List of Label objects
+        
+        Returns:
+            Dataset instance for the created dataset
+        
+        Raises:
+            ValueError: If the lists have different lengths
+            Exception: If the upload or dataset creation fails
+        
+        Example:
+            >>> from lightningrod._generated.models import Seed, Question, Label
+            >>> client = LightningRodClient(api_key="your-api-key")
+            >>> seeds = [Seed(seed_text="news article 1"), Seed(seed_text="news article 2")]
+            >>> questions = [Question(question_text="Q1?"), Question(question_text="Q2?")]
+            >>> labels = [Label(label=True), Label(label=False)]
+            >>> dataset = client.datasets.from_lists(seeds, questions, labels)
+        """
+        if not (len(seeds) == len(questions) == len(labels)):
+            raise ValueError(
+                f"All lists must have the same length. "
+                f"Got seeds={len(seeds)}, questions={len(questions)}, labels={len(labels)}"
+            )
+        
+        samples: List[Sample] = [
+            Sample(
+                sample_id=str(i),
+                seed=seeds[i],
+                question=questions[i],
+                label=labels[i],
+            )
+            for i in range(len(seeds))
+        ]
+        return self.from_samples(samples)
     
     def _samples_to_table(self, samples: List[Sample]) -> pa.Table:
         """Convert a list of Sample objects to a PyArrow Table."""
@@ -247,6 +325,43 @@ class LightningRodClient:
                 column_data[col].append(row[col])
         
         return pa.table(column_data)
+
+
+class LightningRodClient:
+    """
+    Python client for the Lightning Rod API.
+    
+    This client provides access to Lightning Rod's AI-powered forecasting
+    dataset generation platform.
+    
+    Args:
+        api_key: Your Lightning Rod API key
+        base_url: Base URL for the API (defaults to production)
+    
+    Example:
+        >>> client = LightningRodClient(api_key="your-api-key")
+        >>> dataset = client.datasets.get("dataset-123")
+    """
+    
+    def __init__(
+        self,
+        api_key: str,
+        base_url: str = "https://api.lightningrod.ai/api/public/v1"
+    ):
+        self.api_key: str = api_key
+        self.base_url: str = base_url.rstrip("/")
+        self._generated_client: AuthenticatedClient = AuthenticatedClient(
+            base_url=self.base_url,
+            token=api_key,
+            prefix="Bearer",
+            auth_header_name="Authorization",
+        )
+        self._datasets: Datasets = Datasets(self)
+    
+    @property
+    def datasets(self) -> Datasets:
+        """Access dataset operations."""
+        return self._datasets
     
     def run(
         self,
@@ -293,7 +408,7 @@ class LightningRodClient:
             if job.output_dataset_id is None:
                 raise Exception(f"Transform job {job.id} completed but has no output dataset")
             
-            return self.get_dataset(job.output_dataset_id)
+            return self.datasets.get(job.output_dataset_id)
         
         raise Exception(f"Unexpected job status: {job.status}")
     

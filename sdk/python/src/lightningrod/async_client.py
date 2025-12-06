@@ -12,38 +12,29 @@ from lightningrod._generated.models import (
     WebSearchLabeler,
 )
 from lightningrod._generated.models.sample import Sample
+from lightningrod._generated.models.seed import Seed
+from lightningrod._generated.models.question import Question
+from lightningrod._generated.models.label import Label
 from lightningrod.client import LightningRodClient, TransformConfig
 from lightningrod.async_dataset import AsyncDataset
 
 
-class AsyncLightningRodClient:
+class AsyncDatasets:
     """
-    Async Python client for the Lightning Rod API.
+    Async dataset operations for Lightning Rod.
     
-    This client provides an async interface to Lightning Rod's AI-powered forecasting
-    dataset generation platform by wrapping the synchronous client and running
-    operations in a thread pool.
-    
-    Args:
-        api_key: Your Lightning Rod API key
-        base_url: Base URL for the API (defaults to production)
+    Access via client.datasets property.
     
     Example:
         >>> client = AsyncLightningRodClient(api_key="your-api-key")
-        >>> dataset = await client.get_dataset("dataset-123")
+        >>> dataset = await client.datasets.get("dataset-123")
+        >>> new_dataset = await client.datasets.from_csv("data.csv")
     """
     
-    def __init__(
-        self,
-        api_key: str,
-        base_url: str = "https://api.lightningrod.ai/api/public/v1"
-    ):
-        self._sync_client: LightningRodClient = LightningRodClient(
-            api_key=api_key,
-            base_url=base_url
-        )
+    def __init__(self, client: "AsyncLightningRodClient"):
+        self._client = client
     
-    async def get_dataset(self, dataset_id: str) -> AsyncDataset:
+    async def get(self, dataset_id: str) -> AsyncDataset:
         """
         Get a dataset by its ID.
         
@@ -58,16 +49,16 @@ class AsyncLightningRodClient:
         
         Example:
             >>> client = AsyncLightningRodClient(api_key="your-api-key")
-            >>> dataset = await client.get_dataset("dataset-123")
+            >>> dataset = await client.datasets.get("dataset-123")
             >>> table = await dataset.to_arrow()
         """
         sync_dataset = await asyncio.to_thread(
-            self._sync_client.get_dataset,
+            self._client._sync_client.datasets.get,
             dataset_id
         )
         return AsyncDataset(sync_dataset)
     
-    async def create_dataset(self, table: pa.Table) -> AsyncDataset:
+    async def from_pyarrow(self, table: pa.Table) -> AsyncDataset:
         """
         Create a dataset by uploading a PyArrow Table.
         
@@ -92,16 +83,16 @@ class AsyncLightningRodClient:
             >>> import pyarrow as pa
             >>> client = AsyncLightningRodClient(api_key="your-api-key")
             >>> table = pa.table({"col1": [1, 2, 3], "col2": ["a", "b", "c"]})
-            >>> dataset = await client.create_dataset(table)
+            >>> dataset = await client.datasets.from_pyarrow(table)
             >>> print(f"Created dataset: {dataset.id}")
         """
         sync_dataset = await asyncio.to_thread(
-            self._sync_client.create_dataset,
+            self._client._sync_client.datasets.from_pyarrow,
             table
         )
         return AsyncDataset(sync_dataset)
     
-    async def create_dataset_from_samples(self, samples: List[Sample]) -> AsyncDataset:
+    async def from_samples(self, samples: List[Sample]) -> AsyncDataset:
         """
         Create a dataset from a list of Sample objects.
         
@@ -125,13 +116,136 @@ class AsyncLightningRodClient:
             >>> from lightningrod._generated.models import Sample, Seed, Question
             >>> client = AsyncLightningRodClient(api_key="your-api-key")
             >>> samples = [Sample(sample_id="1", seed=Seed(seed_text="text"), ...)]
-            >>> dataset = await client.create_dataset_from_samples(samples)
+            >>> dataset = await client.datasets.from_samples(samples)
         """
         sync_dataset = await asyncio.to_thread(
-            self._sync_client.create_dataset_from_samples,
+            self._client._sync_client.datasets.from_samples,
             samples
         )
         return AsyncDataset(sync_dataset)
+    
+    async def from_csv(self, path: str) -> AsyncDataset:
+        """
+        Create a dataset from a CSV file.
+        
+        Args:
+            path: Path to the CSV file
+        
+        Returns:
+            AsyncDataset instance for the created dataset
+        
+        Raises:
+            Exception: If the file cannot be read or upload fails
+        
+        Example:
+            >>> client = AsyncLightningRodClient(api_key="your-api-key")
+            >>> dataset = await client.datasets.from_csv("data.csv")
+            >>> print(f"Created dataset: {dataset.id}")
+        """
+        sync_dataset = await asyncio.to_thread(
+            self._client._sync_client.datasets.from_csv,
+            path
+        )
+        return AsyncDataset(sync_dataset)
+    
+    async def from_pandas(self, df: "pandas.DataFrame") -> AsyncDataset:
+        """
+        Create a dataset from a Pandas DataFrame.
+        
+        Args:
+            df: Pandas DataFrame to upload
+        
+        Returns:
+            AsyncDataset instance for the created dataset
+        
+        Raises:
+            Exception: If the conversion or upload fails
+        
+        Example:
+            >>> import pandas as pd
+            >>> client = AsyncLightningRodClient(api_key="your-api-key")
+            >>> df = pd.DataFrame({"col1": [1, 2, 3], "col2": ["a", "b", "c"]})
+            >>> dataset = await client.datasets.from_pandas(df)
+            >>> print(f"Created dataset: {dataset.id}")
+        """
+        sync_dataset = await asyncio.to_thread(
+            self._client._sync_client.datasets.from_pandas,
+            df
+        )
+        return AsyncDataset(sync_dataset)
+    
+    async def from_lists(
+        self,
+        seeds: List[Seed],
+        questions: List[Question],
+        labels: List[Label]
+    ) -> AsyncDataset:
+        """
+        Create a dataset from parallel lists of Seeds, Questions, and Labels.
+        
+        All lists must be the same length. Each index represents one sample.
+        
+        Args:
+            seeds: List of Seed objects
+            questions: List of Question objects
+            labels: List of Label objects
+        
+        Returns:
+            AsyncDataset instance for the created dataset
+        
+        Raises:
+            ValueError: If the lists have different lengths
+            Exception: If the upload or dataset creation fails
+        
+        Example:
+            >>> from lightningrod._generated.models import Seed, Question, Label
+            >>> client = AsyncLightningRodClient(api_key="your-api-key")
+            >>> seeds = [Seed(seed_text="news article 1"), Seed(seed_text="news article 2")]
+            >>> questions = [Question(question_text="Q1?"), Question(question_text="Q2?")]
+            >>> labels = [Label(label=True), Label(label=False)]
+            >>> dataset = await client.datasets.from_lists(seeds, questions, labels)
+        """
+        sync_dataset = await asyncio.to_thread(
+            self._client._sync_client.datasets.from_lists,
+            seeds,
+            questions,
+            labels
+        )
+        return AsyncDataset(sync_dataset)
+
+
+class AsyncLightningRodClient:
+    """
+    Async Python client for the Lightning Rod API.
+    
+    This client provides an async interface to Lightning Rod's AI-powered forecasting
+    dataset generation platform by wrapping the synchronous client and running
+    operations in a thread pool.
+    
+    Args:
+        api_key: Your Lightning Rod API key
+        base_url: Base URL for the API (defaults to production)
+    
+    Example:
+        >>> client = AsyncLightningRodClient(api_key="your-api-key")
+        >>> dataset = await client.datasets.get("dataset-123")
+    """
+    
+    def __init__(
+        self,
+        api_key: str,
+        base_url: str = "https://api.lightningrod.ai/api/public/v1"
+    ):
+        self._sync_client: LightningRodClient = LightningRodClient(
+            api_key=api_key,
+            base_url=base_url
+        )
+        self._datasets: AsyncDatasets = AsyncDatasets(self)
+    
+    @property
+    def datasets(self) -> AsyncDatasets:
+        """Access dataset operations."""
+        return self._datasets
     
     async def run(
         self,
@@ -206,4 +320,3 @@ class AsyncLightningRodClient:
             config,
             sync_dataset
         )
-
