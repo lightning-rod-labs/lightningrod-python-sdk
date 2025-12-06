@@ -374,22 +374,10 @@
             "$ref": "#/components/schemas/AnswerTypeEnum",
             "description": "The type of answer expected for this question"
           },
-          "instruction": {
+          "answer_format_instruction": {
             "type": "string",
-            "title": "Instruction",
-            "description": "Instructions describing how the answer should be given"
-          },
-          "format_instruction": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Format Instruction",
-            "description": "Custom format instructions for parsing the answer. If not set, uses default based on answer_type."
+            "title": "Answer Format Instruction",
+            "description": "Instructions describing how the answer should be formatted and given"
           },
           "labeler_instruction": {
             "anyOf": [
@@ -403,7 +391,7 @@
             "title": "Labeler Instruction",
             "description": "Custom instructions for the labeler. If not set, uses default based on answer_type."
           },
-          "question_generation_guidance": {
+          "question_generation_instruction": {
             "anyOf": [
               {
                 "type": "string"
@@ -412,26 +400,14 @@
                 "type": "null"
               }
             ],
-            "title": "Question Generation Guidance",
-            "description": "Custom guidance for generating questions of this type. If not set, uses default based on answer_type."
-          },
-          "question_field_description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Question Field Description",
-            "description": "Custom description for the question_text field in structured output. If not set, uses default based on answer_type."
+            "title": "Question Generation Instruction",
+            "description": "Custom instructions for generating questions of this type. If not set, uses default based on answer_type."
           }
         },
         "type": "object",
         "required": [
           "answer_type",
-          "instruction"
+          "answer_format_instruction"
         ],
         "title": "AnswerType"
       },
@@ -1053,6 +1029,30 @@
         ],
         "title": "Label"
       },
+      "NewsContext": {
+        "properties": {
+          "context_type": {
+            "type": "string",
+            "const": "NEWS_CONTEXT",
+            "title": "Context Type",
+            "default": "NEWS_CONTEXT"
+          },
+          "rendered_context": {
+            "type": "string",
+            "title": "Rendered Context"
+          },
+          "search_query": {
+            "type": "string",
+            "title": "Search Query"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rendered_context",
+          "search_query"
+        ],
+        "title": "NewsContext"
+      },
       "NewsSeedGenerator": {
         "properties": {
           "config_type": {
@@ -1437,6 +1437,30 @@
         "type": "object",
         "title": "QuestionRenderer"
       },
+      "RAGContext": {
+        "properties": {
+          "context_type": {
+            "type": "string",
+            "const": "RAG_CONTEXT",
+            "title": "Context Type",
+            "default": "RAG_CONTEXT"
+          },
+          "rendered_context": {
+            "type": "string",
+            "title": "Rendered Context"
+          },
+          "document_id": {
+            "type": "string",
+            "title": "Document Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rendered_context",
+          "document_id"
+        ],
+        "title": "RAGContext"
+      },
       "ResponseMessage": {
         "properties": {
           "role": {
@@ -1499,6 +1523,34 @@
               }
             ],
             "title": "Prompt"
+          },
+          "context": {
+            "anyOf": [
+              {
+                "items": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/NewsContext"
+                    },
+                    {
+                      "$ref": "#/components/schemas/RAGContext"
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "context_type",
+                    "mapping": {
+                      "NEWS_CONTEXT": "#/components/schemas/NewsContext",
+                      "RAG_CONTEXT": "#/components/schemas/RAGContext"
+                    }
+                  }
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context"
           },
           "meta": {
             "additionalProperties": true,

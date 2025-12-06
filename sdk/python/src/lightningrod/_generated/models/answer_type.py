@@ -17,35 +17,23 @@ class AnswerType:
     """
     Attributes:
         answer_type (AnswerTypeEnum):
-        instruction (str): Instructions describing how the answer should be given
-        format_instruction (None | str | Unset): Custom format instructions for parsing the answer. If not set, uses
-            default based on answer_type.
+        answer_format_instruction (str): Instructions describing how the answer should be formatted and given
         labeler_instruction (None | str | Unset): Custom instructions for the labeler. If not set, uses default based on
             answer_type.
-        question_generation_guidance (None | str | Unset): Custom guidance for generating questions of this type. If not
-            set, uses default based on answer_type.
-        question_field_description (None | str | Unset): Custom description for the question_text field in structured
-            output. If not set, uses default based on answer_type.
+        question_generation_instruction (None | str | Unset): Custom instructions for generating questions of this type.
+            If not set, uses default based on answer_type.
     """
 
     answer_type: AnswerTypeEnum
-    instruction: str
-    format_instruction: None | str | Unset = UNSET
+    answer_format_instruction: str
     labeler_instruction: None | str | Unset = UNSET
-    question_generation_guidance: None | str | Unset = UNSET
-    question_field_description: None | str | Unset = UNSET
+    question_generation_instruction: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         answer_type = self.answer_type.value
 
-        instruction = self.instruction
-
-        format_instruction: None | str | Unset
-        if isinstance(self.format_instruction, Unset):
-            format_instruction = UNSET
-        else:
-            format_instruction = self.format_instruction
+        answer_format_instruction = self.answer_format_instruction
 
         labeler_instruction: None | str | Unset
         if isinstance(self.labeler_instruction, Unset):
@@ -53,34 +41,24 @@ class AnswerType:
         else:
             labeler_instruction = self.labeler_instruction
 
-        question_generation_guidance: None | str | Unset
-        if isinstance(self.question_generation_guidance, Unset):
-            question_generation_guidance = UNSET
+        question_generation_instruction: None | str | Unset
+        if isinstance(self.question_generation_instruction, Unset):
+            question_generation_instruction = UNSET
         else:
-            question_generation_guidance = self.question_generation_guidance
-
-        question_field_description: None | str | Unset
-        if isinstance(self.question_field_description, Unset):
-            question_field_description = UNSET
-        else:
-            question_field_description = self.question_field_description
+            question_generation_instruction = self.question_generation_instruction
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
                 "answer_type": answer_type,
-                "instruction": instruction,
+                "answer_format_instruction": answer_format_instruction,
             }
         )
-        if format_instruction is not UNSET:
-            field_dict["format_instruction"] = format_instruction
         if labeler_instruction is not UNSET:
             field_dict["labeler_instruction"] = labeler_instruction
-        if question_generation_guidance is not UNSET:
-            field_dict["question_generation_guidance"] = question_generation_guidance
-        if question_field_description is not UNSET:
-            field_dict["question_field_description"] = question_field_description
+        if question_generation_instruction is not UNSET:
+            field_dict["question_generation_instruction"] = question_generation_instruction
 
         return field_dict
 
@@ -89,16 +67,7 @@ class AnswerType:
         d = dict(src_dict)
         answer_type = AnswerTypeEnum(d.pop("answer_type"))
 
-        instruction = d.pop("instruction")
-
-        def _parse_format_instruction(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        format_instruction = _parse_format_instruction(d.pop("format_instruction", UNSET))
+        answer_format_instruction = d.pop("answer_format_instruction")
 
         def _parse_labeler_instruction(data: object) -> None | str | Unset:
             if data is None:
@@ -109,31 +78,22 @@ class AnswerType:
 
         labeler_instruction = _parse_labeler_instruction(d.pop("labeler_instruction", UNSET))
 
-        def _parse_question_generation_guidance(data: object) -> None | str | Unset:
+        def _parse_question_generation_instruction(data: object) -> None | str | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
             return cast(None | str | Unset, data)
 
-        question_generation_guidance = _parse_question_generation_guidance(d.pop("question_generation_guidance", UNSET))
-
-        def _parse_question_field_description(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        question_field_description = _parse_question_field_description(d.pop("question_field_description", UNSET))
+        question_generation_instruction = _parse_question_generation_instruction(
+            d.pop("question_generation_instruction", UNSET)
+        )
 
         answer_type = cls(
             answer_type=answer_type,
-            instruction=instruction,
-            format_instruction=format_instruction,
+            answer_format_instruction=answer_format_instruction,
             labeler_instruction=labeler_instruction,
-            question_generation_guidance=question_generation_guidance,
-            question_field_description=question_field_description,
+            question_generation_instruction=question_generation_instruction,
         )
 
         answer_type.additional_properties = d

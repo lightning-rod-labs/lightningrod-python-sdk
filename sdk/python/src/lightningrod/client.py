@@ -26,7 +26,7 @@ from lightningrod._generated.models.sample import Sample
 from lightningrod._generated.models.seed import Seed
 from lightningrod._generated.models.question import Question
 from lightningrod._generated.models.label import Label
-from lightningrod._generated.types import UNSET
+from lightningrod._generated.types import UNSET, Unset
 from lightningrod._generated.api.datasets import get_dataset_datasets_dataset_id_get
 from lightningrod._generated.api.transform_jobs import (
     create_transform_job_transform_jobs_post,
@@ -262,7 +262,6 @@ class Datasets:
         
         samples: List[Sample] = [
             Sample(
-                sample_id=str(i),
                 seed=seeds[i],
                 question=questions[i],
                 label=labels[i],
@@ -273,6 +272,8 @@ class Datasets:
     
     def _samples_to_table(self, samples: List[Sample]) -> pa.Table:
         """Convert a list of Sample objects to a PyArrow Table."""
+        import json
+        
         if not samples:
             raise ValueError("Cannot create dataset from empty samples list")
         
@@ -287,27 +288,33 @@ class Datasets:
         all_columns: set[str] = set()
         
         for sample in samples:
-            row: dict = {"sample_id": sample.sample_id}
+            row: dict = {}
             
-            if sample.seed is not None:
+            if sample.seed is not None and sample.seed is not UNSET:
                 for field_name in seed_fields:
                     value = getattr(sample.seed, field_name)
                     if value is not UNSET:
                         row[field_name] = value
             
-            if sample.question is not None:
+            if sample.question is not None and sample.question is not UNSET:
                 for field_name in question_fields:
                     value = getattr(sample.question, field_name)
                     if value is not UNSET:
                         row[field_name] = value
             
-            if sample.label is not None:
+            if sample.label is not None and sample.label is not UNSET:
                 for field_name in label_fields:
                     value = getattr(sample.label, field_name)
                     if value is not UNSET:
                         row[field_name] = value
             
-            if sample.meta is not None:
+            if isinstance(sample.context, list):
+                row["context"] = json.dumps([ctx.to_dict() for ctx in sample.context])
+            
+            if isinstance(sample.prompt, str):
+                row["prompt"] = sample.prompt
+            
+            if not isinstance(sample.meta, Unset) and sample.meta is not None:
                 meta_dict: dict = sample.meta.to_dict()
                 row.update(meta_dict)
             

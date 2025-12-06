@@ -10,7 +10,9 @@ from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.label import Label
+    from ..models.news_context import NewsContext
     from ..models.question import Question
+    from ..models.rag_context import RAGContext
     from ..models.sample_meta import SampleMeta
     from ..models.seed import Seed
 
@@ -26,6 +28,7 @@ class Sample:
         question (None | Question | Unset):
         label (Label | None | Unset):
         prompt (None | str | Unset):
+        context (list[NewsContext | RAGContext] | None | Unset):
         meta (SampleMeta | Unset):
     """
 
@@ -33,11 +36,13 @@ class Sample:
     question: None | Question | Unset = UNSET
     label: Label | None | Unset = UNSET
     prompt: None | str | Unset = UNSET
+    context: list[NewsContext | RAGContext] | None | Unset = UNSET
     meta: SampleMeta | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.label import Label
+        from ..models.news_context import NewsContext
         from ..models.question import Question
         from ..models.seed import Seed
 
@@ -71,6 +76,23 @@ class Sample:
         else:
             prompt = self.prompt
 
+        context: list[dict[str, Any]] | None | Unset
+        if isinstance(self.context, Unset):
+            context = UNSET
+        elif isinstance(self.context, list):
+            context = []
+            for context_type_0_item_data in self.context:
+                context_type_0_item: dict[str, Any]
+                if isinstance(context_type_0_item_data, NewsContext):
+                    context_type_0_item = context_type_0_item_data.to_dict()
+                else:
+                    context_type_0_item = context_type_0_item_data.to_dict()
+
+                context.append(context_type_0_item)
+
+        else:
+            context = self.context
+
         meta: dict[str, Any] | Unset = UNSET
         if not isinstance(self.meta, Unset):
             meta = self.meta.to_dict()
@@ -86,6 +108,8 @@ class Sample:
             field_dict["label"] = label
         if prompt is not UNSET:
             field_dict["prompt"] = prompt
+        if context is not UNSET:
+            field_dict["context"] = context
         if meta is not UNSET:
             field_dict["meta"] = meta
 
@@ -94,7 +118,9 @@ class Sample:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.label import Label
+        from ..models.news_context import NewsContext
         from ..models.question import Question
+        from ..models.rag_context import RAGContext
         from ..models.sample_meta import SampleMeta
         from ..models.seed import Seed
 
@@ -160,6 +186,44 @@ class Sample:
 
         prompt = _parse_prompt(d.pop("prompt", UNSET))
 
+        def _parse_context(data: object) -> list[NewsContext | RAGContext] | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                context_type_0 = []
+                _context_type_0 = data
+                for context_type_0_item_data in _context_type_0:
+
+                    def _parse_context_type_0_item(data: object) -> NewsContext | RAGContext:
+                        try:
+                            if not isinstance(data, dict):
+                                raise TypeError()
+                            context_type_0_item_type_0 = NewsContext.from_dict(data)
+
+                            return context_type_0_item_type_0
+                        except (TypeError, ValueError, AttributeError, KeyError):
+                            pass
+                        if not isinstance(data, dict):
+                            raise TypeError()
+                        context_type_0_item_type_1 = RAGContext.from_dict(data)
+
+                        return context_type_0_item_type_1
+
+                    context_type_0_item = _parse_context_type_0_item(context_type_0_item_data)
+
+                    context_type_0.append(context_type_0_item)
+
+                return context_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(list[NewsContext | RAGContext] | None | Unset, data)
+
+        context = _parse_context(d.pop("context", UNSET))
+
         _meta = d.pop("meta", UNSET)
         meta: SampleMeta | Unset
         if isinstance(_meta, Unset):
@@ -172,6 +236,7 @@ class Sample:
             question=question,
             label=label,
             prompt=prompt,
+            context=context,
             meta=meta,
         )
 
