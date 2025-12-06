@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from ..models.answer_type import AnswerType
     from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
     from ..models.gdelt_seed_generator import GdeltSeedGenerator
+    from ..models.news_context_generator import NewsContextGenerator
     from ..models.news_seed_generator import NewsSeedGenerator
     from ..models.question_generator import QuestionGenerator
     from ..models.question_renderer import QuestionRenderer
@@ -30,6 +31,8 @@ class QuestionPipeline:
         labeler (WebSearchLabeler):
         config_type (Literal['QUESTION_PIPELINE'] | Unset): Type of transform configuration Default:
             'QUESTION_PIPELINE'.
+        context_generators (list[NewsContextGenerator] | None | Unset): Optional list of context generators to run
+            before rendering
         renderer (None | QuestionRenderer | Unset): Optional configuration for rendering the final prompt
         answer_type (AnswerType | None | Unset): The type of answer expected, flows to question generator and renderer
     """
@@ -38,6 +41,7 @@ class QuestionPipeline:
     question_generator: ForwardLookingQuestionGenerator | QuestionGenerator
     labeler: WebSearchLabeler
     config_type: Literal["QUESTION_PIPELINE"] | Unset = "QUESTION_PIPELINE"
+    context_generators: list[NewsContextGenerator] | None | Unset = UNSET
     renderer: None | QuestionRenderer | Unset = UNSET
     answer_type: AnswerType | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -63,6 +67,18 @@ class QuestionPipeline:
         labeler = self.labeler.to_dict()
 
         config_type = self.config_type
+
+        context_generators: list[dict[str, Any]] | None | Unset
+        if isinstance(self.context_generators, Unset):
+            context_generators = UNSET
+        elif isinstance(self.context_generators, list):
+            context_generators = []
+            for context_generators_type_0_item_data in self.context_generators:
+                context_generators_type_0_item = context_generators_type_0_item_data.to_dict()
+                context_generators.append(context_generators_type_0_item)
+
+        else:
+            context_generators = self.context_generators
 
         renderer: dict[str, Any] | None | Unset
         if isinstance(self.renderer, Unset):
@@ -91,6 +107,8 @@ class QuestionPipeline:
         )
         if config_type is not UNSET:
             field_dict["config_type"] = config_type
+        if context_generators is not UNSET:
+            field_dict["context_generators"] = context_generators
         if renderer is not UNSET:
             field_dict["renderer"] = renderer
         if answer_type is not UNSET:
@@ -103,6 +121,7 @@ class QuestionPipeline:
         from ..models.answer_type import AnswerType
         from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
         from ..models.gdelt_seed_generator import GdeltSeedGenerator
+        from ..models.news_context_generator import NewsContextGenerator
         from ..models.news_seed_generator import NewsSeedGenerator
         from ..models.question_generator import QuestionGenerator
         from ..models.question_renderer import QuestionRenderer
@@ -150,6 +169,28 @@ class QuestionPipeline:
         if config_type != "QUESTION_PIPELINE" and not isinstance(config_type, Unset):
             raise ValueError(f"config_type must match const 'QUESTION_PIPELINE', got '{config_type}'")
 
+        def _parse_context_generators(data: object) -> list[NewsContextGenerator] | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                context_generators_type_0 = []
+                _context_generators_type_0 = data
+                for context_generators_type_0_item_data in _context_generators_type_0:
+                    context_generators_type_0_item = NewsContextGenerator.from_dict(context_generators_type_0_item_data)
+
+                    context_generators_type_0.append(context_generators_type_0_item)
+
+                return context_generators_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(list[NewsContextGenerator] | None | Unset, data)
+
+        context_generators = _parse_context_generators(d.pop("context_generators", UNSET))
+
         def _parse_renderer(data: object) -> None | QuestionRenderer | Unset:
             if data is None:
                 return data
@@ -189,6 +230,7 @@ class QuestionPipeline:
             question_generator=question_generator,
             labeler=labeler,
             config_type=config_type,
+            context_generators=context_generators,
             renderer=renderer,
             answer_type=answer_type,
         )

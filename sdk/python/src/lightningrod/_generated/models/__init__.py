@@ -19,6 +19,7 @@ from .http_validation_error import HTTPValidationError
 from .label import Label
 from .label_passthrough_data import LabelPassthroughData
 from .news_context import NewsContext
+from .news_context_generator import NewsContextGenerator
 from .news_seed_generator import NewsSeedGenerator
 from .pipeline import Pipeline
 from .question import Question
@@ -62,6 +63,7 @@ __all__ = (
     "Label",
     "LabelPassthroughData",
     "NewsContext",
+    "NewsContextGenerator",
     "NewsSeedGenerator",
     "Pipeline",
     "Question",

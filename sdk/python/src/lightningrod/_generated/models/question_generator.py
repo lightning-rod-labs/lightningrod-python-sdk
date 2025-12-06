@@ -20,9 +20,10 @@ T = TypeVar("T", bound="QuestionGenerator")
 class QuestionGenerator:
     """
     Attributes:
-        instructions (str): Instructions for question generation
         config_type (Literal['QUESTION_GENERATOR'] | Unset): Type of transform configuration Default:
             'QUESTION_GENERATOR'.
+        instructions (None | str | Unset): Instructions for question generation. If not provided, uses sensible
+            defaults.
         examples (list[str] | Unset): Example questions to guide generation
         bad_examples (list[str] | Unset): Examples of questions to avoid
         filter_ (FilterCriteria | None | Unset): Optional filter to apply after question generation
@@ -30,8 +31,8 @@ class QuestionGenerator:
         answer_type (AnswerType | None | Unset): The type of answer expected for generated questions
     """
 
-    instructions: str
     config_type: Literal["QUESTION_GENERATOR"] | Unset = "QUESTION_GENERATOR"
+    instructions: None | str | Unset = UNSET
     examples: list[str] | Unset = UNSET
     bad_examples: list[str] | Unset = UNSET
     filter_: FilterCriteria | None | Unset = UNSET
@@ -43,9 +44,13 @@ class QuestionGenerator:
         from ..models.answer_type import AnswerType
         from ..models.filter_criteria import FilterCriteria
 
-        instructions = self.instructions
-
         config_type = self.config_type
+
+        instructions: None | str | Unset
+        if isinstance(self.instructions, Unset):
+            instructions = UNSET
+        else:
+            instructions = self.instructions
 
         examples: list[str] | Unset = UNSET
         if not isinstance(self.examples, Unset):
@@ -75,13 +80,11 @@ class QuestionGenerator:
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "instructions": instructions,
-            }
-        )
+        field_dict.update({})
         if config_type is not UNSET:
             field_dict["config_type"] = config_type
+        if instructions is not UNSET:
+            field_dict["instructions"] = instructions
         if examples is not UNSET:
             field_dict["examples"] = examples
         if bad_examples is not UNSET:
@@ -101,11 +104,18 @@ class QuestionGenerator:
         from ..models.filter_criteria import FilterCriteria
 
         d = dict(src_dict)
-        instructions = d.pop("instructions")
-
         config_type = cast(Literal["QUESTION_GENERATOR"] | Unset, d.pop("config_type", UNSET))
         if config_type != "QUESTION_GENERATOR" and not isinstance(config_type, Unset):
             raise ValueError(f"config_type must match const 'QUESTION_GENERATOR', got '{config_type}'")
+
+        def _parse_instructions(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        instructions = _parse_instructions(d.pop("instructions", UNSET))
 
         examples = cast(list[str], d.pop("examples", UNSET))
 
@@ -148,8 +158,8 @@ class QuestionGenerator:
         answer_type = _parse_answer_type(d.pop("answer_type", UNSET))
 
         question_generator = cls(
-            instructions=instructions,
             config_type=config_type,
+            instructions=instructions,
             examples=examples,
             bad_examples=bad_examples,
             filter_=filter_,

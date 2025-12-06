@@ -1070,6 +1070,43 @@
         ],
         "title": "NewsContext"
       },
+      "NewsContextGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "NEWS_CONTEXT_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "NEWS_CONTEXT_GENERATOR"
+          },
+          "search_query_generation_instructions": {
+            "type": "string",
+            "title": "Search Query Generation Instructions",
+            "description": "Instructions for LLM to generate search query from question",
+            "default": "You are helping generate a search query for Google News to find relevant information for answering a question.\n\nGiven the question, generate:\n1. A concise search query that will find relevant news articles\n2. A goal describing what information you're looking for\n\nThe search query should be specific enough to find relevant articles but not so narrow that it misses important context. Focus on the key entities, events, or topics mentioned in the question."
+          },
+          "num_articles": {
+            "type": "integer",
+            "title": "Num Articles",
+            "description": "Number of news articles to fetch per question",
+            "default": 5
+          },
+          "time_delta_days": {
+            "type": "integer",
+            "title": "Time Delta Days",
+            "description": "Number of days to look back for news articles",
+            "default": 30
+          },
+          "concurrency_limit": {
+            "type": "integer",
+            "title": "Concurrency Limit",
+            "description": "Maximum number of concurrent news search tasks",
+            "default": 10
+          }
+        },
+        "type": "object",
+        "title": "NewsContextGenerator"
+      },
       "NewsSeedGenerator": {
         "properties": {
           "config_type": {
@@ -1233,9 +1270,16 @@
             "default": "QUESTION_AND_LABEL_GENERATOR"
           },
           "instructions": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Instructions",
-            "description": "Instructions for question and label generation"
+            "description": "Instructions for question and label generation. If not provided, uses sensible defaults."
           },
           "examples": {
             "items": {
@@ -1272,9 +1316,6 @@
           }
         },
         "type": "object",
-        "required": [
-          "instructions"
-        ],
         "title": "QuestionAndLabelGenerator"
       },
       "QuestionGenerator": {
@@ -1287,9 +1328,16 @@
             "default": "QUESTION_GENERATOR"
           },
           "instructions": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Instructions",
-            "description": "Instructions for question generation"
+            "description": "Instructions for question generation. If not provided, uses sensible defaults."
           },
           "examples": {
             "items": {
@@ -1337,9 +1385,6 @@
           }
         },
         "type": "object",
-        "required": [
-          "instructions"
-        ],
         "title": "QuestionGenerator"
       },
       "QuestionPipeline": {
@@ -1392,6 +1437,21 @@
           "labeler": {
             "$ref": "#/components/schemas/WebSearchLabeler",
             "description": "Configuration for labeling"
+          },
+          "context_generators": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/NewsContextGenerator"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Generators",
+            "description": "Optional list of context generators to run before rendering"
           },
           "renderer": {
             "anyOf": [
