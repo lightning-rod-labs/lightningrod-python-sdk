@@ -20,7 +20,6 @@ from .label_passthrough_data import LabelPassthroughData
 from .news_context import NewsContext
 from .news_context_generator import NewsContextGenerator
 from .news_seed_generator import NewsSeedGenerator
-from .pipeline import Pipeline
 from .question import Question
 from .question_and_label_generator import QuestionAndLabelGenerator
 from .question_generator import QuestionGenerator
@@ -33,10 +32,8 @@ from .sample import Sample
 from .sample_meta import SampleMeta
 from .seed import Seed
 from .seed_passthrough_data import SeedPassthroughData
-from .transform_config import TransformConfig
 from .transform_job import TransformJob
 from .transform_job_status import TransformJobStatus
-from .transform_type import TransformType
 from .usage import Usage
 from .validate_sample_response import ValidateSampleResponse
 from .validation_error import ValidationError
@@ -63,7 +60,6 @@ __all__ = (
     "NewsContext",
     "NewsContextGenerator",
     "NewsSeedGenerator",
-    "Pipeline",
     "Question",
     "QuestionAndLabelGenerator",
     "QuestionGenerator",
@@ -76,10 +72,8 @@ __all__ = (
     "SampleMeta",
     "Seed",
     "SeedPassthroughData",
-    "TransformConfig",
     "TransformJob",
     "TransformJobStatus",
-    "TransformType",
     "Usage",
     "ValidateSampleResponse",
     "ValidationError",

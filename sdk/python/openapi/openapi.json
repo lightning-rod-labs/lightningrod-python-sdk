@@ -676,9 +676,6 @@
             "$ref": "#/components/schemas/NewsSeedGenerator"
           },
           {
-            "$ref": "#/components/schemas/Pipeline"
-          },
-          {
             "$ref": "#/components/schemas/QuestionAndLabelGenerator"
           },
           {
@@ -686,6 +683,9 @@
           },
           {
             "$ref": "#/components/schemas/QuestionPipeline"
+          },
+          {
+            "$ref": "#/components/schemas/QuestionRenderer"
           },
           {
             "$ref": "#/components/schemas/WebSearchLabeler"
@@ -697,10 +697,10 @@
             "FORWARD_LOOKING_QUESTION_GENERATOR": "#/components/schemas/ForwardLookingQuestionGenerator",
             "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
             "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator",
-            "PIPELINE": "#/components/schemas/Pipeline",
             "QUESTION_AND_LABEL_GENERATOR": "#/components/schemas/QuestionAndLabelGenerator",
             "QUESTION_GENERATOR": "#/components/schemas/QuestionGenerator",
             "QUESTION_PIPELINE": "#/components/schemas/QuestionPipeline",
+            "QUESTION_RENDERER": "#/components/schemas/QuestionRenderer",
             "WEB_SEARCH_LABELER": "#/components/schemas/WebSearchLabeler"
           }
         }
@@ -1195,30 +1195,6 @@
         ],
         "title": "NewsSeedGenerator"
       },
-      "Pipeline": {
-        "properties": {
-          "config_type": {
-            "type": "string",
-            "const": "PIPELINE",
-            "title": "Config Type",
-            "description": "Type of transform configuration",
-            "default": "PIPELINE"
-          },
-          "transform_configs": {
-            "items": {
-              "$ref": "#/components/schemas/TransformConfig"
-            },
-            "type": "array",
-            "title": "Transform Configs",
-            "description": "List of transform configs to execute in sequence"
-          }
-        },
-        "type": "object",
-        "required": [
-          "transform_configs"
-        ],
-        "title": "Pipeline"
-      },
       "Question": {
         "properties": {
           "passthrough_data": {
@@ -1698,18 +1674,6 @@
         ],
         "title": "Seed"
       },
-      "TransformConfig": {
-        "properties": {
-          "config_type": {
-            "$ref": "#/components/schemas/TransformType"
-          }
-        },
-        "type": "object",
-        "required": [
-          "config_type"
-        ],
-        "title": "TransformConfig"
-      },
       "TransformJob": {
         "properties": {
           "id": {
@@ -1791,27 +1755,6 @@
           "FAILED"
         ],
         "title": "TransformJobStatus"
-      },
-      "TransformType": {
-        "type": "string",
-        "enum": [
-          "NEWS_SEED_GENERATOR",
-          "GDELT_SEED_GENERATOR",
-          "QUESTION_GENERATOR",
-          "QUESTION_AND_LABEL_GENERATOR",
-          "QUESTION_FILTER",
-          "FORWARD_LOOKING_QUESTION_GENERATOR",
-          "QUESTION_QUALITY_SCORER",
-          "SCORE_FILTER",
-          "FILTER_CRITERIA",
-          "WEB_SEARCH_LABELER",
-          "NEWS_CONTEXT_GENERATOR",
-          "PIPELINE",
-          "QUESTION_PIPELINE",
-          "SCULPT",
-          "QUESTION_RENDERER"
-        ],
-        "title": "TransformType"
       },
       "Usage": {
         "properties": {
