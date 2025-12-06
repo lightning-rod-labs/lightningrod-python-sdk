@@ -4,7 +4,6 @@ from lightningrod._generated.models import (
     TransformJob,
     NewsSeedGenerator,
     GdeltSeedGenerator,
-    Pipeline,
     QuestionGenerator,
     QuestionAndLabelGenerator,
     QuestionPipeline,
@@ -15,7 +14,7 @@ if TYPE_CHECKING:
     from lightningrod.client import LightningRodClient
     from lightningrod.dataset import Dataset
 
-TransformConfig = Union[NewsSeedGenerator, GdeltSeedGenerator, Pipeline, QuestionGenerator, QuestionAndLabelGenerator, QuestionPipeline, WebSearchLabeler]
+TransformConfig = Union[NewsSeedGenerator, GdeltSeedGenerator, QuestionGenerator, QuestionAndLabelGenerator, QuestionPipeline, WebSearchLabeler]
 
 
 class TransformPipeline:

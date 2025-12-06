@@ -1,7 +1,7 @@
 import base64
 import time
 from io import BytesIO
-from typing import List, Optional
+from typing import Any, List, Optional
 
 import attrs
 import httpx
@@ -364,7 +364,7 @@ class LightningRodClient:
         """Access dataset operations."""
         return self._datasets
     
-    def pipeline(self, config: TransformConfig) -> TransformPipeline:
+    def pipeline(self, config: Any) -> TransformPipeline:
         """
         Create a pipeline builder for executing transforms.
         
@@ -383,7 +383,7 @@ class LightningRodClient:
     
     def _run(
         self,
-        config: TransformConfig,
+        config: Any,
         dataset: Optional[Dataset] = None,
         max_seeds: Optional[int] = None
     ) -> Dataset:
@@ -410,7 +410,7 @@ class LightningRodClient:
     
     def _submit(
         self,
-        config: TransformConfig,
+        config: Any,
         dataset: Optional[Dataset] = None,
         max_seeds: Optional[int] = None
     ) -> TransformJob:

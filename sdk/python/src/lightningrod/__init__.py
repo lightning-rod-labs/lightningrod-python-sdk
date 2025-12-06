@@ -20,7 +20,6 @@ from lightningrod._generated.models import (
     NewsSeedGenerator,
     GdeltSeedGenerator,
     NewsContextGenerator,
-    Pipeline,
     QuestionGenerator,
     QuestionAndLabelGenerator,
     ForwardLookingQuestionGenerator,
