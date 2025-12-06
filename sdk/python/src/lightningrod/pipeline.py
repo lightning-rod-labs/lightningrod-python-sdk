@@ -1,11 +1,20 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Union
 
-from lightningrod._generated.models import TransformJob
-from lightningrod.client import TransformConfig
+from lightningrod._generated.models import (
+    TransformJob,
+    NewsSeedGenerator,
+    GdeltSeedGenerator,
+    Pipeline,
+    QuestionGenerator,
+    QuestionPipeline,
+    WebSearchLabeler,
+)
 
 if TYPE_CHECKING:
     from lightningrod.client import LightningRodClient
     from lightningrod.dataset import Dataset
+
+TransformConfig = Union[NewsSeedGenerator, GdeltSeedGenerator, Pipeline, QuestionGenerator, QuestionPipeline, WebSearchLabeler]
 
 
 class TransformPipeline:
@@ -46,7 +55,7 @@ class TransformPipeline:
             >>> output = client.pipeline(config).run()
             >>> output = client.pipeline(config).run(input_dataset)
         """
-        return self._client.run(self._config, dataset)
+        return self._client._run(self._config, dataset)
     
     def submit(self, dataset: Optional["Dataset"] = None) -> TransformJob:
         """
@@ -65,7 +74,7 @@ class TransformPipeline:
             >>> job = client.pipeline(config).submit()
             >>> print(f"Job ID: {job.id}")
         """
-        return self._client.submit(self._config, dataset)
+        return self._client._submit(self._config, dataset)
     
     def batch(self, size: int, dataset: Optional["Dataset"] = None) -> "Dataset":
         """
@@ -89,5 +98,5 @@ class TransformPipeline:
             >>> output = client.pipeline(config).batch(100)
             >>> output = client.pipeline(config).batch(100, input_dataset)
         """
-        return self._client.run(self._config, dataset, batch_size=size)
+        return self._client._run(self._config, dataset, batch_size=size)
 

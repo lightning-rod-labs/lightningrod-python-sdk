@@ -15,11 +15,6 @@ from lightningrod._generated.models import (
     TransformJob,
     TransformJobStatus,
     CreateTransformJobRequest,
-    NewsSeedGenerator,
-    Pipeline,
-    QuestionGenerator,
-    QuestionPipeline,
-    WebSearchLabeler,
     HTTPValidationError,
 )
 from lightningrod._generated.models.sample import Sample
@@ -33,9 +28,7 @@ from lightningrod._generated.api.transform_jobs import (
     get_transform_job_transform_jobs_job_id_get,
 )
 from lightningrod.dataset import Dataset
-from lightningrod.pipeline import TransformPipeline
-
-TransformConfig = NewsSeedGenerator | Pipeline | QuestionGenerator | QuestionPipeline | WebSearchLabeler
+from lightningrod.pipeline import TransformPipeline, TransformConfig
 
 
 class Datasets:
@@ -375,9 +368,6 @@ class LightningRodClient:
         """
         Create a pipeline builder for executing transforms.
         
-        This provides a fluent API for running transforms:
-        client.pipeline(config).run(dataset)
-        
         Args:
             config: Transform configuration (NewsSeedGenerator, Pipeline, etc.)
         
@@ -391,39 +381,14 @@ class LightningRodClient:
         """
         return TransformPipeline(self, config)
     
-    def run(
+    def _run(
         self,
         config: TransformConfig,
         dataset: Optional[Dataset] = None,
         batch_size: Optional[int] = None
     ) -> Dataset:
-        """
-        Submit a transform job and wait for it to complete.
-        
-        This method will:
-        1. Submit the transform job to the API
-        2. Poll every 15 seconds to check the job status
-        3. Return the output dataset when the job completes
-        
-        Args:
-            config: Transform configuration (NewsSeedGenerator, Pipeline, etc.)
-            dataset: Optional input dataset. If None, the transform runs without input data.
-            batch_size: Optional batch size limit. For seed generators, limits output count.
-                For transforms with input datasets, limits input rows.
-        
-        Returns:
-            Dataset instance for the output dataset
-        
-        Raises:
-            Exception: If the job fails or API returns an error
-        
-        Example:
-            >>> from lightningrod._generated.models import QuestionPipeline
-            >>> client = LightningRodClient(api_key="your-api-key")
-            >>> config = QuestionPipeline(config_type="QUESTION_PIPELINE", ...)
-            >>> output_dataset = client.run(config)
-        """
-        job: TransformJob = self.submit(config, dataset, batch_size)
+        """Internal method to run a transform job and wait for completion."""
+        job: TransformJob = self._submit(config, dataset, batch_size)
         
         while job.status == TransformJobStatus.RUNNING:
             time.sleep(15)
@@ -443,34 +408,13 @@ class LightningRodClient:
         
         raise Exception(f"Unexpected job status: {job.status}")
     
-    def submit(
+    def _submit(
         self,
         config: TransformConfig,
         dataset: Optional[Dataset] = None,
         batch_size: Optional[int] = None
     ) -> TransformJob:
-        """
-        Submit a transform job without waiting for completion.
-        
-        Args:
-            config: Transform configuration (NewsSeedGenerator, Pipeline, etc.)
-            dataset: Optional input dataset. If None, the transform runs without input data.
-            batch_size: Optional batch size limit. For seed generators, limits output count.
-                For transforms with input datasets, limits input rows.
-        
-        Returns:
-            TransformJob instance representing the submitted job
-        
-        Raises:
-            Exception: If the submission fails or API returns an error
-        
-        Example:
-            >>> from lightningrod._generated.models import QuestionPipeline
-            >>> client = LightningRodClient(api_key="your-api-key")
-            >>> config = QuestionPipeline(config_type="QUESTION_PIPELINE", ...)
-            >>> job = client.submit(config)
-            >>> print(f"Job ID: {job.id}, Status: {job.status}")
-        """
+        """Internal method to submit a transform job without waiting."""
         request: CreateTransformJobRequest = CreateTransformJobRequest(
             config=config,
             input_dataset_id=dataset.id if dataset else None,

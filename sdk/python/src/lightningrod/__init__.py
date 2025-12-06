@@ -11,6 +11,8 @@ from lightningrod.async_dataset import AsyncDataset
 from lightningrod.pipeline import TransformPipeline
 from lightningrod.async_pipeline import AsyncTransformPipeline
 from lightningrod._generated.models import (
+    AnswerType,
+    AnswerTypeEnum,
     DatasetMetadata,
     TransformJob,
     TransformJobStatus,
@@ -26,6 +28,8 @@ from lightningrod._generated.models import (
 
 __version__ = "0.1.0"
 __all__ = [
+    "AnswerType",
+    "AnswerTypeEnum",
     "AsyncDataset",
     "AsyncLightningRodClient",
     "AsyncTransformPipeline",

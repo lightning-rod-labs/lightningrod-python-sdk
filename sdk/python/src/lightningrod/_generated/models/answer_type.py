@@ -17,7 +17,8 @@ class AnswerType:
     """
     Attributes:
         answer_type (AnswerTypeEnum):
-        answer_format_instruction (str): Instructions describing how the answer should be formatted and given
+        answer_format_instruction (None | str | Unset): Instructions describing how the answer should be formatted and
+            given. If not set, uses default based on answer_type.
         labeler_instruction (None | str | Unset): Custom instructions for the labeler. If not set, uses default based on
             answer_type.
         question_generation_instruction (None | str | Unset): Custom instructions for generating questions of this type.
@@ -25,7 +26,7 @@ class AnswerType:
     """
 
     answer_type: AnswerTypeEnum
-    answer_format_instruction: str
+    answer_format_instruction: None | str | Unset = UNSET
     labeler_instruction: None | str | Unset = UNSET
     question_generation_instruction: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -33,7 +34,11 @@ class AnswerType:
     def to_dict(self) -> dict[str, Any]:
         answer_type = self.answer_type.value
 
-        answer_format_instruction = self.answer_format_instruction
+        answer_format_instruction: None | str | Unset
+        if isinstance(self.answer_format_instruction, Unset):
+            answer_format_instruction = UNSET
+        else:
+            answer_format_instruction = self.answer_format_instruction
 
         labeler_instruction: None | str | Unset
         if isinstance(self.labeler_instruction, Unset):
@@ -52,9 +57,10 @@ class AnswerType:
         field_dict.update(
             {
                 "answer_type": answer_type,
-                "answer_format_instruction": answer_format_instruction,
             }
         )
+        if answer_format_instruction is not UNSET:
+            field_dict["answer_format_instruction"] = answer_format_instruction
         if labeler_instruction is not UNSET:
             field_dict["labeler_instruction"] = labeler_instruction
         if question_generation_instruction is not UNSET:
@@ -67,7 +73,14 @@ class AnswerType:
         d = dict(src_dict)
         answer_type = AnswerTypeEnum(d.pop("answer_type"))
 
-        answer_format_instruction = d.pop("answer_format_instruction")
+        def _parse_answer_format_instruction(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        answer_format_instruction = _parse_answer_format_instruction(d.pop("answer_format_instruction", UNSET))
 
         def _parse_labeler_instruction(data: object) -> None | str | Unset:
             if data is None:

@@ -175,4 +175,25 @@ class Dataset:
             >>> print(f"Got {len(samples)} samples")
         """
         return table_to_samples(self.to_arrow())
+    
+    def to_huggingface(self, repo_id: str, private: bool = True) -> None:
+        """
+        Push the dataset to HuggingFace Hub.
+        
+        Requires the `datasets` package and HuggingFace authentication
+        (via `huggingface-cli login` or HF_TOKEN environment variable).
+        
+        Args:
+            repo_id: HuggingFace repository ID (e.g., "username/dataset-name")
+            private: Whether the dataset should be private (default: True)
+        
+        Example:
+            >>> dataset = client.pipeline(config).run()
+            >>> dataset.to_huggingface("myorg/forecasting-questions")
+        """
+        from datasets import Dataset as HFDataset
+        
+        table: pa.Table = self.to_arrow()
+        hf_dataset: HFDataset = HFDataset(table)
+        hf_dataset.push_to_hub(repo_id, private=private)
 

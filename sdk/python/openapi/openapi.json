@@ -375,9 +375,16 @@
             "description": "The type of answer expected for this question"
           },
           "answer_format_instruction": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Answer Format Instruction",
-            "description": "Instructions describing how the answer should be formatted and given"
+            "description": "Instructions describing how the answer should be formatted and given. If not set, uses default based on answer_type."
           },
           "labeler_instruction": {
             "anyOf": [
@@ -406,8 +413,7 @@
         },
         "type": "object",
         "required": [
-          "answer_type",
-          "answer_format_instruction"
+          "answer_type"
         ],
         "title": "AnswerType"
       },
