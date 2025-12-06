@@ -29,7 +29,7 @@ class CreateTransformJobRequest:
         config (ForwardLookingQuestionGenerator | GdeltSeedGenerator | NewsSeedGenerator | Pipeline |
             QuestionAndLabelGenerator | QuestionGenerator | QuestionPipeline | WebSearchLabeler):
         input_dataset_id (None | str | Unset):
-        batch_size (int | None | Unset):
+        max_seeds (int | None | Unset):
     """
 
     config: (
@@ -43,7 +43,7 @@ class CreateTransformJobRequest:
         | WebSearchLabeler
     )
     input_dataset_id: None | str | Unset = UNSET
-    batch_size: int | None | Unset = UNSET
+    max_seeds: int | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -79,11 +79,11 @@ class CreateTransformJobRequest:
         else:
             input_dataset_id = self.input_dataset_id
 
-        batch_size: int | None | Unset
-        if isinstance(self.batch_size, Unset):
-            batch_size = UNSET
+        max_seeds: int | None | Unset
+        if isinstance(self.max_seeds, Unset):
+            max_seeds = UNSET
         else:
-            batch_size = self.batch_size
+            max_seeds = self.max_seeds
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -94,8 +94,8 @@ class CreateTransformJobRequest:
         )
         if input_dataset_id is not UNSET:
             field_dict["input_dataset_id"] = input_dataset_id
-        if batch_size is not UNSET:
-            field_dict["batch_size"] = batch_size
+        if max_seeds is not UNSET:
+            field_dict["max_seeds"] = max_seeds
 
         return field_dict
 
@@ -197,19 +197,19 @@ class CreateTransformJobRequest:
 
         input_dataset_id = _parse_input_dataset_id(d.pop("input_dataset_id", UNSET))
 
-        def _parse_batch_size(data: object) -> int | None | Unset:
+        def _parse_max_seeds(data: object) -> int | None | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
             return cast(int | None | Unset, data)
 
-        batch_size = _parse_batch_size(d.pop("batch_size", UNSET))
+        max_seeds = _parse_max_seeds(d.pop("max_seeds", UNSET))
 
         create_transform_job_request = cls(
             config=config,
             input_dataset_id=input_dataset_id,
-            batch_size=batch_size,
+            max_seeds=max_seeds,
         )
 
         create_transform_job_request.additional_properties = d

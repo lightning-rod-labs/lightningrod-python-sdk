@@ -721,7 +721,7 @@
             ],
             "title": "Input Dataset Id"
           },
-          "batch_size": {
+          "max_seeds": {
             "anyOf": [
               {
                 "type": "integer"
@@ -730,7 +730,7 @@
                 "type": "null"
               }
             ],
-            "title": "Batch Size"
+            "title": "Max Seeds"
           }
         },
         "type": "object",

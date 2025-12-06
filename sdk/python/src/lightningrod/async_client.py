@@ -272,7 +272,7 @@ class AsyncLightningRodClient:
         self,
         config: TransformConfig,
         dataset: Optional[AsyncDataset] = None,
-        batch_size: Optional[int] = None
+        max_seeds: Optional[int] = None
     ) -> AsyncDataset:
         """
         Submit a transform job and wait for it to complete.
@@ -287,8 +287,7 @@ class AsyncLightningRodClient:
         Args:
             config: Transform configuration (NewsSeedGenerator, Pipeline, etc.)
             dataset: Optional input dataset. If None, the transform runs without input data.
-            batch_size: Optional batch size limit. For seed generators, limits output count.
-                For transforms with input datasets, limits input rows.
+            max_seeds: Optional limit on number of seeds to generate.
         
         Returns:
             AsyncDataset instance for the output dataset
@@ -308,7 +307,7 @@ class AsyncLightningRodClient:
             self._sync_client.run,
             config,
             sync_dataset,
-            batch_size
+            max_seeds
         )
         
         return AsyncDataset(result_sync_dataset)
@@ -317,7 +316,7 @@ class AsyncLightningRodClient:
         self,
         config: TransformConfig,
         dataset: Optional[AsyncDataset] = None,
-        batch_size: Optional[int] = None
+        max_seeds: Optional[int] = None
     ) -> TransformJob:
         """
         Submit a transform job without waiting for completion.
@@ -325,8 +324,7 @@ class AsyncLightningRodClient:
         Args:
             config: Transform configuration (NewsSeedGenerator, Pipeline, etc.)
             dataset: Optional input dataset. If None, the transform runs without input data.
-            batch_size: Optional batch size limit. For seed generators, limits output count.
-                For transforms with input datasets, limits input rows.
+            max_seeds: Optional limit on number of seeds to generate.
         
         Returns:
             TransformJob instance representing the submitted job
@@ -347,5 +345,5 @@ class AsyncLightningRodClient:
             self._sync_client.submit,
             config,
             sync_dataset,
-            batch_size
+            max_seeds
         )
