@@ -863,7 +863,7 @@
               }
             ],
             "title": "Instructions",
-            "description": "Additional instructions for question generation. If not provided, uses sensible defaults."
+            "description": "Instructions for question generation. If not provided, uses sensible defaults."
           },
           "examples": {
             "items": {
@@ -899,17 +899,28 @@
             "title": "Filter",
             "description": "Optional filter criteria to apply after question generation"
           },
+          "questions_per_seed": {
+            "type": "integer",
+            "title": "Questions Per Seed",
+            "description": "Number of questions to generate per seed",
+            "default": 1
+          },
           "include_default_filter": {
             "type": "boolean",
             "title": "Include Default Filter",
             "description": "Whether to include the default filter for generated questions",
             "default": true
           },
-          "questions_per_seed": {
-            "type": "integer",
-            "title": "Questions Per Seed",
-            "description": "Number of questions to generate per seed",
-            "default": 1
+          "answer_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The type of answer expected for generated questions"
           }
         },
         "type": "object",
@@ -1238,7 +1249,7 @@
               }
             ],
             "title": "Instructions",
-            "description": "Instructions for question and label generation. If not provided, uses sensible defaults."
+            "description": "Instructions for question generation. If not provided, uses sensible defaults."
           },
           "examples": {
             "items": {
@@ -1246,7 +1257,7 @@
             },
             "type": "array",
             "title": "Examples",
-            "description": "Example questions with labels to guide generation"
+            "description": "Example questions to guide generation"
           },
           "bad_examples": {
             "items": {
@@ -1254,7 +1265,7 @@
             },
             "type": "array",
             "title": "Bad Examples",
-            "description": "Examples of questions/labels to avoid"
+            "description": "Examples of questions to avoid"
           },
           "filter": {
             "anyOf": [
@@ -1277,8 +1288,14 @@
           "questions_per_seed": {
             "type": "integer",
             "title": "Questions Per Seed",
-            "description": "Number of question/label pairs to generate per seed",
+            "description": "Number of questions to generate per seed",
             "default": 1
+          },
+          "include_default_filter": {
+            "type": "boolean",
+            "title": "Include Default Filter",
+            "description": "Whether to include the default filter for generated questions",
+            "default": true
           },
           "answer_type": {
             "anyOf": [
@@ -1355,6 +1372,12 @@
             "title": "Questions Per Seed",
             "description": "Number of questions to generate per seed",
             "default": 1
+          },
+          "include_default_filter": {
+            "type": "boolean",
+            "title": "Include Default Filter",
+            "description": "Whether to include the default filter for generated questions",
+            "default": true
           },
           "answer_type": {
             "anyOf": [

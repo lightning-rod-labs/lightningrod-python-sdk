@@ -29,6 +29,8 @@ class QuestionGenerator:
         filter_ (FilterCriteria | list[FilterCriteria] | None | Unset): Optional filter criteria to apply after question
             generation
         questions_per_seed (int | Unset): Number of questions to generate per seed Default: 1.
+        include_default_filter (bool | Unset): Whether to include the default filter for generated questions Default:
+            True.
         answer_type (AnswerType | None | Unset): The type of answer expected for generated questions
     """
 
@@ -38,6 +40,7 @@ class QuestionGenerator:
     bad_examples: list[str] | Unset = UNSET
     filter_: FilterCriteria | list[FilterCriteria] | None | Unset = UNSET
     questions_per_seed: int | Unset = 1
+    include_default_filter: bool | Unset = True
     answer_type: AnswerType | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -77,6 +80,8 @@ class QuestionGenerator:
 
         questions_per_seed = self.questions_per_seed
 
+        include_default_filter = self.include_default_filter
+
         answer_type: dict[str, Any] | None | Unset
         if isinstance(self.answer_type, Unset):
             answer_type = UNSET
@@ -100,6 +105,8 @@ class QuestionGenerator:
             field_dict["filter"] = filter_
         if questions_per_seed is not UNSET:
             field_dict["questions_per_seed"] = questions_per_seed
+        if include_default_filter is not UNSET:
+            field_dict["include_default_filter"] = include_default_filter
         if answer_type is not UNSET:
             field_dict["answer_type"] = answer_type
 
@@ -160,6 +167,8 @@ class QuestionGenerator:
 
         questions_per_seed = d.pop("questions_per_seed", UNSET)
 
+        include_default_filter = d.pop("include_default_filter", UNSET)
+
         def _parse_answer_type(data: object) -> AnswerType | None | Unset:
             if data is None:
                 return data
@@ -184,6 +193,7 @@ class QuestionGenerator:
             bad_examples=bad_examples,
             filter_=filter_,
             questions_per_seed=questions_per_seed,
+            include_default_filter=include_default_filter,
             answer_type=answer_type,
         )
 

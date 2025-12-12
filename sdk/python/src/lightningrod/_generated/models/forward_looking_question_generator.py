@@ -9,6 +9,7 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
+    from ..models.answer_type import AnswerType
     from ..models.filter_criteria import FilterCriteria
 
 
@@ -21,15 +22,16 @@ class ForwardLookingQuestionGenerator:
     Attributes:
         config_type (Literal['FORWARD_LOOKING_QUESTION_GENERATOR'] | Unset): Type of transform configuration Default:
             'FORWARD_LOOKING_QUESTION_GENERATOR'.
-        instructions (None | str | Unset): Additional instructions for question generation. If not provided, uses
-            sensible defaults.
+        instructions (None | str | Unset): Instructions for question generation. If not provided, uses sensible
+            defaults.
         examples (list[str] | Unset): Example questions to guide generation
         bad_examples (list[str] | Unset): Examples of questions to avoid
         filter_ (FilterCriteria | list[FilterCriteria] | None | Unset): Optional filter criteria to apply after question
             generation
+        questions_per_seed (int | Unset): Number of questions to generate per seed Default: 1.
         include_default_filter (bool | Unset): Whether to include the default filter for generated questions Default:
             True.
-        questions_per_seed (int | Unset): Number of questions to generate per seed Default: 1.
+        answer_type (AnswerType | None | Unset): The type of answer expected for generated questions
     """
 
     config_type: Literal["FORWARD_LOOKING_QUESTION_GENERATOR"] | Unset = "FORWARD_LOOKING_QUESTION_GENERATOR"
@@ -37,11 +39,13 @@ class ForwardLookingQuestionGenerator:
     examples: list[str] | Unset = UNSET
     bad_examples: list[str] | Unset = UNSET
     filter_: FilterCriteria | list[FilterCriteria] | None | Unset = UNSET
-    include_default_filter: bool | Unset = True
     questions_per_seed: int | Unset = 1
+    include_default_filter: bool | Unset = True
+    answer_type: AnswerType | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.answer_type import AnswerType
         from ..models.filter_criteria import FilterCriteria
 
         config_type = self.config_type
@@ -74,9 +78,17 @@ class ForwardLookingQuestionGenerator:
         else:
             filter_ = self.filter_
 
+        questions_per_seed = self.questions_per_seed
+
         include_default_filter = self.include_default_filter
 
-        questions_per_seed = self.questions_per_seed
+        answer_type: dict[str, Any] | None | Unset
+        if isinstance(self.answer_type, Unset):
+            answer_type = UNSET
+        elif isinstance(self.answer_type, AnswerType):
+            answer_type = self.answer_type.to_dict()
+        else:
+            answer_type = self.answer_type
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -91,15 +103,18 @@ class ForwardLookingQuestionGenerator:
             field_dict["bad_examples"] = bad_examples
         if filter_ is not UNSET:
             field_dict["filter"] = filter_
-        if include_default_filter is not UNSET:
-            field_dict["include_default_filter"] = include_default_filter
         if questions_per_seed is not UNSET:
             field_dict["questions_per_seed"] = questions_per_seed
+        if include_default_filter is not UNSET:
+            field_dict["include_default_filter"] = include_default_filter
+        if answer_type is not UNSET:
+            field_dict["answer_type"] = answer_type
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.answer_type import AnswerType
         from ..models.filter_criteria import FilterCriteria
 
         d = dict(src_dict)
@@ -150,9 +165,26 @@ class ForwardLookingQuestionGenerator:
 
         filter_ = _parse_filter_(d.pop("filter", UNSET))
 
+        questions_per_seed = d.pop("questions_per_seed", UNSET)
+
         include_default_filter = d.pop("include_default_filter", UNSET)
 
-        questions_per_seed = d.pop("questions_per_seed", UNSET)
+        def _parse_answer_type(data: object) -> AnswerType | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                answer_type_type_0 = AnswerType.from_dict(data)
+
+                return answer_type_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(AnswerType | None | Unset, data)
+
+        answer_type = _parse_answer_type(d.pop("answer_type", UNSET))
 
         forward_looking_question_generator = cls(
             config_type=config_type,
@@ -160,8 +192,9 @@ class ForwardLookingQuestionGenerator:
             examples=examples,
             bad_examples=bad_examples,
             filter_=filter_,
-            include_default_filter=include_default_filter,
             questions_per_seed=questions_per_seed,
+            include_default_filter=include_default_filter,
+            answer_type=answer_type,
         )
 
         forward_looking_question_generator.additional_properties = d
