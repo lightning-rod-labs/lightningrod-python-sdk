@@ -29,6 +29,7 @@ class ForwardLookingQuestionGenerator:
             generation
         include_default_filter (bool | Unset): Whether to include the default filter for generated questions Default:
             True.
+        questions_per_seed (int | Unset): Number of questions to generate per seed Default: 1.
     """
 
     config_type: Literal["FORWARD_LOOKING_QUESTION_GENERATOR"] | Unset = "FORWARD_LOOKING_QUESTION_GENERATOR"
@@ -37,6 +38,7 @@ class ForwardLookingQuestionGenerator:
     bad_examples: list[str] | Unset = UNSET
     filter_: FilterCriteria | list[FilterCriteria] | None | Unset = UNSET
     include_default_filter: bool | Unset = True
+    questions_per_seed: int | Unset = 1
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -74,6 +76,8 @@ class ForwardLookingQuestionGenerator:
 
         include_default_filter = self.include_default_filter
 
+        questions_per_seed = self.questions_per_seed
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
@@ -89,6 +93,8 @@ class ForwardLookingQuestionGenerator:
             field_dict["filter"] = filter_
         if include_default_filter is not UNSET:
             field_dict["include_default_filter"] = include_default_filter
+        if questions_per_seed is not UNSET:
+            field_dict["questions_per_seed"] = questions_per_seed
 
         return field_dict
 
@@ -146,6 +152,8 @@ class ForwardLookingQuestionGenerator:
 
         include_default_filter = d.pop("include_default_filter", UNSET)
 
+        questions_per_seed = d.pop("questions_per_seed", UNSET)
+
         forward_looking_question_generator = cls(
             config_type=config_type,
             instructions=instructions,
@@ -153,6 +161,7 @@ class ForwardLookingQuestionGenerator:
             bad_examples=bad_examples,
             filter_=filter_,
             include_default_filter=include_default_filter,
+            questions_per_seed=questions_per_seed,
         )
 
         forward_looking_question_generator.additional_properties = d

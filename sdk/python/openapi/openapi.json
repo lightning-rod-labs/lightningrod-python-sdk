@@ -904,6 +904,12 @@
             "title": "Include Default Filter",
             "description": "Whether to include the default filter for generated questions",
             "default": true
+          },
+          "questions_per_seed": {
+            "type": "integer",
+            "title": "Questions Per Seed",
+            "description": "Number of questions to generate per seed",
+            "default": 1
           }
         },
         "type": "object",
