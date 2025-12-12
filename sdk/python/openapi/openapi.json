@@ -909,7 +909,7 @@
             "type": "boolean",
             "title": "Include Default Filter",
             "description": "Whether to include the default filter for generated questions",
-            "default": true
+            "default": false
           },
           "answer_type": {
             "anyOf": [
@@ -1295,7 +1295,7 @@
             "type": "boolean",
             "title": "Include Default Filter",
             "description": "Whether to include the default filter for generated questions",
-            "default": true
+            "default": false
           },
           "answer_type": {
             "anyOf": [
@@ -1377,7 +1377,7 @@
             "type": "boolean",
             "title": "Include Default Filter",
             "description": "Whether to include the default filter for generated questions",
-            "default": true
+            "default": false
           },
           "answer_type": {
             "anyOf": [

@@ -30,7 +30,7 @@ class ForwardLookingQuestionGenerator:
             generation
         questions_per_seed (int | Unset): Number of questions to generate per seed Default: 1.
         include_default_filter (bool | Unset): Whether to include the default filter for generated questions Default:
-            True.
+            False.
         answer_type (AnswerType | None | Unset): The type of answer expected for generated questions
     """
 
@@ -40,7 +40,7 @@ class ForwardLookingQuestionGenerator:
     bad_examples: list[str] | Unset = UNSET
     filter_: FilterCriteria | list[FilterCriteria] | None | Unset = UNSET
     questions_per_seed: int | Unset = 1
-    include_default_filter: bool | Unset = True
+    include_default_filter: bool | Unset = False
     answer_type: AnswerType | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
