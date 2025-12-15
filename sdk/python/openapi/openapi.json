@@ -533,7 +533,7 @@
           {
             "messages": [
               {
-                "content": "Will Bitcoin increase by more than 10% over the next 3 months?",
+                "content": "Will Bitcoin increase by more than 10% over the next 3 months? Answer as a probability between 0 and 1 between <answer></answer> tags.",
                 "role": "user"
               }
             ],
