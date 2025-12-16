@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from ..models.question_and_label_generator import QuestionAndLabelGenerator
     from ..models.question_generator import QuestionGenerator
     from ..models.question_renderer import QuestionRenderer
+    from ..models.rollout_generator import RolloutGenerator
     from ..models.web_search_labeler import WebSearchLabeler
 
 
@@ -36,6 +37,7 @@ class QuestionPipeline:
         context_generators (list[NewsContextGenerator] | None | Unset): Optional list of context generators to run
             before rendering
         renderer (None | QuestionRenderer | Unset): Optional configuration for rendering the final prompt
+        rollout_generator (None | RolloutGenerator | Unset): Optional configuration for generating rollouts from multiple models
     """
 
     seed_generator: GdeltSeedGenerator | NewsSeedGenerator
@@ -44,6 +46,7 @@ class QuestionPipeline:
     labeler: None | Unset | WebSearchLabeler = UNSET
     context_generators: list[NewsContextGenerator] | None | Unset = UNSET
     renderer: None | QuestionRenderer | Unset = UNSET
+    rollout_generator: None | RolloutGenerator | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -51,6 +54,7 @@ class QuestionPipeline:
         from ..models.news_seed_generator import NewsSeedGenerator
         from ..models.question_generator import QuestionGenerator
         from ..models.question_renderer import QuestionRenderer
+        from ..models.rollout_generator import RolloutGenerator
         from ..models.web_search_labeler import WebSearchLabeler
 
         seed_generator: dict[str, Any]
@@ -97,6 +101,14 @@ class QuestionPipeline:
         else:
             renderer = self.renderer
 
+        rollout_generator: dict[str, Any] | None | Unset
+        if isinstance(self.rollout_generator, Unset):
+            rollout_generator = UNSET
+        elif isinstance(self.rollout_generator, RolloutGenerator):
+            rollout_generator = self.rollout_generator.to_dict()
+        else:
+            rollout_generator = self.rollout_generator
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -113,6 +125,8 @@ class QuestionPipeline:
             field_dict["context_generators"] = context_generators
         if renderer is not UNSET:
             field_dict["renderer"] = renderer
+        if rollout_generator is not UNSET:
+            field_dict["rollout_generator"] = rollout_generator
 
         return field_dict
 
@@ -125,6 +139,7 @@ class QuestionPipeline:
         from ..models.question_and_label_generator import QuestionAndLabelGenerator
         from ..models.question_generator import QuestionGenerator
         from ..models.question_renderer import QuestionRenderer
+        from ..models.rollout_generator import RolloutGenerator
         from ..models.web_search_labeler import WebSearchLabeler
 
         d = dict(src_dict)
@@ -233,6 +248,21 @@ class QuestionPipeline:
 
         renderer = _parse_renderer(d.pop("renderer", UNSET))
 
+        def _parse_rollout_generator(data: object) -> None | RolloutGenerator | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                return RolloutGenerator.from_dict(data)
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | RolloutGenerator | Unset, data)
+
+        rollout_generator = _parse_rollout_generator(d.pop("rollout_generator", UNSET))
+
         question_pipeline = cls(
             seed_generator=seed_generator,
             question_generator=question_generator,
@@ -240,6 +270,7 @@ class QuestionPipeline:
             labeler=labeler,
             context_generators=context_generators,
             renderer=renderer,
+            rollout_generator=rollout_generator,
         )
 
         question_pipeline.additional_properties = d

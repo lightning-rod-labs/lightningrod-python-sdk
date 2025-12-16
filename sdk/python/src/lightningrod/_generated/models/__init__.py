@@ -27,6 +27,7 @@ from .question_passthrough_data import QuestionPassthroughData
 from .question_pipeline import QuestionPipeline
 from .question_renderer import QuestionRenderer
 from .rag_context import RAGContext
+from .rollout_generator import RolloutGenerator
 from .response_message import ResponseMessage
 from .sample import Sample
 from .sample_meta import SampleMeta
@@ -67,6 +68,7 @@ __all__ = (
     "QuestionPipeline",
     "QuestionRenderer",
     "RAGContext",
+    "RolloutGenerator",
     "ResponseMessage",
     "Sample",
     "SampleMeta",
