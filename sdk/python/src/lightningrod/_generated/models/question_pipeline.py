@@ -37,7 +37,8 @@ class QuestionPipeline:
         context_generators (list[NewsContextGenerator] | None | Unset): Optional list of context generators to run
             before rendering
         renderer (None | QuestionRenderer | Unset): Optional configuration for rendering the final prompt
-        rollout_generator (None | RolloutGenerator | Unset): Optional configuration for generating rollouts from multiple models
+        rollout_generator (None | RolloutGenerator | Unset): Optional configuration for generating rollouts from
+            multiple models
     """
 
     seed_generator: GdeltSeedGenerator | NewsSeedGenerator
@@ -256,7 +257,9 @@ class QuestionPipeline:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                return RolloutGenerator.from_dict(data)
+                rollout_generator_type_0 = RolloutGenerator.from_dict(data)
+
+                return rollout_generator_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
             return cast(None | RolloutGenerator | Unset, data)

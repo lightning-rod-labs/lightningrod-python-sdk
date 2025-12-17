@@ -299,7 +299,7 @@ class AsyncLightningRodClient:
         sync_dataset = dataset._sync_dataset if dataset else None
         
         result_sync_dataset = await asyncio.to_thread(
-            self._sync_client.run,
+            self._sync_client._run,
             config,
             sync_dataset,
             max_seeds

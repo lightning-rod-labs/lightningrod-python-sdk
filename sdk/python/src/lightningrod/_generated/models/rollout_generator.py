@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any, Literal, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
+
+if TYPE_CHECKING:
+    from ..models.model_config import ModelConfig
 
 
 T = TypeVar("T", bound="RolloutGenerator")
@@ -14,28 +17,42 @@ T = TypeVar("T", bound="RolloutGenerator")
 
 @_attrs_define
 class RolloutGenerator:
-    """Configuration for generating rollouts from multiple models.
-
+    """
     Attributes:
-        models (list[str]): List of model names to generate rollouts from (e.g., ["openai/gpt-4", "anthropic/claude-3"])
-        prompt_template (str): Prompt template with {column_name} placeholders for input columns
-        input_columns (list[str]): Column names to use as inputs to the prompt template
-        config_type (Literal['ROLLOUT_GENERATOR'] | Unset): Type of transform configuration Default: 'ROLLOUT_GENERATOR'.
-        concurrency_limit (int | Unset): Max concurrent API calls per model Default: 50.
+        models (list[ModelConfig]): Model names or ModelConfig objects
+        prompt_template (str): Prompt template with {column} placeholders
+        input_columns (list[str]): Columns to substitute into template
+        config_type (Literal['ROLLOUT_GENERATOR'] | Unset):  Default: 'ROLLOUT_GENERATOR'.
+        output_schema (Any | None | Unset): Pydantic model for structured output
+        concurrency_limit (int | Unset): Maximum number of concurrent rollout tasks Default: 50.
     """
 
-    models: list[str]
+    models: list[ModelConfig]
     prompt_template: str
     input_columns: list[str]
     config_type: Literal["ROLLOUT_GENERATOR"] | Unset = "ROLLOUT_GENERATOR"
+    output_schema: Any | None | Unset = UNSET
     concurrency_limit: int | Unset = 50
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        models = self.models
+        models = []
+        for models_item_data in self.models:
+            models_item = models_item_data.to_dict()
+            models.append(models_item)
+
         prompt_template = self.prompt_template
+
         input_columns = self.input_columns
+
         config_type = self.config_type
+
+        output_schema: Any | None | Unset
+        if isinstance(self.output_schema, Unset):
+            output_schema = UNSET
+        else:
+            output_schema = self.output_schema
+
         concurrency_limit = self.concurrency_limit
 
         field_dict: dict[str, Any] = {}
@@ -49,6 +66,8 @@ class RolloutGenerator:
         )
         if config_type is not UNSET:
             field_dict["config_type"] = config_type
+        if output_schema is not UNSET:
+            field_dict["output_schema"] = output_schema
         if concurrency_limit is not UNSET:
             field_dict["concurrency_limit"] = concurrency_limit
 
@@ -56,14 +75,32 @@ class RolloutGenerator:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.model_config import ModelConfig
+
         d = dict(src_dict)
-        models = cast(list[str], d.pop("models"))
+        models = []
+        _models = d.pop("models")
+        for models_item_data in _models:
+            models_item = ModelConfig.from_dict(models_item_data)
+
+            models.append(models_item)
+
         prompt_template = d.pop("prompt_template")
+
         input_columns = cast(list[str], d.pop("input_columns"))
 
         config_type = cast(Literal["ROLLOUT_GENERATOR"] | Unset, d.pop("config_type", UNSET))
         if config_type != "ROLLOUT_GENERATOR" and not isinstance(config_type, Unset):
             raise ValueError(f"config_type must match const 'ROLLOUT_GENERATOR', got '{config_type}'")
+
+        def _parse_output_schema(data: object) -> Any | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Any | None | Unset, data)
+
+        output_schema = _parse_output_schema(d.pop("output_schema", UNSET))
 
         concurrency_limit = d.pop("concurrency_limit", UNSET)
 
@@ -72,6 +109,7 @@ class RolloutGenerator:
             prompt_template=prompt_template,
             input_columns=input_columns,
             config_type=config_type,
+            output_schema=output_schema,
             concurrency_limit=concurrency_limit,
         )
 

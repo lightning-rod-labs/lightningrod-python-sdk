@@ -17,6 +17,8 @@ from .gdelt_seed_generator import GdeltSeedGenerator
 from .http_validation_error import HTTPValidationError
 from .label import Label
 from .label_passthrough_data import LabelPassthroughData
+from .model_config import ModelConfig
+from .model_source_type import ModelSourceType
 from .news_context import NewsContext
 from .news_context_generator import NewsContextGenerator
 from .news_seed_generator import NewsSeedGenerator
@@ -27,8 +29,8 @@ from .question_passthrough_data import QuestionPassthroughData
 from .question_pipeline import QuestionPipeline
 from .question_renderer import QuestionRenderer
 from .rag_context import RAGContext
-from .rollout_generator import RolloutGenerator
 from .response_message import ResponseMessage
+from .rollout_generator import RolloutGenerator
 from .sample import Sample
 from .sample_meta import SampleMeta
 from .seed import Seed
@@ -58,6 +60,8 @@ __all__ = (
     "HTTPValidationError",
     "Label",
     "LabelPassthroughData",
+    "ModelConfig",
+    "ModelSourceType",
     "NewsContext",
     "NewsContextGenerator",
     "NewsSeedGenerator",
@@ -68,8 +72,8 @@ __all__ = (
     "QuestionPipeline",
     "QuestionRenderer",
     "RAGContext",
-    "RolloutGenerator",
     "ResponseMessage",
+    "RolloutGenerator",
     "Sample",
     "SampleMeta",
     "Seed",

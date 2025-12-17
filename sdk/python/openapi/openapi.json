@@ -1040,6 +1040,163 @@
         ],
         "title": "Label"
       },
+      "ModelConfig": {
+        "properties": {
+          "model_name": {
+            "type": "string",
+            "title": "Model Name",
+            "default": "meta-llama/llama-3.3-70b-instruct"
+          },
+          "model_source": {
+            "$ref": "#/components/schemas/ModelSourceType",
+            "default": "OPEN_ROUTER"
+          },
+          "temperature": {
+            "type": "number",
+            "title": "Temperature",
+            "default": 1.0
+          },
+          "max_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Tokens"
+          },
+          "ip_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip Address"
+          },
+          "lora_base_model_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lora Base Model Name"
+          },
+          "lora_repo_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lora Repo Path"
+          },
+          "lora_checkpoint_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lora Checkpoint Path"
+          },
+          "runpod_endpoint_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Runpod Endpoint Id"
+          },
+          "is_lightningrod_model": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Lightningrod Model"
+          },
+          "openrouter_provider": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Openrouter Provider"
+          },
+          "reasoning_effort": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Effort"
+          },
+          "is_reasoning_model": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Reasoning Model"
+          },
+          "disable_reasoning": {
+            "type": "boolean",
+            "title": "Disable Reasoning",
+            "default": false
+          },
+          "use_pipeline_key": {
+            "type": "boolean",
+            "title": "Use Pipeline Key",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "ModelConfig"
+      },
+      "ModelSourceType": {
+        "type": "string",
+        "enum": [
+          "OPENAI",
+          "VLLM",
+          "OPEN_ROUTER",
+          "HUGGINGFACE_ENDPOINTS",
+          "DEEPSEEK",
+          "DEEPINFRA",
+          "RUNPOD",
+          "SGLANG"
+        ],
+        "title": "ModelSourceType"
+      },
       "NewsContext": {
         "properties": {
           "context_type": {
@@ -1481,6 +1638,17 @@
               }
             ],
             "description": "Optional configuration for rendering the final prompt"
+          },
+          "rollout_generator": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RolloutGenerator"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional configuration for generating rollouts from multiple models"
           }
         },
         "type": "object",
@@ -1569,6 +1737,60 @@
           "content"
         ],
         "title": "ResponseMessage"
+      },
+      "RolloutGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "ROLLOUT_GENERATOR",
+            "title": "Config Type",
+            "default": "ROLLOUT_GENERATOR"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/ModelConfig"
+            },
+            "type": "array",
+            "title": "Models",
+            "description": "Model names or ModelConfig objects"
+          },
+          "prompt_template": {
+            "type": "string",
+            "title": "Prompt Template",
+            "description": "Prompt template with {column} placeholders"
+          },
+          "input_columns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Input Columns",
+            "description": "Columns to substitute into template"
+          },
+          "output_schema": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Schema",
+            "description": "Pydantic model for structured output"
+          },
+          "concurrency_limit": {
+            "type": "integer",
+            "title": "Concurrency Limit",
+            "description": "Maximum number of concurrent rollout tasks",
+            "default": 50
+          }
+        },
+        "type": "object",
+        "required": [
+          "models",
+          "prompt_template",
+          "input_columns"
+        ],
+        "title": "RolloutGenerator"
       },
       "Sample": {
         "properties": {
