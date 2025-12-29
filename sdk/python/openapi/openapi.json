@@ -537,7 +537,7 @@
                 "role": "user"
               }
             ],
-            "model": "foresight-v1"
+            "model": "LightningRodLabs/foresight-v1"
           }
         ]
       },
