@@ -18,12 +18,13 @@ class FilterCriteria:
     Attributes:
         rubric (str): Scoring rubric/prompt for evaluating content
         min_score (float | Unset): Minimum score threshold Default: 0.5.
-        model_name (str | Unset): Name of the model (in openrouter) to use for scoring Default: 'openai/gpt-4.1-mini'.
+        model_name (str | Unset): Name of the model (in openrouter) to use for scoring Default: 'google/gemini-3-flash-
+            preview'.
     """
 
     rubric: str
     min_score: float | Unset = 0.5
-    model_name: str | Unset = "openai/gpt-4.1-mini"
+    model_name: str | Unset = "google/gemini-3-flash-preview"
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:

@@ -24,12 +24,16 @@ class Label:
         label (str):
         label_confidence (float):
         resolution_date (datetime.datetime | None):
+        reasoning (None | str):
+        answer_sources (None | str):
         passthrough_data (LabelPassthroughData | Unset):
     """
 
     label: str
     label_confidence: float
     resolution_date: datetime.datetime | None
+    reasoning: None | str
+    answer_sources: None | str
     passthrough_data: LabelPassthroughData | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -44,6 +48,12 @@ class Label:
         else:
             resolution_date = self.resolution_date
 
+        reasoning: None | str
+        reasoning = self.reasoning
+
+        answer_sources: None | str
+        answer_sources = self.answer_sources
+
         passthrough_data: dict[str, Any] | Unset = UNSET
         if not isinstance(self.passthrough_data, Unset):
             passthrough_data = self.passthrough_data.to_dict()
@@ -55,6 +65,8 @@ class Label:
                 "label": label,
                 "label_confidence": label_confidence,
                 "resolution_date": resolution_date,
+                "reasoning": reasoning,
+                "answer_sources": answer_sources,
             }
         )
         if passthrough_data is not UNSET:
@@ -86,6 +98,20 @@ class Label:
 
         resolution_date = _parse_resolution_date(d.pop("resolution_date"))
 
+        def _parse_reasoning(data: object) -> None | str:
+            if data is None:
+                return data
+            return cast(None | str, data)
+
+        reasoning = _parse_reasoning(d.pop("reasoning"))
+
+        def _parse_answer_sources(data: object) -> None | str:
+            if data is None:
+                return data
+            return cast(None | str, data)
+
+        answer_sources = _parse_answer_sources(d.pop("answer_sources"))
+
         _passthrough_data = d.pop("passthrough_data", UNSET)
         passthrough_data: LabelPassthroughData | Unset
         if isinstance(_passthrough_data, Unset):
@@ -97,6 +123,8 @@ class Label:
             label=label,
             label_confidence=label_confidence,
             resolution_date=resolution_date,
+            reasoning=reasoning,
+            answer_sources=answer_sources,
             passthrough_data=passthrough_data,
         )
 

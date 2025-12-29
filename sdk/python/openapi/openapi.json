@@ -834,7 +834,7 @@
             "type": "string",
             "title": "Model Name",
             "description": "Name of the model (in openrouter) to use for scoring",
-            "default": "openai/gpt-4.1-mini"
+            "default": "google/gemini-3-flash-preview"
           }
         },
         "type": "object",
@@ -1030,13 +1030,37 @@
               }
             ],
             "title": "Resolution Date"
+          },
+          "reasoning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning"
+          },
+          "answer_sources": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer Sources"
           }
         },
         "type": "object",
         "required": [
           "label",
           "label_confidence",
-          "resolution_date"
+          "resolution_date",
+          "reasoning",
+          "answer_sources"
         ],
         "title": "Label"
       },
@@ -1230,17 +1254,35 @@
             "description": "Type of transform configuration",
             "default": "NEWS_CONTEXT_GENERATOR"
           },
-          "search_query_generation_instructions": {
-            "type": "string",
-            "title": "Search Query Generation Instructions",
-            "description": "Instructions for LLM to generate search query from question",
-            "default": "You are helping generate a search query for Google News to find relevant information for answering a question.\n\nGiven the question, generate:\n1. A concise search query that will find relevant news articles\n2. A goal describing what information you're looking for\n\nThe search query should be specific enough to find relevant articles but not so narrow that it misses important context. Focus on the key entities, events, or topics mentioned in the question."
+          "num_search_queries": {
+            "type": "integer",
+            "title": "Num Search Queries",
+            "description": "Number of search queries to generate per question",
+            "default": 5
+          },
+          "articles_per_query": {
+            "type": "integer",
+            "title": "Articles Per Query",
+            "description": "Number of news articles to return per search query",
+            "default": 5
           },
           "num_articles": {
             "type": "integer",
             "title": "Num Articles",
-            "description": "Number of news articles to fetch per question",
-            "default": 5
+            "description": "Maximum number of news articles to include in final output",
+            "default": 10
+          },
+          "relevance_threshold": {
+            "type": "integer",
+            "title": "Relevance Threshold",
+            "description": "Minimum relevance rating (1-6 scale) to include article",
+            "default": 2
+          },
+          "min_articles": {
+            "type": "integer",
+            "title": "Min Articles",
+            "description": "Minimum number of articles to ensure",
+            "default": 6
           },
           "time_delta_days": {
             "type": "integer",
@@ -1251,8 +1293,14 @@
           "concurrency_limit": {
             "type": "integer",
             "title": "Concurrency Limit",
-            "description": "Maximum number of concurrent news search tasks",
-            "default": 10
+            "description": "Maximum number of concurrent tasks",
+            "default": 50
+          },
+          "enable_relevance_ranking": {
+            "type": "boolean",
+            "title": "Enable Relevance Ranking",
+            "description": "Whether to perform LLM-based relevance ranking",
+            "default": true
           }
         },
         "type": "object",
@@ -2103,7 +2151,7 @@
             "type": "integer",
             "title": "Concurrency Limit",
             "description": "Maximum number of concurrent question processing tasks",
-            "default": 10
+            "default": 50
           },
           "answer_type": {
             "anyOf": [

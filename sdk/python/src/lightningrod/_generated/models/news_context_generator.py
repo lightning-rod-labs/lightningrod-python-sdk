@@ -13,54 +13,71 @@ T = TypeVar("T", bound="NewsContextGenerator")
 
 @_attrs_define
 class NewsContextGenerator:
-    r"""
+    """
     Attributes:
         config_type (Literal['NEWS_CONTEXT_GENERATOR'] | Unset): Type of transform configuration Default:
             'NEWS_CONTEXT_GENERATOR'.
-        search_query_generation_instructions (str | Unset): Instructions for LLM to generate search query from question
-            Default: "You are helping generate a search query for Google News to find relevant information for answering a
-            question.\n\nGiven the question, generate:\n1. A concise search query that will find relevant news articles\n2.
-            A goal describing what information you're looking for\n\nThe search query should be specific enough to find
-            relevant articles but not so narrow that it misses important context. Focus on the key entities, events, or
-            topics mentioned in the question.".
-        num_articles (int | Unset): Number of news articles to fetch per question Default: 5.
+        num_search_queries (int | Unset): Number of search queries to generate per question Default: 5.
+        articles_per_query (int | Unset): Number of news articles to return per search query Default: 5.
+        num_articles (int | Unset): Maximum number of news articles to include in final output Default: 10.
+        relevance_threshold (int | Unset): Minimum relevance rating (1-6 scale) to include article Default: 2.
+        min_articles (int | Unset): Minimum number of articles to ensure Default: 6.
         time_delta_days (int | Unset): Number of days to look back for news articles Default: 30.
-        concurrency_limit (int | Unset): Maximum number of concurrent news search tasks Default: 10.
+        concurrency_limit (int | Unset): Maximum number of concurrent tasks Default: 50.
+        enable_relevance_ranking (bool | Unset): Whether to perform LLM-based relevance ranking Default: True.
     """
 
     config_type: Literal["NEWS_CONTEXT_GENERATOR"] | Unset = "NEWS_CONTEXT_GENERATOR"
-    search_query_generation_instructions: str | Unset = (
-        "You are helping generate a search query for Google News to find relevant information for answering a question.\n\nGiven the question, generate:\n1. A concise search query that will find relevant news articles\n2. A goal describing what information you're looking for\n\nThe search query should be specific enough to find relevant articles but not so narrow that it misses important context. Focus on the key entities, events, or topics mentioned in the question."
-    )
-    num_articles: int | Unset = 5
+    num_search_queries: int | Unset = 5
+    articles_per_query: int | Unset = 5
+    num_articles: int | Unset = 10
+    relevance_threshold: int | Unset = 2
+    min_articles: int | Unset = 6
     time_delta_days: int | Unset = 30
-    concurrency_limit: int | Unset = 10
+    concurrency_limit: int | Unset = 50
+    enable_relevance_ranking: bool | Unset = True
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         config_type = self.config_type
 
-        search_query_generation_instructions = self.search_query_generation_instructions
+        num_search_queries = self.num_search_queries
+
+        articles_per_query = self.articles_per_query
 
         num_articles = self.num_articles
+
+        relevance_threshold = self.relevance_threshold
+
+        min_articles = self.min_articles
 
         time_delta_days = self.time_delta_days
 
         concurrency_limit = self.concurrency_limit
+
+        enable_relevance_ranking = self.enable_relevance_ranking
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
         if config_type is not UNSET:
             field_dict["config_type"] = config_type
-        if search_query_generation_instructions is not UNSET:
-            field_dict["search_query_generation_instructions"] = search_query_generation_instructions
+        if num_search_queries is not UNSET:
+            field_dict["num_search_queries"] = num_search_queries
+        if articles_per_query is not UNSET:
+            field_dict["articles_per_query"] = articles_per_query
         if num_articles is not UNSET:
             field_dict["num_articles"] = num_articles
+        if relevance_threshold is not UNSET:
+            field_dict["relevance_threshold"] = relevance_threshold
+        if min_articles is not UNSET:
+            field_dict["min_articles"] = min_articles
         if time_delta_days is not UNSET:
             field_dict["time_delta_days"] = time_delta_days
         if concurrency_limit is not UNSET:
             field_dict["concurrency_limit"] = concurrency_limit
+        if enable_relevance_ranking is not UNSET:
+            field_dict["enable_relevance_ranking"] = enable_relevance_ranking
 
         return field_dict
 
@@ -71,20 +88,32 @@ class NewsContextGenerator:
         if config_type != "NEWS_CONTEXT_GENERATOR" and not isinstance(config_type, Unset):
             raise ValueError(f"config_type must match const 'NEWS_CONTEXT_GENERATOR', got '{config_type}'")
 
-        search_query_generation_instructions = d.pop("search_query_generation_instructions", UNSET)
+        num_search_queries = d.pop("num_search_queries", UNSET)
+
+        articles_per_query = d.pop("articles_per_query", UNSET)
 
         num_articles = d.pop("num_articles", UNSET)
+
+        relevance_threshold = d.pop("relevance_threshold", UNSET)
+
+        min_articles = d.pop("min_articles", UNSET)
 
         time_delta_days = d.pop("time_delta_days", UNSET)
 
         concurrency_limit = d.pop("concurrency_limit", UNSET)
 
+        enable_relevance_ranking = d.pop("enable_relevance_ranking", UNSET)
+
         news_context_generator = cls(
             config_type=config_type,
-            search_query_generation_instructions=search_query_generation_instructions,
+            num_search_queries=num_search_queries,
+            articles_per_query=articles_per_query,
             num_articles=num_articles,
+            relevance_threshold=relevance_threshold,
+            min_articles=min_articles,
             time_delta_days=time_delta_days,
             concurrency_limit=concurrency_limit,
+            enable_relevance_ranking=enable_relevance_ranking,
         )
 
         news_context_generator.additional_properties = d
