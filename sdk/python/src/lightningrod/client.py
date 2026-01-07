@@ -1,8 +1,6 @@
 import time
 from typing import Any, List, Optional
 
-import httpx
-
 from lightningrod._generated.client import AuthenticatedClient
 from lightningrod._generated.models import (
     TransformJob,
@@ -11,7 +9,14 @@ from lightningrod._generated.models import (
     HTTPValidationError,
 )
 from lightningrod._generated.models.sample import Sample
-from lightningrod._generated.api.datasets import get_dataset_samples_datasets_dataset_id_samples_get
+from lightningrod._generated.models.upload_samples_request import UploadSamplesRequest
+from lightningrod._generated.models.upload_samples_response import UploadSamplesResponse
+from lightningrod._generated.api.datasets import (
+    create_dataset_datasets_post,
+    get_dataset_datasets_dataset_id_get,
+    get_dataset_samples_datasets_dataset_id_samples_get,
+    upload_samples_datasets_dataset_id_samples_post,
+)
 from lightningrod._generated.api.transform_jobs import (
     create_transform_job_transform_jobs_post,
     get_transform_job_transform_jobs_job_id_get,
@@ -68,6 +73,49 @@ class LightningRodClient:
         """
         return TransformPipeline(self, config)
     
+    def create_dataset(self, samples: List[Sample], batch_size: int = 1000) -> Dataset:
+        """
+        Upload samples to create a new dataset.
+        
+        Args:
+            samples: List of Sample objects to upload
+            batch_size: Number of samples to upload per batch (default 1000)
+        
+        Returns:
+            Dataset instance for the created dataset
+        
+        Example:
+            >>> from lightningrod import Sample, Seed
+            >>> samples = [Sample(seed=Seed(seed_text="Article..."))]
+            >>> dataset = client.create_dataset(samples)
+            >>> output = client.pipeline(config).run(dataset)
+        """
+        create_response = create_dataset_datasets_post.sync(client=self._generated_client)
+        if create_response is None:
+            raise Exception("Failed to create dataset: received None response")
+        dataset_id: str = create_response.id
+        
+        total_uploaded: int = 0
+        for i in range(0, len(samples), batch_size):
+            batch = samples[i:i + batch_size]
+            request = UploadSamplesRequest(samples=batch)
+            response = upload_samples_datasets_dataset_id_samples_post.sync(
+                dataset_id=dataset_id,
+                client=self._generated_client,
+                body=request,
+            )
+            if isinstance(response, HTTPValidationError):
+                raise Exception(f"Failed to upload samples: {response.detail}")
+            if response is None:
+                raise Exception("Failed to upload samples: received None response")
+            total_uploaded = response.total
+        
+        return Dataset(
+            id=dataset_id,
+            num_rows=total_uploaded,
+            client=self
+        )
+    
     def _fetch_all_samples(self, dataset_id: str) -> List[Sample]:
         """Fetch all samples from a dataset via the paginated API."""
         samples: List[Sample] = []
@@ -117,14 +165,18 @@ class LightningRodClient:
             if job.output_dataset_id is None:
                 raise Exception(f"Transform job {job.id} completed but has no output dataset")
             
-            http_client: httpx.Client = self._generated_client.get_httpx_client()
-            response: httpx.Response = http_client.get(f"/datasets/{job.output_dataset_id}")
-            response.raise_for_status()
-            data: dict = response.json()
+            dataset_response = get_dataset_datasets_dataset_id_get.sync(
+                dataset_id=job.output_dataset_id,
+                client=self._generated_client,
+            )
+            if isinstance(dataset_response, HTTPValidationError):
+                raise Exception(f"Failed to get dataset: {dataset_response.detail}")
+            if dataset_response is None:
+                raise Exception("Failed to get dataset: received None response")
             
             return Dataset(
-                id=data["id"],
-                num_rows=data["num_rows"],
+                id=dataset_response.id,
+                num_rows=dataset_response.num_rows,
                 client=self
             )
         

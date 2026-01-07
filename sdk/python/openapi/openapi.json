@@ -275,6 +275,89 @@
             }
           }
         }
+      },
+      "post": {
+        "tags": [
+          "Datasets"
+        ],
+        "summary": "Upload Samples",
+        "description": "Upload samples to a dataset",
+        "operationId": "upload_samples_datasets__dataset_id__samples_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Dataset Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadSamplesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadSamplesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/datasets": {
+      "post": {
+        "tags": [
+          "Datasets"
+        ],
+        "summary": "Create Dataset",
+        "description": "Create a new empty dataset",
+        "operationId": "create_dataset_datasets_post",
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateDatasetResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/samples/validate": {
@@ -604,6 +687,19 @@
           "message"
         ],
         "title": "Choice"
+      },
+      "CreateDatasetResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "CreateDatasetResponse"
       },
       "CreateTransformConfig": {
         "oneOf": [
@@ -2035,6 +2131,40 @@
           "FAILED"
         ],
         "title": "TransformJobStatus"
+      },
+      "UploadSamplesRequest": {
+        "properties": {
+          "samples": {
+            "items": {
+              "$ref": "#/components/schemas/Sample"
+            },
+            "type": "array",
+            "title": "Samples"
+          }
+        },
+        "type": "object",
+        "required": [
+          "samples"
+        ],
+        "title": "UploadSamplesRequest"
+      },
+      "UploadSamplesResponse": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "count",
+          "total"
+        ],
+        "title": "UploadSamplesResponse"
       },
       "Usage": {
         "properties": {

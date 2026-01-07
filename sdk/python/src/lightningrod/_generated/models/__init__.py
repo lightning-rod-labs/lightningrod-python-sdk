@@ -6,6 +6,7 @@ from .chat_completion_request import ChatCompletionRequest
 from .chat_completion_response import ChatCompletionResponse
 from .chat_message import ChatMessage
 from .choice import Choice
+from .create_dataset_response import CreateDatasetResponse
 from .create_transform_job_request import CreateTransformJobRequest
 from .dataset_metadata import DatasetMetadata
 from .filter_criteria import FilterCriteria
@@ -33,6 +34,8 @@ from .sample_meta import SampleMeta
 from .seed import Seed
 from .transform_job import TransformJob
 from .transform_job_status import TransformJobStatus
+from .upload_samples_request import UploadSamplesRequest
+from .upload_samples_response import UploadSamplesResponse
 from .usage import Usage
 from .validate_sample_response import ValidateSampleResponse
 from .validation_error import ValidationError
@@ -45,6 +48,7 @@ __all__ = (
     "ChatCompletionResponse",
     "ChatMessage",
     "Choice",
+    "CreateDatasetResponse",
     "CreateTransformJobRequest",
     "DatasetMetadata",
     "FilterCriteria",
@@ -72,6 +76,8 @@ __all__ = (
     "Seed",
     "TransformJob",
     "TransformJobStatus",
+    "UploadSamplesRequest",
+    "UploadSamplesResponse",
     "Usage",
     "ValidateSampleResponse",
     "ValidationError",

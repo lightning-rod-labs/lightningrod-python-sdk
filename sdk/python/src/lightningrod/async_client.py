@@ -1,7 +1,8 @@
 import asyncio
-from typing import Optional
+from typing import List, Optional
 
 from lightningrod._generated.models import TransformJob
+from lightningrod._generated.models.sample import Sample
 from lightningrod.client import LightningRodClient, TransformConfig
 from lightningrod.async_dataset import AsyncDataset
 from lightningrod.async_pipeline import AsyncTransformPipeline
@@ -54,6 +55,30 @@ class AsyncLightningRodClient:
             >>> dataset = await client.pipeline(config).run()
         """
         return AsyncTransformPipeline(self, config)
+    
+    async def create_dataset(self, samples: List[Sample], batch_size: int = 1000) -> AsyncDataset:
+        """
+        Upload samples to create a new dataset.
+        
+        Args:
+            samples: List of Sample objects to upload
+            batch_size: Number of samples to upload per batch (default 1000)
+        
+        Returns:
+            AsyncDataset instance for the created dataset
+        
+        Example:
+            >>> from lightningrod import Sample, Seed
+            >>> samples = [Sample(seed=Seed(seed_text="Article..."))]
+            >>> dataset = await client.create_dataset(samples)
+            >>> output = await client.pipeline(config).run(dataset)
+        """
+        sync_dataset = await asyncio.to_thread(
+            self._sync_client.create_dataset,
+            samples,
+            batch_size
+        )
+        return AsyncDataset(sync_dataset)
     
     async def run(
         self,
