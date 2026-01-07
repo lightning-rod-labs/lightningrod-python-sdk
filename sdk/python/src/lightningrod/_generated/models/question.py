@@ -1,16 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import Any, Literal, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
-
-if TYPE_CHECKING:
-    from ..models.question_passthrough_data import QuestionPassthroughData
-
 
 T = TypeVar("T", bound="Question")
 
@@ -20,19 +16,17 @@ class Question:
     """
     Attributes:
         question_text (str):
-        passthrough_data (QuestionPassthroughData | Unset):
+        question_type (Literal['QUESTION'] | Unset):  Default: 'QUESTION'.
     """
 
     question_text: str
-    passthrough_data: QuestionPassthroughData | Unset = UNSET
+    question_type: Literal["QUESTION"] | Unset = "QUESTION"
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         question_text = self.question_text
 
-        passthrough_data: dict[str, Any] | Unset = UNSET
-        if not isinstance(self.passthrough_data, Unset):
-            passthrough_data = self.passthrough_data.to_dict()
+        question_type = self.question_type
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -41,28 +35,23 @@ class Question:
                 "question_text": question_text,
             }
         )
-        if passthrough_data is not UNSET:
-            field_dict["passthrough_data"] = passthrough_data
+        if question_type is not UNSET:
+            field_dict["question_type"] = question_type
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.question_passthrough_data import QuestionPassthroughData
-
         d = dict(src_dict)
         question_text = d.pop("question_text")
 
-        _passthrough_data = d.pop("passthrough_data", UNSET)
-        passthrough_data: QuestionPassthroughData | Unset
-        if isinstance(_passthrough_data, Unset):
-            passthrough_data = UNSET
-        else:
-            passthrough_data = QuestionPassthroughData.from_dict(_passthrough_data)
+        question_type = cast(Literal["QUESTION"] | Unset, d.pop("question_type", UNSET))
+        if question_type != "QUESTION" and not isinstance(question_type, Unset):
+            raise ValueError(f"question_type must match const 'QUESTION', got '{question_type}'")
 
         question = cls(
             question_text=question_text,
-            passthrough_data=passthrough_data,
+            question_type=question_type,
         )
 
         question.additional_properties = d

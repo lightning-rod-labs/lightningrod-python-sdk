@@ -2,17 +2,13 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, TypeVar, cast
+from typing import Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 from dateutil.parser import isoparse
 
 from ..types import UNSET, Unset
-
-if TYPE_CHECKING:
-    from ..models.label_passthrough_data import LabelPassthroughData
-
 
 T = TypeVar("T", bound="Label")
 
@@ -23,18 +19,16 @@ class Label:
     Attributes:
         label (str):
         label_confidence (float):
-        resolution_date (datetime.datetime | None):
-        reasoning (None | str):
-        answer_sources (None | str):
-        passthrough_data (LabelPassthroughData | Unset):
+        resolution_date (datetime.datetime | None | Unset):
+        reasoning (None | str | Unset):
+        answer_sources (None | str | Unset):
     """
 
     label: str
     label_confidence: float
-    resolution_date: datetime.datetime | None
-    reasoning: None | str
-    answer_sources: None | str
-    passthrough_data: LabelPassthroughData | Unset = UNSET
+    resolution_date: datetime.datetime | None | Unset = UNSET
+    reasoning: None | str | Unset = UNSET
+    answer_sources: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -42,21 +36,25 @@ class Label:
 
         label_confidence = self.label_confidence
 
-        resolution_date: None | str
-        if isinstance(self.resolution_date, datetime.datetime):
+        resolution_date: None | str | Unset
+        if isinstance(self.resolution_date, Unset):
+            resolution_date = UNSET
+        elif isinstance(self.resolution_date, datetime.datetime):
             resolution_date = self.resolution_date.isoformat()
         else:
             resolution_date = self.resolution_date
 
-        reasoning: None | str
-        reasoning = self.reasoning
+        reasoning: None | str | Unset
+        if isinstance(self.reasoning, Unset):
+            reasoning = UNSET
+        else:
+            reasoning = self.reasoning
 
-        answer_sources: None | str
-        answer_sources = self.answer_sources
-
-        passthrough_data: dict[str, Any] | Unset = UNSET
-        if not isinstance(self.passthrough_data, Unset):
-            passthrough_data = self.passthrough_data.to_dict()
+        answer_sources: None | str | Unset
+        if isinstance(self.answer_sources, Unset):
+            answer_sources = UNSET
+        else:
+            answer_sources = self.answer_sources
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -64,27 +62,28 @@ class Label:
             {
                 "label": label,
                 "label_confidence": label_confidence,
-                "resolution_date": resolution_date,
-                "reasoning": reasoning,
-                "answer_sources": answer_sources,
             }
         )
-        if passthrough_data is not UNSET:
-            field_dict["passthrough_data"] = passthrough_data
+        if resolution_date is not UNSET:
+            field_dict["resolution_date"] = resolution_date
+        if reasoning is not UNSET:
+            field_dict["reasoning"] = reasoning
+        if answer_sources is not UNSET:
+            field_dict["answer_sources"] = answer_sources
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.label_passthrough_data import LabelPassthroughData
-
         d = dict(src_dict)
         label = d.pop("label")
 
         label_confidence = d.pop("label_confidence")
 
-        def _parse_resolution_date(data: object) -> datetime.datetime | None:
+        def _parse_resolution_date(data: object) -> datetime.datetime | None | Unset:
             if data is None:
+                return data
+            if isinstance(data, Unset):
                 return data
             try:
                 if not isinstance(data, str):
@@ -94,30 +93,27 @@ class Label:
                 return resolution_date_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(datetime.datetime | None, data)
+            return cast(datetime.datetime | None | Unset, data)
 
-        resolution_date = _parse_resolution_date(d.pop("resolution_date"))
+        resolution_date = _parse_resolution_date(d.pop("resolution_date", UNSET))
 
-        def _parse_reasoning(data: object) -> None | str:
+        def _parse_reasoning(data: object) -> None | str | Unset:
             if data is None:
                 return data
-            return cast(None | str, data)
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
 
-        reasoning = _parse_reasoning(d.pop("reasoning"))
+        reasoning = _parse_reasoning(d.pop("reasoning", UNSET))
 
-        def _parse_answer_sources(data: object) -> None | str:
+        def _parse_answer_sources(data: object) -> None | str | Unset:
             if data is None:
                 return data
-            return cast(None | str, data)
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
 
-        answer_sources = _parse_answer_sources(d.pop("answer_sources"))
-
-        _passthrough_data = d.pop("passthrough_data", UNSET)
-        passthrough_data: LabelPassthroughData | Unset
-        if isinstance(_passthrough_data, Unset):
-            passthrough_data = UNSET
-        else:
-            passthrough_data = LabelPassthroughData.from_dict(_passthrough_data)
+        answer_sources = _parse_answer_sources(d.pop("answer_sources", UNSET))
 
         label = cls(
             label=label,
@@ -125,7 +121,6 @@ class Label:
             resolution_date=resolution_date,
             reasoning=reasoning,
             answer_sources=answer_sources,
-            passthrough_data=passthrough_data,
         )
 
         label.additional_properties = d

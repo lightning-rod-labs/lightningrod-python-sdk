@@ -20,17 +20,17 @@ class RolloutGenerator:
     """
     Attributes:
         models (list[ModelConfig]): Model names or ModelConfig objects
-        prompt_template (str): Prompt template with {column} placeholders
-        input_columns (list[str]): Columns to substitute into template
         config_type (Literal['ROLLOUT_GENERATOR'] | Unset):  Default: 'ROLLOUT_GENERATOR'.
+        prompt_template (None | str | Unset): Prompt template with {column} placeholders. If None, uses sample.prompt
+        input_columns (list[str] | Unset): Columns to substitute into template (from meta)
         output_schema (Any | None | Unset): Pydantic model for structured output
         concurrency_limit (int | Unset): Maximum number of concurrent rollout tasks Default: 50.
     """
 
     models: list[ModelConfig]
-    prompt_template: str
-    input_columns: list[str]
     config_type: Literal["ROLLOUT_GENERATOR"] | Unset = "ROLLOUT_GENERATOR"
+    prompt_template: None | str | Unset = UNSET
+    input_columns: list[str] | Unset = UNSET
     output_schema: Any | None | Unset = UNSET
     concurrency_limit: int | Unset = 50
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -41,11 +41,17 @@ class RolloutGenerator:
             models_item = models_item_data.to_dict()
             models.append(models_item)
 
-        prompt_template = self.prompt_template
-
-        input_columns = self.input_columns
-
         config_type = self.config_type
+
+        prompt_template: None | str | Unset
+        if isinstance(self.prompt_template, Unset):
+            prompt_template = UNSET
+        else:
+            prompt_template = self.prompt_template
+
+        input_columns: list[str] | Unset = UNSET
+        if not isinstance(self.input_columns, Unset):
+            input_columns = self.input_columns
 
         output_schema: Any | None | Unset
         if isinstance(self.output_schema, Unset):
@@ -60,12 +66,14 @@ class RolloutGenerator:
         field_dict.update(
             {
                 "models": models,
-                "prompt_template": prompt_template,
-                "input_columns": input_columns,
             }
         )
         if config_type is not UNSET:
             field_dict["config_type"] = config_type
+        if prompt_template is not UNSET:
+            field_dict["prompt_template"] = prompt_template
+        if input_columns is not UNSET:
+            field_dict["input_columns"] = input_columns
         if output_schema is not UNSET:
             field_dict["output_schema"] = output_schema
         if concurrency_limit is not UNSET:
@@ -85,13 +93,20 @@ class RolloutGenerator:
 
             models.append(models_item)
 
-        prompt_template = d.pop("prompt_template")
-
-        input_columns = cast(list[str], d.pop("input_columns"))
-
         config_type = cast(Literal["ROLLOUT_GENERATOR"] | Unset, d.pop("config_type", UNSET))
         if config_type != "ROLLOUT_GENERATOR" and not isinstance(config_type, Unset):
             raise ValueError(f"config_type must match const 'ROLLOUT_GENERATOR', got '{config_type}'")
+
+        def _parse_prompt_template(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        prompt_template = _parse_prompt_template(d.pop("prompt_template", UNSET))
+
+        input_columns = cast(list[str], d.pop("input_columns", UNSET))
 
         def _parse_output_schema(data: object) -> Any | None | Unset:
             if data is None:
@@ -106,9 +121,9 @@ class RolloutGenerator:
 
         rollout_generator = cls(
             models=models,
+            config_type=config_type,
             prompt_template=prompt_template,
             input_columns=input_columns,
-            config_type=config_type,
             output_schema=output_schema,
             concurrency_limit=concurrency_limit,
         )

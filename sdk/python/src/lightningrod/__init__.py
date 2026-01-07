@@ -14,7 +14,6 @@ from lightningrod.answer_types import AnswerTypes
 from lightningrod._generated.models import (
     AnswerType,
     AnswerTypeEnum,
-    DatasetMetadata,
     TransformJob,
     TransformJobStatus,
     NewsSeedGenerator,
@@ -27,6 +26,7 @@ from lightningrod._generated.models import (
     QuestionRenderer,
     WebSearchLabeler,
     FilterCriteria,
+    Sample,
 )
 
 __version__ = "0.1.0"
@@ -38,21 +38,19 @@ __all__ = [
     "AsyncLightningRodClient",
     "AsyncTransformPipeline",
     "Dataset",
-    "DatasetMetadata",
     "FilterCriteria",
     "ForwardLookingQuestionGenerator",
     "GdeltSeedGenerator",
     "LightningRodClient",
     "NewsContextGenerator",
     "NewsSeedGenerator",
-    "Pipeline",
     "QuestionAndLabelGenerator",
     "QuestionGenerator",
     "QuestionPipeline",
     "QuestionRenderer",
+    "Sample",
     "TransformJob",
     "TransformJobStatus",
     "TransformPipeline",
     "WebSearchLabeler",
 ]
-

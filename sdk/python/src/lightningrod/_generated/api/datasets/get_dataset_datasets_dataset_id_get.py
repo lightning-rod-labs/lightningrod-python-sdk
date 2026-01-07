@@ -58,7 +58,7 @@ def sync_detailed(
 ) -> Response[DatasetMetadata | HTTPValidationError]:
     """Get Dataset
 
-     Get dataset metadata including ID, row count, and schema
+     Get dataset metadata including ID and row count
 
     Args:
         dataset_id (str):
@@ -89,7 +89,7 @@ def sync(
 ) -> DatasetMetadata | HTTPValidationError | None:
     """Get Dataset
 
-     Get dataset metadata including ID, row count, and schema
+     Get dataset metadata including ID and row count
 
     Args:
         dataset_id (str):
@@ -115,7 +115,7 @@ async def asyncio_detailed(
 ) -> Response[DatasetMetadata | HTTPValidationError]:
     """Get Dataset
 
-     Get dataset metadata including ID, row count, and schema
+     Get dataset metadata including ID and row count
 
     Args:
         dataset_id (str):
@@ -144,7 +144,7 @@ async def asyncio(
 ) -> DatasetMetadata | HTTPValidationError | None:
     """Get Dataset
 
-     Get dataset metadata including ID, row count, and schema
+     Get dataset metadata including ID and row count
 
     Args:
         dataset_id (str):

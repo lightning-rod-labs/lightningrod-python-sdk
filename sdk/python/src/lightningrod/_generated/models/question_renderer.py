@@ -22,8 +22,7 @@ class QuestionRenderer:
         config_type (Literal['QUESTION_RENDERER'] | Unset): Type of transform configuration Default:
             'QUESTION_RENDERER'.
         template (None | str | Unset): Custom template for rendering the prompt. If not provided, dynamically builds
-            based on available content. Supports any column name as a placeholder (e.g., {question_text}). Special
-            placeholders: {context} renders context objects, {answer_instructions} renders answer type instructions.
+            based on available content. Supports placeholders like {question_text}, {context}, {answer_instructions}.
         answer_type (AnswerType | None | Unset): The type of answer expected, used to render answer instructions
     """
 

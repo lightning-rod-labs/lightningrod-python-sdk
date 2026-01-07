@@ -2,17 +2,13 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, TypeVar, cast
+from typing import Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 from dateutil.parser import isoparse
 
 from ..types import UNSET, Unset
-
-if TYPE_CHECKING:
-    from ..models.seed_passthrough_data import SeedPassthroughData
-
 
 T = TypeVar("T", bound="Seed")
 
@@ -22,14 +18,12 @@ class Seed:
     """
     Attributes:
         seed_text (str):
-        passthrough_data (SeedPassthroughData | Unset):
         url (None | str | Unset):
         seed_creation_date (datetime.datetime | None | Unset):
         search_query (None | str | Unset):
     """
 
     seed_text: str
-    passthrough_data: SeedPassthroughData | Unset = UNSET
     url: None | str | Unset = UNSET
     seed_creation_date: datetime.datetime | None | Unset = UNSET
     search_query: None | str | Unset = UNSET
@@ -37,10 +31,6 @@ class Seed:
 
     def to_dict(self) -> dict[str, Any]:
         seed_text = self.seed_text
-
-        passthrough_data: dict[str, Any] | Unset = UNSET
-        if not isinstance(self.passthrough_data, Unset):
-            passthrough_data = self.passthrough_data.to_dict()
 
         url: None | str | Unset
         if isinstance(self.url, Unset):
@@ -69,8 +59,6 @@ class Seed:
                 "seed_text": seed_text,
             }
         )
-        if passthrough_data is not UNSET:
-            field_dict["passthrough_data"] = passthrough_data
         if url is not UNSET:
             field_dict["url"] = url
         if seed_creation_date is not UNSET:
@@ -82,17 +70,8 @@ class Seed:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.seed_passthrough_data import SeedPassthroughData
-
         d = dict(src_dict)
         seed_text = d.pop("seed_text")
-
-        _passthrough_data = d.pop("passthrough_data", UNSET)
-        passthrough_data: SeedPassthroughData | Unset
-        if isinstance(_passthrough_data, Unset):
-            passthrough_data = UNSET
-        else:
-            passthrough_data = SeedPassthroughData.from_dict(_passthrough_data)
 
         def _parse_url(data: object) -> None | str | Unset:
             if data is None:
@@ -131,7 +110,6 @@ class Seed:
 
         seed = cls(
             seed_text=seed_text,
-            passthrough_data=passthrough_data,
             url=url,
             seed_creation_date=seed_creation_date,
             search_query=search_query,

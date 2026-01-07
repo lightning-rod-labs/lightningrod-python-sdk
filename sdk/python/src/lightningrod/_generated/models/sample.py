@@ -9,6 +9,7 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
+    from ..models.forward_looking_question import ForwardLookingQuestion
     from ..models.label import Label
     from ..models.news_context import NewsContext
     from ..models.question import Question
@@ -25,22 +26,25 @@ class Sample:
     """
     Attributes:
         seed (None | Seed | Unset):
-        question (None | Question | Unset):
+        question (ForwardLookingQuestion | None | Question | Unset):
         label (Label | None | Unset):
         prompt (None | str | Unset):
         context (list[NewsContext | RAGContext] | None | Unset):
         meta (SampleMeta | Unset):
+        is_valid (bool | Unset):  Default: True.
     """
 
     seed: None | Seed | Unset = UNSET
-    question: None | Question | Unset = UNSET
+    question: ForwardLookingQuestion | None | Question | Unset = UNSET
     label: Label | None | Unset = UNSET
     prompt: None | str | Unset = UNSET
     context: list[NewsContext | RAGContext] | None | Unset = UNSET
     meta: SampleMeta | Unset = UNSET
+    is_valid: bool | Unset = True
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.forward_looking_question import ForwardLookingQuestion
         from ..models.label import Label
         from ..models.news_context import NewsContext
         from ..models.question import Question
@@ -57,6 +61,8 @@ class Sample:
         question: dict[str, Any] | None | Unset
         if isinstance(self.question, Unset):
             question = UNSET
+        elif isinstance(self.question, ForwardLookingQuestion):
+            question = self.question.to_dict()
         elif isinstance(self.question, Question):
             question = self.question.to_dict()
         else:
@@ -97,6 +103,8 @@ class Sample:
         if not isinstance(self.meta, Unset):
             meta = self.meta.to_dict()
 
+        is_valid = self.is_valid
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
@@ -112,11 +120,14 @@ class Sample:
             field_dict["context"] = context
         if meta is not UNSET:
             field_dict["meta"] = meta
+        if is_valid is not UNSET:
+            field_dict["is_valid"] = is_valid
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.forward_looking_question import ForwardLookingQuestion
         from ..models.label import Label
         from ..models.news_context import NewsContext
         from ..models.question import Question
@@ -143,7 +154,7 @@ class Sample:
 
         seed = _parse_seed(d.pop("seed", UNSET))
 
-        def _parse_question(data: object) -> None | Question | Unset:
+        def _parse_question(data: object) -> ForwardLookingQuestion | None | Question | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -151,12 +162,20 @@ class Sample:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                question_type_0 = Question.from_dict(data)
+                question_type_0_type_0 = ForwardLookingQuestion.from_dict(data)
 
-                return question_type_0
+                return question_type_0_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(None | Question | Unset, data)
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                question_type_0_type_1 = Question.from_dict(data)
+
+                return question_type_0_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(ForwardLookingQuestion | None | Question | Unset, data)
 
         question = _parse_question(d.pop("question", UNSET))
 
@@ -231,6 +250,8 @@ class Sample:
         else:
             meta = SampleMeta.from_dict(_meta)
 
+        is_valid = d.pop("is_valid", UNSET)
+
         sample = cls(
             seed=seed,
             question=question,
@@ -238,6 +259,7 @@ class Sample:
             prompt=prompt,
             context=context,
             meta=meta,
+            is_valid=is_valid,
         )
 
         sample.additional_properties = d

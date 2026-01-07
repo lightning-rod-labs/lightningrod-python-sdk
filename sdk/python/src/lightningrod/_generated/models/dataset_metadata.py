@@ -15,12 +15,10 @@ class DatasetMetadata:
     Attributes:
         id (str):
         num_rows (int):
-        schema_base64 (str):
     """
 
     id: str
     num_rows: int
-    schema_base64: str
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -28,15 +26,12 @@ class DatasetMetadata:
 
         num_rows = self.num_rows
 
-        schema_base64 = self.schema_base64
-
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
                 "id": id,
                 "num_rows": num_rows,
-                "schema_base64": schema_base64,
             }
         )
 
@@ -49,12 +44,9 @@ class DatasetMetadata:
 
         num_rows = d.pop("num_rows")
 
-        schema_base64 = d.pop("schema_base64")
-
         dataset_metadata = cls(
             id=id,
             num_rows=num_rows,
-            schema_base64=schema_base64,
         )
 
         dataset_metadata.additional_properties = d

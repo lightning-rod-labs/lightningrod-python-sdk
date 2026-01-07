@@ -159,7 +159,7 @@
           "Datasets"
         ],
         "summary": "Get Dataset",
-        "description": "Get dataset metadata including ID, row count, and schema",
+        "description": "Get dataset metadata including ID and row count",
         "operationId": "get_dataset_datasets__dataset_id__get",
         "security": [
           {
@@ -201,14 +201,14 @@
         }
       }
     },
-    "/datasets/{dataset_id}/download-url": {
+    "/datasets/{dataset_id}/samples": {
       "get": {
         "tags": [
           "Datasets"
         ],
-        "summary": "Get Dataset Download Url",
-        "description": "Get a temporary signed URL to download the dataset parquet file",
-        "operationId": "get_dataset_download_url_datasets__dataset_id__download_url_get",
+        "summary": "Get Dataset Samples",
+        "description": "Get samples from a dataset with cursor-based pagination",
+        "operationId": "get_dataset_samples_datasets__dataset_id__samples_get",
         "security": [
           {
             "HTTPBearer": []
@@ -223,6 +223,34 @@
               "type": "string",
               "title": "Dataset Id"
             }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 5000,
+              "minimum": 1,
+              "default": 1000,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
           }
         ],
         "responses": {
@@ -231,7 +259,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DatasetDownloadUrlResponse"
+                  "$ref": "#/components/schemas/PaginatedSamplesResponse"
                 }
               }
             }
@@ -247,80 +275,6 @@
             }
           }
         }
-      }
-    },
-    "/datasets/upload-url": {
-      "post": {
-        "tags": [
-          "Datasets"
-        ],
-        "summary": "Get Dataset Upload Url",
-        "description": "Get a temporary signed URL to upload a parquet file",
-        "operationId": "get_dataset_upload_url_datasets_upload_url_post",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DatasetUploadUrlResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/datasets/from-upload": {
-      "post": {
-        "tags": [
-          "Datasets"
-        ],
-        "summary": "Create Dataset From Upload",
-        "description": "Create a dataset from a previously uploaded parquet file",
-        "operationId": "create_dataset_from_upload_datasets_from_upload_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateDatasetFromUploadRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DatasetMetadata"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
       }
     },
     "/samples/validate": {
@@ -651,19 +605,6 @@
         ],
         "title": "Choice"
       },
-      "CreateDatasetFromUploadRequest": {
-        "properties": {
-          "upload_id": {
-            "type": "string",
-            "title": "Upload Id"
-          }
-        },
-        "type": "object",
-        "required": [
-          "upload_id"
-        ],
-        "title": "CreateDatasetFromUploadRequest"
-      },
       "CreateTransformConfig": {
         "oneOf": [
           {
@@ -739,35 +680,6 @@
         ],
         "title": "CreateTransformJobRequest"
       },
-      "DatasetDownloadUrlResponse": {
-        "properties": {
-          "url": {
-            "type": "string",
-            "title": "Url"
-          },
-          "expires_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Expires At"
-          },
-          "dataset_id": {
-            "type": "string",
-            "title": "Dataset Id"
-          },
-          "filename": {
-            "type": "string",
-            "title": "Filename"
-          }
-        },
-        "type": "object",
-        "required": [
-          "url",
-          "expires_at",
-          "dataset_id",
-          "filename"
-        ],
-        "title": "DatasetDownloadUrlResponse"
-      },
       "DatasetMetadata": {
         "properties": {
           "id": {
@@ -777,43 +689,14 @@
           "num_rows": {
             "type": "integer",
             "title": "Num Rows"
-          },
-          "schema_base64": {
-            "type": "string",
-            "title": "Schema Base64"
           }
         },
         "type": "object",
         "required": [
           "id",
-          "num_rows",
-          "schema_base64"
+          "num_rows"
         ],
         "title": "DatasetMetadata"
-      },
-      "DatasetUploadUrlResponse": {
-        "properties": {
-          "upload_id": {
-            "type": "string",
-            "title": "Upload Id"
-          },
-          "url": {
-            "type": "string",
-            "title": "Url"
-          },
-          "expires_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Expires At"
-          }
-        },
-        "type": "object",
-        "required": [
-          "upload_id",
-          "url",
-          "expires_at"
-        ],
-        "title": "DatasetUploadUrlResponse"
       },
       "FilterCriteria": {
         "properties": {
@@ -843,6 +726,54 @@
         ],
         "title": "FilterCriteria",
         "description": "Reusable filter criteria for LLM-based content scoring and filtering."
+      },
+      "ForwardLookingQuestion": {
+        "properties": {
+          "question_type": {
+            "type": "string",
+            "const": "FORWARD_LOOKING_QUESTION",
+            "title": "Question Type",
+            "default": "FORWARD_LOOKING_QUESTION"
+          },
+          "question_text": {
+            "type": "string",
+            "title": "Question Text"
+          },
+          "date_close": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Date Close"
+          },
+          "event_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Event Date"
+          },
+          "resolution_criteria": {
+            "type": "string",
+            "title": "Resolution Criteria"
+          },
+          "prediction_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prediction Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question_text",
+          "date_close",
+          "event_date",
+          "resolution_criteria"
+        ],
+        "title": "ForwardLookingQuestion"
       },
       "ForwardLookingQuestionGenerator": {
         "properties": {
@@ -1006,11 +937,6 @@
       },
       "Label": {
         "properties": {
-          "passthrough_data": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Passthrough Data"
-          },
           "label": {
             "type": "string",
             "title": "Label"
@@ -1057,10 +983,7 @@
         "type": "object",
         "required": [
           "label",
-          "label_confidence",
-          "resolution_date",
-          "reasoning",
-          "answer_sources"
+          "label_confidence"
         ],
         "title": "Label"
       },
@@ -1417,12 +1340,50 @@
         ],
         "title": "NewsSeedGenerator"
       },
+      "PaginatedSamplesResponse": {
+        "properties": {
+          "samples": {
+            "items": {
+              "$ref": "#/components/schemas/Sample"
+            },
+            "type": "array",
+            "title": "Samples"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          },
+          "has_more": {
+            "type": "boolean",
+            "title": "Has More"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "samples",
+          "has_more",
+          "total"
+        ],
+        "title": "PaginatedSamplesResponse"
+      },
       "Question": {
         "properties": {
-          "passthrough_data": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Passthrough Data"
+          "question_type": {
+            "type": "string",
+            "const": "QUESTION",
+            "title": "Question Type",
+            "default": "QUESTION"
           },
           "question_text": {
             "type": "string",
@@ -1725,7 +1686,7 @@
               }
             ],
             "title": "Template",
-            "description": "Custom template for rendering the prompt. If not provided, dynamically builds based on available content. Supports any column name as a placeholder (e.g., {question_text}). Special placeholders: {context} renders context objects, {answer_instructions} renders answer type instructions."
+            "description": "Custom template for rendering the prompt. If not provided, dynamically builds based on available content. Supports placeholders like {question_text}, {context}, {answer_instructions}."
           },
           "answer_type": {
             "anyOf": [
@@ -1803,9 +1764,16 @@
             "description": "Model names or ModelConfig objects"
           },
           "prompt_template": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Prompt Template",
-            "description": "Prompt template with {column} placeholders"
+            "description": "Prompt template with {column} placeholders. If None, uses sample.prompt"
           },
           "input_columns": {
             "items": {
@@ -1813,7 +1781,7 @@
             },
             "type": "array",
             "title": "Input Columns",
-            "description": "Columns to substitute into template"
+            "description": "Columns to substitute into template (from meta)"
           },
           "output_schema": {
             "anyOf": [
@@ -1834,9 +1802,7 @@
         },
         "type": "object",
         "required": [
-          "models",
-          "prompt_template",
-          "input_columns"
+          "models"
         ],
         "title": "RolloutGenerator"
       },
@@ -1855,12 +1821,27 @@
           "question": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Question"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/ForwardLookingQuestion"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Question"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "question_type",
+                  "mapping": {
+                    "FORWARD_LOOKING_QUESTION": "#/components/schemas/ForwardLookingQuestion",
+                    "QUESTION": "#/components/schemas/Question"
+                  }
+                }
               },
               {
                 "type": "null"
               }
-            ]
+            ],
+            "title": "Question"
           },
           "label": {
             "anyOf": [
@@ -1916,6 +1897,11 @@
             "type": "object",
             "title": "Meta",
             "default": {}
+          },
+          "is_valid": {
+            "type": "boolean",
+            "title": "Is Valid",
+            "default": true
           }
         },
         "type": "object",
@@ -1923,11 +1909,6 @@
       },
       "Seed": {
         "properties": {
-          "passthrough_data": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Passthrough Data"
-          },
           "seed_text": {
             "type": "string",
             "title": "Seed Text"
