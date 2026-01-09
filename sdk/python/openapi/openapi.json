@@ -758,7 +758,7 @@
             ],
             "title": "Input Dataset Id"
           },
-          "max_seeds": {
+          "max_questions": {
             "anyOf": [
               {
                 "type": "integer"
@@ -767,7 +767,18 @@
                 "type": "null"
               }
             ],
-            "title": "Max Seeds"
+            "title": "Max Questions"
+          },
+          "configuration_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Configuration Id"
           }
         },
         "type": "object",
@@ -989,25 +1000,13 @@
               }
             ],
             "title": "Max Count",
-            "description": "Maximum number of seeds to generate. If None, process all intervals concurrently"
-          },
-          "concurrency_limit": {
-            "type": "integer",
-            "title": "Concurrency Limit",
-            "description": "Maximum number of concurrent intervals when max_count is None",
-            "default": 5
+            "description": "Maximum number of seeds to generate"
           },
           "articles_per_interval": {
             "type": "integer",
             "title": "Articles Per Interval",
             "description": "Number of articles to fetch per interval from BigQuery",
             "default": 1000
-          },
-          "scrape_concurrency_limit": {
-            "type": "integer",
-            "title": "Scrape Concurrency Limit",
-            "description": "Maximum number of concurrent scraping requests",
-            "default": 50
           }
         },
         "type": "object",
@@ -1030,6 +1029,35 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "JobUsage": {
+        "properties": {
+          "total": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UsageSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "by_step": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "By Step"
+          }
+        },
+        "type": "object",
+        "title": "JobUsage",
+        "description": "Aggregated usage statistics for a transform job with step breakdown."
       },
       "Label": {
         "properties": {
@@ -1309,12 +1337,6 @@
             "description": "Number of days to look back for news articles",
             "default": 30
           },
-          "concurrency_limit": {
-            "type": "integer",
-            "title": "Concurrency Limit",
-            "description": "Maximum number of concurrent tasks",
-            "default": 50
-          },
           "enable_relevance_ranking": {
             "type": "boolean",
             "title": "Enable Relevance Ranking",
@@ -1361,13 +1383,7 @@
               }
             ],
             "title": "Max Count",
-            "description": "Maximum number of seeds to generate. If None, process all intervals concurrently"
-          },
-          "concurrency_limit": {
-            "type": "integer",
-            "title": "Concurrency Limit",
-            "description": "Maximum number of concurrent intervals when max_count is None",
-            "default": 5
+            "description": "Maximum number of seeds to generate"
           },
           "search_query": {
             "anyOf": [
@@ -1843,6 +1859,48 @@
         ],
         "title": "ResponseMessage"
       },
+      "Rollout": {
+        "properties": {
+          "model_name": {
+            "type": "string",
+            "title": "Model Name"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "parsed_output": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parsed Output"
+          },
+          "reasoning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_name",
+          "content"
+        ],
+        "title": "Rollout",
+        "description": "A single model rollout/response."
+      },
       "RolloutGenerator": {
         "properties": {
           "config_type": {
@@ -1888,12 +1946,6 @@
             ],
             "title": "Output Schema",
             "description": "Pydantic model for structured output"
-          },
-          "concurrency_limit": {
-            "type": "integer",
-            "title": "Concurrency Limit",
-            "description": "Maximum number of concurrent rollout tasks",
-            "default": 50
           }
         },
         "type": "object",
@@ -1988,6 +2040,20 @@
             ],
             "title": "Context"
           },
+          "rollouts": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Rollout"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rollouts"
+          },
           "meta": {
             "additionalProperties": true,
             "type": "object",
@@ -2060,8 +2126,30 @@
             "type": "string",
             "title": "Organization Id"
           },
+          "configuration_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Configuration Id"
+          },
           "status": {
             "$ref": "#/components/schemas/TransformJobStatus"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
           },
           "modal_function_call_id": {
             "type": "string",
@@ -2096,6 +2184,16 @@
               }
             ],
             "title": "Output Dataset Id"
+          },
+          "usage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobUsage"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "created_at": {
             "type": "string",
@@ -2192,6 +2290,48 @@
         ],
         "title": "Usage"
       },
+      "UsageSummary": {
+        "properties": {
+          "llm_call_count": {
+            "type": "integer",
+            "title": "Llm Call Count",
+            "default": 0
+          },
+          "llm_input_tokens": {
+            "type": "integer",
+            "title": "Llm Input Tokens",
+            "default": 0
+          },
+          "llm_output_tokens": {
+            "type": "integer",
+            "title": "Llm Output Tokens",
+            "default": 0
+          },
+          "llm_total_cost": {
+            "type": "number",
+            "title": "Llm Total Cost",
+            "default": 0.0
+          },
+          "web_search_count": {
+            "type": "integer",
+            "title": "Web Search Count",
+            "default": 0
+          },
+          "url_download_count": {
+            "type": "integer",
+            "title": "Url Download Count",
+            "default": 0
+          },
+          "gemini_grounding_count": {
+            "type": "integer",
+            "title": "Gemini Grounding Count",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "UsageSummary",
+        "description": "Usage statistics for a step or total."
+      },
       "ValidateSampleResponse": {
         "properties": {
           "valid": {
@@ -2257,12 +2397,6 @@
             "title": "Confidence Threshold",
             "description": "Minimum confidence threshold for including questions",
             "default": 0.9
-          },
-          "concurrency_limit": {
-            "type": "integer",
-            "title": "Concurrency Limit",
-            "description": "Maximum number of concurrent question processing tasks",
-            "default": 50
           },
           "answer_type": {
             "anyOf": [
