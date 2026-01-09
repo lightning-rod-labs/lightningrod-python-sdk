@@ -24,7 +24,6 @@ class RolloutGenerator:
         prompt_template (None | str | Unset): Prompt template with {column} placeholders. If None, uses sample.prompt
         input_columns (list[str] | Unset): Columns to substitute into template (from meta)
         output_schema (Any | None | Unset): Pydantic model for structured output
-        concurrency_limit (int | Unset): Maximum number of concurrent rollout tasks Default: 50.
     """
 
     models: list[ModelConfig]
@@ -32,7 +31,6 @@ class RolloutGenerator:
     prompt_template: None | str | Unset = UNSET
     input_columns: list[str] | Unset = UNSET
     output_schema: Any | None | Unset = UNSET
-    concurrency_limit: int | Unset = 50
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -59,8 +57,6 @@ class RolloutGenerator:
         else:
             output_schema = self.output_schema
 
-        concurrency_limit = self.concurrency_limit
-
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -76,8 +72,6 @@ class RolloutGenerator:
             field_dict["input_columns"] = input_columns
         if output_schema is not UNSET:
             field_dict["output_schema"] = output_schema
-        if concurrency_limit is not UNSET:
-            field_dict["concurrency_limit"] = concurrency_limit
 
         return field_dict
 
@@ -117,15 +111,12 @@ class RolloutGenerator:
 
         output_schema = _parse_output_schema(d.pop("output_schema", UNSET))
 
-        concurrency_limit = d.pop("concurrency_limit", UNSET)
-
         rollout_generator = cls(
             models=models,
             config_type=config_type,
             prompt_template=prompt_template,
             input_columns=input_columns,
             output_schema=output_schema,
-            concurrency_limit=concurrency_limit,
         )
 
         rollout_generator.additional_properties = d

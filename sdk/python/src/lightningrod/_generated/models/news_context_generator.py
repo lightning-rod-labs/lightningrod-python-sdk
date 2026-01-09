@@ -23,7 +23,6 @@ class NewsContextGenerator:
         relevance_threshold (int | Unset): Minimum relevance rating (1-6 scale) to include article Default: 2.
         min_articles (int | Unset): Minimum number of articles to ensure Default: 6.
         time_delta_days (int | Unset): Number of days to look back for news articles Default: 30.
-        concurrency_limit (int | Unset): Maximum number of concurrent tasks Default: 50.
         enable_relevance_ranking (bool | Unset): Whether to perform LLM-based relevance ranking Default: True.
     """
 
@@ -34,7 +33,6 @@ class NewsContextGenerator:
     relevance_threshold: int | Unset = 2
     min_articles: int | Unset = 6
     time_delta_days: int | Unset = 30
-    concurrency_limit: int | Unset = 50
     enable_relevance_ranking: bool | Unset = True
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -52,8 +50,6 @@ class NewsContextGenerator:
         min_articles = self.min_articles
 
         time_delta_days = self.time_delta_days
-
-        concurrency_limit = self.concurrency_limit
 
         enable_relevance_ranking = self.enable_relevance_ranking
 
@@ -74,8 +70,6 @@ class NewsContextGenerator:
             field_dict["min_articles"] = min_articles
         if time_delta_days is not UNSET:
             field_dict["time_delta_days"] = time_delta_days
-        if concurrency_limit is not UNSET:
-            field_dict["concurrency_limit"] = concurrency_limit
         if enable_relevance_ranking is not UNSET:
             field_dict["enable_relevance_ranking"] = enable_relevance_ranking
 
@@ -100,8 +94,6 @@ class NewsContextGenerator:
 
         time_delta_days = d.pop("time_delta_days", UNSET)
 
-        concurrency_limit = d.pop("concurrency_limit", UNSET)
-
         enable_relevance_ranking = d.pop("enable_relevance_ranking", UNSET)
 
         news_context_generator = cls(
@@ -112,7 +104,6 @@ class NewsContextGenerator:
             relevance_threshold=relevance_threshold,
             min_articles=min_articles,
             time_delta_days=time_delta_days,
-            concurrency_limit=concurrency_limit,
             enable_relevance_ranking=enable_relevance_ranking,
         )
 

@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from ..models.news_context import NewsContext
     from ..models.question import Question
     from ..models.rag_context import RAGContext
+    from ..models.rollout import Rollout
     from ..models.sample_meta import SampleMeta
     from ..models.seed import Seed
 
@@ -30,6 +31,7 @@ class Sample:
         label (Label | None | Unset):
         prompt (None | str | Unset):
         context (list[NewsContext | RAGContext] | None | Unset):
+        rollouts (list[Rollout] | None | Unset):
         meta (SampleMeta | Unset):
         is_valid (bool | Unset):  Default: True.
     """
@@ -39,6 +41,7 @@ class Sample:
     label: Label | None | Unset = UNSET
     prompt: None | str | Unset = UNSET
     context: list[NewsContext | RAGContext] | None | Unset = UNSET
+    rollouts: list[Rollout] | None | Unset = UNSET
     meta: SampleMeta | Unset = UNSET
     is_valid: bool | Unset = True
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -99,6 +102,18 @@ class Sample:
         else:
             context = self.context
 
+        rollouts: list[dict[str, Any]] | None | Unset
+        if isinstance(self.rollouts, Unset):
+            rollouts = UNSET
+        elif isinstance(self.rollouts, list):
+            rollouts = []
+            for rollouts_type_0_item_data in self.rollouts:
+                rollouts_type_0_item = rollouts_type_0_item_data.to_dict()
+                rollouts.append(rollouts_type_0_item)
+
+        else:
+            rollouts = self.rollouts
+
         meta: dict[str, Any] | Unset = UNSET
         if not isinstance(self.meta, Unset):
             meta = self.meta.to_dict()
@@ -118,6 +133,8 @@ class Sample:
             field_dict["prompt"] = prompt
         if context is not UNSET:
             field_dict["context"] = context
+        if rollouts is not UNSET:
+            field_dict["rollouts"] = rollouts
         if meta is not UNSET:
             field_dict["meta"] = meta
         if is_valid is not UNSET:
@@ -132,6 +149,7 @@ class Sample:
         from ..models.news_context import NewsContext
         from ..models.question import Question
         from ..models.rag_context import RAGContext
+        from ..models.rollout import Rollout
         from ..models.sample_meta import SampleMeta
         from ..models.seed import Seed
 
@@ -243,6 +261,28 @@ class Sample:
 
         context = _parse_context(d.pop("context", UNSET))
 
+        def _parse_rollouts(data: object) -> list[Rollout] | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                rollouts_type_0 = []
+                _rollouts_type_0 = data
+                for rollouts_type_0_item_data in _rollouts_type_0:
+                    rollouts_type_0_item = Rollout.from_dict(rollouts_type_0_item_data)
+
+                    rollouts_type_0.append(rollouts_type_0_item)
+
+                return rollouts_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(list[Rollout] | None | Unset, data)
+
+        rollouts = _parse_rollouts(d.pop("rollouts", UNSET))
+
         _meta = d.pop("meta", UNSET)
         meta: SampleMeta | Unset
         if isinstance(_meta, Unset):
@@ -258,6 +298,7 @@ class Sample:
             label=label,
             prompt=prompt,
             context=context,
+            rollouts=rollouts,
             meta=meta,
             is_valid=is_valid,
         )

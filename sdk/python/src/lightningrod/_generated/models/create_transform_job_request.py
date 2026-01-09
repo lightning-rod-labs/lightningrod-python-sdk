@@ -29,7 +29,8 @@ class CreateTransformJobRequest:
         config (ForwardLookingQuestionGenerator | GdeltSeedGenerator | NewsSeedGenerator | QuestionAndLabelGenerator |
             QuestionGenerator | QuestionPipeline | QuestionRenderer | WebSearchLabeler):
         input_dataset_id (None | str | Unset):
-        max_seeds (int | None | Unset):
+        max_questions (int | None | Unset):
+        configuration_id (None | str | Unset):
     """
 
     config: (
@@ -43,7 +44,8 @@ class CreateTransformJobRequest:
         | WebSearchLabeler
     )
     input_dataset_id: None | str | Unset = UNSET
-    max_seeds: int | None | Unset = UNSET
+    max_questions: int | None | Unset = UNSET
+    configuration_id: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -79,11 +81,17 @@ class CreateTransformJobRequest:
         else:
             input_dataset_id = self.input_dataset_id
 
-        max_seeds: int | None | Unset
-        if isinstance(self.max_seeds, Unset):
-            max_seeds = UNSET
+        max_questions: int | None | Unset
+        if isinstance(self.max_questions, Unset):
+            max_questions = UNSET
         else:
-            max_seeds = self.max_seeds
+            max_questions = self.max_questions
+
+        configuration_id: None | str | Unset
+        if isinstance(self.configuration_id, Unset):
+            configuration_id = UNSET
+        else:
+            configuration_id = self.configuration_id
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -94,8 +102,10 @@ class CreateTransformJobRequest:
         )
         if input_dataset_id is not UNSET:
             field_dict["input_dataset_id"] = input_dataset_id
-        if max_seeds is not UNSET:
-            field_dict["max_seeds"] = max_seeds
+        if max_questions is not UNSET:
+            field_dict["max_questions"] = max_questions
+        if configuration_id is not UNSET:
+            field_dict["configuration_id"] = configuration_id
 
         return field_dict
 
@@ -197,19 +207,29 @@ class CreateTransformJobRequest:
 
         input_dataset_id = _parse_input_dataset_id(d.pop("input_dataset_id", UNSET))
 
-        def _parse_max_seeds(data: object) -> int | None | Unset:
+        def _parse_max_questions(data: object) -> int | None | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
             return cast(int | None | Unset, data)
 
-        max_seeds = _parse_max_seeds(d.pop("max_seeds", UNSET))
+        max_questions = _parse_max_questions(d.pop("max_questions", UNSET))
+
+        def _parse_configuration_id(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        configuration_id = _parse_configuration_id(d.pop("configuration_id", UNSET))
 
         create_transform_job_request = cls(
             config=config,
             input_dataset_id=input_dataset_id,
-            max_seeds=max_seeds,
+            max_questions=max_questions,
+            configuration_id=configuration_id,
         )
 
         create_transform_job_request.additional_properties = d

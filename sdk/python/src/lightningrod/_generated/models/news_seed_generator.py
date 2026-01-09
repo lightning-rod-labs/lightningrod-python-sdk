@@ -28,8 +28,6 @@ class NewsSeedGenerator:
             search will be done for each query.
         config_type (Literal['NEWS_SEED_GENERATOR'] | Unset): Type of transform configuration Default:
             'NEWS_SEED_GENERATOR'.
-        max_count (int | None | Unset): Maximum number of seeds to generate. If None, process all intervals concurrently
-        concurrency_limit (int | Unset): Maximum number of concurrent intervals when max_count is None Default: 5.
         articles_per_search (int | Unset): Number of articles to fetch per search (max 100). Each query/domain
             combination is a separate search. Default: 10.
         filter_criteria (FilterCriteria | list[FilterCriteria] | None | Unset): Optional criteria for filtering news
@@ -44,8 +42,6 @@ class NewsSeedGenerator:
     interval_duration_days: int
     search_query: list[str] | str
     config_type: Literal["NEWS_SEED_GENERATOR"] | Unset = "NEWS_SEED_GENERATOR"
-    max_count: int | None | Unset = UNSET
-    concurrency_limit: int | Unset = 5
     articles_per_search: int | Unset = 10
     filter_criteria: FilterCriteria | list[FilterCriteria] | None | Unset = UNSET
     source_domain: list[str] | None | str | Unset = UNSET
@@ -68,14 +64,6 @@ class NewsSeedGenerator:
             search_query = self.search_query
 
         config_type = self.config_type
-
-        max_count: int | None | Unset
-        if isinstance(self.max_count, Unset):
-            max_count = UNSET
-        else:
-            max_count = self.max_count
-
-        concurrency_limit = self.concurrency_limit
 
         articles_per_search = self.articles_per_search
 
@@ -114,10 +102,6 @@ class NewsSeedGenerator:
         )
         if config_type is not UNSET:
             field_dict["config_type"] = config_type
-        if max_count is not UNSET:
-            field_dict["max_count"] = max_count
-        if concurrency_limit is not UNSET:
-            field_dict["concurrency_limit"] = concurrency_limit
         if articles_per_search is not UNSET:
             field_dict["articles_per_search"] = articles_per_search
         if filter_criteria is not UNSET:
@@ -154,17 +138,6 @@ class NewsSeedGenerator:
         config_type = cast(Literal["NEWS_SEED_GENERATOR"] | Unset, d.pop("config_type", UNSET))
         if config_type != "NEWS_SEED_GENERATOR" and not isinstance(config_type, Unset):
             raise ValueError(f"config_type must match const 'NEWS_SEED_GENERATOR', got '{config_type}'")
-
-        def _parse_max_count(data: object) -> int | None | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(int | None | Unset, data)
-
-        max_count = _parse_max_count(d.pop("max_count", UNSET))
-
-        concurrency_limit = d.pop("concurrency_limit", UNSET)
 
         articles_per_search = d.pop("articles_per_search", UNSET)
 
@@ -221,8 +194,6 @@ class NewsSeedGenerator:
             interval_duration_days=interval_duration_days,
             search_query=search_query,
             config_type=config_type,
-            max_count=max_count,
-            concurrency_limit=concurrency_limit,
             articles_per_search=articles_per_search,
             filter_criteria=filter_criteria,
             source_domain=source_domain,

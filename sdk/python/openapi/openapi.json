@@ -990,18 +990,6 @@
             "title": "Interval Duration Days",
             "description": "Duration of each interval in days"
           },
-          "max_count": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Max Count",
-            "description": "Maximum number of seeds to generate"
-          },
           "articles_per_interval": {
             "type": "integer",
             "title": "Articles Per Interval",
@@ -1372,18 +1360,6 @@
             "type": "integer",
             "title": "Interval Duration Days",
             "description": "Duration of each interval in days"
-          },
-          "max_count": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Max Count",
-            "description": "Maximum number of seeds to generate"
           },
           "search_query": {
             "anyOf": [
@@ -2317,15 +2293,35 @@
             "title": "Web Search Count",
             "default": 0
           },
+          "web_search_cost": {
+            "type": "number",
+            "title": "Web Search Cost",
+            "default": 0.0
+          },
           "url_download_count": {
             "type": "integer",
             "title": "Url Download Count",
             "default": 0
           },
+          "url_download_cost": {
+            "type": "number",
+            "title": "Url Download Cost",
+            "default": 0.0
+          },
           "gemini_grounding_count": {
             "type": "integer",
             "title": "Gemini Grounding Count",
             "default": 0
+          },
+          "gemini_grounding_cost": {
+            "type": "number",
+            "title": "Gemini Grounding Cost",
+            "default": 0.0
+          },
+          "total_cost": {
+            "type": "number",
+            "title": "Total Cost",
+            "default": 0.0
           }
         },
         "type": "object",

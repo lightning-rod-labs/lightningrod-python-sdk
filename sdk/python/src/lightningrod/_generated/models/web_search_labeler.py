@@ -22,13 +22,11 @@ class WebSearchLabeler:
         config_type (Literal['WEB_SEARCH_LABELER'] | Unset): Type of transform configuration Default:
             'WEB_SEARCH_LABELER'.
         confidence_threshold (float | Unset): Minimum confidence threshold for including questions Default: 0.9.
-        concurrency_limit (int | Unset): Maximum number of concurrent question processing tasks Default: 50.
         answer_type (AnswerType | None | Unset): The type of answer expected, used to guide the labeler
     """
 
     config_type: Literal["WEB_SEARCH_LABELER"] | Unset = "WEB_SEARCH_LABELER"
     confidence_threshold: float | Unset = 0.9
-    concurrency_limit: int | Unset = 50
     answer_type: AnswerType | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -38,8 +36,6 @@ class WebSearchLabeler:
         config_type = self.config_type
 
         confidence_threshold = self.confidence_threshold
-
-        concurrency_limit = self.concurrency_limit
 
         answer_type: dict[str, Any] | None | Unset
         if isinstance(self.answer_type, Unset):
@@ -56,8 +52,6 @@ class WebSearchLabeler:
             field_dict["config_type"] = config_type
         if confidence_threshold is not UNSET:
             field_dict["confidence_threshold"] = confidence_threshold
-        if concurrency_limit is not UNSET:
-            field_dict["concurrency_limit"] = concurrency_limit
         if answer_type is not UNSET:
             field_dict["answer_type"] = answer_type
 
@@ -73,8 +67,6 @@ class WebSearchLabeler:
             raise ValueError(f"config_type must match const 'WEB_SEARCH_LABELER', got '{config_type}'")
 
         confidence_threshold = d.pop("confidence_threshold", UNSET)
-
-        concurrency_limit = d.pop("concurrency_limit", UNSET)
 
         def _parse_answer_type(data: object) -> AnswerType | None | Unset:
             if data is None:
@@ -96,7 +88,6 @@ class WebSearchLabeler:
         web_search_labeler = cls(
             config_type=config_type,
             confidence_threshold=confidence_threshold,
-            concurrency_limit=concurrency_limit,
             answer_type=answer_type,
         )
 
