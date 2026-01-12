@@ -7,17 +7,17 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 if TYPE_CHECKING:
-    from ..models.usage_summary import UsageSummary
+    from ..models.event_usage_summary import EventUsageSummary
 
 
-T = TypeVar("T", bound="JobUsageByStepType0")
+T = TypeVar("T", bound="UsageSummaryEvents")
 
 
 @_attrs_define
-class JobUsageByStepType0:
+class UsageSummaryEvents:
     """ """
 
-    additional_properties: dict[str, UsageSummary] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, EventUsageSummary] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         field_dict: dict[str, Any] = {}
@@ -28,28 +28,28 @@ class JobUsageByStepType0:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.usage_summary import UsageSummary
+        from ..models.event_usage_summary import EventUsageSummary
 
         d = dict(src_dict)
-        job_usage_by_step_type_0 = cls()
+        usage_summary_events = cls()
 
         additional_properties = {}
         for prop_name, prop_dict in d.items():
-            additional_property = UsageSummary.from_dict(prop_dict)
+            additional_property = EventUsageSummary.from_dict(prop_dict)
 
             additional_properties[prop_name] = additional_property
 
-        job_usage_by_step_type_0.additional_properties = additional_properties
-        return job_usage_by_step_type_0
+        usage_summary_events.additional_properties = additional_properties
+        return usage_summary_events
 
     @property
     def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
-    def __getitem__(self, key: str) -> UsageSummary:
+    def __getitem__(self, key: str) -> EventUsageSummary:
         return self.additional_properties[key]
 
-    def __setitem__(self, key: str, value: UsageSummary) -> None:
+    def __setitem__(self, key: str, value: EventUsageSummary) -> None:
         self.additional_properties[key] = value
 
     def __delitem__(self, key: str) -> None:

@@ -805,6 +805,28 @@
         ],
         "title": "DatasetMetadata"
       },
+      "EventUsageSummary": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count",
+            "default": 0
+          },
+          "cost": {
+            "type": "number",
+            "title": "Cost",
+            "default": 0.0
+          },
+          "cached_count": {
+            "type": "integer",
+            "title": "Cached Count",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "EventUsageSummary",
+        "description": "Usage for a single event type."
+      },
       "FilterCriteria": {
         "properties": {
           "rubric": {
@@ -1033,7 +1055,9 @@
           "by_step": {
             "anyOf": [
               {
-                "additionalProperties": true,
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/UsageSummary"
+                },
                 "type": "object"
               },
               {
@@ -1046,6 +1070,38 @@
         "type": "object",
         "title": "JobUsage",
         "description": "Aggregated usage statistics for a transform job with step breakdown."
+      },
+      "LLMModelUsageSummary": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count",
+            "default": 0
+          },
+          "input_tokens": {
+            "type": "integer",
+            "title": "Input Tokens",
+            "default": 0
+          },
+          "output_tokens": {
+            "type": "integer",
+            "title": "Output Tokens",
+            "default": 0
+          },
+          "cost": {
+            "type": "number",
+            "title": "Cost",
+            "default": 0.0
+          },
+          "cached_count": {
+            "type": "integer",
+            "title": "Cached Count",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "LLMModelUsageSummary",
+        "description": "Usage for a single LLM model."
       },
       "Label": {
         "properties": {
@@ -2268,55 +2324,21 @@
       },
       "UsageSummary": {
         "properties": {
-          "llm_call_count": {
-            "type": "integer",
-            "title": "Llm Call Count",
-            "default": 0
+          "events": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/EventUsageSummary"
+            },
+            "type": "object",
+            "title": "Events",
+            "default": {}
           },
-          "llm_input_tokens": {
-            "type": "integer",
-            "title": "Llm Input Tokens",
-            "default": 0
-          },
-          "llm_output_tokens": {
-            "type": "integer",
-            "title": "Llm Output Tokens",
-            "default": 0
-          },
-          "llm_total_cost": {
-            "type": "number",
-            "title": "Llm Total Cost",
-            "default": 0.0
-          },
-          "web_search_count": {
-            "type": "integer",
-            "title": "Web Search Count",
-            "default": 0
-          },
-          "web_search_cost": {
-            "type": "number",
-            "title": "Web Search Cost",
-            "default": 0.0
-          },
-          "url_download_count": {
-            "type": "integer",
-            "title": "Url Download Count",
-            "default": 0
-          },
-          "url_download_cost": {
-            "type": "number",
-            "title": "Url Download Cost",
-            "default": 0.0
-          },
-          "gemini_grounding_count": {
-            "type": "integer",
-            "title": "Gemini Grounding Count",
-            "default": 0
-          },
-          "gemini_grounding_cost": {
-            "type": "number",
-            "title": "Gemini Grounding Cost",
-            "default": 0.0
+          "llm_by_model": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/LLMModelUsageSummary"
+            },
+            "type": "object",
+            "title": "Llm By Model",
+            "default": {}
           },
           "total_cost": {
             "type": "number",
@@ -2326,7 +2348,7 @@
         },
         "type": "object",
         "title": "UsageSummary",
-        "description": "Usage statistics for a step or total."
+        "description": "Flexible usage statistics by event type and LLM model."
       },
       "ValidateSampleResponse": {
         "properties": {

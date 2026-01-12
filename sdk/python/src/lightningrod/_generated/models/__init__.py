@@ -9,6 +9,7 @@ from .choice import Choice
 from .create_dataset_response import CreateDatasetResponse
 from .create_transform_job_request import CreateTransformJobRequest
 from .dataset_metadata import DatasetMetadata
+from .event_usage_summary import EventUsageSummary
 from .filter_criteria import FilterCriteria
 from .forward_looking_question import ForwardLookingQuestion
 from .forward_looking_question_generator import ForwardLookingQuestionGenerator
@@ -17,6 +18,7 @@ from .http_validation_error import HTTPValidationError
 from .job_usage import JobUsage
 from .job_usage_by_step_type_0 import JobUsageByStepType0
 from .label import Label
+from .llm_model_usage_summary import LLMModelUsageSummary
 from .model_config import ModelConfig
 from .model_source_type import ModelSourceType
 from .news_context import NewsContext
@@ -42,6 +44,8 @@ from .upload_samples_request import UploadSamplesRequest
 from .upload_samples_response import UploadSamplesResponse
 from .usage import Usage
 from .usage_summary import UsageSummary
+from .usage_summary_events import UsageSummaryEvents
+from .usage_summary_llm_by_model import UsageSummaryLlmByModel
 from .validate_sample_response import ValidateSampleResponse
 from .validation_error import ValidationError
 from .web_search_labeler import WebSearchLabeler
@@ -56,6 +60,7 @@ __all__ = (
     "CreateDatasetResponse",
     "CreateTransformJobRequest",
     "DatasetMetadata",
+    "EventUsageSummary",
     "FilterCriteria",
     "ForwardLookingQuestion",
     "ForwardLookingQuestionGenerator",
@@ -64,6 +69,7 @@ __all__ = (
     "JobUsage",
     "JobUsageByStepType0",
     "Label",
+    "LLMModelUsageSummary",
     "ModelConfig",
     "ModelSourceType",
     "NewsContext",
@@ -89,6 +95,8 @@ __all__ = (
     "UploadSamplesResponse",
     "Usage",
     "UsageSummary",
+    "UsageSummaryEvents",
+    "UsageSummaryLlmByModel",
     "ValidateSampleResponse",
     "ValidationError",
     "WebSearchLabeler",
