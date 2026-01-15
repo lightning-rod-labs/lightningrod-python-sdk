@@ -146,10 +146,10 @@ class LightningRodClient:
         self,
         config: Any,
         dataset: Optional[Dataset] = None,
-        max_seeds: Optional[int] = None
+        max_questions: Optional[int] = None
     ) -> Dataset:
         """Internal method to run a transform job and wait for completion."""
-        job: TransformJob = self._submit(config, dataset, max_seeds)
+        job: TransformJob = self._submit(config, dataset, max_questions)
         
         while job.status == TransformJobStatus.RUNNING:
             time.sleep(15)
@@ -186,13 +186,13 @@ class LightningRodClient:
         self,
         config: Any,
         dataset: Optional[Dataset] = None,
-        max_seeds: Optional[int] = None
+        max_questions: Optional[int] = None
     ) -> TransformJob:
         """Internal method to submit a transform job without waiting."""
         request: CreateTransformJobRequest = CreateTransformJobRequest(
             config=config,
             input_dataset_id=dataset.id if dataset else None,
-            max_seeds=max_seeds
+            max_questions=max_questions
         )
         
         response = create_transform_job_transform_jobs_post.sync(
