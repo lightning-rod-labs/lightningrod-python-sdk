@@ -125,7 +125,7 @@ class LightningRodClient:
             response = get_dataset_samples_datasets_dataset_id_samples_get.sync(
                 dataset_id=dataset_id,
                 client=self._generated_client,
-                limit=1000,
+                limit=100,
                 cursor=cursor,
             )
             

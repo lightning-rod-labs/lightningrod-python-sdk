@@ -1308,7 +1308,8 @@
           "DEEPSEEK",
           "DEEPINFRA",
           "RUNPOD",
-          "SGLANG"
+          "SGLANG",
+          "TINKER"
         ],
         "title": "ModelSourceType"
       },
@@ -2258,7 +2259,8 @@
         "enum": [
           "RUNNING",
           "COMPLETED",
-          "FAILED"
+          "FAILED",
+          "CANCELLED"
         ],
         "title": "TransformJobStatus"
       },

@@ -9,6 +9,7 @@ class ModelSourceType(str, Enum):
     OPEN_ROUTER = "OPEN_ROUTER"
     RUNPOD = "RUNPOD"
     SGLANG = "SGLANG"
+    TINKER = "TINKER"
     VLLM = "VLLM"
 
     def __str__(self) -> str:
