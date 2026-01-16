@@ -47,12 +47,13 @@ class AsyncTransformPipeline:
         """
         return await self._client.run(self._config, dataset)
     
-    async def submit(self, dataset: Optional["AsyncDataset"] = None) -> TransformJob:
+    async def submit(self, dataset: Optional["AsyncDataset"] = None, max_questions: Optional[int] = None) -> TransformJob:
         """
         Submit the transform without waiting for completion.
         
         Args:
             dataset: Optional input dataset. If None, the transform runs without input data.
+            max_questions: Optional limit on questions to generate. Pipeline early-stops when reached.
         
         Returns:
             TransformJob instance representing the submitted job
@@ -64,7 +65,7 @@ class AsyncTransformPipeline:
             >>> job = await client.pipeline(config).submit()
             >>> print(f"Job ID: {job.id}")
         """
-        return await self._client.submit(self._config, dataset)
+        return await self._client.submit(self._config, dataset, max_questions=max_questions)
     
     async def batch(self, size: int, dataset: Optional["AsyncDataset"] = None) -> "AsyncDataset":
         """

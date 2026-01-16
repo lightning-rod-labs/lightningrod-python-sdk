@@ -57,12 +57,13 @@ class TransformPipeline:
         """
         return self._client._run(self._config, dataset)
     
-    def submit(self, dataset: Optional["Dataset"] = None) -> TransformJob:
+    def submit(self, dataset: Optional["Dataset"] = None, max_questions: Optional[int] = None) -> TransformJob:
         """
         Submit the transform without waiting for completion.
         
         Args:
             dataset: Optional input dataset. If None, the transform runs without input data.
+            max_questions: Optional limit on questions to generate. Pipeline early-stops when reached.
         
         Returns:
             TransformJob instance representing the submitted job
@@ -74,7 +75,7 @@ class TransformPipeline:
             >>> job = client.pipeline(config).submit()
             >>> print(f"Job ID: {job.id}")
         """
-        return self._client._submit(self._config, dataset)
+        return self._client._submit(self._config, dataset, max_questions=max_questions)
     
     def batch(self, size: int, dataset: Optional["Dataset"] = None) -> "Dataset":
         """
