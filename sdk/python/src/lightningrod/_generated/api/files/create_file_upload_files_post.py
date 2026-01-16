@@ -1,29 +1,25 @@
 from http import HTTPStatus
 from typing import Any
-from urllib.parse import quote
 
 import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
+from ...models.create_file_upload_request import CreateFileUploadRequest
+from ...models.create_file_upload_response import CreateFileUploadResponse
 from ...models.http_validation_error import HTTPValidationError
-from ...models.upload_samples_request import UploadSamplesRequest
-from ...models.upload_samples_response import UploadSamplesResponse
 from ...types import Response
 
 
 def _get_kwargs(
-    dataset_id: str,
     *,
-    body: UploadSamplesRequest,
+    body: CreateFileUploadRequest,
 ) -> dict[str, Any]:
     headers: dict[str, Any] = {}
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/datasets/{dataset_id}/samples".format(
-            dataset_id=quote(str(dataset_id), safe=""),
-        ),
+        "url": "/files",
     }
 
     _kwargs["json"] = body.to_dict()
@@ -36,11 +32,11 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> HTTPValidationError | UploadSamplesResponse | None:
-    if response.status_code == 200:
-        response_200 = UploadSamplesResponse.from_dict(response.json())
+) -> CreateFileUploadResponse | HTTPValidationError | None:
+    if response.status_code == 201:
+        response_201 = CreateFileUploadResponse.from_dict(response.json())
 
-        return response_200
+        return response_201
 
     if response.status_code == 422:
         response_422 = HTTPValidationError.from_dict(response.json())
@@ -55,7 +51,7 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[HTTPValidationError | UploadSamplesResponse]:
+) -> Response[CreateFileUploadResponse | HTTPValidationError]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -65,29 +61,26 @@ def _build_response(
 
 
 def sync_detailed(
-    dataset_id: str,
     *,
     client: AuthenticatedClient,
-    body: UploadSamplesRequest,
-) -> Response[HTTPValidationError | UploadSamplesResponse]:
-    """Upload Samples
+    body: CreateFileUploadRequest,
+) -> Response[CreateFileUploadResponse | HTTPValidationError]:
+    """Create File Upload
 
-     Upload samples to a dataset
+     Get a signed upload URL for direct GCS upload
 
     Args:
-        dataset_id (str):
-        body (UploadSamplesRequest):
+        body (CreateFileUploadRequest):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | UploadSamplesResponse]
+        Response[CreateFileUploadResponse | HTTPValidationError]
     """
 
     kwargs = _get_kwargs(
-        dataset_id=dataset_id,
         body=body,
     )
 
@@ -99,58 +92,52 @@ def sync_detailed(
 
 
 def sync(
-    dataset_id: str,
     *,
     client: AuthenticatedClient,
-    body: UploadSamplesRequest,
-) -> HTTPValidationError | UploadSamplesResponse | None:
-    """Upload Samples
+    body: CreateFileUploadRequest,
+) -> CreateFileUploadResponse | HTTPValidationError | None:
+    """Create File Upload
 
-     Upload samples to a dataset
+     Get a signed upload URL for direct GCS upload
 
     Args:
-        dataset_id (str):
-        body (UploadSamplesRequest):
+        body (CreateFileUploadRequest):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | UploadSamplesResponse
+        CreateFileUploadResponse | HTTPValidationError
     """
 
     return sync_detailed(
-        dataset_id=dataset_id,
         client=client,
         body=body,
     ).parsed
 
 
 async def asyncio_detailed(
-    dataset_id: str,
     *,
     client: AuthenticatedClient,
-    body: UploadSamplesRequest,
-) -> Response[HTTPValidationError | UploadSamplesResponse]:
-    """Upload Samples
+    body: CreateFileUploadRequest,
+) -> Response[CreateFileUploadResponse | HTTPValidationError]:
+    """Create File Upload
 
-     Upload samples to a dataset
+     Get a signed upload URL for direct GCS upload
 
     Args:
-        dataset_id (str):
-        body (UploadSamplesRequest):
+        body (CreateFileUploadRequest):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | UploadSamplesResponse]
+        Response[CreateFileUploadResponse | HTTPValidationError]
     """
 
     kwargs = _get_kwargs(
-        dataset_id=dataset_id,
         body=body,
     )
 
@@ -160,30 +147,27 @@ async def asyncio_detailed(
 
 
 async def asyncio(
-    dataset_id: str,
     *,
     client: AuthenticatedClient,
-    body: UploadSamplesRequest,
-) -> HTTPValidationError | UploadSamplesResponse | None:
-    """Upload Samples
+    body: CreateFileUploadRequest,
+) -> CreateFileUploadResponse | HTTPValidationError | None:
+    """Create File Upload
 
-     Upload samples to a dataset
+     Get a signed upload URL for direct GCS upload
 
     Args:
-        dataset_id (str):
-        body (UploadSamplesRequest):
+        body (CreateFileUploadRequest):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | UploadSamplesResponse
+        CreateFileUploadResponse | HTTPValidationError
     """
 
     return (
         await asyncio_detailed(
-            dataset_id=dataset_id,
             client=client,
             body=body,
         )

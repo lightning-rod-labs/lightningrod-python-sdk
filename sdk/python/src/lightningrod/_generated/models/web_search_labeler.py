@@ -23,11 +23,13 @@ class WebSearchLabeler:
             'WEB_SEARCH_LABELER'.
         confidence_threshold (float | Unset): Minimum confidence threshold for including questions Default: 0.9.
         answer_type (AnswerType | None | Unset): The type of answer expected, used to guide the labeler
+        resolve_redirects (bool | Unset): Resolve redirect URLs to actual destinations Default: False.
     """
 
     config_type: Literal["WEB_SEARCH_LABELER"] | Unset = "WEB_SEARCH_LABELER"
     confidence_threshold: float | Unset = 0.9
     answer_type: AnswerType | None | Unset = UNSET
+    resolve_redirects: bool | Unset = False
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -45,6 +47,8 @@ class WebSearchLabeler:
         else:
             answer_type = self.answer_type
 
+        resolve_redirects = self.resolve_redirects
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
@@ -54,6 +58,8 @@ class WebSearchLabeler:
             field_dict["confidence_threshold"] = confidence_threshold
         if answer_type is not UNSET:
             field_dict["answer_type"] = answer_type
+        if resolve_redirects is not UNSET:
+            field_dict["resolve_redirects"] = resolve_redirects
 
         return field_dict
 
@@ -85,10 +91,13 @@ class WebSearchLabeler:
 
         answer_type = _parse_answer_type(d.pop("answer_type", UNSET))
 
+        resolve_redirects = d.pop("resolve_redirects", UNSET)
+
         web_search_labeler = cls(
             config_type=config_type,
             confidence_threshold=confidence_threshold,
             answer_type=answer_type,
+            resolve_redirects=resolve_redirects,
         )
 
         web_search_labeler.additional_properties = d

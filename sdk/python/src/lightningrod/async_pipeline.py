@@ -1,7 +1,6 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Any
 
 from lightningrod._generated.models import TransformJob
-from lightningrod.client import TransformConfig
 
 if TYPE_CHECKING:
     from lightningrod.async_client import AsyncLightningRodClient
@@ -25,9 +24,9 @@ class AsyncTransformPipeline:
         >>> dataset = await client.pipeline(config).run()
     """
     
-    def __init__(self, client: "AsyncLightningRodClient", config: TransformConfig):
+    def __init__(self, client: "AsyncLightningRodClient", config: Any):
         self._client: "AsyncLightningRodClient" = client
-        self._config: TransformConfig = config
+        self._config: Any = config
     
     async def run(self, dataset: Optional["AsyncDataset"] = None) -> "AsyncDataset":
         """

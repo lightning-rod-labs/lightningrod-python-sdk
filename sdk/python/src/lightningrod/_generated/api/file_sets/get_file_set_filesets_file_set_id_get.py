@@ -6,36 +6,19 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
+from ...models.file_set import FileSet
 from ...models.http_validation_error import HTTPValidationError
-from ...models.paginated_samples_response import PaginatedSamplesResponse
-from ...types import UNSET, Response, Unset
+from ...types import Response
 
 
 def _get_kwargs(
-    dataset_id: str,
-    *,
-    limit: int | Unset = 1000,
-    cursor: None | str | Unset = UNSET,
+    file_set_id: str,
 ) -> dict[str, Any]:
-    params: dict[str, Any] = {}
-
-    params["limit"] = limit
-
-    json_cursor: None | str | Unset
-    if isinstance(cursor, Unset):
-        json_cursor = UNSET
-    else:
-        json_cursor = cursor
-    params["cursor"] = json_cursor
-
-    params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
-
     _kwargs: dict[str, Any] = {
         "method": "get",
-        "url": "/datasets/{dataset_id}/samples".format(
-            dataset_id=quote(str(dataset_id), safe=""),
+        "url": "/filesets/{file_set_id}".format(
+            file_set_id=quote(str(file_set_id), safe=""),
         ),
-        "params": params,
     }
 
     return _kwargs
@@ -43,9 +26,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> HTTPValidationError | PaginatedSamplesResponse | None:
+) -> FileSet | HTTPValidationError | None:
     if response.status_code == 200:
-        response_200 = PaginatedSamplesResponse.from_dict(response.json())
+        response_200 = FileSet.from_dict(response.json())
 
         return response_200
 
@@ -62,7 +45,7 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[HTTPValidationError | PaginatedSamplesResponse]:
+) -> Response[FileSet | HTTPValidationError]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -72,33 +55,27 @@ def _build_response(
 
 
 def sync_detailed(
-    dataset_id: str,
+    file_set_id: str,
     *,
     client: AuthenticatedClient,
-    limit: int | Unset = 1000,
-    cursor: None | str | Unset = UNSET,
-) -> Response[HTTPValidationError | PaginatedSamplesResponse]:
-    """Get Dataset Samples
+) -> Response[FileSet | HTTPValidationError]:
+    """Get File Set
 
-     Get samples from a dataset with cursor-based pagination
+     Get a specific FileSet by ID.
 
     Args:
-        dataset_id (str):
-        limit (int | Unset):  Default: 1000.
-        cursor (None | str | Unset):
+        file_set_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | PaginatedSamplesResponse]
+        Response[FileSet | HTTPValidationError]
     """
 
     kwargs = _get_kwargs(
-        dataset_id=dataset_id,
-        limit=limit,
-        cursor=cursor,
+        file_set_id=file_set_id,
     )
 
     response = client.get_httpx_client().request(
@@ -109,65 +86,53 @@ def sync_detailed(
 
 
 def sync(
-    dataset_id: str,
+    file_set_id: str,
     *,
     client: AuthenticatedClient,
-    limit: int | Unset = 1000,
-    cursor: None | str | Unset = UNSET,
-) -> HTTPValidationError | PaginatedSamplesResponse | None:
-    """Get Dataset Samples
+) -> FileSet | HTTPValidationError | None:
+    """Get File Set
 
-     Get samples from a dataset with cursor-based pagination
+     Get a specific FileSet by ID.
 
     Args:
-        dataset_id (str):
-        limit (int | Unset):  Default: 1000.
-        cursor (None | str | Unset):
+        file_set_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | PaginatedSamplesResponse
+        FileSet | HTTPValidationError
     """
 
     return sync_detailed(
-        dataset_id=dataset_id,
+        file_set_id=file_set_id,
         client=client,
-        limit=limit,
-        cursor=cursor,
     ).parsed
 
 
 async def asyncio_detailed(
-    dataset_id: str,
+    file_set_id: str,
     *,
     client: AuthenticatedClient,
-    limit: int | Unset = 1000,
-    cursor: None | str | Unset = UNSET,
-) -> Response[HTTPValidationError | PaginatedSamplesResponse]:
-    """Get Dataset Samples
+) -> Response[FileSet | HTTPValidationError]:
+    """Get File Set
 
-     Get samples from a dataset with cursor-based pagination
+     Get a specific FileSet by ID.
 
     Args:
-        dataset_id (str):
-        limit (int | Unset):  Default: 1000.
-        cursor (None | str | Unset):
+        file_set_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | PaginatedSamplesResponse]
+        Response[FileSet | HTTPValidationError]
     """
 
     kwargs = _get_kwargs(
-        dataset_id=dataset_id,
-        limit=limit,
-        cursor=cursor,
+        file_set_id=file_set_id,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -176,34 +141,28 @@ async def asyncio_detailed(
 
 
 async def asyncio(
-    dataset_id: str,
+    file_set_id: str,
     *,
     client: AuthenticatedClient,
-    limit: int | Unset = 1000,
-    cursor: None | str | Unset = UNSET,
-) -> HTTPValidationError | PaginatedSamplesResponse | None:
-    """Get Dataset Samples
+) -> FileSet | HTTPValidationError | None:
+    """Get File Set
 
-     Get samples from a dataset with cursor-based pagination
+     Get a specific FileSet by ID.
 
     Args:
-        dataset_id (str):
-        limit (int | Unset):  Default: 1000.
-        cursor (None | str | Unset):
+        file_set_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | PaginatedSamplesResponse
+        FileSet | HTTPValidationError
     """
 
     return (
         await asyncio_detailed(
-            dataset_id=dataset_id,
+            file_set_id=file_set_id,
             client=client,
-            limit=limit,
-            cursor=cursor,
         )
     ).parsed

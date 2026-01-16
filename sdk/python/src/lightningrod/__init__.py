@@ -27,6 +27,9 @@ from lightningrod._generated.models import (
     WebSearchLabeler,
     FilterCriteria,
     Sample,
+    CreateFileSetRequest,
+    CreateFileSetFileRequest,
+    FileSetFile,
 )
 
 __version__ = "0.1.0"
@@ -38,6 +41,10 @@ __all__ = [
     "AsyncLightningRodClient",
     "AsyncTransformPipeline",
     "Dataset",
+    "CreateFileSetRequest",
+    "CreateFileSetFileRequest",
+    "CreateFileUploadResponse",
+    "FileSetFile",
     "FilterCriteria",
     "ForwardLookingQuestionGenerator",
     "GdeltSeedGenerator",

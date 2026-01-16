@@ -1,16 +1,27 @@
 import time
+import mimetypes
+from pathlib import Path
 from typing import Any, List, Optional
+
+import httpx
 
 from lightningrod._generated.client import AuthenticatedClient
 from lightningrod._generated.models import (
+    FileSet,
+    ListFileSetFilesResponse,
     TransformJob,
     TransformJobStatus,
     CreateTransformJobRequest,
     HTTPValidationError,
+    CreateFileSetRequest,
+    CreateFileUploadRequest,
+    CreateFileUploadResponse,
+    CreateFileSetFileRequest,
+    CreateFileSetFileRequestMetadataType0,
+    FileSetFile,
 )
 from lightningrod._generated.models.sample import Sample
 from lightningrod._generated.models.upload_samples_request import UploadSamplesRequest
-from lightningrod._generated.models.upload_samples_response import UploadSamplesResponse
 from lightningrod._generated.api.datasets import (
     create_dataset_datasets_post,
     get_dataset_datasets_dataset_id_get,
@@ -21,8 +32,20 @@ from lightningrod._generated.api.transform_jobs import (
     create_transform_job_transform_jobs_post,
     get_transform_job_transform_jobs_job_id_get,
 )
+from lightningrod._generated.api.files import (
+    create_file_upload_files_post,
+)
+from lightningrod._generated.api.file_sets import (
+    create_file_set_filesets_post,
+    get_file_set_filesets_file_set_id_get,
+    list_file_sets_filesets_get,
+    add_file_to_set_filesets_file_set_id_files_post,
+    list_files_in_set_filesets_file_set_id_files_get,
+)
+from lightningrod._generated.types import Unset
 from lightningrod.dataset import Dataset
-from lightningrod.pipeline import TransformPipeline, TransformConfig
+from lightningrod.pipeline import TransformPipeline
+
 
 
 class LightningRodClient:
@@ -138,7 +161,9 @@ class LightningRodClient:
             
             if not response.has_more:
                 break
-            cursor = response.next_cursor
+            if isinstance(response.next_cursor, Unset) or response.next_cursor is None:
+                break
+            cursor = str(response.next_cursor)
         
         return samples
     
@@ -153,10 +178,15 @@ class LightningRodClient:
         
         while job.status == TransformJobStatus.RUNNING:
             time.sleep(15)
-            job = get_transform_job_transform_jobs_job_id_get.sync(
+            job_response = get_transform_job_transform_jobs_job_id_get.sync(
                 job_id=job.id,
                 client=self._generated_client,
             )
+            if isinstance(job_response, HTTPValidationError):
+                raise Exception(f"Failed to get transform job: {job_response.detail}")
+            if job_response is None:
+                raise Exception("Failed to get transform job: received None response")
+            job = job_response
         
         if job.status == TransformJobStatus.FAILED:
             raise Exception(f"Transform job {job.id} failed")
@@ -204,5 +234,213 @@ class LightningRodClient:
             raise Exception(f"Failed to submit transform job: {response.detail}")
         elif response is None:
             raise Exception("Failed to submit transform job: received None response")
+        
+        return response
+    
+    def upload_file(
+        self,
+        file_path: str | Path
+    ) -> CreateFileUploadResponse:
+        """
+        Upload a file to LightningRod storage via direct GCS upload.
+        
+        This method:
+        1. Gets a signed upload URL from the API
+        2. Uploads the file directly to GCS using the signed URL
+        3. Returns file information
+        
+        To add the file to a FileSet with metadata, use FileSet.upload_file() 
+        or FileSet.add_file().
+        
+        Args:
+            file_path: Path to the file to upload
+        
+        Returns:
+            CreateFileUploadResponse with file information including LightningRod storage path
+        
+        Example:
+            >>> file = client.upload_file("document.pdf")
+            >>> print(f"Uploaded to {file.cloud_storage_path}")
+        """
+        path = Path(file_path)
+        if not path.exists():
+            raise FileNotFoundError(f"File not found: {file_path}")
+        
+        # Get file metadata
+        file_size: int = path.stat().st_size
+        mime_type, _ = mimetypes.guess_type(str(path))
+        
+        # Request signed upload URL from API
+        request_body = CreateFileUploadRequest(
+            filename=path.name,
+            size_bytes=file_size,
+            mime_type=mime_type
+        )
+        
+        response = create_file_upload_files_post.sync(
+            client=self._generated_client,
+            body=request_body
+        )
+        
+        if isinstance(response, HTTPValidationError):
+            raise Exception(f"Failed to get upload URL: {response.detail}")
+        if response is None:
+            raise Exception("Failed to get upload URL: received None response")
+        
+        # Upload file directly to GCS using signed URL (streaming upload)
+        upload_headers: dict[str, str] = {
+            "Content-Length": str(file_size)
+        }
+        if response.mime_type:
+            upload_headers["Content-Type"] = response.mime_type
+        
+        with httpx.Client() as http_client:
+            with open(path, "rb") as f:
+                upload_response = http_client.put(
+                    response.upload_url,
+                    content=f,
+                    headers=upload_headers,
+                    timeout=1800.0  # 15 minute timeout for large files
+                )
+                upload_response.raise_for_status()
+        
+        return response
+    
+    def create_file_set(
+        self,
+        name: str,
+        description: Optional[str] = None
+    ) -> FileSet:
+        """
+        Create a new FileSet.
+        
+        Args:
+            name: Human-readable name for the FileSet
+            description: Optional description of the FileSet's purpose
+        
+        Returns:
+            FileSet instance
+        
+        Example:
+            >>> file_set = client.create_file_set(
+            ...     name="SEC Filings 2024",
+            ...     description="All SEC filings from 2024"
+            ... )
+        """
+        request = CreateFileSetRequest(name=name)
+        if description is not None:
+            request.description = description
+        
+        response = create_file_set_filesets_post.sync(
+            client=self._generated_client,
+            body=request
+        )
+        
+        if isinstance(response, HTTPValidationError):
+            raise Exception(f"Failed to create file set: {response.detail}")
+        if response is None:
+            raise Exception("Failed to create file set: received None response")
+        
+        return response
+    
+    def get_file_set(self, file_set_id: str) -> FileSet:
+        """
+        Get a FileSet by ID.
+        
+        Args:
+            file_set_id: ID of the FileSet to retrieve
+        
+        Returns:
+            FileSet instance
+        
+        Example:
+            >>> file_set = client.get_file_set("file-set-id")
+        """
+        response = get_file_set_filesets_file_set_id_get.sync(
+            file_set_id=file_set_id,
+            client=self._generated_client
+        )
+        
+        if isinstance(response, HTTPValidationError):
+            raise Exception(f"Failed to get file set: {response.detail}")
+        if response is None:
+            raise Exception("Failed to get file set: received None response")
+        
+        return response
+    
+    def list_file_sets(self) -> List[FileSet]:
+        """
+        List all FileSets for the organization.
+        
+        Returns:
+            List of FileSet instances
+        
+        Example:
+            >>> file_sets = client.list_file_sets()
+            >>> for fs in file_sets:
+            ...     print(f"{fs.name}: {fs.file_count} files")
+        """
+
+        # Pagination is not needed yet, since we have a hard limit on the number of FileSets per organization
+        response = list_file_sets_filesets_get.sync(client=self._generated_client)
+        
+        if isinstance(response, HTTPValidationError):
+            raise Exception(f"Failed to list file sets: {response.detail}")
+        if response is None:
+            raise Exception("Failed to list file sets: received None response")
+        
+        return response.file_sets
+    
+    def  add_file_to_set(
+        self,
+        file_id: str,
+        file_set_id: str,
+        metadata: Optional[dict[str, Any]]
+    ) -> FileSetFile:
+        """Add a file to a FileSet."""
+        request = CreateFileSetFileRequest(
+            file_id=file_id,
+            metadata=CreateFileSetFileRequestMetadataType0.from_dict(metadata) if metadata else None
+        )
+        
+        response = add_file_to_set_filesets_file_set_id_files_post.sync(
+            file_set_id=file_set_id,
+            client=self._generated_client,
+            body=request
+        )
+        
+        if isinstance(response, HTTPValidationError):
+            raise Exception(f"Failed to add file to set: {response.detail}")
+        if response is None:
+            raise Exception("Failed to add file to set: received None response")
+        
+        return response
+    
+    def list_files_in_set(self, file_set_id: str, cursor: Optional[str] = None) -> ListFileSetFilesResponse:
+        """
+        List files in a FileSet.
+        
+        Args:
+            file_set_id: ID of the FileSet to list files from
+            cursor: Cursor for pagination (file id)
+        Returns:
+            List of FileInSetResponse instances
+        
+        Example:
+            >>> files = client.list_files_in_set("file-set-id")
+            >>> for file in files:
+            ...     print(f"{file.original_file_name}: {file.size_bytes} bytes")
+        """
+        response = list_files_in_set_filesets_file_set_id_files_get.sync(
+            file_set_id=file_set_id,
+            client=self._generated_client,
+            cursor=cursor if cursor else None,
+            limit=100
+        )
+        
+        if isinstance(response, HTTPValidationError):
+            raise Exception(f"Failed to list files in set: {response.detail}")
+        if response is None:
+            raise Exception("Failed to list files in set: received None response")
         
         return response

@@ -1,9 +1,9 @@
 import asyncio
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from lightningrod._generated.models import TransformJob
 from lightningrod._generated.models.sample import Sample
-from lightningrod.client import LightningRodClient, TransformConfig
+from lightningrod.client import LightningRodClient
 from lightningrod.async_dataset import AsyncDataset
 from lightningrod.async_pipeline import AsyncTransformPipeline
 
@@ -36,7 +36,7 @@ class AsyncLightningRodClient:
             base_url=base_url
         )
     
-    def pipeline(self, config: TransformConfig) -> AsyncTransformPipeline:
+    def pipeline(self, config: Any) -> AsyncTransformPipeline:
         """
         Create a pipeline builder for executing transforms.
         
@@ -82,7 +82,7 @@ class AsyncLightningRodClient:
     
     async def run(
         self,
-        config: TransformConfig,
+        config: Any,
         dataset: Optional[AsyncDataset] = None,
         max_questions: Optional[int] = None
     ) -> AsyncDataset:
@@ -125,7 +125,7 @@ class AsyncLightningRodClient:
     
     async def submit(
         self,
-        config: TransformConfig,
+        config: Any,
         dataset: Optional[AsyncDataset] = None,
         max_questions: Optional[int] = None
     ) -> TransformJob:
