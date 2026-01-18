@@ -19,6 +19,8 @@ from .event_usage_summary import EventUsageSummary
 from .file_set import FileSet
 from .file_set_file import FileSetFile
 from .file_set_file_metadata_type_0 import FileSetFileMetadataType0
+from .file_set_query_seed_generator import FileSetQuerySeedGenerator
+from .file_set_seed_generator import FileSetSeedGenerator
 from .filter_criteria import FilterCriteria
 from .forward_looking_question import ForwardLookingQuestion
 from .forward_looking_question_generator import ForwardLookingQuestionGenerator
@@ -81,6 +83,8 @@ __all__ = (
     "FileSet",
     "FileSetFile",
     "FileSetFileMetadataType0",
+    "FileSetQuerySeedGenerator",
+    "FileSetSeedGenerator",
     "FilterCriteria",
     "ForwardLookingQuestion",
     "ForwardLookingQuestionGenerator",

@@ -1164,6 +1164,12 @@
             "$ref": "#/components/schemas/ForwardLookingQuestionGenerator"
           },
           {
+            "$ref": "#/components/schemas/FileSetQuerySeedGenerator"
+          },
+          {
+            "$ref": "#/components/schemas/FileSetSeedGenerator"
+          },
+          {
             "$ref": "#/components/schemas/GdeltSeedGenerator"
           },
           {
@@ -1188,6 +1194,8 @@
         "discriminator": {
           "propertyName": "config_type",
           "mapping": {
+            "FILESET_QUERY_SEED_GENERATOR": "#/components/schemas/FileSetQuerySeedGenerator",
+            "FILESET_SEED_GENERATOR": "#/components/schemas/FileSetSeedGenerator",
             "FORWARD_LOOKING_QUESTION_GENERATOR": "#/components/schemas/ForwardLookingQuestionGenerator",
             "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
             "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator",
@@ -1440,6 +1448,100 @@
           "updated_at"
         ],
         "title": "FileSetFile"
+      },
+      "FileSetQuerySeedGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "FILESET_QUERY_SEED_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "FILESET_QUERY_SEED_GENERATOR"
+          },
+          "file_set_id": {
+            "type": "string",
+            "title": "File Set Id",
+            "description": "FileSet ID to query"
+          },
+          "prompts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Prompts",
+            "description": "List of queries to run against the fileset"
+          },
+          "metadata_filters": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata Filters",
+            "description": "Optional list of AIP-160 metadata filters to select which documents to process. Documents matching ANY filter will be included. (e.g., [\"ticker='AAL'\", \"ticker='MSFT'\"])"
+          },
+          "system_instruction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Instruction",
+            "description": "Optional system instruction for the Gemini model"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_set_id",
+          "prompts"
+        ],
+        "title": "FileSetQuerySeedGenerator",
+        "description": "Configuration for FileSet Query Seed Generator transform."
+      },
+      "FileSetSeedGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "FILESET_SEED_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "FILESET_SEED_GENERATOR"
+          },
+          "file_set_id": {
+            "type": "string",
+            "title": "File Set Id",
+            "description": "FileSet ID to read files from"
+          },
+          "chunk_size": {
+            "type": "integer",
+            "minimum": 100.0,
+            "title": "Chunk Size",
+            "description": "Number of characters per chunk",
+            "default": 4000
+          },
+          "chunk_overlap": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Chunk Overlap",
+            "description": "Number of overlapping characters between consecutive chunks",
+            "default": 200
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_set_id"
+        ],
+        "title": "FileSetSeedGenerator",
+        "description": "Configuration for FileSet Seed Generator transform."
       },
       "FilterCriteria": {
         "properties": {
@@ -2926,7 +3028,8 @@
         "enum": [
           "RUNNING",
           "COMPLETED",
-          "FAILED"
+          "FAILED",
+          "CANCELLED"
         ],
         "title": "TransformJobStatus"
       },
