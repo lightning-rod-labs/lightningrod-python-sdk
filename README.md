@@ -59,6 +59,24 @@ This pipeline will:
 3. **Label Questions**: Automatically find answers using web search
 4. **Return Dataset**: Get a dataset with all samples ready for download
 
+## Examples
+
+We provide comprehensive example notebooks demonstrating different use cases and features:
+
+### Getting Started
+- **[Quick Start](examples/01_quick_start.ipynb)** - Simplest possible example to get you running quickly
+
+### Data Sources
+- **[Google News](examples/02_google_news_datasource.ipynb)** - Using Google News search as a data source
+- **[GDELT](examples/03_gdelt_datasource.ipynb)** - Using GDELT global news database for large-scale datasets
+- **[Custom Documents](examples/04_custom_documents_datasource.ipynb)** - Generating questions from your own documents and files
+
+### Answer Types
+- **[Binary](examples/05_binary_answer_type.ipynb)** - Yes/No questions for event prediction
+- **[Continuous](examples/06_continuous_answer_type.ipynb)** - Numeric questions for quantitative predictions
+- **[Multiple Choice](examples/07_multiple_choice_answer_type.ipynb)** - Questions with predefined answer options
+- **[Free Response](examples/08_free_response_answer_type.ipynb)** - Open-ended questions with detailed text answers
+
 ## Core Concepts
 
 Lightning Rod works with a simple but powerful data model:
