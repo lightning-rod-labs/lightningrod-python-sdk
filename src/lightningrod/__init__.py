@@ -31,6 +31,7 @@ from lightningrod._generated.models import (
     Sample,
     CreateFileSetRequest,
     CreateFileSetFileRequest,
+    CreateFileUploadResponse,
     FileSetFile,
 )
 
