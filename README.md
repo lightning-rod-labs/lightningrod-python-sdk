@@ -1,6 +1,12 @@
+<div align="center">
+  <img src="banner.png" alt="Lightning Rod Labs" />
+</div>
+
 # Lightning Rod Python SDK
 
-Lightning Rod SDK provides a simple API for generating custom datasets to train your LLMs.
+Generate training data from real world sources. Instantly.
+
+The Lightning Rod SDK provides a simple Python API for generating custom forecasting datasets to train your LLMs. Transform news articles, documents, and other real-world data into high-quality training samples automatically.
 
 ## Quick Start
 
@@ -12,12 +18,14 @@ pip install lightningrod-ai
 
 ### 2. Get your API key
 
-Sign-up to [lightningrod.ai](https://lightningrod.ai) to get your API key.
+Sign up at [lightningrod.ai](https://lightningrod.ai) to get your API key.
 
 ### 3. Generate your first dataset
+
 ```python
+from datetime import datetime, timedelta
 from lightningrod import (
-    LightningRod
+    LightningRod,
     NewsSeedGenerator,
     AIQuestionGenerator,
     FilterCriteria,
@@ -52,6 +60,7 @@ pipeline = QuestionGenerationPipeline(
 
 dataset = lr.transforms.run(pipeline)
 ```
+
 This pipeline will:
 
 1. **Collect Seeds**: Search for recent news about Premier League Soccer
@@ -61,41 +70,41 @@ This pipeline will:
 
 ## Examples
 
-We provide comprehensive example notebooks demonstrating different use cases and features:
+Comprehensive example notebooks demonstrate different use cases and features:
 
 ### Getting Started
-- **[Quick Start](examples/01_quick_start.ipynb)** - Simplest possible example to get you running quickly
+- **[Quick Start](examples/01_quick_start.ipynb)** — Simplest example to get you running quickly
 
 ### Data Sources
-- **[Google News](examples/02_google_news_datasource.ipynb)** - Using Google News search as a data source
-- **[GDELT](examples/03_gdelt_datasource.ipynb)** - Using GDELT global news database for large-scale datasets
-- **[Custom Documents](examples/04_custom_documents_datasource.ipynb)** - Generating questions from your own documents and files
+- **[Google News](examples/02_google_news_datasource.ipynb)** — Use Google News search as a data source
+- **[GDELT](examples/03_gdelt_datasource.ipynb)** — Use GDELT global news database for large-scale datasets
+- **[Custom Documents](examples/04_custom_documents_datasource.ipynb)** — Generate questions from your own documents and files
 
 ### Answer Types
-- **[Binary](examples/05_binary_answer_type.ipynb)** - Yes/No questions for event prediction
-- **[Continuous](examples/06_continuous_answer_type.ipynb)** - Numeric questions for quantitative predictions
-- **[Multiple Choice](examples/07_multiple_choice_answer_type.ipynb)** - Questions with predefined answer options
-- **[Free Response](examples/08_free_response_answer_type.ipynb)** - Open-ended questions with detailed text answers
+- **[Binary](examples/05_binary_answer_type.ipynb)** — Yes/No questions for event prediction
+- **[Continuous](examples/06_continuous_answer_type.ipynb)** — Numeric questions for quantitative predictions
+- **[Multiple Choice](examples/07_multiple_choice_answer_type.ipynb)** — Questions with predefined answer options
+- **[Free Response](examples/08_free_response_answer_type.ipynb)** — Open-ended questions with detailed text answers
 
 ## Core Concepts
 
-Lightning Rod works with a simple but powerful data model:
+Lightning Rod uses a simple but powerful data model:
 
 ### Sample
 
-A **Sample** is the fundamental unit of data in Lightning Rod. Each sample contains:
+A **Sample** is the fundamental unit of data. Each sample contains:
 
-- `sample_id`: Unique identifier for the sample
+- `sample_id`: Unique identifier
 - `seed`: Optional starting point (raw data)
 - `question`: Optional forecasting question
 - `label`: Optional ground truth answer
-- `meta`: Dictionary for additional metadata
+- `meta`: Additional metadata dictionary
 
 ### Seed
 
-A **Seed** is your starting point - raw data that will be transformed into questions. For example:
+A **Seed** is your starting point—raw data that gets transformed into questions:
 
-- `seed_text`: The raw text content (e.g., news articles, reports, tweets)
+- `seed_text`: Raw text content (e.g., news articles, reports, tweets)
 
 ### Question
 
