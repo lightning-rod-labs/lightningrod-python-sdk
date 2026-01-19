@@ -38,7 +38,7 @@ pip install -e ".[dev]"
 Once installed (either via `pip install -e .` or `make install`), the package can be imported:
 
 ```python
-from lightningrod import LightningRodClient
+from lightningrod import LightningRod
 ```
 
 ## Building for Distribution
