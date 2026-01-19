@@ -184,6 +184,15 @@ class FilesResource:
 class FileSetFilesResource:
     def __init__(self, client: "LightningRodClient"):
         self._client = client
+
+    def upload(
+        self,
+        file_set_id: str,
+        file_path: str | Path,
+        metadata: Optional[dict[str, Any]] = None
+    ) -> FileSetFile:
+        file = self.files.upload(file_path)
+        return self.add(file_set_id, file.id, metadata)
     
     def add(
         self,
