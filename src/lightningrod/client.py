@@ -20,13 +20,8 @@ from lightningrod._generated.models import (
     CreateFileSetFileRequestMetadataType0,
     FileSetFile,
 )
-from lightningrod._generated.models.sample import Sample
-from lightningrod._generated.models.upload_samples_request import UploadSamplesRequest
 from lightningrod._generated.api.datasets import (
-    create_dataset_datasets_post,
     get_dataset_datasets_dataset_id_get,
-    get_dataset_samples_datasets_dataset_id_samples_get,
-    upload_samples_datasets_dataset_id_samples_post,
 )
 from lightningrod._generated.api.transform_jobs import (
     create_transform_job_transform_jobs_post,
@@ -42,7 +37,6 @@ from lightningrod._generated.api.file_sets import (
     add_file_to_set_filesets_file_set_id_files_post,
     list_files_in_set_filesets_file_set_id_files_get,
 )
-from lightningrod._generated.types import Unset
 from lightningrod.dataset import Dataset
 from lightningrod.pipeline import TransformPipeline
 
@@ -56,65 +50,6 @@ class PipelineResource:
     
     def __call__(self, config: Any) -> TransformPipeline:
         return self.create(config)
-
-
-class DatasetsResource:
-    def __init__(self, client: "LightningRodClient"):
-        self._client = client
-    
-    def create(self, samples: List[Sample], batch_size: int = 1000) -> Dataset:
-        create_response = create_dataset_datasets_post.sync(client=self._client._generated_client)
-        if create_response is None:
-            raise Exception("Failed to create dataset: received None response")
-        dataset_id: str = create_response.id
-        
-        total_uploaded: int = 0
-        for i in range(0, len(samples), batch_size):
-            batch = samples[i:i + batch_size]
-            request = UploadSamplesRequest(samples=batch)
-            response = upload_samples_datasets_dataset_id_samples_post.sync(
-                dataset_id=dataset_id,
-                client=self._client._generated_client,
-                body=request,
-            )
-            if isinstance(response, HTTPValidationError):
-                raise Exception(f"Failed to upload samples: {response.detail}")
-            if response is None:
-                raise Exception("Failed to upload samples: received None response")
-            total_uploaded = response.total
-        
-        return Dataset(
-            id=dataset_id,
-            num_rows=total_uploaded,
-            client=self._client
-        )
-    
-    def _fetch_all_samples(self, dataset_id: str) -> List[Sample]:
-        samples: List[Sample] = []
-        cursor: Optional[str] = None
-        
-        while True:
-            response = get_dataset_samples_datasets_dataset_id_samples_get.sync(
-                dataset_id=dataset_id,
-                client=self._client._generated_client,
-                limit=100,
-                cursor=cursor,
-            )
-            
-            if isinstance(response, HTTPValidationError):
-                raise Exception(f"Failed to fetch samples: {response.detail}")
-            if response is None:
-                raise Exception("Failed to fetch samples: received None response")
-            
-            samples.extend(response.samples)
-            
-            if not response.has_more:
-                break
-            if isinstance(response.next_cursor, Unset) or response.next_cursor is None:
-                break
-            cursor = str(response.next_cursor)
-        
-        return samples
 
 
 class TransformJobsResource:
@@ -377,7 +312,6 @@ class LightningRodClient:
         )
         
         self.pipeline: PipelineResource = PipelineResource(self)
-        self.datasets: DatasetsResource = DatasetsResource(self)
         self.transforms: TransformsResource = TransformsResource(self)
         self.files: FilesResource = FilesResource(self)
         self.filesets: FileSetsResource = FileSetsResource(self)
