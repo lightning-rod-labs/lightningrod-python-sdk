@@ -1,11 +1,8 @@
-from typing import TYPE_CHECKING, List
+from typing import List, Optional
 import asyncio
 
 from lightningrod._generated.models.sample import Sample
-
-if TYPE_CHECKING:
-    from lightningrod.datasets.client import DatasetSamplesClient
-
+from lightningrod.datasets.client import DatasetSamplesClient
 
 class Dataset:
     """
@@ -14,7 +11,7 @@ class Dataset:
     A dataset contains rows of sample data. Use this class to access 
     dataset metadata and download the actual samples.
     
-    Note: Datasets should only be created through LightningRodClient methods,
+    Note: Datasets should only be created through LightningRod methods,
     not instantiated directly.
     
     Attributes:
@@ -38,8 +35,9 @@ class Dataset:
         self.id: str = id
         self.num_rows: int = num_rows
         self._datasets_client: DatasetSamplesClient = datasets_client
+        self._samples: Optional[List[Sample]] = None
     
-    def to_samples(self) -> List[Sample]:
+    def download(self) -> List[Sample]:
         """
         Download all samples from the dataset via the paginated API.
         
@@ -49,11 +47,24 @@ class Dataset:
         Example:
             >>> client = LightningRod(api_key="your-api-key")
             >>> dataset = client.pipeline(config).run()
-            >>> samples = dataset.to_samples()
+            >>> samples = dataset.download()
             >>> for sample in samples:
             ...     print(sample.seed.seed_text)
         """
-        return self._datasets_client.list(self.id)
+        self._samples = self._datasets_client.list(self.id)
+        return self._samples
+
+    def samples(self) -> List[Sample]:
+        """
+        Get all samples from the dataset. 
+        Automatically downloads the samples if they haven't been downloaded yet.
+        
+        Returns:
+            List of Sample objects
+        """
+        if not self._samples:
+            self.download()
+        return self._samples
 
 class AsyncDataset:
     """

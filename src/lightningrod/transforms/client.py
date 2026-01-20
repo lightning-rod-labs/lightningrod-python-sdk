@@ -101,7 +101,7 @@ class TransformsClient:
         )
         
         response = create_transform_job_transform_jobs_post.sync(
-            client=self._client._generated_client,
+            client=self._client,
             body=request,
         )
 
