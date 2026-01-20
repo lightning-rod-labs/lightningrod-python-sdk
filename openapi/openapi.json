@@ -450,31 +450,6 @@
       }
     },
     "/filesets/": {
-      "get": {
-        "tags": [
-          "FileSets"
-        ],
-        "summary": "List File Sets",
-        "description": "List all FileSets for the organization.",
-        "operationId": "list_file_sets_filesets__get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ListFileSetsResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      },
       "post": {
         "tags": [
           "FileSets"
@@ -482,15 +457,20 @@
         "summary": "Create File Set",
         "description": "Create a new FileSet for the organization.",
         "operationId": "create_file_set_filesets__post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CreateFileSetRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "201": {
@@ -513,12 +493,56 @@
               }
             }
           }
-        },
+        }
+      },
+      "get": {
+        "tags": [
+          "FileSets"
+        ],
+        "summary": "List File Sets",
+        "description": "List all FileSets for the organization, optionally including public filesets.",
+        "operationId": "list_file_sets_filesets__get",
         "security": [
           {
             "HTTPBearer": []
           }
-        ]
+        ],
+        "parameters": [
+          {
+            "name": "include_public",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Include public filesets",
+              "default": false,
+              "title": "Include Public"
+            },
+            "description": "Include public filesets"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListFileSetsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/filesets/{file_set_id}": {
@@ -1320,6 +1344,11 @@
           "indexed_file_count": {
             "type": "integer",
             "title": "Indexed File Count"
+          },
+          "is_public": {
+            "type": "boolean",
+            "title": "Is Public",
+            "default": false
           },
           "created_at": {
             "type": "string",
@@ -3028,8 +3057,7 @@
         "enum": [
           "RUNNING",
           "COMPLETED",
-          "FAILED",
-          "CANCELLED"
+          "FAILED"
         ],
         "title": "TransformJobStatus"
       },

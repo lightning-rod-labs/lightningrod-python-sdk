@@ -8,6 +8,8 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 from dateutil.parser import isoparse
 
+from ..types import UNSET, Unset
+
 T = TypeVar("T", bound="FileSet")
 
 
@@ -22,6 +24,7 @@ class FileSet:
         indexed_file_count (int):
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
+        is_public (bool | Unset):  Default: False.
     """
 
     id: str
@@ -31,6 +34,7 @@ class FileSet:
     indexed_file_count: int
     created_at: datetime.datetime
     updated_at: datetime.datetime
+    is_public: bool | Unset = False
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -49,6 +53,8 @@ class FileSet:
 
         updated_at = self.updated_at.isoformat()
 
+        is_public = self.is_public
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -62,6 +68,8 @@ class FileSet:
                 "updated_at": updated_at,
             }
         )
+        if is_public is not UNSET:
+            field_dict["is_public"] = is_public
 
         return field_dict
 
@@ -87,6 +95,8 @@ class FileSet:
 
         updated_at = isoparse(d.pop("updated_at"))
 
+        is_public = d.pop("is_public", UNSET)
+
         file_set = cls(
             id=id,
             name=name,
@@ -95,6 +105,7 @@ class FileSet:
             indexed_file_count=indexed_file_count,
             created_at=created_at,
             updated_at=updated_at,
+            is_public=is_public,
         )
 
         file_set.additional_properties = d
