@@ -80,53 +80,15 @@ Comprehensive example notebooks demonstrate different use cases and features:
 - **[GDELT](examples/03_gdelt_datasource.ipynb)** — Use GDELT global news database for large-scale datasets
 - **[Custom Documents](examples/04_custom_documents_datasource.ipynb)** — Generate questions from your own documents and files
 
-### Answer Types
+### Question Types
 - **[Binary](examples/05_binary_answer_type.ipynb)** — Yes/No questions for event prediction
 - **[Continuous](examples/06_continuous_answer_type.ipynb)** — Numeric questions for quantitative predictions
 - **[Multiple Choice](examples/07_multiple_choice_answer_type.ipynb)** — Questions with predefined answer options
 - **[Free Response](examples/08_free_response_answer_type.ipynb)** — Open-ended questions with detailed text answers
 
-## Core Concepts
+## Documentation
 
-Lightning Rod uses a simple but powerful data model:
-
-### Sample
-
-A **Sample** is the fundamental unit of data. Each sample contains:
-
-- `sample_id`: Unique identifier
-- `seed`: Optional starting point (raw data)
-- `question`: Optional forecasting question
-- `label`: Optional ground truth answer
-- `meta`: Additional metadata dictionary
-
-### Seed
-
-A **Seed** is your starting point—raw data that gets transformed into questions:
-
-- `seed_text`: Raw text content (e.g., news articles, reports, tweets)
-
-### Question
-
-A **Question** is a forecasting question generated from seeds:
-
-- `question_text`: The forecasting question (e.g., "Will Arsenal finish above Tottenham in the 2025-26 season?")
-
-### Label
-
-A **Label** represents the ground truth answer to a question:
-
-- `label`: The answer (e.g., "Yes", "No", or a numeric value)
-- `label_confidence`: Confidence score (0.0 to 1.0)
-- `resolution_date`: When the question can be resolved
-
-### Dataset
-
-A **Dataset** is a collection of samples stored efficiently as Parquet files. Datasets can be:
-
-- Downloaded for local analysis
-- Used as input to pipelines
-- Exported for model training
+For complete API reference documentation, see [API.md](API.md). This includes overview of the core system concepts, methods and types.
 
 ## License
 
