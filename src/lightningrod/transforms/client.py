@@ -55,10 +55,10 @@ class TransformsClient:
     def run(
         self,
         config: TransformConfig,
-        dataset_id: Optional[str] = None,
+        input_dataset: Optional[Union[Dataset, str]] = None,
         max_questions: Optional[int] = None
     ) -> Dataset:
-        job: TransformJob = self.submit(config, dataset_id, max_questions)
+        job: TransformJob = self.submit(config, input_dataset, max_questions)
         
         while job.status == TransformJobStatus.RUNNING:
             time.sleep(15)
@@ -91,9 +91,14 @@ class TransformsClient:
     def submit(
         self,
         config: TransformConfig,
-        dataset_id: Optional[str] = None,
+        input_dataset: Optional[Union[Dataset, str]] = None,
         max_questions: Optional[int] = None
     ) -> TransformJob:
+        dataset_id: Optional[str] = None
+        if isinstance(input_dataset, Dataset):
+            dataset_id = input_dataset.id
+        elif isinstance(input_dataset, str):
+            dataset_id = input_dataset
         request: CreateTransformJobRequest = CreateTransformJobRequest(
             config=config,
             input_dataset_id=dataset_id,
