@@ -19,6 +19,7 @@ from lightningrod._generated.api.file_sets import (
 )
 from lightningrod._generated.client import AuthenticatedClient
 from lightningrod.files.client import FilesClient
+from lightningrod._errors import handle_response_error
 
 class FileSetFilesClient:
     def __init__(self, client: AuthenticatedClient, files_client: FilesClient):
@@ -45,18 +46,13 @@ class FileSetFilesClient:
             metadata=CreateFileSetFileRequestMetadataType0.from_dict(metadata) if metadata else None
         )
         
-        response = add_file_to_set_filesets_file_set_id_files_post.sync(
+        response = add_file_to_set_filesets_file_set_id_files_post.sync_detailed(
             file_set_id=file_set_id,
             client=self._client,
             body=request
         )
         
-        if isinstance(response, HTTPValidationError):
-            raise Exception(f"Failed to add file to set: {response.detail}")
-        if response is None:
-            raise Exception("Failed to add file to set: received None response")
-        
-        return response
+        return handle_response_error(response, "add file to set")
     
     def list(
         self,
@@ -64,19 +60,14 @@ class FileSetFilesClient:
         cursor: Optional[str] = None,
         limit: int = 100
     ) -> ListFileSetFilesResponse:
-        response = list_files_in_set_filesets_file_set_id_files_get.sync(
+        response = list_files_in_set_filesets_file_set_id_files_get.sync_detailed(
             file_set_id=file_set_id,
             client=self._client,
             cursor=cursor if cursor else None,
             limit=limit
         )
         
-        if isinstance(response, HTTPValidationError):
-            raise Exception(f"Failed to list files in set: {response.detail}")
-        if response is None:
-            raise Exception("Failed to list files in set: received None response")
-        
-        return response
+        return handle_response_error(response, "list files in set")
 
 
 class FileSetsClient:
@@ -93,37 +84,23 @@ class FileSetsClient:
         if description is not None:
             request.description = description
         
-        response = create_file_set_filesets_post.sync(
+        response = create_file_set_filesets_post.sync_detailed(
             client=self._client,
             body=request
         )
         
-        if isinstance(response, HTTPValidationError):
-            raise Exception(f"Failed to create file set: {response.detail}")
-        if response is None:
-            raise Exception("Failed to create file set: received None response")
-        
-        return response
+        return handle_response_error(response, "create file set")
     
     def get(self, file_set_id: str) -> FileSet:
-        response = get_file_set_filesets_file_set_id_get.sync(
+        response = get_file_set_filesets_file_set_id_get.sync_detailed(
             file_set_id=file_set_id,
             client=self._client
         )
         
-        if isinstance(response, HTTPValidationError):
-            raise Exception(f"Failed to get file set: {response.detail}")
-        if response is None:
-            raise Exception("Failed to get file set: received None response")
-        
-        return response
+        return handle_response_error(response, "get file set")
     
     def list(self) -> List[FileSet]:
-        response = list_file_sets_filesets_get.sync(client=self._client)
+        response = list_file_sets_filesets_get.sync_detailed(client=self._client)
         
-        if isinstance(response, HTTPValidationError):
-            raise Exception(f"Failed to list file sets: {response.detail}")
-        if response is None:
-            raise Exception("Failed to list file sets: received None response")
-        
-        return response.file_sets
+        parsed = handle_response_error(response, "list file sets")
+        return parsed.file_sets

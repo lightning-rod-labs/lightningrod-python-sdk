@@ -27,6 +27,7 @@ from lightningrod._generated.api.transform_jobs import (
 from lightningrod.datasets.dataset import Dataset
 from lightningrod._generated.client import AuthenticatedClient
 from lightningrod.datasets.client import DatasetSamplesClient
+from lightningrod._errors import handle_response_error
 
 TransformConfig = Union[FileSetQuerySeedGenerator, FileSetSeedGenerator, ForwardLookingQuestionGenerator, GdeltSeedGenerator, NewsSeedGenerator, QuestionAndLabelGenerator, QuestionGenerator, QuestionPipeline, QuestionRenderer, WebSearchLabeler]
 
@@ -35,15 +36,11 @@ class TransformJobsClient:
         self._client = client
     
     def get(self, job_id: str) -> TransformJob:
-        response = get_transform_job_transform_jobs_job_id_get.sync(
+        response = get_transform_job_transform_jobs_job_id_get.sync_detailed(
             job_id=job_id,
             client=self._client,
         )
-        if isinstance(response, HTTPValidationError):
-            raise Exception(f"Failed to get transform job: {response.detail}")
-        if response is None:
-            raise Exception("Failed to get transform job: received None response")
-        return response
+        return handle_response_error(response, "get transform job")
 
 
 class TransformsClient:
@@ -71,18 +68,15 @@ class TransformsClient:
             if job.output_dataset_id is None:
                 raise Exception(f"Transform job {job.id} completed but has no output dataset")
             
-            dataset_response = get_dataset_datasets_dataset_id_get.sync(
+            dataset_response = get_dataset_datasets_dataset_id_get.sync_detailed(
                 dataset_id=job.output_dataset_id,
                 client=self._client,
             )
-            if isinstance(dataset_response, HTTPValidationError):
-                raise Exception(f"Failed to get dataset: {dataset_response.detail}")
-            if dataset_response is None:
-                raise Exception("Failed to get dataset: received None response")
+            dataset_result = handle_response_error(dataset_response, "get dataset")
             
             return Dataset(
-                id=dataset_response.id,
-                num_rows=dataset_response.num_rows,
+                id=dataset_result.id,
+                num_rows=dataset_result.num_rows,
                 datasets_client=self._dataset_samples_client
             )
         
@@ -110,11 +104,4 @@ class TransformsClient:
             body=request,
         )
 
-        if isinstance(response, HTTPValidationError):
-            raise Exception(f"Failed to submit transform job: {response.detail}")
-        if response.parsed is None:
-            print(response.headers)
-            print(response.content)
-            raise Exception("Failed to submit transform job: received None")
-        
-        return response.parsed
+        return handle_response_error(response, "submit transform job")
