@@ -105,14 +105,16 @@ class TransformsClient:
             max_questions=max_questions
         )
         
-        response = create_transform_job_transform_jobs_post.sync(
+        response = create_transform_job_transform_jobs_post.sync_detailed(
             client=self._client,
             body=request,
         )
 
         if isinstance(response, HTTPValidationError):
             raise Exception(f"Failed to submit transform job: {response.detail}")
-        elif response is None:
-            raise Exception("Failed to submit transform job: received None response")
+        if response.parsed is None:
+            print(response.headers)
+            print(response.content)
+            raise Exception("Failed to submit transform job: received None")
         
-        return response
+        return response.parsed
