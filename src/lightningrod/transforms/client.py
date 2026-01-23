@@ -55,10 +55,10 @@ class TransformsClient:
     def run(
         self,
         config: TransformConfig,
-        dataset_id: Optional[str] = None,
+        input_dataset: Optional[Union[Dataset, str]] = None,
         max_questions: Optional[int] = None
     ) -> Dataset:
-        job: TransformJob = self.submit(config, dataset_id, max_questions)
+        job: TransformJob = self.submit(config, input_dataset, max_questions)
         
         while job.status == TransformJobStatus.RUNNING:
             time.sleep(15)
@@ -91,23 +91,30 @@ class TransformsClient:
     def submit(
         self,
         config: TransformConfig,
-        dataset_id: Optional[str] = None,
+        input_dataset: Optional[Union[Dataset, str]] = None,
         max_questions: Optional[int] = None
     ) -> TransformJob:
+        dataset_id: Optional[str] = None
+        if isinstance(input_dataset, Dataset):
+            dataset_id = input_dataset.id
+        elif isinstance(input_dataset, str):
+            dataset_id = input_dataset
         request: CreateTransformJobRequest = CreateTransformJobRequest(
             config=config,
             input_dataset_id=dataset_id,
             max_questions=max_questions
         )
         
-        response = create_transform_job_transform_jobs_post.sync(
+        response = create_transform_job_transform_jobs_post.sync_detailed(
             client=self._client,
             body=request,
         )
 
         if isinstance(response, HTTPValidationError):
             raise Exception(f"Failed to submit transform job: {response.detail}")
-        elif response is None:
-            raise Exception("Failed to submit transform job: received None response")
+        if response.parsed is None:
+            print(response.headers)
+            print(response.content)
+            raise Exception("Failed to submit transform job: received None")
         
-        return response
+        return response.parsed

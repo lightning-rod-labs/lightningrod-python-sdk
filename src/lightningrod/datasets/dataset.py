@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, TYPE_CHECKING
 import asyncio
 
 from lightningrod._generated.models.sample import Sample
@@ -8,7 +8,10 @@ from lightningrod._generated.models.news_context import NewsContext
 from lightningrod._generated.models.rag_context import RAGContext
 from lightningrod._generated.models.sample_meta import SampleMeta
 from lightningrod._generated.types import UNSET, Unset
-from lightningrod.datasets.client import DatasetSamplesClient
+
+# avoid circular import
+if TYPE_CHECKING:
+    from lightningrod.datasets.client import DatasetSamplesClient
 
 class Dataset:
     """
@@ -36,11 +39,11 @@ class Dataset:
         self,
         id: str,
         num_rows: int,
-        datasets_client: DatasetSamplesClient
+        datasets_client: "DatasetSamplesClient"
     ):
         self.id: str = id
         self.num_rows: int = num_rows
-        self._datasets_client: DatasetSamplesClient = datasets_client
+        self._datasets_client: "DatasetSamplesClient" = datasets_client
         self._samples: Optional[List[Sample]] = None
     
     def download(self) -> List[Sample]:
