@@ -1,4 +1,4 @@
-.PHONY: help setup install install-dev test build clean generate
+.PHONY: help setup install install-dev test build clean generate publish upload
 
 help:
 	@echo "Lightning Rod Python SDK - Development Commands"
@@ -8,6 +8,8 @@ help:
 	@echo "  make install-dev - Install package with development dependencies"
 	@echo "  make test        - Run tests"
 	@echo "  make build       - Build distribution packages"
+	@echo "  make publish     - Build and upload to PyPI"
+	@echo "  make upload      - Upload distribution packages to PyPI (requires build first)"
 	@echo "  make clean       - Clean build artifacts"
 	@echo "  make generate    - Regenerate client from OpenAPI spec"
 	@echo ""
@@ -30,6 +32,12 @@ test:
 build:
 	@echo "Building distribution packages..."
 	@python -m build
+
+publish: build upload
+
+upload:
+	@echo "Uploading to PyPI..."
+	@twine upload --repository lightningrod-ai dist/*
 
 clean:
 	@echo "Cleaning build artifacts..."
