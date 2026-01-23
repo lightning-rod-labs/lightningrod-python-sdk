@@ -41,6 +41,6 @@ class LightningRod:
         self._dataset_samples: DatasetSamplesClient = DatasetSamplesClient(self._generated_client)
         self.transforms: TransformsClient = TransformsClient(self._generated_client, self._dataset_samples)
         self.datasets: DatasetsClient = DatasetsClient(self._generated_client, self._dataset_samples)
-         # TODO: Enable when filesets are publicly supported
+         # TODO(filesets): Enable when filesets are publicly supported
         # self.files: FilesClient = FilesClient(self._generated_client)
         # self.filesets: FileSetsClient = FileSetsClient(self._generated_client, self.files)
