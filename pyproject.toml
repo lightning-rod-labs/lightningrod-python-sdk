@@ -32,6 +32,6 @@ where = ["src"]
 
 [project.urls]
 Homepage = "https://lightningrod.ai/sdk"
-Repository = "https://github.com/lightning-rod-labs/lightningrod-ai"
+Repository = "https://github.com/lightning-rod-labs/lightningrod-python-sdk"
 
 
