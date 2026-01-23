@@ -12,6 +12,7 @@ from lightningrod._generated.api.files import (
 )
 import mimetypes
 from lightningrod._generated.client import AuthenticatedClient
+from lightningrod._errors import handle_response_error
 
 class FilesClient:
     def __init__(self, client: AuthenticatedClient):
@@ -31,30 +32,27 @@ class FilesClient:
             mime_type=mime_type
         )
         
-        response = create_file_upload_files_post.sync(
+        response = create_file_upload_files_post.sync_detailed(
             client=self._client,
             body=request_body
         )
         
-        if isinstance(response, HTTPValidationError):
-            raise Exception(f"Failed to get upload URL: {response.detail}")
-        if response is None:
-            raise Exception("Failed to get upload URL: received None response")
+        parsed = handle_response_error(response, "get upload URL")
         
         upload_headers: dict[str, str] = {
             "Content-Length": str(file_size)
         }
-        if response.mime_type:
-            upload_headers["Content-Type"] = response.mime_type
+        if parsed.mime_type:
+            upload_headers["Content-Type"] = parsed.mime_type
         
         with httpx.Client() as http_client:
             with open(path, "rb") as f:
                 upload_response = http_client.put(
-                    response.upload_url,
+                    parsed.upload_url,
                     content=f,
                     headers=upload_headers,
                     timeout=1800.0
                 )
                 upload_response.raise_for_status()
         
-        return response
+        return parsed

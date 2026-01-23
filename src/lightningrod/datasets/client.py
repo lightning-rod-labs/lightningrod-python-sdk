@@ -14,6 +14,7 @@ from lightningrod._generated.api.datasets import (
 from lightningrod._generated.types import Unset
 from lightningrod._generated.client import AuthenticatedClient
 from lightningrod.datasets.dataset import Dataset
+from lightningrod._errors import handle_response_error
 
 
 class DatasetSamplesClient:
@@ -25,25 +26,22 @@ class DatasetSamplesClient:
         cursor: Optional[str] = None
         
         while True:
-            response = get_dataset_samples_datasets_dataset_id_samples_get.sync(
+            response = get_dataset_samples_datasets_dataset_id_samples_get.sync_detailed(
                 dataset_id=dataset_id,
                 client=self._client,
                 limit=100,
                 cursor=cursor,
             )
             
-            if isinstance(response, HTTPValidationError):
-                raise Exception(f"Failed to fetch samples: {response.detail}")
-            if response is None:
-                raise Exception("Failed to fetch samples: received None response")
+            parsed = handle_response_error(response, "fetch samples")
             
-            samples.extend(response.samples)
+            samples.extend(parsed.samples)
             
-            if not response.has_more:
+            if not parsed.has_more:
                 break
-            if isinstance(response.next_cursor, Unset) or response.next_cursor is None:
+            if isinstance(parsed.next_cursor, Unset) or parsed.next_cursor is None:
                 break
-            cursor = str(response.next_cursor)
+            cursor = str(parsed.next_cursor)
         
         return samples
     
@@ -67,16 +65,13 @@ class DatasetSamplesClient:
         """
         request = UploadSamplesRequest(samples=samples)
         
-        response = upload_samples_datasets_dataset_id_samples_post.sync(
+        response = upload_samples_datasets_dataset_id_samples_post.sync_detailed(
             dataset_id=dataset_id,
             client=self._client,
             body=request,
         )
         
-        if isinstance(response, HTTPValidationError):
-            raise Exception(f"Failed to upload samples: {response.detail}")
-        if response is None:
-            raise Exception("Failed to upload samples: received None response")
+        handle_response_error(response, "upload samples")
 
 
 class DatasetsClient:
@@ -96,27 +91,21 @@ class DatasetsClient:
             >>> dataset = client.datasets.create()
             >>> print(f"Created dataset: {dataset.id}")
         """
-        response = create_dataset_datasets_post.sync(
+        response = create_dataset_datasets_post.sync_detailed(
             client=self._client,
         )
         
-        if isinstance(response, HTTPValidationError):
-            raise Exception(f"Failed to create dataset: {response.detail}")
-        if response is None:
-            raise Exception("Failed to create dataset: received None response")
+        create_result = handle_response_error(response, "create dataset")
         
-        dataset_response = get_dataset_datasets_dataset_id_get.sync(
-            dataset_id=response.id,
+        dataset_response = get_dataset_datasets_dataset_id_get.sync_detailed(
+            dataset_id=create_result.id,
             client=self._client,
         )
-        if isinstance(dataset_response, HTTPValidationError):
-            raise Exception(f"Failed to get dataset: {dataset_response.detail}")
-        if dataset_response is None:
-            raise Exception("Failed to get dataset: received None response")
+        dataset_result = handle_response_error(dataset_response, "get dataset")
         
         return Dataset(
-            id=dataset_response.id,
-            num_rows=dataset_response.num_rows,
+            id=dataset_result.id,
+            num_rows=dataset_result.num_rows,
             datasets_client=self._dataset_samples_client
         )
     
@@ -150,16 +139,13 @@ class DatasetsClient:
             batch = samples[i:i + batch_size]
             self._dataset_samples_client.upload(dataset.id, batch)
         
-        dataset_response = get_dataset_datasets_dataset_id_get.sync(
+        dataset_response = get_dataset_datasets_dataset_id_get.sync_detailed(
             dataset_id=dataset.id,
             client=self._client,
         )
-        if isinstance(dataset_response, HTTPValidationError):
-            raise Exception(f"Failed to refresh dataset: {dataset_response.detail}")
-        if dataset_response is None:
-            raise Exception("Failed to refresh dataset: received None response")
+        dataset_result = handle_response_error(dataset_response, "refresh dataset")
         
-        dataset.num_rows = dataset_response.num_rows
+        dataset.num_rows = dataset_result.num_rows
         return dataset
     
     def get(self, dataset_id: str) -> Dataset:
@@ -176,17 +162,14 @@ class DatasetsClient:
             >>> client = LightningRod(api_key="your-api-key")
             >>> dataset = client.datasets.get("dataset-id-here")
         """
-        dataset_response = get_dataset_datasets_dataset_id_get.sync(
+        dataset_response = get_dataset_datasets_dataset_id_get.sync_detailed(
             dataset_id=dataset_id,
             client=self._client,
         )
-        if isinstance(dataset_response, HTTPValidationError):
-            raise Exception(f"Failed to get dataset: {dataset_response.detail}")
-        if dataset_response is None:
-            raise Exception("Failed to get dataset: received None response")
+        dataset_result = handle_response_error(dataset_response, "get dataset")
         
         return Dataset(
-            id=dataset_response.id,
-            num_rows=dataset_response.num_rows,
+            id=dataset_result.id,
+            num_rows=dataset_result.num_rows,
             datasets_client=self._dataset_samples_client
         )
