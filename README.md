@@ -6,6 +6,8 @@
 
 The Lightning Rod SDK provides a simple Python API for generating custom forecasting datasets to train your LLMs. Transform news articles, documents, and other real-world data into high-quality training samples automatically.
 
+Based on our research: [Future-as-Label: Scalable Supervision from Real-World Outcomes](https://arxiv.org/abs/2601.06336)
+
 ## 👋 Quick Start
 
 ### 1. Install the SDK
