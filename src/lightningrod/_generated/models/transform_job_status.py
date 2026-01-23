@@ -2,7 +2,6 @@ from enum import Enum
 
 
 class TransformJobStatus(str, Enum):
-    CANCELLED = "CANCELLED"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
     RUNNING = "RUNNING"
