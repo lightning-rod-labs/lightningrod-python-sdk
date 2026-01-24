@@ -58,6 +58,53 @@
         ]
       }
     },
+    "/transform-jobs/estimate-cost": {
+      "post": {
+        "tags": [
+          "Transform Jobs"
+        ],
+        "summary": "Estimate Cost",
+        "description": "Estimate maximum cost for a transform job before execution",
+        "operationId": "estimate_cost_transform_jobs_estimate_cost_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EstimateCostRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EstimateCostResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/transform-jobs": {
       "post": {
         "tags": [
@@ -724,6 +771,33 @@
           }
         }
       }
+    },
+    "/organizations/balance": {
+      "get": {
+        "tags": [
+          "Organizations"
+        ],
+        "summary": "Get Balance",
+        "description": "Get the current credit balance for the organization",
+        "operationId": "get_balance_organizations_balance_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BalanceResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -786,6 +860,19 @@
           "FREE_RESPONSE"
         ],
         "title": "AnswerTypeEnum"
+      },
+      "BalanceResponse": {
+        "properties": {
+          "balance_dollars": {
+            "type": "number",
+            "title": "Balance Dollars"
+          }
+        },
+        "type": "object",
+        "required": [
+          "balance_dollars"
+        ],
+        "title": "BalanceResponse"
       },
       "ChatCompletionRequest": {
         "properties": {
@@ -1258,6 +1345,17 @@
             ],
             "title": "Max Questions"
           },
+          "max_cost_dollars": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Cost Dollars"
+          },
           "configuration_id": {
             "anyOf": [
               {
@@ -1268,6 +1366,11 @@
               }
             ],
             "title": "Configuration Id"
+          },
+          "use_local_rate_limiter": {
+            "type": "boolean",
+            "title": "Use Local Rate Limiter",
+            "default": false
           }
         },
         "type": "object",
@@ -1293,6 +1396,69 @@
           "num_rows"
         ],
         "title": "DatasetMetadata"
+      },
+      "EstimateCostRequest": {
+        "properties": {
+          "config": {
+            "$ref": "#/components/schemas/CreateTransformConfig"
+          },
+          "max_questions": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Questions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "config"
+        ],
+        "title": "EstimateCostRequest"
+      },
+      "EstimateCostResponse": {
+        "properties": {
+          "total_cost_dollars": {
+            "type": "number",
+            "title": "Total Cost Dollars"
+          },
+          "llm_cost_dollars": {
+            "type": "number",
+            "title": "Llm Cost Dollars"
+          },
+          "web_search_cost_dollars": {
+            "type": "number",
+            "title": "Web Search Cost Dollars"
+          },
+          "url_download_cost_dollars": {
+            "type": "number",
+            "title": "Url Download Cost Dollars"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/UsageSummary"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/StepCostBreakdown"
+            },
+            "type": "array",
+            "title": "Steps"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_cost_dollars",
+          "llm_cost_dollars",
+          "web_search_cost_dollars",
+          "url_download_cost_dollars",
+          "usage",
+          "steps"
+        ],
+        "title": "EstimateCostResponse"
       },
       "EventUsageSummary": {
         "properties": {
@@ -1402,6 +1568,17 @@
             "type": "integer",
             "title": "Size Bytes"
           },
+          "character_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Character Count"
+          },
           "metadata": {
             "anyOf": [
               {
@@ -1470,6 +1647,7 @@
           "cloud_storage_path",
           "mime_type",
           "size_bytes",
+          "character_count",
           "metadata",
           "gemini_file_id",
           "file_created_date",
@@ -1563,6 +1741,21 @@
             "title": "Chunk Overlap",
             "description": "Number of overlapping characters between consecutive chunks",
             "default": 200
+          },
+          "metadata_filters": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata Filters",
+            "description": "Optional list of metadata filters to select which files to process. Files matching ANY filter will be included. (e.g., [\"ticker='AAL'\", \"ticker='MSFT'\"])"
           }
         },
         "type": "object",
@@ -1810,6 +2003,39 @@
               }
             ],
             "title": "By Step"
+          },
+          "max_cost_dollars": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Cost Dollars"
+          },
+          "current_cost_dollars": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Cost Dollars"
+          },
+          "estimated_cost_dollars": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Cost Dollars"
           }
         },
         "type": "object",
@@ -2519,6 +2745,12 @@
               },
               {
                 "$ref": "#/components/schemas/GdeltSeedGenerator"
+              },
+              {
+                "$ref": "#/components/schemas/FileSetSeedGenerator"
+              },
+              {
+                "$ref": "#/components/schemas/FileSetQuerySeedGenerator"
               }
             ],
             "title": "Seed Generator",
@@ -2526,6 +2758,8 @@
             "discriminator": {
               "propertyName": "config_type",
               "mapping": {
+                "FILESET_QUERY_SEED_GENERATOR": "#/components/schemas/FileSetQuerySeedGenerator",
+                "FILESET_SEED_GENERATOR": "#/components/schemas/FileSetSeedGenerator",
                 "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
                 "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator"
               }
@@ -2947,6 +3181,42 @@
         ],
         "title": "Seed"
       },
+      "StepCostBreakdown": {
+        "properties": {
+          "step_name": {
+            "type": "string",
+            "title": "Step Name"
+          },
+          "step_type": {
+            "$ref": "#/components/schemas/TransformType"
+          },
+          "total_cost_dollars": {
+            "type": "number",
+            "title": "Total Cost Dollars"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/UsageSummary"
+          },
+          "output_count": {
+            "type": "integer",
+            "title": "Output Count"
+          },
+          "cost_per_output": {
+            "type": "number",
+            "title": "Cost Per Output"
+          }
+        },
+        "type": "object",
+        "required": [
+          "step_name",
+          "step_type",
+          "total_cost_dollars",
+          "usage",
+          "output_count",
+          "cost_per_output"
+        ],
+        "title": "StepCostBreakdown"
+      },
       "TransformJob": {
         "properties": {
           "id": {
@@ -2981,6 +3251,17 @@
               }
             ],
             "title": "Error Message"
+          },
+          "warning_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warning Message"
           },
           "modal_function_call_id": {
             "type": "string",
@@ -3026,6 +3307,17 @@
               }
             ]
           },
+          "estimated_cost_dollars": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Cost Dollars"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -3057,9 +3349,33 @@
         "enum": [
           "RUNNING",
           "COMPLETED",
-          "FAILED"
+          "FAILED",
+          "CANCELLED"
         ],
         "title": "TransformJobStatus"
+      },
+      "TransformType": {
+        "type": "string",
+        "enum": [
+          "NEWS_SEED_GENERATOR",
+          "GDELT_SEED_GENERATOR",
+          "QUESTION_GENERATOR",
+          "QUESTION_AND_LABEL_GENERATOR",
+          "QUESTION_FILTER",
+          "FORWARD_LOOKING_QUESTION_GENERATOR",
+          "QUESTION_QUALITY_SCORER",
+          "SCORE_FILTER",
+          "FILTER_CRITERIA",
+          "WEB_SEARCH_LABELER",
+          "NEWS_CONTEXT_GENERATOR",
+          "PIPELINE",
+          "QUESTION_PIPELINE",
+          "QUESTION_RENDERER",
+          "ROLLOUT_GENERATOR",
+          "FILESET_SEED_GENERATOR",
+          "FILESET_QUERY_SEED_GENERATOR"
+        ],
+        "title": "TransformType"
       },
       "UploadSamplesRequest": {
         "properties": {

@@ -34,7 +34,9 @@ class TransformJob:
         updated_at (datetime.datetime):
         configuration_id (None | str | Unset):
         error_message (None | str | Unset):
+        warning_message (None | str | Unset):
         usage (JobUsage | None | Unset):
+        estimated_cost_dollars (float | None | Unset):
     """
 
     id: str
@@ -49,7 +51,9 @@ class TransformJob:
     updated_at: datetime.datetime
     configuration_id: None | str | Unset = UNSET
     error_message: None | str | Unset = UNSET
+    warning_message: None | str | Unset = UNSET
     usage: JobUsage | None | Unset = UNSET
+    estimated_cost_dollars: float | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -89,6 +93,12 @@ class TransformJob:
         else:
             error_message = self.error_message
 
+        warning_message: None | str | Unset
+        if isinstance(self.warning_message, Unset):
+            warning_message = UNSET
+        else:
+            warning_message = self.warning_message
+
         usage: dict[str, Any] | None | Unset
         if isinstance(self.usage, Unset):
             usage = UNSET
@@ -96,6 +106,12 @@ class TransformJob:
             usage = self.usage.to_dict()
         else:
             usage = self.usage
+
+        estimated_cost_dollars: float | None | Unset
+        if isinstance(self.estimated_cost_dollars, Unset):
+            estimated_cost_dollars = UNSET
+        else:
+            estimated_cost_dollars = self.estimated_cost_dollars
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -117,8 +133,12 @@ class TransformJob:
             field_dict["configuration_id"] = configuration_id
         if error_message is not UNSET:
             field_dict["error_message"] = error_message
+        if warning_message is not UNSET:
+            field_dict["warning_message"] = warning_message
         if usage is not UNSET:
             field_dict["usage"] = usage
+        if estimated_cost_dollars is not UNSET:
+            field_dict["estimated_cost_dollars"] = estimated_cost_dollars
 
         return field_dict
 
@@ -175,6 +195,15 @@ class TransformJob:
 
         error_message = _parse_error_message(d.pop("error_message", UNSET))
 
+        def _parse_warning_message(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        warning_message = _parse_warning_message(d.pop("warning_message", UNSET))
+
         def _parse_usage(data: object) -> JobUsage | None | Unset:
             if data is None:
                 return data
@@ -192,6 +221,15 @@ class TransformJob:
 
         usage = _parse_usage(d.pop("usage", UNSET))
 
+        def _parse_estimated_cost_dollars(data: object) -> float | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(float | None | Unset, data)
+
+        estimated_cost_dollars = _parse_estimated_cost_dollars(d.pop("estimated_cost_dollars", UNSET))
+
         transform_job = cls(
             id=id,
             organization_id=organization_id,
@@ -205,7 +243,9 @@ class TransformJob:
             updated_at=updated_at,
             configuration_id=configuration_id,
             error_message=error_message,
+            warning_message=warning_message,
             usage=usage,
+            estimated_cost_dollars=estimated_cost_dollars,
         )
 
         transform_job.additional_properties = d

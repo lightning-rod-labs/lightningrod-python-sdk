@@ -8,6 +8,10 @@ from lightningrod.files.client import FilesClient
 from lightningrod.filesets.client import FileSetsClient
 from lightningrod.transforms.client import TransformsClient
 
+from lightningrod._generated.api.organizations import get_balance_organizations_balance_get
+from lightningrod._generated.models.balance_response import BalanceResponse
+from lightningrod._errors import handle_response_error
+
 
 class LightningRod:
     """
@@ -44,3 +48,10 @@ class LightningRod:
          # TODO(filesets): Enable when filesets are publicly supported
         # self.files: FilesClient = FilesClient(self._generated_client)
         # self.filesets: FileSetsClient = FileSetsClient(self._generated_client, self.files)
+        
+    def get_balance(self) -> float:
+        response = get_balance_organizations_balance_get.sync(
+            client=self._generated_client,
+        )
+        parsed: BalanceResponse = handle_response_error(response, "get balance")
+        return parsed.balance_dollars

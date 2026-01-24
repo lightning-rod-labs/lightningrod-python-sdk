@@ -21,12 +21,15 @@ class FileSetSeedGenerator:
             'FILESET_SEED_GENERATOR'.
         chunk_size (int | Unset): Number of characters per chunk Default: 4000.
         chunk_overlap (int | Unset): Number of overlapping characters between consecutive chunks Default: 200.
+        metadata_filters (list[str] | None | Unset): Optional list of metadata filters to select which files to process.
+            Files matching ANY filter will be included. (e.g., ["ticker='AAL'", "ticker='MSFT'"])
     """
 
     file_set_id: str
     config_type: Literal["FILESET_SEED_GENERATOR"] | Unset = "FILESET_SEED_GENERATOR"
     chunk_size: int | Unset = 4000
     chunk_overlap: int | Unset = 200
+    metadata_filters: list[str] | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -37,6 +40,15 @@ class FileSetSeedGenerator:
         chunk_size = self.chunk_size
 
         chunk_overlap = self.chunk_overlap
+
+        metadata_filters: list[str] | None | Unset
+        if isinstance(self.metadata_filters, Unset):
+            metadata_filters = UNSET
+        elif isinstance(self.metadata_filters, list):
+            metadata_filters = self.metadata_filters
+
+        else:
+            metadata_filters = self.metadata_filters
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -51,6 +63,8 @@ class FileSetSeedGenerator:
             field_dict["chunk_size"] = chunk_size
         if chunk_overlap is not UNSET:
             field_dict["chunk_overlap"] = chunk_overlap
+        if metadata_filters is not UNSET:
+            field_dict["metadata_filters"] = metadata_filters
 
         return field_dict
 
@@ -67,11 +81,29 @@ class FileSetSeedGenerator:
 
         chunk_overlap = d.pop("chunk_overlap", UNSET)
 
+        def _parse_metadata_filters(data: object) -> list[str] | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                metadata_filters_type_0 = cast(list[str], data)
+
+                return metadata_filters_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(list[str] | None | Unset, data)
+
+        metadata_filters = _parse_metadata_filters(d.pop("metadata_filters", UNSET))
+
         file_set_seed_generator = cls(
             file_set_id=file_set_id,
             config_type=config_type,
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
+            metadata_filters=metadata_filters,
         )
 
         file_set_seed_generator.additional_properties = d

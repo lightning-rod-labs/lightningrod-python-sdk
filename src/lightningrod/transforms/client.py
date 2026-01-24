@@ -16,6 +16,8 @@ from lightningrod._generated.models import (
     CreateTransformJobRequest,
     HTTPValidationError,
     WebSearchLabeler,
+    EstimateCostRequest,
+    EstimateCostResponse,
 )
 from lightningrod._generated.api.datasets import (
     get_dataset_datasets_dataset_id_get,
@@ -23,6 +25,7 @@ from lightningrod._generated.api.datasets import (
 from lightningrod._generated.api.transform_jobs import (
     create_transform_job_transform_jobs_post,
     get_transform_job_transform_jobs_job_id_get,
+    estimate_cost_transform_jobs_estimate_cost_post,
 )
 from lightningrod.datasets.dataset import Dataset
 from lightningrod._generated.client import AuthenticatedClient
@@ -105,3 +108,14 @@ class TransformsClient:
         )
 
         return handle_response_error(response, "submit transform job")
+
+    def estimate_cost(self, config: TransformConfig, max_questions: Optional[int] = None) -> float:
+        response = estimate_cost_transform_jobs_estimate_cost_post.sync(
+            client=self._client,
+            json_body=EstimateCostRequest(
+                config=config,
+                max_questions=max_questions,
+            )
+        )
+        parsed: EstimateCostResponse = handle_response_error(response, "estimate cost")
+        return parsed.total_cost_dollars
