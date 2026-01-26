@@ -1268,6 +1268,11 @@
               }
             ],
             "title": "Configuration Id"
+          },
+          "use_local_rate_limiter": {
+            "type": "boolean",
+            "title": "Use Local Rate Limiter",
+            "default": false
           }
         },
         "type": "object",
@@ -1402,6 +1407,17 @@
             "type": "integer",
             "title": "Size Bytes"
           },
+          "character_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Character Count"
+          },
           "metadata": {
             "anyOf": [
               {
@@ -1470,6 +1486,7 @@
           "cloud_storage_path",
           "mime_type",
           "size_bytes",
+          "character_count",
           "metadata",
           "gemini_file_id",
           "file_created_date",
@@ -1563,6 +1580,21 @@
             "title": "Chunk Overlap",
             "description": "Number of overlapping characters between consecutive chunks",
             "default": 200
+          },
+          "metadata_filters": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata Filters",
+            "description": "Optional list of metadata filters to select which files to process. Files matching ANY filter will be included. (e.g., [\"ticker='AAL'\", \"ticker='MSFT'\"])"
           }
         },
         "type": "object",
@@ -1754,8 +1786,9 @@
           },
           "interval_step_days": {
             "type": "integer",
-            "title": "Interval Duration Days",
-            "description": "Duration of each interval in days"
+            "title": "Interval Step Days",
+            "description": "Duration of each interval step in days",
+            "default": 7
           },
           "articles_per_interval": {
             "type": "integer",
@@ -1767,8 +1800,7 @@
         "type": "object",
         "required": [
           "start_date",
-          "end_date",
-          "interval_step_days"
+          "end_date"
         ],
         "title": "GdeltSeedGenerator"
       },
@@ -2213,8 +2245,9 @@
           },
           "interval_step_days": {
             "type": "integer",
-            "title": "Interval Duration Days",
-            "description": "Duration of each interval in days"
+            "title": "Interval Step Days",
+            "description": "Duration of each interval step in days",
+            "default": 7
           },
           "search_query": {
             "anyOf": [
@@ -2278,7 +2311,6 @@
         "required": [
           "start_date",
           "end_date",
-          "interval_step_days",
           "search_query"
         ],
         "title": "NewsSeedGenerator"
@@ -2519,6 +2551,12 @@
               },
               {
                 "$ref": "#/components/schemas/GdeltSeedGenerator"
+              },
+              {
+                "$ref": "#/components/schemas/FileSetSeedGenerator"
+              },
+              {
+                "$ref": "#/components/schemas/FileSetQuerySeedGenerator"
               }
             ],
             "title": "Seed Generator",
@@ -2526,6 +2564,8 @@
             "discriminator": {
               "propertyName": "config_type",
               "mapping": {
+                "FILESET_QUERY_SEED_GENERATOR": "#/components/schemas/FileSetQuerySeedGenerator",
+                "FILESET_SEED_GENERATOR": "#/components/schemas/FileSetSeedGenerator",
                 "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
                 "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator"
               }
@@ -3057,7 +3097,8 @@
         "enum": [
           "RUNNING",
           "COMPLETED",
-          "FAILED"
+          "FAILED",
+          "CANCELLED"
         ],
         "title": "TransformJobStatus"
       },

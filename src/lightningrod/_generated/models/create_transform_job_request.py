@@ -34,6 +34,7 @@ class CreateTransformJobRequest:
         input_dataset_id (None | str | Unset):
         max_questions (int | None | Unset):
         configuration_id (None | str | Unset):
+        use_local_rate_limiter (bool | Unset):  Default: False.
     """
 
     config: (
@@ -51,6 +52,7 @@ class CreateTransformJobRequest:
     input_dataset_id: None | str | Unset = UNSET
     max_questions: int | None | Unset = UNSET
     configuration_id: None | str | Unset = UNSET
+    use_local_rate_limiter: bool | Unset = False
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -104,6 +106,8 @@ class CreateTransformJobRequest:
         else:
             configuration_id = self.configuration_id
 
+        use_local_rate_limiter = self.use_local_rate_limiter
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -117,6 +121,8 @@ class CreateTransformJobRequest:
             field_dict["max_questions"] = max_questions
         if configuration_id is not UNSET:
             field_dict["configuration_id"] = configuration_id
+        if use_local_rate_limiter is not UNSET:
+            field_dict["use_local_rate_limiter"] = use_local_rate_limiter
 
         return field_dict
 
@@ -256,11 +262,14 @@ class CreateTransformJobRequest:
 
         configuration_id = _parse_configuration_id(d.pop("configuration_id", UNSET))
 
+        use_local_rate_limiter = d.pop("use_local_rate_limiter", UNSET)
+
         create_transform_job_request = cls(
             config=config,
             input_dataset_id=input_dataset_id,
             max_questions=max_questions,
             configuration_id=configuration_id,
+            use_local_rate_limiter=use_local_rate_limiter,
         )
 
         create_transform_job_request.additional_properties = d
