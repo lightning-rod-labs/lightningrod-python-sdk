@@ -19,7 +19,7 @@ class GdeltSeedGenerator:
     Attributes:
         start_date (datetime.datetime): Start date for seed search
         end_date (datetime.datetime): End date for seed search
-        interval_duration_days (int): Duration of each interval in days
+        interval_step_days (int): Duration of each interval in days
         config_type (Literal['GDELT_SEED_GENERATOR'] | Unset): Type of transform configuration Default:
             'GDELT_SEED_GENERATOR'.
         articles_per_interval (int | Unset): Number of articles to fetch per interval from BigQuery Default: 1000.
@@ -27,7 +27,7 @@ class GdeltSeedGenerator:
 
     start_date: datetime.datetime
     end_date: datetime.datetime
-    interval_duration_days: int
+    interval_step_days: int
     config_type: Literal["GDELT_SEED_GENERATOR"] | Unset = "GDELT_SEED_GENERATOR"
     articles_per_interval: int | Unset = 1000
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -37,7 +37,7 @@ class GdeltSeedGenerator:
 
         end_date = self.end_date.isoformat()
 
-        interval_duration_days = self.interval_duration_days
+        interval_step_days = self.interval_step_days
 
         config_type = self.config_type
 
@@ -49,7 +49,7 @@ class GdeltSeedGenerator:
             {
                 "start_date": start_date,
                 "end_date": end_date,
-                "interval_duration_days": interval_duration_days,
+                "interval_step_days": interval_step_days,
             }
         )
         if config_type is not UNSET:
@@ -66,7 +66,7 @@ class GdeltSeedGenerator:
 
         end_date = isoparse(d.pop("end_date"))
 
-        interval_duration_days = d.pop("interval_duration_days")
+        interval_step_days = d.pop("interval_step_days")
 
         config_type = cast(Literal["GDELT_SEED_GENERATOR"] | Unset, d.pop("config_type", UNSET))
         if config_type != "GDELT_SEED_GENERATOR" and not isinstance(config_type, Unset):
@@ -77,7 +77,7 @@ class GdeltSeedGenerator:
         gdelt_seed_generator = cls(
             start_date=start_date,
             end_date=end_date,
-            interval_duration_days=interval_duration_days,
+            interval_step_days=interval_step_days,
             config_type=config_type,
             articles_per_interval=articles_per_interval,
         )

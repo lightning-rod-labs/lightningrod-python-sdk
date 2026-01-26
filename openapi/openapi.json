@@ -1752,7 +1752,7 @@
             "title": "End Date",
             "description": "End date for seed search"
           },
-          "interval_duration_days": {
+          "interval_step_days": {
             "type": "integer",
             "title": "Interval Duration Days",
             "description": "Duration of each interval in days"
@@ -1768,7 +1768,7 @@
         "required": [
           "start_date",
           "end_date",
-          "interval_duration_days"
+          "interval_step_days"
         ],
         "title": "GdeltSeedGenerator"
       },
@@ -2211,7 +2211,7 @@
             "title": "End Date",
             "description": "End date for seed search"
           },
-          "interval_duration_days": {
+          "interval_step_days": {
             "type": "integer",
             "title": "Interval Duration Days",
             "description": "Duration of each interval in days"
@@ -2278,7 +2278,7 @@
         "required": [
           "start_date",
           "end_date",
-          "interval_duration_days",
+          "interval_step_days",
           "search_query"
         ],
         "title": "NewsSeedGenerator"

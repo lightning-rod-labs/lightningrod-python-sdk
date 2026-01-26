@@ -23,7 +23,7 @@ class NewsSeedGenerator:
     Attributes:
         start_date (datetime.datetime): Start date for seed search
         end_date (datetime.datetime): End date for seed search
-        interval_duration_days (int): Duration of each interval in days
+        interval_step_days (int): Duration of each interval in days
         search_query (list[str] | str): Search query for news articles. If multiple queries are provided, a separate
             search will be done for each query.
         config_type (Literal['NEWS_SEED_GENERATOR'] | Unset): Type of transform configuration Default:
@@ -39,7 +39,7 @@ class NewsSeedGenerator:
 
     start_date: datetime.datetime
     end_date: datetime.datetime
-    interval_duration_days: int
+    interval_step_days: int
     search_query: list[str] | str
     config_type: Literal["NEWS_SEED_GENERATOR"] | Unset = "NEWS_SEED_GENERATOR"
     articles_per_search: int | Unset = 10
@@ -54,7 +54,7 @@ class NewsSeedGenerator:
 
         end_date = self.end_date.isoformat()
 
-        interval_duration_days = self.interval_duration_days
+        interval_step_days = self.interval_step_days
 
         search_query: list[str] | str
         if isinstance(self.search_query, list):
@@ -96,7 +96,7 @@ class NewsSeedGenerator:
             {
                 "start_date": start_date,
                 "end_date": end_date,
-                "interval_duration_days": interval_duration_days,
+                "interval_step_days": interval_step_days,
                 "search_query": search_query,
             }
         )
@@ -120,7 +120,7 @@ class NewsSeedGenerator:
 
         end_date = isoparse(d.pop("end_date"))
 
-        interval_duration_days = d.pop("interval_duration_days")
+        interval_step_days = d.pop("interval_step_days")
 
         def _parse_search_query(data: object) -> list[str] | str:
             try:
@@ -191,7 +191,7 @@ class NewsSeedGenerator:
         news_seed_generator = cls(
             start_date=start_date,
             end_date=end_date,
-            interval_duration_days=interval_duration_days,
+            interval_step_days=interval_step_days,
             search_query=search_query,
             config_type=config_type,
             articles_per_search=articles_per_search,

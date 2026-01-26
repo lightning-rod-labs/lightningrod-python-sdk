@@ -41,7 +41,7 @@ seed_generator = NewsSeedGenerator(
     start_date=datetime.now() - timedelta(days=90),
     end_date=datetime.now(),
     search_query="Trump",
-    interval_duration_days=7
+    interval_step_days=7
 )
 
 answer_type = AnswerType(answer_type=AnswerTypeEnum.BINARY)
