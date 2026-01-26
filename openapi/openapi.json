@@ -58,14 +58,14 @@
         ]
       }
     },
-    "/transform-jobs/estimate-cost": {
+    "/transform-jobs/cost-estimation": {
       "post": {
         "tags": [
           "Transform Jobs"
         ],
-        "summary": "Estimate Cost",
+        "summary": "Cost Estimation",
         "description": "Estimate maximum cost for a transform job before execution",
-        "operationId": "estimate_cost_transform_jobs_estimate_cost_post",
+        "operationId": "cost_estimation_transform_jobs_cost_estimation_post",
         "requestBody": {
           "content": {
             "application/json": {

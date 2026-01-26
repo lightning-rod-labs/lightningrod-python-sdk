@@ -50,7 +50,7 @@ class LightningRod:
         # self.filesets: FileSetsClient = FileSetsClient(self._generated_client, self.files)
         
     def get_balance(self) -> float:
-        response = get_balance_organizations_balance_get.sync(
+        response = get_balance_organizations_balance_get.sync_detailed(
             client=self._generated_client,
         )
         parsed: BalanceResponse = handle_response_error(response, "get balance")

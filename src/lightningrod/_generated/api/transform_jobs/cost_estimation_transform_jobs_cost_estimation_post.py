@@ -19,7 +19,7 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/transform-jobs/estimate-cost",
+        "url": "/transform-jobs/cost-estimation",
     }
 
     _kwargs["json"] = body.to_dict()
@@ -65,7 +65,7 @@ def sync_detailed(
     client: AuthenticatedClient,
     body: EstimateCostRequest,
 ) -> Response[EstimateCostResponse | HTTPValidationError]:
-    """Estimate Cost
+    """Cost Estimation
 
      Estimate maximum cost for a transform job before execution
 
@@ -96,7 +96,7 @@ def sync(
     client: AuthenticatedClient,
     body: EstimateCostRequest,
 ) -> EstimateCostResponse | HTTPValidationError | None:
-    """Estimate Cost
+    """Cost Estimation
 
      Estimate maximum cost for a transform job before execution
 
@@ -122,7 +122,7 @@ async def asyncio_detailed(
     client: AuthenticatedClient,
     body: EstimateCostRequest,
 ) -> Response[EstimateCostResponse | HTTPValidationError]:
-    """Estimate Cost
+    """Cost Estimation
 
      Estimate maximum cost for a transform job before execution
 
@@ -151,7 +151,7 @@ async def asyncio(
     client: AuthenticatedClient,
     body: EstimateCostRequest,
 ) -> EstimateCostResponse | HTTPValidationError | None:
-    """Estimate Cost
+    """Cost Estimation
 
      Estimate maximum cost for a transform job before execution
 
