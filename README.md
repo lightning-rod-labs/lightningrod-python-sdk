@@ -22,69 +22,36 @@ Sign up at [lightningrod.ai](https://lightningrod.ai) to get your API key.
 
 ### 3. Generate your first dataset
 
-```python
-from datetime import datetime, timedelta
-import pandas as pd
-from lightningrod import (
-    LightningRod,
-    NewsSeedGenerator,
-    ForwardLookingQuestionGenerator,
-    WebSearchLabeler,
-    QuestionPipeline,
-    AnswerType,
-    AnswerTypeEnum,
-)
+Generate **1000+ forecasting questions in ~10 minutes** - from raw sources to labeled dataset, automatically. ⚡
 
+```python
 lr = LightningRod(api_key="your-api-key")
 
-seed_generator = NewsSeedGenerator(
-    start_date=datetime.now() - timedelta(days=90),
-    end_date=datetime.now(),
-    search_query="Trump",
-    interval_duration_days=7
-)
-
-answer_type = AnswerType(answer_type=AnswerTypeEnum.BINARY)
-
-question_generator = ForwardLookingQuestionGenerator(
-    instructions="""
-Generate binary forecasting questions about Trump's actions, decisions, and statements.
-
-Focus: executive orders, cabinet appointments, legal proceedings, tariffs, immigration, tech policy.
-
-Criteria: binary outcome, exact dates, self-contained, verifiable via web search, newsworthy, non-obvious.
-""",
-    examples=[
-        "Will Trump impose 25% tariffs on all goods from Canada by February 1, 2025?",
-        "Will Trump issue pardons to January 6 defendants within his first week in office?",
-        "Will Pete Hegseth be confirmed as Secretary of Defense by February 15, 2025?",
-        "Will Trump sign an executive order to keep TikTok operational in the US by January 31, 2025?",
-        "Will Kash Patel be confirmed as FBI Director by March 1, 2025?",
-    ],
-    bad_examples=[
-        "Will Trump do something controversial? (too vague)",
-        "Will Trump be in the news? (obvious)",
-        "Will tariffs be imposed? (needs specifics)",
-    ]
-)
+binary_answer = AnswerType(answer_type=AnswerTypeEnum.BINARY)
 
 pipeline = QuestionPipeline(
-    seed_generator=seed_generator,
-    question_generator=question_generator,
-    labeler=WebSearchLabeler(answer_type=answer_type),
+    seed_generator=NewsSeedGenerator(
+        start_date=datetime.now() - timedelta(days=90),
+        end_date=datetime.now(),
+        search_query=["Trump"],
+    ),
+    question_generator=ForwardLookingQuestionGenerator(
+        instructions="Generate binary forecasting questions about Trump's actions and decisions.",
+        examples=[
+            "Will Trump impose 25% tariffs on all goods from Canada by February 1, 2025?",
+            "Will Pete Hegseth be confirmed as Secretary of Defense by February 15, 2025?",
+        ]
+    ),
+    labeler=WebSearchLabeler(answer_type=binary_answer),
 )
 
-dataset = lr.transforms.run(pipeline, max_questions=10) # limit to 10 questions (rows) for testing
-df = pd.DataFrame(dataset.flattened())
-df.head()
+dataset = lr.transforms.run(pipeline, max_questions=3000)
+dataset.flattened() # Ready-to-use data for your training pipelines
 ```
 
-This pipeline will:
+**Generate 1000+ forecasting questions in ~10 minutes** — from news to labeled dataset, automatically.
 
-1. **Collect Seeds**: Search for recent news about Premier League Soccer
-2. **Generate Questions**: Use AI to create forecasting questions from the news
-3. **Label Questions**: Automatically find answers using web search
-4. **Return Dataset**: Get a dataset with all samples ready for download
+**We use this to generate our [Future-as-Label training dataset](https://huggingface.co/datasets/LightningRodLabs/future-as-label-paper-training-dataset) for our research paper.**
 
 ## 🎥 Examples
 
