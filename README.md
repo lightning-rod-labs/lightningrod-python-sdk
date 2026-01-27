@@ -88,25 +88,25 @@ This pipeline will:
 
 ## 🎥 Examples
 
-Comprehensive example notebooks demonstrate different use cases and features:
+We have some example notebooks to help you get started! If you have trouble using the SDK, please submit an issue on Github.
 
 ### Getting Started
-- **[Quick Start](examples/01_quick_start.ipynb)** — Simplest example + docs to get you running quickly
+- **[Quick Start](notebooks/01_quick_start.ipynb)** — Simplest example + docs to get you running quickly
 
 ### Data Sources
-- **[Google News](examples/02_google_news_datasource.ipynb)** — Use Google News search as a data source
-- **[GDELT](examples/03_gdelt_datasource.ipynb)** — Use GDELT global news database for large-scale datasets
-- **[Custom Documents](examples/04_custom_documents_datasource.ipynb)** — Generate questions from your own documents and files
+- **[News Search](notebooks/02_search_news_datasource.ipynb)** — Use Google News search for fresh news
+- **[GDELT](notebooks/03_top_news_datasource.ipynb)** — Use top aggregated news from GDELT database
+- **[Custom Documents](notebooks/04_custom_documents_datasource.ipynb)** — Generate questions from your own documents and files
 
 ### Question Types
-- **[Binary](examples/05_binary_answer_type.ipynb)** — Yes/No questions for event prediction
-- **[Continuous](examples/06_continuous_answer_type.ipynb)** — Numeric questions for quantitative predictions
-- **[Multiple Choice](examples/07_multiple_choice_answer_type.ipynb)** — Questions with predefined answer options
-- **[Free Response](examples/08_free_response_answer_type.ipynb)** — Open-ended questions with detailed text answers
+- **[Binary](notebooks/05_binary_answer_type.ipynb)** — Yes/No questions for event prediction
+- **[Continuous](notebooks/06_continuous_answer_type.ipynb)** — Numeric questions for quantitative predictions
+- **[Multiple Choice](notebooks/07_multiple_choice_answer_type.ipynb)** — Questions with predefined answer options
+- **[Free Response](notebooks/08_free_response_answer_type.ipynb)** — Open-ended questions with detailed text answers
 
 ## 📁 Documentation
 
-**[Quick Start](examples/01_quick_start.ipynb)**  example also serves as interactive documentation - we recommend starting there!
+**[Quick Start](notebooks/01_quick_start.ipynb)**  example also serves as interactive documentation - we recommend starting there!
 
 For complete API reference documentation, see [API.md](API.md). This includes overview of the core system concepts, methods and types.
 
