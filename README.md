@@ -25,6 +25,8 @@ Sign up at [lightningrod.ai](https://lightningrod.ai) to get your API key.
 Generate **1000+ forecasting questions in ~10 minutes** - from raw sources to labeled dataset, automatically. ⚡
 
 ```python
+from lightningrod import LightningRod, AnswerType, QuestionPipeline, NewsSeedGenerator, ForwardLookingQuestionGenerator, WebSearchLabeler
+
 lr = LightningRod(api_key="your-api-key")
 
 binary_answer = AnswerType(answer_type=AnswerTypeEnum.BINARY)
@@ -48,8 +50,6 @@ pipeline = QuestionPipeline(
 dataset = lr.transforms.run(pipeline, max_questions=3000)
 dataset.flattened() # Ready-to-use data for your training pipelines
 ```
-
-**Generate 1000+ forecasting questions in ~10 minutes** — from news to labeled dataset, automatically.
 
 **We use this to generate our [Future-as-Label training dataset](https://huggingface.co/datasets/LightningRodLabs/future-as-label-paper-training-dataset) for our research paper.**
 
