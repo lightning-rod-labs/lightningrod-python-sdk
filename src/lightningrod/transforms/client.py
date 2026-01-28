@@ -66,7 +66,8 @@ class TransformsClient:
             job = self.jobs.get(job.id)
         
         if job.status == TransformJobStatus.FAILED:
-            raise Exception(f"Transform job {job.id} failed (error: {job.error_message})")
+            error_details = f" (error: {job.error_message})" if job.error_message else ""
+            raise Exception(f"Transform job {job.id} failed{error_details}")
         
         if job.status == TransformJobStatus.COMPLETED:
             if job.output_dataset_id is None:
