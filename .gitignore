@@ -38,8 +38,13 @@ env/
 .coverage
 htmlcov/
 
+# Developer files
+.env
 # Temporary test file
 test_sdk.py
+
+# Misc
+.DS_Store
 
 # NOTE: We intentionally DO NOT ignore openapi/openapi.json
 # The OpenAPI spec is checked into git as the source of truth
