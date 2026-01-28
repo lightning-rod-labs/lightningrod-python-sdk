@@ -6,6 +6,7 @@ from lightningrod.datasets.client import DatasetSamplesClient, DatasetsClient
 from lightningrod.datasets.dataset import Dataset
 from lightningrod.files.client import FilesClient
 from lightningrod.filesets.client import FileSetsClient
+from lightningrod.organization.client import OrganizationsClient
 from lightningrod.transforms.client import TransformsClient
 
 
@@ -41,6 +42,7 @@ class LightningRod:
         self._dataset_samples: DatasetSamplesClient = DatasetSamplesClient(self._generated_client)
         self.transforms: TransformsClient = TransformsClient(self._generated_client, self._dataset_samples)
         self.datasets: DatasetsClient = DatasetsClient(self._generated_client, self._dataset_samples)
+        self.organization: OrganizationsClient = OrganizationsClient(self._generated_client)
          # TODO(filesets): Enable when filesets are publicly supported
         # self.files: FilesClient = FilesClient(self._generated_client)
         # self.filesets: FileSetsClient = FileSetsClient(self._generated_client, self.files)

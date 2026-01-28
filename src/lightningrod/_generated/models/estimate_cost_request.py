@@ -21,21 +21,17 @@ if TYPE_CHECKING:
     from ..models.web_search_labeler import WebSearchLabeler
 
 
-T = TypeVar("T", bound="CreateTransformJobRequest")
+T = TypeVar("T", bound="EstimateCostRequest")
 
 
 @_attrs_define
-class CreateTransformJobRequest:
+class EstimateCostRequest:
     """
     Attributes:
         config (FileSetQuerySeedGenerator | FileSetSeedGenerator | ForwardLookingQuestionGenerator | GdeltSeedGenerator
             | NewsSeedGenerator | QuestionAndLabelGenerator | QuestionGenerator | QuestionPipeline | QuestionRenderer |
             WebSearchLabeler):
-        input_dataset_id (None | str | Unset):
         max_questions (int | None | Unset):
-        max_cost_dollars (float | None | Unset):
-        configuration_id (None | str | Unset):
-        use_local_rate_limiter (bool | Unset):  Default: False.
     """
 
     config: (
@@ -50,11 +46,7 @@ class CreateTransformJobRequest:
         | QuestionRenderer
         | WebSearchLabeler
     )
-    input_dataset_id: None | str | Unset = UNSET
     max_questions: int | None | Unset = UNSET
-    max_cost_dollars: float | None | Unset = UNSET
-    configuration_id: None | str | Unset = UNSET
-    use_local_rate_limiter: bool | Unset = False
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -90,31 +82,11 @@ class CreateTransformJobRequest:
         else:
             config = self.config.to_dict()
 
-        input_dataset_id: None | str | Unset
-        if isinstance(self.input_dataset_id, Unset):
-            input_dataset_id = UNSET
-        else:
-            input_dataset_id = self.input_dataset_id
-
         max_questions: int | None | Unset
         if isinstance(self.max_questions, Unset):
             max_questions = UNSET
         else:
             max_questions = self.max_questions
-
-        max_cost_dollars: float | None | Unset
-        if isinstance(self.max_cost_dollars, Unset):
-            max_cost_dollars = UNSET
-        else:
-            max_cost_dollars = self.max_cost_dollars
-
-        configuration_id: None | str | Unset
-        if isinstance(self.configuration_id, Unset):
-            configuration_id = UNSET
-        else:
-            configuration_id = self.configuration_id
-
-        use_local_rate_limiter = self.use_local_rate_limiter
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -123,16 +95,8 @@ class CreateTransformJobRequest:
                 "config": config,
             }
         )
-        if input_dataset_id is not UNSET:
-            field_dict["input_dataset_id"] = input_dataset_id
         if max_questions is not UNSET:
             field_dict["max_questions"] = max_questions
-        if max_cost_dollars is not UNSET:
-            field_dict["max_cost_dollars"] = max_cost_dollars
-        if configuration_id is not UNSET:
-            field_dict["configuration_id"] = configuration_id
-        if use_local_rate_limiter is not UNSET:
-            field_dict["use_local_rate_limiter"] = use_local_rate_limiter
 
         return field_dict
 
@@ -245,15 +209,6 @@ class CreateTransformJobRequest:
 
         config = _parse_config(d.pop("config"))
 
-        def _parse_input_dataset_id(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        input_dataset_id = _parse_input_dataset_id(d.pop("input_dataset_id", UNSET))
-
         def _parse_max_questions(data: object) -> int | None | Unset:
             if data is None:
                 return data
@@ -263,37 +218,13 @@ class CreateTransformJobRequest:
 
         max_questions = _parse_max_questions(d.pop("max_questions", UNSET))
 
-        def _parse_max_cost_dollars(data: object) -> float | None | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(float | None | Unset, data)
-
-        max_cost_dollars = _parse_max_cost_dollars(d.pop("max_cost_dollars", UNSET))
-
-        def _parse_configuration_id(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        configuration_id = _parse_configuration_id(d.pop("configuration_id", UNSET))
-
-        use_local_rate_limiter = d.pop("use_local_rate_limiter", UNSET)
-
-        create_transform_job_request = cls(
+        estimate_cost_request = cls(
             config=config,
-            input_dataset_id=input_dataset_id,
             max_questions=max_questions,
-            max_cost_dollars=max_cost_dollars,
-            configuration_id=configuration_id,
-            use_local_rate_limiter=use_local_rate_limiter,
         )
 
-        create_transform_job_request.additional_properties = d
-        return create_transform_job_request
+        estimate_cost_request.additional_properties = d
+        return estimate_cost_request
 
     @property
     def additional_keys(self) -> list[str]:

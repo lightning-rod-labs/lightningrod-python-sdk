@@ -16,6 +16,8 @@ from lightningrod._generated.models import (
     CreateTransformJobRequest,
     HTTPValidationError,
     WebSearchLabeler,
+    EstimateCostRequest,
+    EstimateCostResponse,
 )
 from lightningrod._generated.api.datasets import (
     get_dataset_datasets_dataset_id_get,
@@ -23,6 +25,7 @@ from lightningrod._generated.api.datasets import (
 from lightningrod._generated.api.transform_jobs import (
     create_transform_job_transform_jobs_post,
     get_transform_job_transform_jobs_job_id_get,
+    cost_estimation_transform_jobs_cost_estimation_post
 )
 from lightningrod.datasets.dataset import Dataset
 from lightningrod._generated.client import AuthenticatedClient
@@ -53,9 +56,10 @@ class TransformsClient:
         self,
         config: TransformConfig,
         input_dataset: Optional[Union[Dataset, str]] = None,
-        max_questions: Optional[int] = None
+        max_questions: Optional[int] = None,
+        max_cost_dollars: Optional[float] = None
     ) -> Dataset:
-        job: TransformJob = self.submit(config, input_dataset, max_questions)
+        job: TransformJob = self.submit(config, input_dataset, max_questions, max_cost_dollars)
         
         while job.status == TransformJobStatus.RUNNING:
             time.sleep(15)
@@ -86,7 +90,8 @@ class TransformsClient:
         self,
         config: TransformConfig,
         input_dataset: Optional[Union[Dataset, str]] = None,
-        max_questions: Optional[int] = None
+        max_questions: Optional[int] = None,
+        max_cost_dollars: Optional[float] = None
     ) -> TransformJob:
         dataset_id: Optional[str] = None
         if isinstance(input_dataset, Dataset):
@@ -96,7 +101,8 @@ class TransformsClient:
         request: CreateTransformJobRequest = CreateTransformJobRequest(
             config=config,
             input_dataset_id=dataset_id,
-            max_questions=max_questions
+            max_questions=max_questions,
+            max_cost_dollars=max_cost_dollars,
         )
         
         response = create_transform_job_transform_jobs_post.sync_detailed(
@@ -105,3 +111,14 @@ class TransformsClient:
         )
 
         return handle_response_error(response, "submit transform job")
+
+    def estimate_cost(self, config: TransformConfig, max_questions: Optional[int] = None) -> float:
+        response = cost_estimation_transform_jobs_cost_estimation_post.sync_detailed(
+            client=self._client,
+            body=EstimateCostRequest(
+                config=config,
+                max_questions=max_questions,
+            ),
+        )
+        parsed: EstimateCostResponse = handle_response_error(response, "estimate cost")
+        return parsed.total_cost_dollars
