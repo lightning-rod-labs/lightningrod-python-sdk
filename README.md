@@ -1,5 +1,6 @@
 <div align="center">
-  <img src="banner.png" alt="Lightning Rod Labs" />
+<!-- Note: only an absolute image URL works on PyPi: https://pypi.org/project/lightningrod-ai -->
+  <img src="https://github.com/lightning-rod-labs/lightningrod-python-sdk/blob/main/banner.png?raw=true" alt="Lightning Rod Labs" />
 </div>
 
 # Lightning Rod Python SDK
