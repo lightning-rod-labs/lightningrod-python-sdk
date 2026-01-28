@@ -31,6 +31,7 @@ test:
 
 build:
 	@echo "Building distribution packages..."
+	@rm -rf dist/*
 	@python -m build
 
 publish: build upload

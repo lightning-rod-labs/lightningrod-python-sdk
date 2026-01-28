@@ -798,33 +798,6 @@
           }
         }
       }
-    },
-    "/organizations/balance": {
-      "get": {
-        "tags": [
-          "Organizations"
-        ],
-        "summary": "Get Balance",
-        "description": "Get the current credit balance for the organization",
-        "operationId": "get_balance_organizations_balance_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BalanceResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
     }
   },
   "components": {
@@ -1975,7 +1948,8 @@
           "interval_duration_days": {
             "type": "integer",
             "title": "Interval Duration Days",
-            "description": "Duration of each interval in days"
+            "description": "Duration of each interval in days",
+            "default": 7
           },
           "articles_per_interval": {
             "type": "integer",
@@ -1987,8 +1961,7 @@
         "type": "object",
         "required": [
           "start_date",
-          "end_date",
-          "interval_duration_days"
+          "end_date"
         ],
         "title": "GdeltSeedGenerator"
       },
@@ -2205,6 +2178,131 @@
           "file_sets"
         ],
         "title": "ListFileSetsResponse"
+      },
+      "MockTransformConfig": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "MOCK",
+            "title": "Config Type",
+            "default": "MOCK"
+          },
+          "num_seeds": {
+            "type": "integer",
+            "title": "Num Seeds",
+            "description": "Number of mock seeds to generate (0 = not a seed generator)",
+            "default": 0
+          },
+          "seed_text_template": {
+            "type": "string",
+            "title": "Seed Text Template",
+            "description": "Template for seed text",
+            "default": "Mock seed content {index}"
+          },
+          "delay_seconds": {
+            "type": "number",
+            "title": "Delay Seconds",
+            "description": "Simulated processing time per item",
+            "default": 0.1
+          },
+          "delay_variance": {
+            "type": "number",
+            "title": "Delay Variance",
+            "description": "Random variance (+/- seconds)",
+            "default": 0.05
+          },
+          "error_rate": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Error Rate",
+            "description": "Probability of error (0.0-1.0)",
+            "default": 0.01
+          },
+          "error_message": {
+            "type": "string",
+            "title": "Error Message",
+            "description": "Error message when error_rate triggers",
+            "default": "Mock error"
+          },
+          "expansion_factor": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expansion Factor",
+            "description": "Outputs per input (1:N expansion)",
+            "default": 1
+          },
+          "filter_rate": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Filter Rate",
+            "description": "Probability of marking invalid",
+            "default": 0.0
+          },
+          "add_question": {
+            "type": "boolean",
+            "title": "Add Question",
+            "description": "Add a mock question to samples",
+            "default": false
+          },
+          "question_template": {
+            "type": "string",
+            "title": "Question Template",
+            "description": "Template for question text",
+            "default": "Mock question {index}?"
+          },
+          "metadata_additions": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata Additions",
+            "description": "Added to sample.meta"
+          },
+          "estimated_input_tokens": {
+            "type": "integer",
+            "title": "Estimated Input Tokens",
+            "description": "Estimated input tokens per call",
+            "default": 0
+          },
+          "estimated_output_tokens": {
+            "type": "integer",
+            "title": "Estimated Output Tokens",
+            "description": "Estimated output tokens per call",
+            "default": 0
+          },
+          "estimated_model_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Model Name",
+            "description": "Model name for cost estimation"
+          },
+          "simulated_cost_per_call": {
+            "type": "number",
+            "title": "Simulated Cost Per Call",
+            "description": "Simulated cost per call in dollars (records usage event when > 0)",
+            "default": 0.0
+          },
+          "random_seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Random Seed",
+            "description": "Seed for deterministic behavior"
+          }
+        },
+        "type": "object",
+        "title": "MockTransformConfig"
       },
       "ModelConfig": {
         "properties": {
@@ -2467,7 +2565,8 @@
           "interval_duration_days": {
             "type": "integer",
             "title": "Interval Duration Days",
-            "description": "Duration of each interval in days"
+            "description": "Duration of each interval in days",
+            "default": 7
           },
           "search_query": {
             "anyOf": [
@@ -2531,7 +2630,6 @@
         "required": [
           "start_date",
           "end_date",
-          "interval_duration_days",
           "search_query"
         ],
         "title": "NewsSeedGenerator"
@@ -2778,6 +2876,9 @@
               },
               {
                 "$ref": "#/components/schemas/FileSetQuerySeedGenerator"
+              },
+              {
+                "$ref": "#/components/schemas/MockTransformConfig"
               }
             ],
             "title": "Seed Generator",
@@ -2788,6 +2889,7 @@
                 "FILESET_QUERY_SEED_GENERATOR": "#/components/schemas/FileSetQuerySeedGenerator",
                 "FILESET_SEED_GENERATOR": "#/components/schemas/FileSetSeedGenerator",
                 "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
+                "MOCK": "#/components/schemas/MockTransformConfig",
                 "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator"
               }
             }
@@ -2802,6 +2904,9 @@
               },
               {
                 "$ref": "#/components/schemas/QuestionAndLabelGenerator"
+              },
+              {
+                "$ref": "#/components/schemas/MockTransformConfig"
               }
             ],
             "title": "Question Generator",
@@ -2810,6 +2915,7 @@
               "propertyName": "config_type",
               "mapping": {
                 "FORWARD_LOOKING_QUESTION_GENERATOR": "#/components/schemas/ForwardLookingQuestionGenerator",
+                "MOCK": "#/components/schemas/MockTransformConfig",
                 "QUESTION_AND_LABEL_GENERATOR": "#/components/schemas/QuestionAndLabelGenerator",
                 "QUESTION_GENERATOR": "#/components/schemas/QuestionGenerator"
               }
@@ -2818,19 +2924,41 @@
           "labeler": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/WebSearchLabeler"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/WebSearchLabeler"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MockTransformConfig"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "config_type",
+                  "mapping": {
+                    "MOCK": "#/components/schemas/MockTransformConfig",
+                    "WEB_SEARCH_LABELER": "#/components/schemas/WebSearchLabeler"
+                  }
+                }
               },
               {
                 "type": "null"
               }
             ],
+            "title": "Labeler",
             "description": "Configuration for labeling. Not needed when using QuestionAndLabelGenerator."
           },
           "context_generators": {
             "anyOf": [
               {
                 "items": {
-                  "$ref": "#/components/schemas/NewsContextGenerator"
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/NewsContextGenerator"
+                    },
+                    {
+                      "$ref": "#/components/schemas/MockTransformConfig"
+                    }
+                  ]
                 },
                 "type": "array"
               },
@@ -2844,23 +2972,53 @@
           "renderer": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/QuestionRenderer"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/QuestionRenderer"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MockTransformConfig"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "config_type",
+                  "mapping": {
+                    "MOCK": "#/components/schemas/MockTransformConfig",
+                    "QUESTION_RENDERER": "#/components/schemas/QuestionRenderer"
+                  }
+                }
               },
               {
                 "type": "null"
               }
             ],
+            "title": "Renderer",
             "description": "Optional configuration for rendering the final prompt"
           },
           "rollout_generator": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/RolloutGenerator"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/RolloutGenerator"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MockTransformConfig"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "config_type",
+                  "mapping": {
+                    "MOCK": "#/components/schemas/MockTransformConfig",
+                    "ROLLOUT_GENERATOR": "#/components/schemas/RolloutGenerator"
+                  }
+                }
               },
               {
                 "type": "null"
               }
             ],
+            "title": "Rollout Generator",
             "description": "Optional configuration for generating rollouts from multiple models"
           }
         },
@@ -3400,7 +3558,8 @@
           "QUESTION_RENDERER",
           "ROLLOUT_GENERATOR",
           "FILESET_SEED_GENERATOR",
-          "FILESET_QUERY_SEED_GENERATOR"
+          "FILESET_QUERY_SEED_GENERATOR",
+          "MOCK"
         ],
         "title": "TransformType"
       },

@@ -35,6 +35,8 @@ from .label import Label
 from .list_file_set_files_response import ListFileSetFilesResponse
 from .list_file_sets_response import ListFileSetsResponse
 from .llm_model_usage_summary import LLMModelUsageSummary
+from .mock_transform_config import MockTransformConfig
+from .mock_transform_config_metadata_additions import MockTransformConfigMetadataAdditions
 from .model_config import ModelConfig
 from .model_source_type import ModelSourceType
 from .news_context import NewsContext
@@ -104,6 +106,8 @@ __all__ = (
     "ListFileSetFilesResponse",
     "ListFileSetsResponse",
     "LLMModelUsageSummary",
+    "MockTransformConfig",
+    "MockTransformConfigMetadataAdditions",
     "ModelConfig",
     "ModelSourceType",
     "NewsContext",

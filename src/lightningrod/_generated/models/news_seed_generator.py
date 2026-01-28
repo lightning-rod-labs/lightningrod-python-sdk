@@ -23,11 +23,11 @@ class NewsSeedGenerator:
     Attributes:
         start_date (datetime.datetime): Start date for seed search
         end_date (datetime.datetime): End date for seed search
-        interval_duration_days (int): Duration of each interval in days
         search_query (list[str] | str): Search query for news articles. If multiple queries are provided, a separate
             search will be done for each query.
         config_type (Literal['NEWS_SEED_GENERATOR'] | Unset): Type of transform configuration Default:
             'NEWS_SEED_GENERATOR'.
+        interval_duration_days (int | Unset): Duration of each interval in days Default: 7.
         articles_per_search (int | Unset): Number of articles to fetch per search (max 100). Each query/domain
             combination is a separate search. Default: 10.
         filter_criteria (FilterCriteria | list[FilterCriteria] | None | Unset): Optional criteria for filtering news
@@ -39,9 +39,9 @@ class NewsSeedGenerator:
 
     start_date: datetime.datetime
     end_date: datetime.datetime
-    interval_duration_days: int
     search_query: list[str] | str
     config_type: Literal["NEWS_SEED_GENERATOR"] | Unset = "NEWS_SEED_GENERATOR"
+    interval_duration_days: int | Unset = 7
     articles_per_search: int | Unset = 10
     filter_criteria: FilterCriteria | list[FilterCriteria] | None | Unset = UNSET
     source_domain: list[str] | None | str | Unset = UNSET
@@ -54,8 +54,6 @@ class NewsSeedGenerator:
 
         end_date = self.end_date.isoformat()
 
-        interval_duration_days = self.interval_duration_days
-
         search_query: list[str] | str
         if isinstance(self.search_query, list):
             search_query = self.search_query
@@ -64,6 +62,8 @@ class NewsSeedGenerator:
             search_query = self.search_query
 
         config_type = self.config_type
+
+        interval_duration_days = self.interval_duration_days
 
         articles_per_search = self.articles_per_search
 
@@ -96,12 +96,13 @@ class NewsSeedGenerator:
             {
                 "start_date": start_date,
                 "end_date": end_date,
-                "interval_duration_days": interval_duration_days,
                 "search_query": search_query,
             }
         )
         if config_type is not UNSET:
             field_dict["config_type"] = config_type
+        if interval_duration_days is not UNSET:
+            field_dict["interval_duration_days"] = interval_duration_days
         if articles_per_search is not UNSET:
             field_dict["articles_per_search"] = articles_per_search
         if filter_criteria is not UNSET:
@@ -120,8 +121,6 @@ class NewsSeedGenerator:
 
         end_date = isoparse(d.pop("end_date"))
 
-        interval_duration_days = d.pop("interval_duration_days")
-
         def _parse_search_query(data: object) -> list[str] | str:
             try:
                 if not isinstance(data, list):
@@ -138,6 +137,8 @@ class NewsSeedGenerator:
         config_type = cast(Literal["NEWS_SEED_GENERATOR"] | Unset, d.pop("config_type", UNSET))
         if config_type != "NEWS_SEED_GENERATOR" and not isinstance(config_type, Unset):
             raise ValueError(f"config_type must match const 'NEWS_SEED_GENERATOR', got '{config_type}'")
+
+        interval_duration_days = d.pop("interval_duration_days", UNSET)
 
         articles_per_search = d.pop("articles_per_search", UNSET)
 
@@ -191,9 +192,9 @@ class NewsSeedGenerator:
         news_seed_generator = cls(
             start_date=start_date,
             end_date=end_date,
-            interval_duration_days=interval_duration_days,
             search_query=search_query,
             config_type=config_type,
+            interval_duration_days=interval_duration_days,
             articles_per_search=articles_per_search,
             filter_criteria=filter_criteria,
             source_domain=source_domain,
