@@ -4,10 +4,11 @@
 
 The Lightning Rod SDK lets you generate forecasting datasets from real-world data. The typical workflow:
 
-1. **Collect seeds** (raw data like news articles or documents)
+1. **Collect seeds** (raw data like news articles or custom documents)
 2. **Generate questions** from seeds using AI
-3. **Label questions** with ground truth answers
-4. **Export datasets** for model training
+3. **Add context** (news, RAG results) to enrich questions
+4. **Label questions** with ground truth answers
+5. **Export datasets** for model training
 
 ## Core Concepts
 
@@ -19,11 +20,11 @@ The Lightning Rod SDK lets you generate forecasting datasets from real-world dat
 - `context`: Additional context (news, RAG results)
 - `meta`: Custom metadata
 
-**Dataset** - Collection of samples stored as Parquet files. Can be downloaded, used as pipeline input, or exported for training.
+**Pipeline** - A transform configuration that processes data through multiple stages (seed generation, question generation, labeling, etc.). Pipelines can be composed of individual transform components or use pre-built configurations like `QuestionPipeline`. Run pipelines via `client.transforms.run()` to generate datasets.
 
-## Main Client
+**Dataset** - Collection of samples - either as inputs or outputs of the pipeline.
 
-### LightningRod
+## LightningRod Client
 
 Main entry point for the SDK.
 
@@ -39,11 +40,11 @@ Transform pipelines generate datasets from raw data. The main method is `transfo
 
 ### API
 
-**`lr.transforms.run(config, dataset_id=None, max_questions=None)`** - Submit and wait for completion
+**`lr.transforms.run(config, dataset_id=None, max_questions=None) -> Dataset`** - Submit and wait for completion
 
-**`lr.transforms.submit(config, dataset_id=None, max_questions=None)`** - Submit without waiting
+**`lr.transforms.submit(config, dataset_id=None, max_questions=None) -> TransformJob`** - Submit without waiting
 
-**`lr.transforms.jobs.get(job_id)`** - Check job status
+**`lr.transforms.jobs.get(job_id) -> TransformJob`** - Check job status
 
 ### Types
 
@@ -79,13 +80,13 @@ See examples in the `examples/` directory for detailed usage of the pipeline typ
 
 ### API
 
-**`dataset.download()`** - Download all samples (handles pagination automatically)
+**`dataset.download() -> List[Sample]`** - Download all samples (handles pagination automatically)
 
-**`dataset.samples()`** - Returns cached samples (auto-downloads if needed)
+**`dataset.samples() -> List[Sample]`** - Returns cached samples (auto-downloads if needed)
 
-**`dataset.flattened()`** - Returns cached samples in a flat-object list format (auto-downloads if needed)
+**`dataset.flattened() -> List[Dict[str, Any]]`** - Returns cached samples in a flat-object list format (auto-downloads if needed)
 
-**`lr.datasets.list(dataset_id)`** - Alternative way to list samples
+**`lr.datasets.list(dataset_id) -> List[Sample]`** - Alternative way to list samples
 
 ### Types
 
