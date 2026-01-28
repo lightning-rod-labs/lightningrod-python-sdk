@@ -80,13 +80,15 @@ See examples in the `examples/` directory for detailed usage of the pipeline typ
 
 ### API
 
-**`dataset.download() -> List[Sample]`** - Download all samples (handles pagination automatically)
+**`lr.datasets.create_from_samples(samples: List[Sample], batch_size: int = 1000) -> Dataset`** - Create a new dataset with samples. Useful for creating input datasets and feed them to pipelines using `lr.transforms.run(config, dataset_id=dataset.id)`.
 
-**`dataset.samples() -> List[Sample]`** - Returns cached samples (auto-downloads if needed)
+**`lr.datasets.get(dataset_id: str) -> Dataset`** - Get a dataset by ID
 
-**`dataset.flattened() -> List[Dict[str, Any]]`** - Returns cached samples in a flat-object list format (auto-downloads if needed)
+**`Dataset.download() -> List[Sample]`** - Download all samples (handles pagination automatically)
 
-**`lr.datasets.list(dataset_id) -> List[Sample]`** - Alternative way to list samples
+**`Dataset.samples() -> List[Sample]`** - Returns cached samples (auto-downloads if needed)
+
+**`Dataset.flattened() -> List[Dict[str, Any]]`** - Returns cached samples in a flat-object list format (auto-downloads if needed)
 
 ### Types
 
