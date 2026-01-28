@@ -67,11 +67,7 @@ class TransformsClient:
         
         if job.status == TransformJobStatus.FAILED:
             error_details = f" (error: {job.error_message})" if job.error_message else ""
-            raise Exception(
-                f"Transform job {job.id} failed{error_details}. "
-                f"This is often caused by insufficient account balance. "
-                f"Please check your billing dashboard: https://dashboard.lightningrod.ai/?redirect=/billing"
-            )
+            raise Exception(f"Transform job {job.id} failed{error_details}")
         
         if job.status == TransformJobStatus.COMPLETED:
             if job.output_dataset_id is None:
