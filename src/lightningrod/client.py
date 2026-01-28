@@ -19,9 +19,9 @@ class LightningRod:
         base_url: Base URL for the API (defaults to production)
     
     Example:
-        >>> client = LightningRod(api_key="your-api-key")
+        >>> lr = LightningRod(api_key="your-api-key")
         >>> config = QuestionPipeline(...)
-        >>> dataset = client.transforms.run(config)
+        >>> dataset = lr.transforms.run(config)
         >>> samples = dataset.to_samples()
     """
     
