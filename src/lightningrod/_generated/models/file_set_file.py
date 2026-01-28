@@ -24,6 +24,7 @@ class FileSetFile:
         cloud_storage_path (str):
         mime_type (None | str):
         size_bytes (int):
+        character_count (int | None):
         metadata (FileSetFileMetadataType0 | None):
         gemini_file_id (None | str):
         file_created_date (datetime.datetime | None):
@@ -36,6 +37,7 @@ class FileSetFile:
     cloud_storage_path: str
     mime_type: None | str
     size_bytes: int
+    character_count: int | None
     metadata: FileSetFileMetadataType0 | None
     gemini_file_id: None | str
     file_created_date: datetime.datetime | None
@@ -56,6 +58,9 @@ class FileSetFile:
         mime_type = self.mime_type
 
         size_bytes = self.size_bytes
+
+        character_count: int | None
+        character_count = self.character_count
 
         metadata: dict[str, Any] | None
         if isinstance(self.metadata, FileSetFileMetadataType0):
@@ -85,6 +90,7 @@ class FileSetFile:
                 "cloud_storage_path": cloud_storage_path,
                 "mime_type": mime_type,
                 "size_bytes": size_bytes,
+                "character_count": character_count,
                 "metadata": metadata,
                 "gemini_file_id": gemini_file_id,
                 "file_created_date": file_created_date,
@@ -114,6 +120,13 @@ class FileSetFile:
         mime_type = _parse_mime_type(d.pop("mime_type"))
 
         size_bytes = d.pop("size_bytes")
+
+        def _parse_character_count(data: object) -> int | None:
+            if data is None:
+                return data
+            return cast(int | None, data)
+
+        character_count = _parse_character_count(d.pop("character_count"))
 
         def _parse_metadata(data: object) -> FileSetFileMetadataType0 | None:
             if data is None:
@@ -162,6 +175,7 @@ class FileSetFile:
             cloud_storage_path=cloud_storage_path,
             mime_type=mime_type,
             size_bytes=size_bytes,
+            character_count=character_count,
             metadata=metadata,
             gemini_file_id=gemini_file_id,
             file_created_date=file_created_date,

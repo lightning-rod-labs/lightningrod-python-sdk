@@ -23,10 +23,16 @@ class JobUsage:
     Attributes:
         total (None | Unset | UsageSummary):
         by_step (JobUsageByStepType0 | None | Unset):
+        max_cost_dollars (float | None | Unset):
+        current_cost_dollars (float | None | Unset):
+        estimated_cost_dollars (float | None | Unset):
     """
 
     total: None | Unset | UsageSummary = UNSET
     by_step: JobUsageByStepType0 | None | Unset = UNSET
+    max_cost_dollars: float | None | Unset = UNSET
+    current_cost_dollars: float | None | Unset = UNSET
+    estimated_cost_dollars: float | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -49,6 +55,24 @@ class JobUsage:
         else:
             by_step = self.by_step
 
+        max_cost_dollars: float | None | Unset
+        if isinstance(self.max_cost_dollars, Unset):
+            max_cost_dollars = UNSET
+        else:
+            max_cost_dollars = self.max_cost_dollars
+
+        current_cost_dollars: float | None | Unset
+        if isinstance(self.current_cost_dollars, Unset):
+            current_cost_dollars = UNSET
+        else:
+            current_cost_dollars = self.current_cost_dollars
+
+        estimated_cost_dollars: float | None | Unset
+        if isinstance(self.estimated_cost_dollars, Unset):
+            estimated_cost_dollars = UNSET
+        else:
+            estimated_cost_dollars = self.estimated_cost_dollars
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
@@ -56,6 +80,12 @@ class JobUsage:
             field_dict["total"] = total
         if by_step is not UNSET:
             field_dict["by_step"] = by_step
+        if max_cost_dollars is not UNSET:
+            field_dict["max_cost_dollars"] = max_cost_dollars
+        if current_cost_dollars is not UNSET:
+            field_dict["current_cost_dollars"] = current_cost_dollars
+        if estimated_cost_dollars is not UNSET:
+            field_dict["estimated_cost_dollars"] = estimated_cost_dollars
 
         return field_dict
 
@@ -100,9 +130,39 @@ class JobUsage:
 
         by_step = _parse_by_step(d.pop("by_step", UNSET))
 
+        def _parse_max_cost_dollars(data: object) -> float | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(float | None | Unset, data)
+
+        max_cost_dollars = _parse_max_cost_dollars(d.pop("max_cost_dollars", UNSET))
+
+        def _parse_current_cost_dollars(data: object) -> float | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(float | None | Unset, data)
+
+        current_cost_dollars = _parse_current_cost_dollars(d.pop("current_cost_dollars", UNSET))
+
+        def _parse_estimated_cost_dollars(data: object) -> float | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(float | None | Unset, data)
+
+        estimated_cost_dollars = _parse_estimated_cost_dollars(d.pop("estimated_cost_dollars", UNSET))
+
         job_usage = cls(
             total=total,
             by_step=by_step,
+            max_cost_dollars=max_cost_dollars,
+            current_cost_dollars=current_cost_dollars,
+            estimated_cost_dollars=estimated_cost_dollars,
         )
 
         job_usage.additional_properties = d

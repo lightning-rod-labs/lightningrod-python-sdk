@@ -9,6 +9,8 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
+    from ..models.file_set_query_seed_generator import FileSetQuerySeedGenerator
+    from ..models.file_set_seed_generator import FileSetSeedGenerator
     from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
     from ..models.gdelt_seed_generator import GdeltSeedGenerator
     from ..models.news_context_generator import NewsContextGenerator
@@ -27,7 +29,8 @@ T = TypeVar("T", bound="QuestionPipeline")
 class QuestionPipeline:
     """
     Attributes:
-        seed_generator (GdeltSeedGenerator | NewsSeedGenerator): Configuration for seed generation
+        seed_generator (FileSetQuerySeedGenerator | FileSetSeedGenerator | GdeltSeedGenerator | NewsSeedGenerator):
+            Configuration for seed generation
         question_generator (ForwardLookingQuestionGenerator | QuestionAndLabelGenerator | QuestionGenerator):
             Configuration for question generation
         config_type (Literal['QUESTION_PIPELINE'] | Unset): Type of transform configuration Default:
@@ -41,7 +44,7 @@ class QuestionPipeline:
             multiple models
     """
 
-    seed_generator: GdeltSeedGenerator | NewsSeedGenerator
+    seed_generator: FileSetQuerySeedGenerator | FileSetSeedGenerator | GdeltSeedGenerator | NewsSeedGenerator
     question_generator: ForwardLookingQuestionGenerator | QuestionAndLabelGenerator | QuestionGenerator
     config_type: Literal["QUESTION_PIPELINE"] | Unset = "QUESTION_PIPELINE"
     labeler: None | Unset | WebSearchLabeler = UNSET
@@ -51,7 +54,9 @@ class QuestionPipeline:
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.file_set_seed_generator import FileSetSeedGenerator
         from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
+        from ..models.gdelt_seed_generator import GdeltSeedGenerator
         from ..models.news_seed_generator import NewsSeedGenerator
         from ..models.question_generator import QuestionGenerator
         from ..models.question_renderer import QuestionRenderer
@@ -60,6 +65,10 @@ class QuestionPipeline:
 
         seed_generator: dict[str, Any]
         if isinstance(self.seed_generator, NewsSeedGenerator):
+            seed_generator = self.seed_generator.to_dict()
+        elif isinstance(self.seed_generator, GdeltSeedGenerator):
+            seed_generator = self.seed_generator.to_dict()
+        elif isinstance(self.seed_generator, FileSetSeedGenerator):
             seed_generator = self.seed_generator.to_dict()
         else:
             seed_generator = self.seed_generator.to_dict()
@@ -133,6 +142,8 @@ class QuestionPipeline:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.file_set_query_seed_generator import FileSetQuerySeedGenerator
+        from ..models.file_set_seed_generator import FileSetSeedGenerator
         from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
         from ..models.gdelt_seed_generator import GdeltSeedGenerator
         from ..models.news_context_generator import NewsContextGenerator
@@ -145,7 +156,9 @@ class QuestionPipeline:
 
         d = dict(src_dict)
 
-        def _parse_seed_generator(data: object) -> GdeltSeedGenerator | NewsSeedGenerator:
+        def _parse_seed_generator(
+            data: object,
+        ) -> FileSetQuerySeedGenerator | FileSetSeedGenerator | GdeltSeedGenerator | NewsSeedGenerator:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
@@ -154,11 +167,27 @@ class QuestionPipeline:
                 return seed_generator_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                seed_generator_type_1 = GdeltSeedGenerator.from_dict(data)
+
+                return seed_generator_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                seed_generator_type_2 = FileSetSeedGenerator.from_dict(data)
+
+                return seed_generator_type_2
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
             if not isinstance(data, dict):
                 raise TypeError()
-            seed_generator_type_1 = GdeltSeedGenerator.from_dict(data)
+            seed_generator_type_3 = FileSetQuerySeedGenerator.from_dict(data)
 
-            return seed_generator_type_1
+            return seed_generator_type_3
 
         seed_generator = _parse_seed_generator(d.pop("seed_generator"))
 
