@@ -58,10 +58,9 @@ class DatasetSamplesClient:
             samples: List of Sample objects to upload
             
         Example:
-            >>> client = LightningRod(api_key="your-api-key")
-            >>> dataset = client.datasets.create()
+            >>> lr = LightningRod(api_key="your-api-key")
             >>> samples = [Sample(seed=Seed(...), ...), ...]
-            >>> client._dataset_samples.upload_samples(dataset.id, samples)
+            >>> lr.datasets.upload(samples)
         """
         request = UploadSamplesRequest(samples=samples)
         
@@ -87,8 +86,8 @@ class DatasetsClient:
             Dataset object representing the newly created dataset
             
         Example:
-            >>> client = LightningRod(api_key="your-api-key")
-            >>> dataset = client.datasets.create()
+            >>> lr = LightningRod(api_key="your-api-key")
+            >>> dataset = lr.datasets.create()
             >>> print(f"Created dataset: {dataset.id}")
         """
         response = create_dataset_datasets_post.sync_detailed(
@@ -128,9 +127,9 @@ class DatasetsClient:
             Dataset object with all samples uploaded
             
         Example:
-            >>> client = LightningRod(api_key="your-api-key")
+            >>> lr = LightningRod(api_key="your-api-key")
             >>> samples = [Sample(seed=Seed(...), ...), ...]
-            >>> dataset = client.datasets.create_with_samples(samples, batch_size=1000)
+            >>> dataset = lr.datasets.create_from_samples(samples, batch_size=1000)
             >>> print(f"Created dataset with {dataset.num_rows} samples")
         """
         dataset = self.create()
@@ -159,8 +158,8 @@ class DatasetsClient:
             Dataset object
             
         Example:
-            >>> client = LightningRod(api_key="your-api-key")
-            >>> dataset = client.datasets.get("dataset-id-here")
+            >>> lr = LightningRod(api_key="your-api-key")
+            >>> dataset = lr.datasets.get("dataset-id-here")
         """
         dataset_response = get_dataset_datasets_dataset_id_get.sync_detailed(
             dataset_id=dataset_id,

@@ -28,9 +28,9 @@ class Dataset:
         num_rows: Number of rows in the dataset
     
     Example:
-        >>> client = LightningRod(api_key="your-api-key")
+        >>> lr = LightningRod(api_key="your-api-key")
         >>> config = QuestionPipeline(...)
-        >>> dataset = client.transforms.run(config)
+        >>> dataset = lr.transforms.run(config)
         >>> samples = dataset.to_samples()
         >>> print(f"Dataset has {len(samples)} samples")
     """
@@ -54,8 +54,8 @@ class Dataset:
             List of Sample objects
         
         Example:
-            >>> client = LightningRod(api_key="your-api-key")
-            >>> dataset = client.pipeline(config).run()
+            >>> lr = LightningRod(api_key="your-api-key")
+            >>> dataset = lr.transforms.run(config)
             >>> samples = dataset.download()
             >>> for sample in samples:
             ...     print(sample.seed.seed_text)
@@ -83,9 +83,9 @@ class Dataset:
             List of Sample objects
         
         Example:
-            >>> client = LightningRod(api_key="your-api-key")
+            >>> lr = LightningRod(api_key="your-api-key")
             >>> config = QuestionPipeline(...)
-            >>> dataset = client.transforms.run(config)
+            >>> dataset = lr.transforms.run(config)
             >>> samples = dataset.to_samples()
             >>> for sample in samples:
             ...     print(sample.seed.seed_text)
@@ -104,9 +104,9 @@ class Dataset:
             List of dictionaries, each representing a sample row
         
         Example:
-            >>> client = LightningRod(api_key="your-api-key")
+            >>> lr = LightningRod(api_key="your-api-key")
             >>> config = QuestionPipeline(...)
-            >>> dataset = client.transforms.run(config)
+            >>> dataset = lr.transforms.run(config)
             >>> rows = dataset.flattened()
             >>> import pandas as pd
             >>> df = pd.DataFrame(rows)
@@ -194,9 +194,9 @@ class AsyncDataset:
         num_rows: Number of rows in the dataset
     
     Example:
-        >>> client = AsyncLightningRod(api_key="your-api-key")
+        >>> lr = AsyncLightningRod(api_key="your-api-key")
         >>> config = QuestionPipeline(...)
-        >>> dataset = await client.transforms.run(config)
+        >>> dataset = await lr.transforms.run(config)
         >>> samples = await dataset.to_samples()
         >>> print(f"Dataset has {len(samples)} samples")
     """
@@ -222,9 +222,9 @@ class AsyncDataset:
             List of Sample objects
         
         Example:
-            >>> client = AsyncLightningRod(api_key="your-api-key")
+            >>> lr = AsyncLightningRod(api_key="your-api-key")
             >>> config = QuestionPipeline(...)
-            >>> dataset = await client.transforms.run(config)
+            >>> dataset = await lr.transforms.run(config)
             >>> samples = await dataset.to_samples()
             >>> for sample in samples:
             ...     print(sample.seed.seed_text)
@@ -245,9 +245,9 @@ class AsyncDataset:
             List of dictionaries, each representing a sample row
         
         Example:
-            >>> client = AsyncLightningRod(api_key="your-api-key")
+            >>> lr = AsyncLightningRod(api_key="your-api-key")
             >>> config = QuestionPipeline(...)
-            >>> dataset = await client.transforms.run(config)
+            >>> dataset = await lr.transforms.run(config)
             >>> rows = await dataset.flattened()
             >>> import pandas as pd
             >>> df = pd.DataFrame(rows)

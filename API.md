@@ -20,7 +20,7 @@ The Lightning Rod SDK lets you generate forecasting datasets from real-world dat
 - `context`: Additional context (news, RAG results)
 - `meta`: Custom metadata
 
-**Pipeline** - A transform configuration that processes data through multiple stages (seed generation, question generation, labeling, etc.). Pipelines can be composed of individual transform components or use pre-built configurations like `QuestionPipeline`. Run pipelines via `client.transforms.run()` to generate datasets.
+**Pipeline** - A transform configuration that processes data through multiple stages (seed generation, question generation, labeling, etc.). Pipelines can be composed of individual transform components or use pre-built configurations like `QuestionPipeline`. Run pipelines via `lr.transforms.run()` to generate datasets.
 
 **Dataset** - Collection of samples - either as inputs or outputs of the pipeline.
 
