@@ -3,7 +3,7 @@
   <img src="https://github.com/lightning-rod-labs/lightningrod-python-sdk/blob/main/banner.png?raw=true" alt="Lightning Rod Labs" />
 </div>
 
-# Lightning Rod Python SDK
+# Lightning Rod Python SDK ![Beta](https://img.shields.io/badge/beta-0.1.1-orange)
 
 The Lightning Rod SDK provides a simple Python API for generating custom forecasting datasets to train your LLMs. Transform news articles, documents, and other real-world data into high-quality training samples automatically.
 
