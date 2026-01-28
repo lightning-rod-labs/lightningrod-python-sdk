@@ -31,10 +31,12 @@ test:
 
 build:
 	@echo "Building distribution packages..."
-	@rm -rf dist/*
 	@python -m build
 
-publish: build upload
+publish-new-version: 
+	@rm -rf dist/*
+	@make build
+	@make upload
 
 upload:
 	@echo "Uploading to PyPI..."
