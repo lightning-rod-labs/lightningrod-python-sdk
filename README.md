@@ -18,7 +18,7 @@ pip install lightningrod-ai
 
 ### 2. Get your API key
 
-Sign up at [lightningrod.ai](https://lightningrod.ai) to get your API key.
+Sign up at [dashboard.lightningrod.ai](https://dashboard.lightningrod.ai/?redirect=/api) to get your API key.
 
 ### 3. Generate your first dataset
 
