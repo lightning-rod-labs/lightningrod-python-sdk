@@ -496,6 +496,33 @@
         ]
       }
     },
+    "/organizations/balance": {
+      "get": {
+        "tags": [
+          "Organizations"
+        ],
+        "summary": "Get Balance",
+        "description": "Get the current credit balance for the organization",
+        "operationId": "get_balance_organizations_balance_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BalanceResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/filesets/": {
       "post": {
         "tags": [
