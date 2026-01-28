@@ -30,28 +30,22 @@ Main entry point for the SDK.
 ```python
 from lightningrod import LightningRod
 
-client = LightningRod(api_key="your-api-key")
+lr = LightningRod(api_key="your-api-key")
 ```
-
-**Client attributes:**
-- `client.transforms` - Run transform pipelines
-- `client.datasets` - Access dataset samples
-- `client.files` - Upload files
-- `client.filesets` - Manage file collections
 
 ## Transforms
 
 Transform pipelines generate datasets from raw data. The main method is `transforms.run()` which submits a job, waits for completion, and returns a dataset.
 
-### Running Transforms
+### API
 
-**`transforms.run(config, dataset_id=None, max_questions=None)`** - Submit and wait for completion
+**`lr.transforms.run(config, dataset_id=None, max_questions=None)`** - Submit and wait for completion
 
-**`transforms.submit(config, dataset_id=None, max_questions=None)`** - Submit without waiting
+**`lr.transforms.submit(config, dataset_id=None, max_questions=None)`** - Submit without waiting
 
-**`transforms.jobs.get(job_id)`** - Check job status
+**`lr.transforms.jobs.get(job_id)`** - Check job status
 
-### Transform Configurations
+### Types
 
 **QuestionPipeline** - Complete pipeline combining seed generation, question generation, and labeling.
 
@@ -69,48 +63,30 @@ Transform pipelines generate datasets from raw data. The main method is `transfo
 **Labelers:**
 - `WebSearchLabeler` - Label questions via web search
 
-**Other Components:**
+**Other Pipeline Components:**
 - `NewsContextGenerator` - Add relevant news context to questions
 - `QuestionRenderer` - Format questions into prompts
 - `RolloutGenerator` - Generate model completions
 - `FilterCriteria` - LLM-based content filtering
 
-All configurations support optional parameters for customization. See examples in the `examples/` directory for detailed usage.
+**Jobs:**
+- `TransformJob` - Job status, IDs, timestamps, error messages
+- `TransformJobStatus` - Enum: `RUNNING`, `COMPLETED`, `FAILED`
+
+See examples in the `examples/` directory for detailed usage of the pipeline types.
 
 ## Datasets
 
-**`Dataset`** - Represents a dataset with `id` and `num_rows`.
+### API
 
-**`dataset.to_samples()`** - Download all samples (handles pagination automatically)
+**`dataset.download()`** - Download all samples (handles pagination automatically)
 
-**`client.datasets.list(dataset_id)`** - Alternative way to list samples
+**`dataset.samples()`** - Returns cached samples (auto-downloads if needed)
 
-## Files
+**`dataset.flattened()`** - Returns cached samples in a flat-object list format (auto-downloads if needed)
 
-**`client.files.upload(file_path)`** - Upload a file, returns file ID and metadata.
+**`lr.datasets.list(dataset_id)`** - Alternative way to list samples
 
-## File Sets
+### Types
 
-File sets are collections of files used as data sources.
-
-**`client.filesets.create(name, description=None)`** - Create a file set
-
-**`client.filesets.get(file_set_id)`** - Get file set details
-
-**`client.filesets.list()`** - List all file sets
-
-**`client.filesets.files.upload(file_set_id, file_path, metadata=None)`** - Upload file to set
-
-**`client.filesets.files.add(file_set_id, file_id, metadata=None)`** - Add existing file to set
-
-**`client.filesets.files.list(file_set_id)`** - List files in set
-
-## Types
-
-**TransformJob** - Job status, IDs, timestamps, error messages
-
-**TransformJobStatus** - Enum: `RUNNING`, `COMPLETED`, `FAILED`
-
-**FileSet** - File set metadata: id, name, description, file counts, timestamps
-
-**FileSetFile** - File entry with file_id and optional metadata
+`Dataset` - Represents a dataset with `id` and `num_rows`.
