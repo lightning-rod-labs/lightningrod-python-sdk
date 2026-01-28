@@ -56,9 +56,10 @@ class TransformsClient:
         self,
         config: TransformConfig,
         input_dataset: Optional[Union[Dataset, str]] = None,
-        max_questions: Optional[int] = None
+        max_questions: Optional[int] = None,
+        max_cost_dollars: Optional[float] = None
     ) -> Dataset:
-        job: TransformJob = self.submit(config, input_dataset, max_questions)
+        job: TransformJob = self.submit(config, input_dataset, max_questions, max_cost_dollars)
         
         while job.status == TransformJobStatus.RUNNING:
             time.sleep(15)
@@ -89,7 +90,8 @@ class TransformsClient:
         self,
         config: TransformConfig,
         input_dataset: Optional[Union[Dataset, str]] = None,
-        max_questions: Optional[int] = None
+        max_questions: Optional[int] = None,
+        max_cost_dollars: Optional[float] = None
     ) -> TransformJob:
         dataset_id: Optional[str] = None
         if isinstance(input_dataset, Dataset):
@@ -99,7 +101,8 @@ class TransformsClient:
         request: CreateTransformJobRequest = CreateTransformJobRequest(
             config=config,
             input_dataset_id=dataset_id,
-            max_questions=max_questions
+            max_questions=max_questions,
+            max_cost_dollars=max_cost_dollars,
         )
         
         response = create_transform_job_transform_jobs_post.sync_detailed(
