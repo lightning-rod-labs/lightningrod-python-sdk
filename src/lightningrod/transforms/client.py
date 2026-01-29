@@ -1,7 +1,10 @@
 import time
 from typing import Optional, Union
 
-from lightningrod._display import display_error, display_warning
+from rich.console import Console
+from rich.live import Live
+
+from lightningrod._display import build_live_display, display_error, display_warning
 from lightningrod._generated.models import (
     FileSetQuerySeedGenerator,
     FileSetSeedGenerator,
@@ -26,8 +29,10 @@ from lightningrod._generated.api.datasets import (
 from lightningrod._generated.api.transform_jobs import (
     create_transform_job_transform_jobs_post,
     get_transform_job_transform_jobs_job_id_get,
-    cost_estimation_transform_jobs_cost_estimation_post
+    get_transform_job_metrics_transform_jobs_job_id_metrics_get,
+    cost_estimation_transform_jobs_cost_estimation_post,
 )
+from lightningrod._generated.models.pipeline_metrics_response import PipelineMetricsResponse
 from lightningrod.datasets.dataset import Dataset
 from lightningrod._generated.client import AuthenticatedClient
 from lightningrod.datasets.client import DatasetSamplesClient
@@ -39,13 +44,23 @@ TransformConfig = Union[FileSetQuerySeedGenerator, FileSetSeedGenerator, Forward
 class TransformJobsClient:
     def __init__(self, client: AuthenticatedClient):
         self._client = client
-    
+
     def get(self, job_id: str) -> TransformJob:
         response = get_transform_job_transform_jobs_job_id_get.sync_detailed(
             job_id=job_id,
             client=self._client,
         )
         return handle_response_error(response, "get transform job")
+
+    def get_metrics(self, job_id: str) -> Optional[PipelineMetricsResponse]:
+        """Fetch pipeline metrics. Returns None if not yet available (404) or on error."""
+        response = get_transform_job_metrics_transform_jobs_job_id_metrics_get.sync_detailed(
+            job_id=job_id,
+            client=self._client,
+        )
+        if isinstance(response.parsed, PipelineMetricsResponse):
+            return response.parsed
+        return None
 
 
 class TransformsClient:
@@ -62,11 +77,43 @@ class TransformsClient:
         max_cost_dollars: Optional[float] = None
     ) -> Dataset:
         job: TransformJob = self.submit(config, input_dataset, max_questions, max_cost_dollars)
-        
-        while job.status == TransformJobStatus.RUNNING:
-            time.sleep(15)
-            job = self.jobs.get(job.id)
-        
+
+        console = Console()
+        is_notebook = False
+        try:
+            from IPython import get_ipython
+            shell = get_ipython()
+            if shell is not None and shell.__class__.__name__ == "ZMQInteractiveShell":
+                from IPython.display import clear_output
+                is_notebook = True
+        except ImportError:
+            pass
+
+        # Save the warning message before polling overwrites the job object
+        warning_message = job.warning_message if (not isinstance(job.warning_message, Unset) and job.warning_message is not None) else None
+
+        if is_notebook:
+            while job.status == TransformJobStatus.RUNNING:
+                metrics = self.jobs.get_metrics(job.id)
+                clear_output(wait=True)
+                if warning_message:
+                    display_warning(warning_message)
+                console.print(build_live_display(metrics=metrics, job=job))
+                time.sleep(15)
+                job = self.jobs.get(job.id)
+        else:
+            with Live(
+                build_live_display(metrics=None, job=job),
+                console=console,
+                refresh_per_second=1,
+                transient=True,
+            ) as live:
+                while job.status == TransformJobStatus.RUNNING:
+                    metrics = self.jobs.get_metrics(job.id)
+                    live.update(build_live_display(metrics=metrics, job=job))
+                    time.sleep(15)
+                    job = self.jobs.get(job.id)
+
         if job.status == TransformJobStatus.FAILED:
             error_msg = job.error_message if (not isinstance(job.error_message, Unset) and job.error_message) else "Unknown error"
             display_error(error_msg, title="Job Failed", job=job)

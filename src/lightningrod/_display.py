@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-from rich.console import Console, Group
+from rich.console import Console, Group, RenderableType
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
@@ -14,69 +14,135 @@ def _is_set(value: Any) -> bool:
     return not isinstance(value, Unset) and value is not None
 
 
-def _build_cost_summary(job: Any) -> Optional[str]:
+def _safe_markup(text: Optional[str]) -> Text:
+    """Parse text as rich markup, falling back to plain text if parsing fails."""
+    if text is None:
+        return Text("")
+    try:
+        return Text.from_markup(text)
+    except Exception:
+        return Text(text)
+
+
+def _format_duration(seconds: float) -> str:
+    if seconds < 60:
+        return f"{seconds:.0f}s"
+    minutes = int(seconds // 60)
+    secs = int(seconds % 60)
+    return f"{minutes}m {secs}s"
+
+
+def _build_cost_lines(job: Any) -> list[RenderableType]:
+    """Build cost info lines from job.usage. Returns empty list if no data."""
     if not _is_set(job.usage):
-        return None
+        return []
     usage = job.usage
-    parts = []
+    lines: list[RenderableType] = []
+
+    # Total cost
     if _is_set(usage.current_cost_dollars):
-        parts.append(f"Cost: ${usage.current_cost_dollars:.4f}")
+        lines.append(_safe_markup(f"  [bold]Total cost:[/bold] [bright_green]${usage.current_cost_dollars:.2f}[/bright_green]"))
     if _is_set(usage.max_cost_dollars):
-        parts.append(f"Max: ${usage.max_cost_dollars:.4f}")
+        lines.append(_safe_markup(f"  [bold]Budget:[/bold]     ${usage.max_cost_dollars:.2f}"))
     if _is_set(usage.estimated_cost_dollars):
-        parts.append(f"Estimated: ${usage.estimated_cost_dollars:.4f}")
-    return " | ".join(parts) if parts else None
+        lines.append(_safe_markup(f"  [bold]Estimated:[/bold]  ${usage.estimated_cost_dollars:.2f}"))
+
+    return lines
 
 
-def _build_usage_table(job: Any) -> Optional[Table]:
-    from lightningrod._generated.models.job_usage_by_step_type_0 import JobUsageByStepType0
-    from lightningrod._generated.models.usage_summary import UsageSummary
+def build_live_display(
+    metrics: Any = None,
+    job: Any = None,
+) -> RenderableType:
+    """Build the live display renderable for the polling loop."""
+    renderables: list[RenderableType] = []
 
-    if not _is_set(job.usage):
-        return None
+    # Cost summary from job.usage
+    if job is not None:
+        cost_lines = _build_cost_lines(job)
+        if cost_lines:
+            renderables.extend(cost_lines)
+            renderables.append(Text(""))
 
-    usage = job.usage
-    has_rows = False
+    if metrics is None:
+        renderables.append(Text("Waiting for metrics...", style="dim italic"))
+        return Panel(
+            Group(*renderables),
+            title="[bold]Pipeline Running[/bold]",
+            border_style="bright_blue",
+            padding=(1, 2),
+        )
 
-    table = Table(title="Usage Breakdown", show_header=True, header_style="bold cyan")
-    table.add_column("Step", style="dim")
-    table.add_column("Cost ($)", justify="right")
+    # Per-step table
+    table = Table(show_header=True, header_style="bold cyan", expand=True)
+    table.add_column("Step", style="bold", no_wrap=True)
+    table.add_column("Progress", width=20)
+    table.add_column("In", justify="right")
+    table.add_column("Out", justify="right")
+    table.add_column("Rejected", justify="right")
+    table.add_column("Errors", justify="right")
+    table.add_column("Duration", justify="right")
 
-    if _is_set(usage.by_step) and isinstance(usage.by_step, JobUsageByStepType0):
-        for step_name, step_summary in usage.by_step.additional_properties.items():
-            cost_val = step_summary.total_cost if not isinstance(step_summary.total_cost, Unset) else 0.0
-            table.add_row(step_name, f"${cost_val:.4f}")
-            has_rows = True
+    for step in sorted(metrics.steps, key=lambda s: s.step_index):
+        if step.progress >= 1.0:
+            status = Text("Complete", style="bold bright_green")
+        elif step.progress > 0:
+            status = Text("In progress", style="bold bright_yellow")
+        else:
+            status = Text("Pending", style="dim")
 
-    if _is_set(usage.total) and isinstance(usage.total, UsageSummary):
-        total_cost = usage.total.total_cost if not isinstance(usage.total.total_cost, Unset) else 0.0
-        table.add_section()
-        table.add_row("[bold]Total[/bold]", f"[bold]${total_cost:.4f}[/bold]")
-        has_rows = True
+        rejected_style = "bright_red" if step.rejected_count > 0 else "dim"
+        error_style = "bold bright_red" if step.error_count > 0 else "dim"
 
-    return table if has_rows else None
+        table.add_row(
+            step.transform_name,
+            status,
+            str(step.input_rows),
+            str(step.output_rows),
+            Text(str(step.rejected_count), style=rejected_style),
+            Text(str(step.error_count), style=error_style),
+            _format_duration(step.duration_seconds),
+        )
+
+    renderables.append(table)
+
+    return Panel(
+        Group(*renderables),
+        title="[bold]Pipeline Running[/bold]",
+        border_style="bright_blue",
+        padding=(1, 2),
+    )
 
 
 def display_error(message: str, title: str = "Error", job: Any = None) -> None:
     console = Console()
-    renderables: list[Any] = []
+    renderables: list[RenderableType] = []
 
-    renderables.append(Text(message))
+    renderables.append(_safe_markup(f"[bold bright_red]>> {title}[/bold bright_red]"))
+    renderables.append(Text(""))
+    renderables.append(_safe_markup(f"[bold]{message}[/bold]"))
 
     if job is not None:
-        cost_text = _build_cost_summary(job)
-        if cost_text:
+        cost_lines = _build_cost_lines(job)
+        if cost_lines:
             renderables.append(Text(""))
-            renderables.append(Text(cost_text, style="dim"))
+            renderables.extend(cost_lines)
 
-        usage_table = _build_usage_table(job)
-        if usage_table:
-            renderables.append(Text(""))
-            renderables.append(usage_table)
-
-    console.print(Panel(Group(*renderables), title=title, border_style="bright_red"))
+    console.print(Panel(Group(*renderables), border_style="bright_red", padding=(1, 2)))
 
 
-def display_warning(message: str, title: str = "Warning") -> None:
+def display_warning(message: str, title: str = "Warning", job: Any = None) -> None:
     console = Console()
-    console.print(Panel(Text(message), title=title, border_style="yellow"))
+    renderables: list[RenderableType] = []
+
+    renderables.append(_safe_markup(f"[bold yellow]>> {title}[/bold yellow]"))
+    renderables.append(Text(""))
+    renderables.append(_safe_markup(message))
+
+    if job is not None:
+        cost_lines = _build_cost_lines(job)
+        if cost_lines:
+            renderables.append(Text(""))
+            renderables.extend(cost_lines)
+
+    console.print(Panel(Group(*renderables), border_style="yellow", padding=(1, 2)))
