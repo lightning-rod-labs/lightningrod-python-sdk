@@ -200,6 +200,57 @@
         }
       }
     },
+    "/transform-jobs/{job_id}/metrics": {
+      "get": {
+        "tags": [
+          "Transform Jobs"
+        ],
+        "summary": "Get Transform Job Metrics",
+        "description": "Get pipeline metrics for a transform job",
+        "operationId": "get_transform_job_metrics_transform_jobs__job_id__metrics_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PipelineMetricsResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Pipeline metrics not found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/datasets/{dataset_id}": {
       "get": {
         "tags": [
@@ -2671,6 +2722,37 @@
         ],
         "title": "PaginatedSamplesResponse"
       },
+      "PipelineMetricsResponse": {
+        "properties": {
+          "total_input_rows": {
+            "type": "integer",
+            "title": "Total Input Rows"
+          },
+          "total_output_rows": {
+            "type": "integer",
+            "title": "Total Output Rows"
+          },
+          "total_duration_seconds": {
+            "type": "number",
+            "title": "Total Duration Seconds"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/TransformStepMetricsResponse"
+            },
+            "type": "array",
+            "title": "Steps"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_input_rows",
+          "total_output_rows",
+          "total_duration_seconds",
+          "steps"
+        ],
+        "title": "PipelineMetricsResponse"
+      },
       "Question": {
         "properties": {
           "question_type": {
@@ -3538,6 +3620,66 @@
           "CANCELLED"
         ],
         "title": "TransformJobStatus"
+      },
+      "TransformStepMetricsResponse": {
+        "properties": {
+          "step_index": {
+            "type": "integer",
+            "title": "Step Index"
+          },
+          "transform_name": {
+            "type": "string",
+            "title": "Transform Name"
+          },
+          "input_rows": {
+            "type": "integer",
+            "title": "Input Rows"
+          },
+          "output_rows": {
+            "type": "integer",
+            "title": "Output Rows"
+          },
+          "rejected_count": {
+            "type": "integer",
+            "title": "Rejected Count"
+          },
+          "error_count": {
+            "type": "integer",
+            "title": "Error Count"
+          },
+          "duration_seconds": {
+            "type": "number",
+            "title": "Duration Seconds"
+          },
+          "progress": {
+            "type": "number",
+            "title": "Progress"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "step_index",
+          "transform_name",
+          "input_rows",
+          "output_rows",
+          "rejected_count",
+          "error_count",
+          "duration_seconds",
+          "progress",
+          "summary"
+        ],
+        "title": "TransformStepMetricsResponse"
       },
       "TransformType": {
         "type": "string",
