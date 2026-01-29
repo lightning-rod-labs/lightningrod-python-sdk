@@ -43,6 +43,7 @@ from .news_context import NewsContext
 from .news_context_generator import NewsContextGenerator
 from .news_seed_generator import NewsSeedGenerator
 from .paginated_samples_response import PaginatedSamplesResponse
+from .pipeline_metrics_response import PipelineMetricsResponse
 from .question import Question
 from .question_and_label_generator import QuestionAndLabelGenerator
 from .question_generator import QuestionGenerator
@@ -59,6 +60,7 @@ from .seed import Seed
 from .step_cost_breakdown import StepCostBreakdown
 from .transform_job import TransformJob
 from .transform_job_status import TransformJobStatus
+from .transform_step_metrics_response import TransformStepMetricsResponse
 from .transform_type import TransformType
 from .upload_samples_request import UploadSamplesRequest
 from .upload_samples_response import UploadSamplesResponse
@@ -114,6 +116,7 @@ __all__ = (
     "NewsContextGenerator",
     "NewsSeedGenerator",
     "PaginatedSamplesResponse",
+    "PipelineMetricsResponse",
     "Question",
     "QuestionAndLabelGenerator",
     "QuestionGenerator",
@@ -130,6 +133,7 @@ __all__ = (
     "StepCostBreakdown",
     "TransformJob",
     "TransformJobStatus",
+    "TransformStepMetricsResponse",
     "TransformType",
     "UploadSamplesRequest",
     "UploadSamplesResponse",

@@ -1,6 +1,6 @@
-import time
 from typing import Optional, Union
 
+from lightningrod._display import display_error, display_warning, run_live_display
 from lightningrod._generated.models import (
     FileSetQuerySeedGenerator,
     FileSetSeedGenerator,
@@ -25,11 +25,14 @@ from lightningrod._generated.api.datasets import (
 from lightningrod._generated.api.transform_jobs import (
     create_transform_job_transform_jobs_post,
     get_transform_job_transform_jobs_job_id_get,
-    cost_estimation_transform_jobs_cost_estimation_post
+    get_transform_job_metrics_transform_jobs_job_id_metrics_get,
+    cost_estimation_transform_jobs_cost_estimation_post,
 )
+from lightningrod._generated.models.pipeline_metrics_response import PipelineMetricsResponse
 from lightningrod.datasets.dataset import Dataset
 from lightningrod._generated.client import AuthenticatedClient
 from lightningrod.datasets.client import DatasetSamplesClient
+from lightningrod._generated.types import Unset
 from lightningrod._errors import handle_response_error
 
 TransformConfig = Union[FileSetQuerySeedGenerator, FileSetSeedGenerator, ForwardLookingQuestionGenerator, GdeltSeedGenerator, NewsSeedGenerator, QuestionAndLabelGenerator, QuestionGenerator, QuestionPipeline, QuestionRenderer, WebSearchLabeler]
@@ -37,13 +40,23 @@ TransformConfig = Union[FileSetQuerySeedGenerator, FileSetSeedGenerator, Forward
 class TransformJobsClient:
     def __init__(self, client: AuthenticatedClient):
         self._client = client
-    
+
     def get(self, job_id: str) -> TransformJob:
         response = get_transform_job_transform_jobs_job_id_get.sync_detailed(
             job_id=job_id,
             client=self._client,
         )
         return handle_response_error(response, "get transform job")
+
+    def get_metrics(self, job_id: str) -> Optional[PipelineMetricsResponse]:
+        """Fetch pipeline metrics. Returns None if not yet available (404) or on error."""
+        response = get_transform_job_metrics_transform_jobs_job_id_metrics_get.sync_detailed(
+            job_id=job_id,
+            client=self._client,
+        )
+        if isinstance(response.parsed, PipelineMetricsResponse):
+            return response.parsed
+        return None
 
 
 class TransformsClient:
@@ -60,15 +73,23 @@ class TransformsClient:
         max_cost_dollars: Optional[float] = None
     ) -> Dataset:
         job: TransformJob = self.submit(config, input_dataset, max_questions, max_cost_dollars)
-        
-        while job.status == TransformJobStatus.RUNNING:
-            time.sleep(15)
+
+        # Save the warning message before polling overwrites the job object
+        warning_message = job.warning_message if (not isinstance(job.warning_message, Unset) and job.warning_message is not None) else None
+
+        def poll():
+            nonlocal job
             job = self.jobs.get(job.id)
-        
+            metrics = self.jobs.get_metrics(job.id)
+            return metrics, job, job.status == TransformJobStatus.RUNNING
+
+        run_live_display(poll, poll_interval=15, warning_message=warning_message)
+
         if job.status == TransformJobStatus.FAILED:
-            error_details = f" (error: {job.error_message})" if job.error_message else ""
-            raise Exception(f"Transform job {job.id} failed{error_details}")
-        
+            error_msg = job.error_message if (not isinstance(job.error_message, Unset) and job.error_message) else "Unknown error"
+            display_error(error_msg, title="Job Failed", job=job)
+            raise Exception(f"Transform job {job.id} failed: {error_msg}")
+
         if job.status == TransformJobStatus.COMPLETED:
             if job.output_dataset_id is None:
                 raise Exception(f"Transform job {job.id} completed but has no output dataset")
@@ -111,7 +132,15 @@ class TransformsClient:
             body=request,
         )
 
-        return handle_response_error(response, "submit transform job")
+        job: TransformJob = handle_response_error(response, "submit transform job")
+
+        if not isinstance(job.error_message, Unset) and job.error_message is not None:
+            display_error(job.error_message, title="Error", job=job)
+            raise Exception(f"Transform job {job.id} error: {job.error_message}")
+        if not isinstance(job.warning_message, Unset) and job.warning_message is not None:
+            display_warning(job.warning_message)
+
+        return job
 
     def estimate_cost(self, config: TransformConfig, max_questions: Optional[int] = None) -> float:
         response = cost_estimation_transform_jobs_cost_estimation_post.sync_detailed(
