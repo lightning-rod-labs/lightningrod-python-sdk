@@ -3,7 +3,7 @@
   <img src="https://github.com/lightning-rod-labs/lightningrod-python-sdk/blob/main/banner.png?raw=true" alt="Lightning Rod Labs" />
 </div>
 
-# Lightning Rod Python SDK ![Beta](https://img.shields.io/badge/beta-0.1.1-orange)
+# Lightning Rod Python SDK [![Beta](https://img.shields.io/badge/beta-0.1.6-orange)](https://pypi.org/project/lightningrod-ai/0.1.6/)
 
 The Lightning Rod SDK provides a simple Python API for generating custom forecasting datasets to train your LLMs. Transform news articles, documents, and other real-world data into high-quality training samples automatically.
 
@@ -23,7 +23,7 @@ Sign up at [dashboard.lightningrod.ai](https://dashboard.lightningrod.ai/?redire
 
 ### 3. Generate your first dataset
 
-Generate **1000+ forecasting questions in ~10 minutes** - from raw sources to labeled dataset, automatically. ⚡
+Generate **1000+ forecasting questions in minutes** - from raw sources to labeled dataset, automatically. ⚡
 
 ```python
 from lightningrod import LightningRod, AnswerType, QuestionPipeline, NewsSeedGenerator, ForwardLookingQuestionGenerator, WebSearchLabeler
@@ -52,7 +52,7 @@ dataset = lr.transforms.run(pipeline, max_questions=3000)
 dataset.flattened() # Ready-to-use data for your training pipelines
 ```
 
-**We use this to generate our [Future-as-Label training dataset](https://huggingface.co/datasets/LightningRodLabs/future-as-label-paper-training-dataset) for our research paper.**
+**We use this to generate the [Future-as-Label training dataset](https://huggingface.co/datasets/LightningRodLabs/future-as-label-paper-training-dataset) for our research paper.**
 
 ## ✨ Examples
 
