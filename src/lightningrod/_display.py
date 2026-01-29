@@ -57,6 +57,9 @@ def build_live_display(
     """Build the live display renderable for the polling loop."""
     renderables: list[RenderableType] = []
 
+    renderables.append(_safe_markup("[bold bright_blue]>> Pipeline Running[/bold bright_blue]"))
+    renderables.append(Text(""))
+
     # Cost summary from job.usage
     if job is not None:
         cost_lines = _build_cost_lines(job)
@@ -68,7 +71,6 @@ def build_live_display(
         renderables.append(Text("Waiting for metrics...", style="dim italic"))
         return Panel(
             Group(*renderables),
-            title="[bold]Pipeline Running[/bold]",
             border_style="bright_blue",
             padding=(1, 2),
         )
@@ -108,7 +110,6 @@ def build_live_display(
 
     return Panel(
         Group(*renderables),
-        title="[bold]Pipeline Running[/bold]",
         border_style="bright_blue",
         padding=(1, 2),
     )
