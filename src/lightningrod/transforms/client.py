@@ -1,10 +1,6 @@
-import time
 from typing import Optional, Union
 
-from rich.console import Console
-from rich.live import Live
-
-from lightningrod._display import build_live_display, display_error, display_warning
+from lightningrod._display import display_error, display_warning, run_live_display
 from lightningrod._generated.models import (
     FileSetQuerySeedGenerator,
     FileSetSeedGenerator,
@@ -78,41 +74,16 @@ class TransformsClient:
     ) -> Dataset:
         job: TransformJob = self.submit(config, input_dataset, max_questions, max_cost_dollars)
 
-        console = Console()
-        is_notebook = False
-        try:
-            from IPython import get_ipython
-            shell = get_ipython()
-            if shell is not None and shell.__class__.__name__ == "ZMQInteractiveShell":
-                from IPython.display import clear_output
-                is_notebook = True
-        except ImportError:
-            pass
-
         # Save the warning message before polling overwrites the job object
         warning_message = job.warning_message if (not isinstance(job.warning_message, Unset) and job.warning_message is not None) else None
 
-        if is_notebook:
-            while job.status == TransformJobStatus.RUNNING:
-                metrics = self.jobs.get_metrics(job.id)
-                clear_output(wait=True)
-                if warning_message:
-                    display_warning(warning_message)
-                console.print(build_live_display(metrics=metrics, job=job))
-                time.sleep(15)
-                job = self.jobs.get(job.id)
-        else:
-            with Live(
-                build_live_display(metrics=None, job=job),
-                console=console,
-                refresh_per_second=1,
-                transient=True,
-            ) as live:
-                while job.status == TransformJobStatus.RUNNING:
-                    metrics = self.jobs.get_metrics(job.id)
-                    live.update(build_live_display(metrics=metrics, job=job))
-                    time.sleep(15)
-                    job = self.jobs.get(job.id)
+        def poll():
+            nonlocal job
+            job = self.jobs.get(job.id)
+            metrics = self.jobs.get_metrics(job.id)
+            return metrics, job, job.status == TransformJobStatus.RUNNING
+
+        run_live_display(poll, poll_interval=15, warning_message=warning_message)
 
         if job.status == TransformJobStatus.FAILED:
             error_msg = job.error_message if (not isinstance(job.error_message, Unset) and job.error_message) else "Unknown error"

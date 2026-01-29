@@ -114,6 +114,61 @@ def build_live_display(
     )
 
 
+def _is_notebook() -> bool:
+    """Check if we're running inside a Jupyter notebook."""
+    try:
+        from IPython import get_ipython
+        shell = get_ipython()
+        return shell is not None and shell.__class__.__name__ == "ZMQInteractiveShell"
+    except ImportError:
+        return False
+
+
+def run_live_display(
+    poll_callback: Any,
+    poll_interval: float = 15,
+    warning_message: Optional[str] = None,
+) -> None:
+    """Run a live-updating display that polls for metrics.
+
+    Args:
+        poll_callback: A callable that returns (metrics, job, is_running) each cycle.
+            - metrics: PipelineMetricsResponse or None
+            - job: TransformJob with current status/usage
+            - is_running: bool, False to stop the loop
+        poll_interval: Seconds between polls.
+        warning_message: Optional warning to persist above the live display.
+    """
+    import time
+    console = Console()
+
+    if _is_notebook():
+        from IPython.display import clear_output
+        metrics, job, is_running = poll_callback()
+        while is_running:
+            clear_output(wait=True)
+            if warning_message:
+                display_warning(warning_message)
+            console.print(build_live_display(metrics=metrics, job=job))
+            time.sleep(poll_interval)
+            metrics, job, is_running = poll_callback()
+    else:
+        from rich.live import Live
+        with Live(
+            build_live_display(metrics=None, job=None),
+            console=console,
+            refresh_per_second=1,
+            transient=True,
+        ) as live:
+            metrics, job, is_running = poll_callback()
+            while is_running:
+                live.update(build_live_display(metrics=metrics, job=job))
+                time.sleep(poll_interval)
+                metrics, job, is_running = poll_callback()
+            # Final update
+            live.update(build_live_display(metrics=metrics, job=job))
+
+
 def display_error(message: str, title: str = "Error", job: Any = None) -> None:
     console = Console()
     renderables: list[RenderableType] = []
