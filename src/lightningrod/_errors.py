@@ -2,6 +2,7 @@ import json
 from http import HTTPStatus
 from typing import Any, TypeVar
 
+from lightningrod._display import display_error
 from lightningrod._generated.models import HTTPValidationError
 from lightningrod._generated.types import Response
 
@@ -58,10 +59,9 @@ def handle_response_error(response: Response[T], operation: str) -> T:
     Raises:
         Exception: If the response indicates an error (parsed is None or HTTPValidationError)
     """
-    if response.parsed is None:
-        raise Exception(extract_error_message(response, operation))
-    
-    if isinstance(response.parsed, HTTPValidationError):
-        raise Exception(extract_error_message(response, operation))
-    
+    if response.parsed is None or isinstance(response.parsed, HTTPValidationError):
+        error_msg = extract_error_message(response, operation)
+        display_error(error_msg, title=f"API Error: {operation}")
+        raise Exception(error_msg)
+
     return response.parsed
