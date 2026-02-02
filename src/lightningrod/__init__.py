@@ -6,7 +6,7 @@ AI-powered forecasting dataset generation platform.
 
 from lightningrod.client import LightningRod
 from lightningrod.datasets.dataset import Dataset
-from lightningrod import preprocessing
+from lightningrod import preprocessing, utils
 from lightningrod._generated.models import (
     AnswerType,
     AnswerTypeEnum,
@@ -37,6 +37,7 @@ from lightningrod._generated.models import (
 __version__ = "0.1.6"
 __all__ = [
     "preprocessing",
+    "utils",
     "AnswerType",
     "AnswerTypeEnum",
     "AnswerTypes",
