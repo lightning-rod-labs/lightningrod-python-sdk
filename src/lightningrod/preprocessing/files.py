@@ -2,12 +2,25 @@ from __future__ import annotations
 
 import csv
 import glob
+import re
 from pathlib import Path
 from typing import Any
 
 from lightningrod._generated.models import Sample, SampleMeta, Seed
 
 _SUPPORTED_FILE_TYPES = {"txt", "text", "md", "markdown", "pdf", "csv"}
+
+
+def _sanitize_text(text: str) -> str:
+    """
+    Remove characters that are problematic for database storage.
+    
+    PostgreSQL cannot store null bytes (\\u0000) in text fields.
+    This function removes such characters while preserving valid Unicode.
+    """
+    text = text.replace("\x00", "")
+    text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", "", text)
+    return text
 
 
 def _read_text_file(path: Path) -> str:
@@ -37,7 +50,7 @@ def _read_pdf_file(path: Path) -> str:
             for page in pdf_reader.pages:
                 page_text = page.extract_text()
                 if page_text:
-                    text_parts.append(page_text)
+                    text_parts.append(_sanitize_text(page_text))
         return "\n\n".join(text_parts)
 
 
