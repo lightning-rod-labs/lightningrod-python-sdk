@@ -118,11 +118,11 @@ def build_live_display(
 def _is_notebook() -> bool:
     """Check if we're running inside a Jupyter notebook."""
     try:
-        from IPython import get_ipython
-        shell = get_ipython()
-        return shell is not None and shell.__class__.__name__ == "ZMQInteractiveShell"
-    except ImportError:
+        import google.colab.userdata
+    except ImportError as e:
         return False
+    else:
+        return True
 
 
 def run_live_display(
