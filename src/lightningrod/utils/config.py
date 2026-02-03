@@ -1,31 +1,17 @@
 import os
 import getpass
-
-try:
-    from google.colab import userdata
-    from google.colab.userdata import NotebookAccessError
-except ImportError:
-    is_colab_env = False
-else:
-    is_colab_env = True
-
+from lightningrod._display import _is_notebook
 
 def get_config_value(key, default=None):
     """
-    Check in to env
-    if not found check in to google colab userdata, if available
-    else asks for that key, will be presented as ****
+    Portable function to get a value from the environment variables or Google Colab userdata.
     """
     if key in os.environ:
         return os.environ[key]
     
-    if is_colab_env:
-        try:        
-            return userdata.get(key)
-        except NotebookAccessError as nae:
-            raise nae
-        except Exception:
-            pass
+    if _is_notebook():
+        from google.colab import userdata
+        return userdata.get(key)
     
     if default is not None:
         return default
