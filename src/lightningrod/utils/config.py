@@ -11,7 +11,11 @@ def get_config_value(key, default=None):
     
     if _is_notebook():
         from google.colab import userdata
-        return userdata.get(key)
+        from google.colab.userdata import SecretNotFoundError
+        try:
+            return userdata.get(key)
+        except SecretNotFoundError:
+            return default
     
     if default is not None:
         return default
