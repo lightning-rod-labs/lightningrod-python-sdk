@@ -1169,6 +1169,19 @@
             "title": "File Id",
             "description": "ID of the file"
           },
+          "file_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Date",
+            "description": "The date of the document - ensure this is set for documents to be used in forward-looking question generation generation pipelines"
+          },
           "metadata": {
             "anyOf": [
               {
@@ -1418,10 +1431,16 @@
             ],
             "title": "Configuration Id"
           },
-          "use_local_rate_limiter": {
-            "type": "boolean",
-            "title": "Use Local Rate Limiter",
-            "default": false
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
           }
         },
         "type": "object",
@@ -3504,6 +3523,17 @@
               }
             ],
             "title": "Configuration Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
           },
           "status": {
             "$ref": "#/components/schemas/TransformJobStatus"

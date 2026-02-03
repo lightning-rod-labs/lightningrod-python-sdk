@@ -33,6 +33,7 @@ class TransformJob:
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
         configuration_id (None | str | Unset):
+        name (None | str | Unset):
         error_message (None | str | Unset):
         warning_message (None | str | Unset):
         usage (JobUsage | None | Unset):
@@ -50,6 +51,7 @@ class TransformJob:
     created_at: datetime.datetime
     updated_at: datetime.datetime
     configuration_id: None | str | Unset = UNSET
+    name: None | str | Unset = UNSET
     error_message: None | str | Unset = UNSET
     warning_message: None | str | Unset = UNSET
     usage: JobUsage | None | Unset = UNSET
@@ -86,6 +88,12 @@ class TransformJob:
             configuration_id = UNSET
         else:
             configuration_id = self.configuration_id
+
+        name: None | str | Unset
+        if isinstance(self.name, Unset):
+            name = UNSET
+        else:
+            name = self.name
 
         error_message: None | str | Unset
         if isinstance(self.error_message, Unset):
@@ -131,6 +139,8 @@ class TransformJob:
         )
         if configuration_id is not UNSET:
             field_dict["configuration_id"] = configuration_id
+        if name is not UNSET:
+            field_dict["name"] = name
         if error_message is not UNSET:
             field_dict["error_message"] = error_message
         if warning_message is not UNSET:
@@ -185,6 +195,15 @@ class TransformJob:
             return cast(None | str | Unset, data)
 
         configuration_id = _parse_configuration_id(d.pop("configuration_id", UNSET))
+
+        def _parse_name(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        name = _parse_name(d.pop("name", UNSET))
 
         def _parse_error_message(data: object) -> None | str | Unset:
             if data is None:
@@ -242,6 +261,7 @@ class TransformJob:
             created_at=created_at,
             updated_at=updated_at,
             configuration_id=configuration_id,
+            name=name,
             error_message=error_message,
             warning_message=warning_message,
             usage=usage,

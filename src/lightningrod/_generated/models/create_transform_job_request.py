@@ -35,7 +35,7 @@ class CreateTransformJobRequest:
         max_questions (int | None | Unset):
         max_cost_dollars (float | None | Unset):
         configuration_id (None | str | Unset):
-        use_local_rate_limiter (bool | Unset):  Default: False.
+        name (None | str | Unset):
     """
 
     config: (
@@ -54,7 +54,7 @@ class CreateTransformJobRequest:
     max_questions: int | None | Unset = UNSET
     max_cost_dollars: float | None | Unset = UNSET
     configuration_id: None | str | Unset = UNSET
-    use_local_rate_limiter: bool | Unset = False
+    name: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -114,7 +114,11 @@ class CreateTransformJobRequest:
         else:
             configuration_id = self.configuration_id
 
-        use_local_rate_limiter = self.use_local_rate_limiter
+        name: None | str | Unset
+        if isinstance(self.name, Unset):
+            name = UNSET
+        else:
+            name = self.name
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -131,8 +135,8 @@ class CreateTransformJobRequest:
             field_dict["max_cost_dollars"] = max_cost_dollars
         if configuration_id is not UNSET:
             field_dict["configuration_id"] = configuration_id
-        if use_local_rate_limiter is not UNSET:
-            field_dict["use_local_rate_limiter"] = use_local_rate_limiter
+        if name is not UNSET:
+            field_dict["name"] = name
 
         return field_dict
 
@@ -281,7 +285,14 @@ class CreateTransformJobRequest:
 
         configuration_id = _parse_configuration_id(d.pop("configuration_id", UNSET))
 
-        use_local_rate_limiter = d.pop("use_local_rate_limiter", UNSET)
+        def _parse_name(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        name = _parse_name(d.pop("name", UNSET))
 
         create_transform_job_request = cls(
             config=config,
@@ -289,7 +300,7 @@ class CreateTransformJobRequest:
             max_questions=max_questions,
             max_cost_dollars=max_cost_dollars,
             configuration_id=configuration_id,
-            use_local_rate_limiter=use_local_rate_limiter,
+            name=name,
         )
 
         create_transform_job_request.additional_properties = d
