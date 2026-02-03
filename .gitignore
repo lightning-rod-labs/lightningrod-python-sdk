@@ -42,6 +42,7 @@ htmlcov/
 .env
 # Temporary test file
 test_sdk.py
+notebooks/lightningrod-python-sdk/
 
 # Misc
 .DS_Store
