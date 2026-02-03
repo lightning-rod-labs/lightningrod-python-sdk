@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import datetime
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
+from dateutil.parser import isoparse
 
 from ..types import UNSET, Unset
 
@@ -20,10 +22,13 @@ class CreateFileSetFileRequest:
     """
     Attributes:
         file_id (str): ID of the file
+        file_date (datetime.datetime | None | Unset): The date of the document - ensure this is set for documents to be
+            used in forward-looking question generation generation pipelines
         metadata (CreateFileSetFileRequestMetadataType0 | None | Unset): Optional file-level metadata
     """
 
     file_id: str
+    file_date: datetime.datetime | None | Unset = UNSET
     metadata: CreateFileSetFileRequestMetadataType0 | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -31,6 +36,14 @@ class CreateFileSetFileRequest:
         from ..models.create_file_set_file_request_metadata_type_0 import CreateFileSetFileRequestMetadataType0
 
         file_id = self.file_id
+
+        file_date: None | str | Unset
+        if isinstance(self.file_date, Unset):
+            file_date = UNSET
+        elif isinstance(self.file_date, datetime.datetime):
+            file_date = self.file_date.isoformat()
+        else:
+            file_date = self.file_date
 
         metadata: dict[str, Any] | None | Unset
         if isinstance(self.metadata, Unset):
@@ -47,6 +60,8 @@ class CreateFileSetFileRequest:
                 "file_id": file_id,
             }
         )
+        if file_date is not UNSET:
+            field_dict["file_date"] = file_date
         if metadata is not UNSET:
             field_dict["metadata"] = metadata
 
@@ -58,6 +73,23 @@ class CreateFileSetFileRequest:
 
         d = dict(src_dict)
         file_id = d.pop("file_id")
+
+        def _parse_file_date(data: object) -> datetime.datetime | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                file_date_type_0 = isoparse(data)
+
+                return file_date_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(datetime.datetime | None | Unset, data)
+
+        file_date = _parse_file_date(d.pop("file_date", UNSET))
 
         def _parse_metadata(data: object) -> CreateFileSetFileRequestMetadataType0 | None | Unset:
             if data is None:
@@ -78,6 +110,7 @@ class CreateFileSetFileRequest:
 
         create_file_set_file_request = cls(
             file_id=file_id,
+            file_date=file_date,
             metadata=metadata,
         )
 

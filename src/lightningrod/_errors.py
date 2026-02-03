@@ -54,12 +54,22 @@ def handle_response_error(response: Response[T], operation: str) -> T:
         operation: Description of the operation that failed (e.g., "create dataset")
         
     Returns:
-        The parsed response object
+        The parsed response object (may be None for successful DELETE endpoints with no body)
         
     Raises:
-        Exception: If the response indicates an error (parsed is None or HTTPValidationError)
+        Exception: If the response indicates an error (4xx/5xx status codes or HTTPValidationError)
     """
-    if response.parsed is None or isinstance(response.parsed, HTTPValidationError):
+    status_code_value = response.status_code.value if isinstance(response.status_code, HTTPStatus) else response.status_code
+    
+    if isinstance(response.parsed, HTTPValidationError):
+        error_msg = extract_error_message(response, operation)
+        display_error(error_msg, title=f"API Error: {operation}")
+        raise Exception(error_msg)
+    
+    if 200 <= status_code_value < 300:
+        return response.parsed
+    
+    if response.parsed is None:
         error_msg = extract_error_message(response, operation)
         display_error(error_msg, title=f"API Error: {operation}")
         raise Exception(error_msg)
