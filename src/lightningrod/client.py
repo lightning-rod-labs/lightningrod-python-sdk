@@ -1,13 +1,8 @@
-from typing import List
-
 from lightningrod._generated.client import AuthenticatedClient
-from lightningrod._generated.models.sample import Sample
 from lightningrod.datasets.client import DatasetSamplesClient, DatasetsClient
-from lightningrod.datasets.dataset import Dataset
-from lightningrod.files.client import FilesClient
-from lightningrod.filesets.client import FileSetsClient
 from lightningrod.organization.client import OrganizationsClient
 from lightningrod.transforms.client import TransformsClient
+from lightningrod.utils import config
 
 
 class LightningRod:
@@ -30,6 +25,12 @@ class LightningRod:
         api_key: str,
         base_url: str = "https://api.lightningrod.ai/api/public/v1"
     ):
+
+        # Allow overriding the base url from the environment variables.
+        # This is only used for local development, 
+        # so that we don't have to pass this variable in on the public notebook examples.
+        base_url = config.get_config_value("LIGHTNINGROD_BASE_URL", base_url)
+
         self.api_key: str = api_key
         self.base_url: str = base_url.rstrip("/")
         self._generated_client: AuthenticatedClient = AuthenticatedClient(

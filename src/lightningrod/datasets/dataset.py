@@ -117,24 +117,30 @@ class Dataset:
     def valid_count(self) -> int:
         """
         Count the number of valid samples in the dataset.
-        Automatically downloads the samples if they haven't been downloaded yet.
+        Requires samples to be downloaded first (use dataset.download() or dataset.samples()).
+        
+        Raises:
+            ValueError: If samples have not been downloaded yet.
         
         Returns:
-            Number of samples where is_valid is True
-            
+            Number of valid samples (where is_valid is True)
+        
         Example:
             >>> lr = LightningRod(api_key="your-api-key")
+            >>> config = QuestionPipeline(...)
             >>> dataset = lr.transforms.run(config)
+            >>> dataset.download()
             >>> valid = dataset.valid_count()
-            >>> print(f"Dataset has {valid} valid samples out of {dataset.num_rows} total")
+            >>> print(f"Dataset has {valid} valid samples")
         """
-        samples = self.samples()
-        return sum(
-            1 for sample in samples
-            if sample.is_valid is not None
-            and not isinstance(sample.is_valid, Unset)
-            and sample.is_valid is True
-        )
+        if self._samples is None:
+            raise ValueError("Samples must be downloaded first. Call dataset.download() or dataset.samples() before using valid_count().")
+        
+        count = 0
+        for sample in self._samples:
+            if sample.is_valid is True:
+                count += 1
+        return count
 
     def _sample_to_dict(self, sample: Sample) -> Dict[str, Any]:
         row: Dict[str, Any] = {}
@@ -275,3 +281,26 @@ class AsyncDataset:
             >>> df = pd.DataFrame(rows)
         """
         return await asyncio.to_thread(self._sync_dataset.flattened)
+
+    async def valid_count(self) -> int:
+        """
+        Count the number of valid samples in the dataset.
+        Requires samples to be downloaded first (use await dataset.to_samples()).
+        
+        All operations are run in a thread pool to avoid blocking the event loop.
+        
+        Raises:
+            ValueError: If samples have not been downloaded yet.
+        
+        Returns:
+            Number of valid samples (where is_valid is True)
+        
+        Example:
+            >>> lr = AsyncLightningRod(api_key="your-api-key")
+            >>> config = QuestionPipeline(...)
+            >>> dataset = await lr.transforms.run(config)
+            >>> await dataset.to_samples()
+            >>> valid = await dataset.valid_count()
+            >>> print(f"Dataset has {valid} valid samples")
+        """
+        return await asyncio.to_thread(self._sync_dataset.valid_count)

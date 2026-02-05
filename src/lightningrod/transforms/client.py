@@ -1,7 +1,6 @@
-from http import HTTPStatus
 from typing import Optional, Union
 
-from lightningrod._display import display_error, display_warning, run_live_display, _is_notebook
+from lightningrod._display import _is_notebook, display_error, display_warning, run_live_display
 from lightningrod._generated.models import (
     FileSetQuerySeedGenerator,
     FileSetSeedGenerator,
@@ -106,7 +105,10 @@ class TransformsClient:
         if job.status == TransformJobStatus.FAILED:
             error_msg = job.error_message if (not isinstance(job.error_message, Unset) and job.error_message) else "Unknown error"
             display_error(error_msg, title="Job Failed", job=job)
-            raise Exception(f"Transform job {job.id} failed: {error_msg}")
+
+            # No need to raise an exception in the notebook, as we display the error using display_error
+            if not _is_notebook():
+                raise Exception(f"Transform job {job.id} failed: {error_msg}")
 
         if job.status == TransformJobStatus.COMPLETED:
             if job.output_dataset_id is None:
