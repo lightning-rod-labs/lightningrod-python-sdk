@@ -72,10 +72,11 @@ class TransformsClient:
         input_dataset: Optional[Union[Dataset, str]] = None,
         max_questions: Optional[int] = None,
         max_cost_dollars: Optional[float] = None,
+        name: Optional[str] = None,
         # If True, will not stop the app if the local process dies or disconnects
         detach: bool = False,
     ) -> Dataset:
-        job: TransformJob = self.submit(config, input_dataset, max_questions, max_cost_dollars)
+        job: TransformJob = self.submit(config, input_dataset, max_questions, max_cost_dollars, name)
 
         # Save the warning message before polling overwrites the job object
         warning_message = job.warning_message if (not isinstance(job.warning_message, Unset) and job.warning_message is not None) else None
@@ -133,7 +134,8 @@ class TransformsClient:
         config: TransformConfig,
         input_dataset: Optional[Union[Dataset, str]] = None,
         max_questions: Optional[int] = None,
-        max_cost_dollars: Optional[float] = None
+        max_cost_dollars: Optional[float] = None,
+        name: Optional[str] = None,
     ) -> TransformJob:
         dataset_id: Optional[str] = None
         if isinstance(input_dataset, Dataset):
@@ -145,6 +147,7 @@ class TransformsClient:
             input_dataset_id=dataset_id,
             max_questions=max_questions,
             max_cost_dollars=max_cost_dollars,
+            name=name,
         )
         
         response = create_transform_job_transform_jobs_post.sync_detailed(

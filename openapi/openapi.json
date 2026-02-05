@@ -1480,6 +1480,17 @@
               }
             ],
             "title": "Configuration Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
           }
         },
         "type": "object",
@@ -3562,6 +3573,17 @@
               }
             ],
             "title": "Configuration Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
           },
           "status": {
             "$ref": "#/components/schemas/TransformJobStatus"
