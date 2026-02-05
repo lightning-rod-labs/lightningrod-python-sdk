@@ -114,6 +114,28 @@ class Dataset:
         samples = self.samples()
         return [self._sample_to_dict(sample) for sample in samples]
 
+    def valid_count(self) -> int:
+        """
+        Count the number of valid samples in the dataset.
+        Automatically downloads the samples if they haven't been downloaded yet.
+        
+        Returns:
+            Number of samples where is_valid is True
+            
+        Example:
+            >>> lr = LightningRod(api_key="your-api-key")
+            >>> dataset = lr.transforms.run(config)
+            >>> valid = dataset.valid_count()
+            >>> print(f"Dataset has {valid} valid samples out of {dataset.num_rows} total")
+        """
+        samples = self.samples()
+        return sum(
+            1 for sample in samples
+            if sample.is_valid is not None
+            and not isinstance(sample.is_valid, Unset)
+            and sample.is_valid is True
+        )
+
     def _sample_to_dict(self, sample: Sample) -> Dict[str, Any]:
         row: Dict[str, Any] = {}
         

@@ -72,7 +72,9 @@ class TransformsClient:
         config: TransformConfig,
         input_dataset: Optional[Union[Dataset, str]] = None,
         max_questions: Optional[int] = None,
-        max_cost_dollars: Optional[float] = None
+        max_cost_dollars: Optional[float] = None,
+        # If True, will not stop the app if the local process dies or disconnects
+        detach: bool = False,
     ) -> Dataset:
         job: TransformJob = self.submit(config, input_dataset, max_questions, max_cost_dollars)
 
@@ -88,15 +90,7 @@ class TransformsClient:
         try:
             run_live_display(poll, poll_interval=15, warning_message=warning_message)
         except KeyboardInterrupt:
-            should_cancel = True
-            if not _is_notebook():
-                try:
-                    response = input("\nInterrupted. Cancel remote job? [y/N]: ").strip().lower()
-                    should_cancel = response in ('y', 'yes')
-                except (EOFError, KeyboardInterrupt):
-                    should_cancel = False
-            
-            if should_cancel:
+            if not detach:
                 try:
                     cancel_response = cancel_transform_job_transform_jobs_job_id_delete.sync_detailed(
                         job_id=job.id,
