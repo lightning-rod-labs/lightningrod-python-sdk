@@ -40,11 +40,15 @@ Transform pipelines generate datasets from raw data. The main method is `transfo
 
 ### API
 
-**`lr.transforms.run(config, dataset_id=None, max_questions=None) -> Dataset`** - Submit and wait for completion
+**`lr.transforms.run(config, input_dataset=None, max_questions=None, max_cost_dollars=None, detach=False) -> Dataset`** - Submit and wait for completion. If `detach=True`, the job will continue running even if the local process dies or disconnects (useful for long-running jobs).
 
-**`lr.transforms.submit(config, dataset_id=None, max_questions=None) -> TransformJob`** - Submit without waiting
+**`lr.transforms.submit(config, input_dataset=None, max_questions=None, max_cost_dollars=None) -> TransformJob`** - Submit without waiting
+
+**`lr.transforms.estimate_cost(config, max_questions=None) -> float`** - Estimate the cost in dollars for running a transform pipeline
 
 **`lr.transforms.jobs.get(job_id) -> TransformJob`** - Check job status
+
+**`lr.transforms.jobs.get_metrics(job_id) -> Optional[PipelineMetricsResponse]`** - Get pipeline metrics for a job. Returns None if metrics are not yet available.
 
 ### Types
 

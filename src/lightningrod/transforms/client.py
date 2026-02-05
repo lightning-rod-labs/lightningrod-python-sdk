@@ -1,6 +1,6 @@
 from typing import Optional, Union
 
-from lightningrod._display import display_error, display_warning, run_live_display
+from lightningrod._display import _is_notebook, display_error, display_warning, run_live_display
 from lightningrod._generated.models import (
     FileSetQuerySeedGenerator,
     FileSetSeedGenerator,
@@ -27,6 +27,7 @@ from lightningrod._generated.api.transform_jobs import (
     get_transform_job_transform_jobs_job_id_get,
     get_transform_job_metrics_transform_jobs_job_id_metrics_get,
     cost_estimation_transform_jobs_cost_estimation_post,
+    cancel_transform_job_transform_jobs_job_id_delete,
 )
 from lightningrod._generated.models.pipeline_metrics_response import PipelineMetricsResponse
 from lightningrod.datasets.dataset import Dataset
@@ -72,6 +73,8 @@ class TransformsClient:
         max_questions: Optional[int] = None,
         max_cost_dollars: Optional[float] = None,
         name: Optional[str] = None,
+        # If True, will not stop the app if the local process dies or disconnects
+        detach: bool = False,
     ) -> Dataset:
         job: TransformJob = self.submit(config, input_dataset, max_questions, max_cost_dollars, name)
 
@@ -84,12 +87,29 @@ class TransformsClient:
             metrics = self.jobs.get_metrics(job.id)
             return metrics, job, job.status == TransformJobStatus.RUNNING
 
-        run_live_display(poll, poll_interval=15, warning_message=warning_message)
+        try:
+            run_live_display(poll, poll_interval=15, warning_message=warning_message)
+        except KeyboardInterrupt:
+            if not detach:
+                try:
+                    cancel_response = cancel_transform_job_transform_jobs_job_id_delete.sync_detailed(
+                        job_id=job.id,
+                        client=self._client,
+                    )
+                    handle_response_error(cancel_response, "cancel transform job")
+                    print(f"Transform job {job.id} cancelled.")
+                except Exception as e:
+                    print(f"Failed to cancel transform job {job.id}: {e}")
+            
+            raise KeyboardInterrupt("Transform job interrupted by user")
 
         if job.status == TransformJobStatus.FAILED:
             error_msg = job.error_message if (not isinstance(job.error_message, Unset) and job.error_message) else "Unknown error"
             display_error(error_msg, title="Job Failed", job=job)
-            raise Exception(f"Transform job {job.id} failed: {error_msg}")
+
+            # No need to raise an exception in the notebook, as we display the error using display_error
+            if not _is_notebook():
+                raise Exception(f"Transform job {job.id} failed: {error_msg}")
 
         if job.status == TransformJobStatus.COMPLETED:
             if job.output_dataset_id is None:
