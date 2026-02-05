@@ -198,6 +198,56 @@
             }
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "Transform Jobs"
+        ],
+        "summary": "Cancel Transform Job",
+        "description": "Cancel a running transform job",
+        "operationId": "cancel_transform_job_transform_jobs__job_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Transform job not found"
+          },
+          "400": {
+            "description": "Cannot cancel job with current status"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/transform-jobs/{job_id}/metrics": {
@@ -1169,6 +1219,19 @@
             "title": "File Id",
             "description": "ID of the file"
           },
+          "file_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Date",
+            "description": "The date of the document - ensure this is set for documents to be used in forward-looking question generation generation pipelines"
+          },
           "metadata": {
             "anyOf": [
               {
@@ -1417,11 +1480,6 @@
               }
             ],
             "title": "Configuration Id"
-          },
-          "use_local_rate_limiter": {
-            "type": "boolean",
-            "title": "Use Local Rate Limiter",
-            "default": false
           }
         },
         "type": "object",
