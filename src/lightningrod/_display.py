@@ -178,13 +178,13 @@ def _build_invalid_samples_error_message(original_message: str) -> Group:
     renderables.append(Text(""))
     
     renderables.append(_safe_markup("[bold]This typically happens when:[/bold]"))
-    renderables.append(_safe_markup("  • Filter criteria are too strict (e.g., confidence thresholds, quality scores)"))
-    renderables.append(_safe_markup("  • Labeling failed (e.g., questions couldn't be answered, low confidence, date validation)"))
+    renderables.append(_safe_markup("  • Filter criteria is too strict"))
+    renderables.append(_safe_markup("  • Labeling failed (e.g., questions couldn't be answered or had low confidence)"))
     renderables.append(_safe_markup("  • Seed generation found no suitable content"))
     renderables.append(Text(""))
     
     renderables.append(_safe_markup("[bold]Next steps:[/bold]"))
-    renderables.append(_safe_markup("  • Check the dataset samples to see specific failure reasons in the 'meta' field"))
+    renderables.append(_safe_markup("  • Check the dataset samples to see specific failure reasons in the 'meta.filter_reason' field"))
     renderables.append(_safe_markup("  • Adjust and retry the transform pipeline (e.g., lower confidence thresholds, relax filter criteria)"))
     renderables.append(_safe_markup("  • If the problem persists, contact support or open a GitHub issue: [link=https://github.com/lightning-rod-labs/lightningrod-python-sdk/issues]https://github.com/lightning-rod-labs/lightningrod-python-sdk/issues[/link]"))
     
