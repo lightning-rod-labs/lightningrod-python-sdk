@@ -1,4 +1,4 @@
-"""Foresight processing utilities. Self-contained prompt rendering for item dicts."""
+"""LightningRod SDK processing utilities."""
 
 from datetime import date, datetime
 from typing import Any, Callable, Literal, Optional
@@ -127,23 +127,37 @@ def _label_to_correct_answer_binary(item: dict[str, Any]) -> Optional[float]:
     return None
 
 
-def filter_records(
-    records: list[dict[str, Any]],
+def filter_samples(
+    samples: list[dict[str, Any]],
     min_horizon: int,
     max_horizon: int,
     drop_missing_context: bool = True,
 ) -> list[dict[str, Any]]:
-    """Filter by prediction horizon (resolution_date - prediction_date in days). Optionally drop records missing context."""
+    """Filter samples by time horizon and optional context.
+
+    Args:
+        samples: List of sample dicts to filter.
+        min_horizon: Minimum allowed days between prediction and resolution.
+        max_horizon: Maximum allowed days between prediction and resolution.
+        drop_missing_context: If True, drop samples with no non-empty context.
+
+    Returns:
+        Filtered list of samples.
+    """
     filtered: list[dict[str, Any]] = []
-    for r in records:
-        is_valid: bool | None = r.get("is_valid")
+    for sample in samples:
+        is_valid: bool | None = sample.get("is_valid")
         if is_valid is not True:
             continue
 
         # prediction_date: nested SDK format (question.prediction_date) or flat prediction_date
-        pred_raw: Any = (r.get("question") or {}).get("prediction_date") or r.get("prediction_date")
+        pred_raw: Any = (sample.get("question") or {}).get("prediction_date") or sample.get(
+            "prediction_date"
+        )
         # resolution_date: nested SDK format (label.resolution_date) or flat resolution_date
-        res_raw: Any = (r.get("label") or {}).get("resolution_date") or r.get("resolution_date")
+        res_raw: Any = (sample.get("label") or {}).get("resolution_date") or sample.get(
+            "resolution_date"
+        )
 
         pred_d = _parse_date(pred_raw)
         res_d = _parse_date(res_raw)
@@ -153,7 +167,7 @@ def filter_records(
         if horizon_days < min_horizon or horizon_days > max_horizon:
             continue
         if drop_missing_context:
-            contexts = _extract_contexts(r)
+            contexts = _extract_contexts(sample)
             if not contexts:
                 continue
             # Keep only if at least one context block has non-empty rendered_context
@@ -163,53 +177,63 @@ def filter_records(
             )
             if not has_nonempty_rendered:
                 continue
-        filtered.append(r)
+        filtered.append(sample)
     return filtered
 
 
 def prepare_prompts(
-    records: list[dict[str, Any]],
+    samples: list[dict[str, Any]],
     mode: Literal["user_only", "supervised"] = "user_only",
     template: Optional[str] = None,
-    prediction_date: Optional[str] = None,
     include_training_fields: bool = True,
 ) -> list[dict[str, Any]]:
-    """Add messages and training fields to each record.
+    """Attach chat prompts (and optional training metadata) to each sample.
 
-    - Adds prompt (list of message dicts). user_only: just user message; supervised: user + assistant with correct answer.
-    - Sets answer_type, answer_parser_type, reward_function_type (binary only).
-    - Sets correct_answer from label: 0 or 1 (or "0"/"1") -> 0.0 or 1.0, else None.
+    Args:
+        samples: List of sample dicts to enrich in-place.
+        mode: `"user_only"` for just a user message, `"supervised"` to also add the
+            assistant message with the correct answer when available.
+        template: Optional custom prompt template string; falls back to `DEFAULT_PROMPT_TEMPLATE`.
+        include_training_fields: If True, set `answer_type`, `answer_parser_type`,
+            and `reward_function_type` for binary training.
+
+    Returns:
+        The same list of samples, updated with `prompt` and training fields.
     """
-    today_str: str = prediction_date if prediction_date is not None else date.today().isoformat()
 
-    for d in records:
-        question = d.get("question") or {}
-        question_text: str = str(question.get("question_text") or d.get("question_text") or "")
-        contexts = _extract_contexts(d)
-        resolution_criteria: str = str(
-            question.get("resolution_criteria") or d.get("resolution_criteria") or ""
+    for sample in samples:
+        question = sample.get("question") or {}
+        question_text: str = str(
+            question.get("question_text") or sample.get("question_text") or ""
         )
+        contexts = _extract_contexts(sample)
+        resolution_criteria: str = str(
+            question.get("resolution_criteria") or sample.get("resolution_criteria") or ""
+        )
+        prediction_date = question.get("prediction_date")
         prompt_str = render_prompt(
             question_text=question_text,
             contexts=contexts,
             resolution_criteria=resolution_criteria,
-            prediction_date=today_str,
+            prediction_date=prediction_date,
             template=template,
         )
-        d["prompt"] = [{"role": "user", "content": prompt_str}]
+        sample["prompt"] = [{"role": "user", "content": prompt_str}]
 
-        d["correct_answer"] = _label_to_correct_answer_binary(d)
+        sample["correct_answer"] = _label_to_correct_answer_binary(sample)
         if include_training_fields:
-            d["answer_type"] = "binary"
-            d["answer_parser_type"] = "binary"
-            d["reward_function_type"] = "binary_log_score"
+            sample["answer_type"] = "binary"
+            sample["answer_parser_type"] = "binary"
+            sample["reward_function_type"] = "binary_log_score"
 
-        if mode == "supervised" and d["correct_answer"] is not None:
-            assistant_content: str = f"<answer>{int(d['correct_answer'])}</answer>"
-            d["prompt"] = list(d["prompt"]) + [{"role": "assistant", "content": assistant_content}]
+        if mode == "supervised" and sample["correct_answer"] is not None:
+            assistant_content: str = f"<answer>{int(sample['correct_answer'])}</answer>"
+            sample["prompt"] = list(sample["prompt"]) + [
+                {"role": "assistant", "content": assistant_content}
+            ]
 
-    records.sort(key=lambda d: _parse_date(d.get("prediction_date")) or date.min)
-    return records
+    samples.sort(key=lambda s: _parse_date(s.get("prediction_date")) or date.min)
+    return samples
 
 
 def _default_leakage_keys() -> list[Callable[[dict], str | None]]:
@@ -229,12 +253,22 @@ def temporal_split(
     leakage_keys: list[Callable[[dict], str | None]] = _default_leakage_keys(),
     filter_leaky_train: bool = True,
 ) -> tuple[list[dict], list[dict]]:
-    """Temporal train/test split with leakage prevention.
+    """Split rows into temporal train/test sets with leakage prevention.
 
-    Splits on prediction_date (sort_key). Leakage filter removes train rows where
-    ANY of the leakage_keys dates extend past the test set's earliest prediction_date.
+    Args:
+        rows: List of row dicts to split.
+        test_start: Earliest prediction date (as a string) to include in the test
+            set; everything earlier goes to train. Mutually exclusive with `test_fraction`.
+        test_fraction: Fraction of the data (by time order) to put into the test
+            set; mutually exclusive with `test_start`.
+        sort_key: Function that returns the prediction date string for each row.
+        leakage_keys: List of functions that extract date strings used to detect
+            information leakage.
+        filter_leaky_train: If True, drop train rows whose leakage dates extend
+            into the test period.
 
-    Provide exactly one of test_start or test_fraction.
+    Returns:
+        A `(train, test)` tuple of row lists.
     """
     if (test_start is None) == (test_fraction is None):
         raise ValueError("Provide exactly one of test_start or test_fraction")
@@ -267,9 +301,6 @@ def temporal_split(
 
 def _flat_key(parent_key: str, child_key: str, sep: str) -> str:
     """Build flattened key, avoiding duplicate prefixes."""
-    # Custom remappings for common foresight schemas.
-    # - meta.sample_id -> sample_id
-    # - label.label -> label
     if parent_key == "meta" and child_key == "sample_id":
         return "sample_id"
     if parent_key == "label" and child_key == "label":
@@ -284,7 +315,7 @@ def _flat_key(parent_key: str, child_key: str, sep: str) -> str:
     return child_key
 
 
-def _flatten_record_dict(d: dict[str, Any], parent_key: str = "", sep: str = "_") -> dict[str, Any]:
+def _flatten_sample_dict(d: dict[str, Any], parent_key: str = "", sep: str = "_") -> dict[str, Any]:
     """Recursively flatten nested dicts and lists of dicts."""
     items: list[tuple[str, Any]] = []
     for k, v in d.items():
@@ -294,28 +325,41 @@ def _flatten_record_dict(d: dict[str, Any], parent_key: str = "", sep: str = "_"
         if k in {"prompt", "context"}:
             items.append((new_key, v))
         elif isinstance(v, dict) and v:
-            items.extend(_flatten_record_dict(v, new_key, sep).items())
+            items.extend(_flatten_sample_dict(v, new_key, sep).items())
         elif isinstance(v, list) and v and isinstance(v[0], dict):
             for i, item in enumerate(v):
-                items.extend(_flatten_record_dict(item, f"{new_key}{sep}{i}", sep).items())
+                items.extend(_flatten_sample_dict(item, f"{new_key}{sep}{i}", sep).items())
         else:
             items.append((new_key, v))
     return dict(items)
 
 
-def flatten_records(records: list[dict[str, Any]], sep: str = "_") -> list[dict[str, Any]]:
-    """Flatten nested foresight records into a flat list of dicts."""
-    return [_flatten_record_dict(r, sep=sep) for r in records]
+def flatten_samples(samples: list[dict[str, Any]], sep: str = "_") -> list[dict[str, Any]]:
+    """Flatten nested samples into flat dicts.
+
+    Args:
+        samples: List of nested sample dicts.
+        sep: String used to join nested field names in the flattened keys.
+
+    Returns:
+        List of flattened sample dicts.
+    """
+    return [_flatten_sample_dict(sample, sep=sep) for sample in samples]
 
 
 def deduplicate_rows(
     rows: list[dict[str, Any]],
     key_fn: Callable[[dict[str, Any]], tuple[Any, ...]] | None = None,
 ) -> list[dict[str, Any]]:
-    """Deduplicate rows by key function.
+    """Remove duplicate rows based on a key function.
 
-    Default key: (question_text, resolution_date) from SDK format.
+    Args:
+        rows: List of row dicts to deduplicate.
+        key_fn: Optional function that turns a row into a hashable key; by default
+            uses `(question_text, resolution_date)` from the SDK-style schema.
 
+    Returns:
+        List of rows with duplicates removed (first occurrence kept).
     """
     def _default_key_fn(row: dict[str, Any]) -> tuple[Any, ...]:
         question: dict[str, Any] = row.get("question") or {}

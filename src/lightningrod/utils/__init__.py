@@ -1,15 +1,15 @@
 from .dataset_utils import (
-    filter_records,
+    filter_samples,
     prepare_prompts,
     temporal_split,
-    flatten_records,
+    flatten_samples,
     deduplicate_rows,
 )
 
 __all__ = [
-    "filter_records",
+    "filter_samples",
     "prepare_prompts",
     "temporal_split",
-    "flatten_records",
+    "flatten_samples",
     "deduplicate_rows",
 ]
