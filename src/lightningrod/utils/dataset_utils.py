@@ -1,5 +1,6 @@
 """LightningRod SDK processing utilities."""
 
+import random
 from datetime import date, datetime
 from typing import Any, Callable, Literal, Optional
 
@@ -24,19 +25,6 @@ Example Outputs. These are just examples to illustrate the format and should not
 <answer>0.92</answer>
 <answer>0.53</answer>
 <answer>0.05</answer>"""
-
-
-DEFAULT_PROMPT_TEMPLATE = """You will make a prediction for the following question.
-
-QUESTION: {question_text}
-
-TODAY'S DATE: {prediction_date}
-
-RESOLUTION CRITERIA: {resolution_criteria}
-
-CONTEXT: {rendered_context}
-
-ANSWER FORMAT: {binary_answer_format}"""
 
 
 def _render_contexts(contexts: list[dict[str, Any]]) -> str:
@@ -72,23 +60,24 @@ def render_prompt(
     contexts: Optional[list[dict[str, Any]]] = None,
     resolution_criteria: str = "",
     prediction_date: str = "",
-    template: Optional[str] = None,
 ) -> str:
     """Build a prompt from question, context, resolution criteria, and prediction date.
 
-    If template is given it may use placeholders: {question_text}, {rendered_context},
-    {resolution_criteria}, {prediction_date}. Omitted sections are passed as empty string.
-    If template is None, uses DEFAULT_PROMPT_TEMPLATE.
+    Builds section-by-section; omits any section whose value is missing or blank.
     """
-    rendered_context = _render_contexts(contexts) if contexts else ""
-    t = template if template is not None else DEFAULT_PROMPT_TEMPLATE
-    return t.format(
-        question_text=question_text,
-        rendered_context=rendered_context,
-        resolution_criteria=resolution_criteria,
-        prediction_date=prediction_date,
-        binary_answer_format=binary_answer_format,
-    )
+    rendered_context: str = _render_contexts(contexts) if contexts else ""
+    sections: list[str] = ["You will make a prediction for the following question.", ""]
+    if str(question_text or "").strip():
+        sections.append(f"QUESTION: {question_text.strip()}")
+    if str(prediction_date or "").strip():
+        sections.append(f"TODAY'S DATE: {prediction_date.strip()}")
+    if str(resolution_criteria or "").strip():
+        sections.append(f"RESOLUTION CRITERIA: {resolution_criteria.strip()}")
+    if rendered_context.strip():
+        sections.append(f"CONTEXT: {rendered_context}")
+    sections.append("")
+    sections.append(f"ANSWER FORMAT: {binary_answer_format}")
+    return "\n".join(sections)
 
 
 def _extract_contexts(item: dict[str, Any]) -> Optional[list[dict[str, Any]]]:
@@ -129,16 +118,16 @@ def _label_to_correct_answer_binary(item: dict[str, Any]) -> Optional[float]:
 
 def filter_samples(
     samples: list[dict[str, Any]],
-    min_horizon: int,
-    max_horizon: int,
+    min_horizon: Optional[int] = None,
+    max_horizon: Optional[int] = None,
     drop_missing_context: bool = True,
 ) -> list[dict[str, Any]]:
     """Filter samples by time horizon and optional context.
 
     Args:
         samples: List of sample dicts to filter.
-        min_horizon: Minimum allowed days between prediction and resolution.
-        max_horizon: Maximum allowed days between prediction and resolution.
+        min_horizon: Minimum allowed days between prediction and resolution; omit to skip filter.
+        max_horizon: Maximum allowed days between prediction and resolution; omit to skip filter.
         drop_missing_context: If True, drop samples with no non-empty context.
 
     Returns:
@@ -161,11 +150,14 @@ def filter_samples(
 
         pred_d = _parse_date(pred_raw)
         res_d = _parse_date(res_raw)
-        if pred_d is None or res_d is None:
-            continue
-        horizon_days: int = (res_d - pred_d).days
-        if horizon_days < min_horizon or horizon_days > max_horizon:
-            continue
+        if min_horizon is not None or max_horizon is not None:
+            if pred_d is None or res_d is None:
+                continue
+            horizon_days: int = (res_d - pred_d).days
+            if min_horizon is not None and horizon_days < min_horizon:
+                continue
+            if max_horizon is not None and horizon_days > max_horizon:
+                continue
         if drop_missing_context:
             contexts = _extract_contexts(sample)
             if not contexts:
@@ -184,7 +176,6 @@ def filter_samples(
 def prepare_prompts(
     samples: list[dict[str, Any]],
     mode: Literal["user_only", "supervised"] = "user_only",
-    template: Optional[str] = None,
     include_training_fields: bool = True,
 ) -> list[dict[str, Any]]:
     """Attach chat prompts (and optional training metadata) to each sample.
@@ -193,7 +184,6 @@ def prepare_prompts(
         samples: List of sample dicts to enrich in-place.
         mode: `"user_only"` for just a user message, `"supervised"` to also add the
             assistant message with the correct answer when available.
-        template: Optional custom prompt template string; falls back to `DEFAULT_PROMPT_TEMPLATE`.
         include_training_fields: If True, set `answer_type`, `answer_parser_type`,
             and `reward_function_type` for binary training.
 
@@ -210,13 +200,12 @@ def prepare_prompts(
         resolution_criteria: str = str(
             question.get("resolution_criteria") or sample.get("resolution_criteria") or ""
         )
-        prediction_date = question.get("prediction_date")
+        prediction_date = question.get("prediction_date") or ""
         prompt_str = render_prompt(
             question_text=question_text,
             contexts=contexts,
             resolution_criteria=resolution_criteria,
             prediction_date=prediction_date,
-            template=template,
         )
         sample["prompt"] = [{"role": "user", "content": prompt_str}]
 
@@ -244,58 +233,84 @@ def _default_leakage_keys() -> list[Callable[[dict], str | None]]:
     ]
 
 
-def temporal_split(
-    rows: list[dict],
+def test_train_split(
+    samples: list[dict],
     *,
+    temporal_split: bool = True,
     test_start: str | None = None,
     test_fraction: float | None = None,
+    seed: int | None = None,
     sort_key: Callable[[dict], str] = lambda r: r["question"]["prediction_date"],
     leakage_keys: list[Callable[[dict], str | None]] = _default_leakage_keys(),
     filter_leaky_train: bool = True,
 ) -> tuple[list[dict], list[dict]]:
-    """Split rows into temporal train/test sets with leakage prevention.
+    """Split samples into train/test sets. Temporal (time-ordered) or random.
 
     Args:
-        rows: List of row dicts to split.
+        samples: List of row dicts to split.
+        temporal_split: If True, split by time (test = latest fraction or after test_start).
+            If False, shuffle and split by test_fraction (random split).
         test_start: Earliest prediction date (as a string) to include in the test
-            set; everything earlier goes to train. Mutually exclusive with `test_fraction`.
-        test_fraction: Fraction of the data (by time order) to put into the test
-            set; mutually exclusive with `test_start`.
+            set; everything earlier goes to train. Only used when temporal_split=True.
+            Mutually exclusive with test_fraction.
+        test_fraction: Fraction of the data to put into the test set. When temporal_split=True,
+            applied by time order; when temporal_split=False, applied after shuffling.
+            Required when temporal_split=False.
+        seed: Random seed for reproducible split when temporal_split=False; ignored when
+            temporal_split=True.
         sort_key: Function that returns the prediction date string for each row.
+            Only used when temporal_split=True.
         leakage_keys: List of functions that extract date strings used to detect
-            information leakage.
-        filter_leaky_train: If True, drop train rows whose leakage dates extend
-            into the test period.
+            information leakage. Only used when temporal_split=True.
+        filter_leaky_train: If True (and temporal_split=True), drop train samples whose
+            leakage dates extend into the test period.
 
     Returns:
         A `(train, test)` tuple of row lists.
     """
-    if (test_start is None) == (test_fraction is None):
-        raise ValueError("Provide exactly one of test_start or test_fraction")
-
-    valid_rows = [r for r in rows if sort_key(r) is not None]
-    sorted_rows = sorted(valid_rows, key=sort_key)
-
-    if test_fraction is not None:
-        split_idx = int(len(sorted_rows) * (1 - test_fraction))
-        train, test = sorted_rows[:split_idx], sorted_rows[split_idx:]
+    if temporal_split:
+        if (test_start is None) == (test_fraction is None):
+            raise ValueError("Provide exactly one of test_start or test_fraction")
     else:
-        assert test_start is not None
-        train = [r for r in sorted_rows if sort_key(r) < test_start]
-        test = [r for r in sorted_rows if sort_key(r) >= test_start]
+        if test_fraction is None:
+            raise ValueError("test_fraction is required when temporal_split=False")
+        if test_start is not None:
+            raise ValueError("test_start is only valid when temporal_split=True")
 
-    if filter_leaky_train and test:
-        test_cutoff = sort_key(test[0])
+    if temporal_split:
+        valid_samples = [r for r in samples if sort_key(r) is not None]
+        sorted_samples = sorted(valid_samples, key=sort_key)
 
-        def is_safe(row: dict) -> bool:
-            for key_fn in leakage_keys:
-                date_val = key_fn(row)
-                if date_val is not None and date_val >= test_cutoff:
-                    return False
-            return True
+        if test_fraction is not None:
+            split_idx = int(len(sorted_samples) * (1 - test_fraction))
+            train, test = sorted_samples[:split_idx], sorted_samples[split_idx:]
+        else:
+            assert test_start is not None
+            train = [r for r in sorted_samples if sort_key(r) < test_start]
+            test = [r for r in sorted_samples if sort_key(r) >= test_start]
 
-        train = [r for r in train if is_safe(r)]
+        if filter_leaky_train and test:
+            test_cutoff = sort_key(test[0])
 
+            def is_safe(row: dict) -> bool:
+                for key_fn in leakage_keys:
+                    date_val = key_fn(row)
+                    if date_val is not None and date_val >= test_cutoff:
+                        return False
+                return True
+
+            train = [r for r in train if is_safe(r)]
+
+        return train, test
+
+    # Random split (temporal_split=False)
+    shuffled = list(samples)
+    rng = random.Random(seed) if seed is not None else random
+    rng.shuffle(shuffled)
+    split_idx = int(len(shuffled) * (1 - test_fraction))
+    
+    train = shuffled[:split_idx]
+    test = shuffled[split_idx:]
     return train, test
 
 
@@ -347,19 +362,19 @@ def flatten_samples(samples: list[dict[str, Any]], sep: str = "_") -> list[dict[
     return [_flatten_sample_dict(sample, sep=sep) for sample in samples]
 
 
-def deduplicate_rows(
-    rows: list[dict[str, Any]],
+def deduplicate_samples(
+    samples: list[dict[str, Any]],
     key_fn: Callable[[dict[str, Any]], tuple[Any, ...]] | None = None,
 ) -> list[dict[str, Any]]:
-    """Remove duplicate rows based on a key function.
+    """Remove duplicate samples based on a key function.
 
     Args:
-        rows: List of row dicts to deduplicate.
+        samples: List of row dicts to deduplicate.
         key_fn: Optional function that turns a row into a hashable key; by default
             uses `(question_text, resolution_date)` from the SDK-style schema.
 
     Returns:
-        List of rows with duplicates removed (first occurrence kept).
+        List of samples with duplicates removed (first occurrence kept).
     """
     def _default_key_fn(row: dict[str, Any]) -> tuple[Any, ...]:
         question: dict[str, Any] = row.get("question") or {}
@@ -369,7 +384,7 @@ def deduplicate_rows(
     key_fn_local: Callable[[dict[str, Any]], tuple[Any, ...]] = key_fn or _default_key_fn
     seen: set[tuple[Any, ...]] = set()
     result: list[dict[str, Any]] = []
-    for row in rows:
+    for row in samples:
         key = key_fn_local(row)
         if key not in seen:
             seen.add(key)
