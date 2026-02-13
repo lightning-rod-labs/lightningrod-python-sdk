@@ -22,8 +22,12 @@ from .event_usage_summary import EventUsageSummary
 from .file_set import FileSet
 from .file_set_file import FileSetFile
 from .file_set_file_metadata_type_0 import FileSetFileMetadataType0
+from .file_set_file_status import FileSetFileStatus
+from .file_set_metadata_schema import FileSetMetadataSchema
+from .file_set_metadata_schema_input import FileSetMetadataSchemaInput
 from .file_set_query_seed_generator import FileSetQuerySeedGenerator
 from .file_set_seed_generator import FileSetSeedGenerator
+from .file_status_counts_response import FileStatusCountsResponse
 from .filter_criteria import FilterCriteria
 from .forward_looking_question import ForwardLookingQuestion
 from .forward_looking_question_generator import ForwardLookingQuestionGenerator
@@ -35,6 +39,9 @@ from .label import Label
 from .list_file_set_files_response import ListFileSetFilesResponse
 from .list_file_sets_response import ListFileSetsResponse
 from .llm_model_usage_summary import LLMModelUsageSummary
+from .metadata_field_definition import MetadataFieldDefinition
+from .metadata_field_definition_input import MetadataFieldDefinitionInput
+from .metadata_field_type import MetadataFieldType
 from .mock_transform_config import MockTransformConfig
 from .mock_transform_config_metadata_additions import MockTransformConfigMetadataAdditions
 from .model_config import ModelConfig
@@ -51,6 +58,8 @@ from .question_pipeline import QuestionPipeline
 from .question_renderer import QuestionRenderer
 from .rag_context import RAGContext
 from .response_message import ResponseMessage
+from .retry_failed_files_request import RetryFailedFilesRequest
+from .retry_failed_files_response import RetryFailedFilesResponse
 from .rollout import Rollout
 from .rollout_generator import RolloutGenerator
 from .rollout_parsed_output_type_0 import RolloutParsedOutputType0
@@ -95,8 +104,12 @@ __all__ = (
     "FileSet",
     "FileSetFile",
     "FileSetFileMetadataType0",
+    "FileSetFileStatus",
+    "FileSetMetadataSchema",
+    "FileSetMetadataSchemaInput",
     "FileSetQuerySeedGenerator",
     "FileSetSeedGenerator",
+    "FileStatusCountsResponse",
     "FilterCriteria",
     "ForwardLookingQuestion",
     "ForwardLookingQuestionGenerator",
@@ -108,6 +121,9 @@ __all__ = (
     "ListFileSetFilesResponse",
     "ListFileSetsResponse",
     "LLMModelUsageSummary",
+    "MetadataFieldDefinition",
+    "MetadataFieldDefinitionInput",
+    "MetadataFieldType",
     "MockTransformConfig",
     "MockTransformConfigMetadataAdditions",
     "ModelConfig",
@@ -124,6 +140,8 @@ __all__ = (
     "QuestionRenderer",
     "RAGContext",
     "ResponseMessage",
+    "RetryFailedFilesRequest",
+    "RetryFailedFilesResponse",
     "Rollout",
     "RolloutGenerator",
     "RolloutParsedOutputType0",

@@ -24,6 +24,8 @@ class NewsContextGenerator:
         min_articles (int | Unset): Minimum number of articles to ensure Default: 6.
         time_delta_days (int | Unset): Number of days to look back for news articles Default: 30.
         enable_relevance_ranking (bool | Unset): Whether to perform LLM-based relevance ranking Default: True.
+        enable_stage_cache (bool | Unset): Cache entire transform output to skip all sub-operations on repeated
+            questions Default: True.
     """
 
     config_type: Literal["NEWS_CONTEXT_GENERATOR"] | Unset = "NEWS_CONTEXT_GENERATOR"
@@ -34,6 +36,7 @@ class NewsContextGenerator:
     min_articles: int | Unset = 6
     time_delta_days: int | Unset = 30
     enable_relevance_ranking: bool | Unset = True
+    enable_stage_cache: bool | Unset = True
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -52,6 +55,8 @@ class NewsContextGenerator:
         time_delta_days = self.time_delta_days
 
         enable_relevance_ranking = self.enable_relevance_ranking
+
+        enable_stage_cache = self.enable_stage_cache
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -72,6 +77,8 @@ class NewsContextGenerator:
             field_dict["time_delta_days"] = time_delta_days
         if enable_relevance_ranking is not UNSET:
             field_dict["enable_relevance_ranking"] = enable_relevance_ranking
+        if enable_stage_cache is not UNSET:
+            field_dict["enable_stage_cache"] = enable_stage_cache
 
         return field_dict
 
@@ -96,6 +103,8 @@ class NewsContextGenerator:
 
         enable_relevance_ranking = d.pop("enable_relevance_ranking", UNSET)
 
+        enable_stage_cache = d.pop("enable_stage_cache", UNSET)
+
         news_context_generator = cls(
             config_type=config_type,
             num_search_queries=num_search_queries,
@@ -105,6 +114,7 @@ class NewsContextGenerator:
             min_articles=min_articles,
             time_delta_days=time_delta_days,
             enable_relevance_ranking=enable_relevance_ranking,
+            enable_stage_cache=enable_stage_cache,
         )
 
         news_context_generator.additional_properties = d
