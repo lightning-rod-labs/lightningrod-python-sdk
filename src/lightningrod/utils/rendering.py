@@ -10,7 +10,7 @@ from lightningrod._generated.models.forward_looking_question import ForwardLooki
 from lightningrod._generated.models.news_context import NewsContext
 from lightningrod._generated.models.rag_context import RAGContext
 from lightningrod._generated.models.sample import Sample
-from lightningrod._generated.types import UNSET, Unset
+from lightningrod._generated.types import Unset
 
 
 # Default answer format instructions for each answer type

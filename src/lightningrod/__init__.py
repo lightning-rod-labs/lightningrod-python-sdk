@@ -7,6 +7,7 @@ AI-powered forecasting dataset generation platform.
 from lightningrod.client import LightningRod
 from lightningrod.datasets.dataset import Dataset
 from lightningrod import preprocessing, utils
+from lightningrod.utils.rendering import render_sample
 from lightningrod._generated.models import (
     AnswerType,
     AnswerTypeEnum,
@@ -59,6 +60,7 @@ __all__ = [
     "QuestionGenerator",
     "QuestionPipeline",
     "QuestionRenderer",
+    "render_sample",
     "Sample",
     "SampleMeta",
     "Seed",
