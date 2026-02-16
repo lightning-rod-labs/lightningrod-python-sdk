@@ -12,35 +12,6 @@ from lightningrod._generated.models.rag_context import RAGContext
 from lightningrod._generated.models.sample import Sample
 from lightningrod._generated.types import Unset
 
-
-# Default answer format instructions for each answer type
-_DEFAULT_ANSWER_FORMATS: Dict[AnswerTypeEnum, str] = {
-    AnswerTypeEnum.BINARY: (
-        "This is a binary yes/no question. You are estimating the probability that the answer is 'Yes'. "
-        "Provide your confidence as a value between 0 (definitely No) and 1 (definitely Yes). "
-        "Provide your probability estimate for Yes as a decimal between 0 and 1. "
-        r"Format your answer as: \boxed{0.75}"
-    ),
-    AnswerTypeEnum.MULTIPLE_CHOICE: (
-        "This is a multiple choice question with answer options labeled with letters starting from A. "
-        "The list of options will be provided in the question. "
-        "You are estimating the probability for each option being the correct answer. "
-        "Provide your confidence for each option as a value between 0 and 1, where the probabilities must sum to 1. "
-        "Provide your probability estimate for each option as a decimal between 0 and 1. "
-        r"Format your answer as: \boxed{A: 0.3, B: 0.4, C: 0.2, D: 0.1}"
-    ),
-    AnswerTypeEnum.CONTINUOUS: (
-        "This question expects a numeric value as the answer. "
-        "Provide your best estimate as a single number. Include units if specified in the question. "
-        r"Provide your final answer wrapped in \boxed{}. Example: \boxed{42.5}"
-    ),
-    AnswerTypeEnum.FREE_RESPONSE: (
-        "This question expects a free-form text response. "
-        "Provide an answer that directly addresses what the question is asking. "
-        r"Provide your final answer wrapped in \boxed{}. Example: \boxed{The company announced a new product line.}"
-    ),
-}
-
 # Headers and descriptions for each context type
 _CONTEXT_TYPE_HEADERS: Dict[str, str] = {
     "NEWS_CONTEXT": "NEWS:",
@@ -51,13 +22,6 @@ _CONTEXT_TYPE_DESCRIPTIONS: Dict[str, str] = {
     "NEWS_CONTEXT": "Recent news articles relevant to this question:",
     "RAG_CONTEXT": "Retrieved documents relevant to this question:",
 }
-
-
-def _get_answer_format_instruction(answer_type: AnswerType) -> str:
-    """Get the answer format instruction, falling back to defaults."""
-    if not isinstance(answer_type.answer_format_instruction, Unset) and answer_type.answer_format_instruction is not None:
-        return answer_type.answer_format_instruction
-    return _DEFAULT_ANSWER_FORMATS.get(answer_type.answer_type, "")
 
 
 def _get_context_type(ctx: Union[NewsContext, RAGContext]) -> str:
@@ -120,26 +84,46 @@ def render_sample(
     template_values["context"] = rendered_context
 
     # Answer instructions
-    rendered_answer_instructions = _get_answer_format_instruction(answer_type) if answer_type else ""
-    template_values["answer_instructions"] = rendered_answer_instructions
+    answer_instructions = answer_type.answer_format_instruction if answer_type else ""
+    if isinstance(answer_instructions, Unset) or answer_instructions is None:
+        answer_instructions = ""
+    template_values["answer_instructions"] = answer_instructions
 
-    # Close date (only for ForwardLookingQuestion)
+    # Close date and other ForwardLookingQuestion fields
     date_close: Optional[str] = None
+    todays_date: Optional[str] = None
+    resolution_criteria: Optional[str] = None
     if question and isinstance(question, ForwardLookingQuestion):
         date_close = question.date_close.strftime("%Y-%m-%d")
         template_values["date_close"] = date_close
+        todays_date = question.event_date.strftime("%Y-%m-%d")
+        template_values["question_date"] = todays_date
+        resolution_criteria = question.resolution_criteria
+        template_values["resolution_criteria"] = resolution_criteria
+
+    if not isinstance(sample.seed, Unset):
+        template_values["seed"] = sample.seed
+    if not isinstance(sample.question, Unset):
+        template_values["question"] = sample.question
+    if not isinstance(sample.label, Unset):
+        template_values["label"] = sample.label
+    if not isinstance(sample.meta, Unset):
+        template_values["meta"] = sample.meta
 
     # Use provided template
     if template is not None:
         return template.format(**template_values)
 
-    # Dynamic template building
     sections: List[str] = ["QUESTION:\n{question_text}"]
+    if resolution_criteria:
+        sections.append("RESOLUTION CRITERIA:\n{resolution_criteria}")
     if rendered_context.strip():
         sections.append("CONTEXT:\n{context}")
-    if rendered_answer_instructions.strip():
+    if answer_instructions.strip():
         sections.append("ANSWER FORMAT:\n{answer_instructions}")
     if date_close:
         sections.append("CLOSE DATE:\n{date_close}")
+    if todays_date:
+        sections.append("TODAY'S DATE:\n{question_date}")
 
     return "\n\n".join(sections).format(**template_values)
