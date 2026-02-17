@@ -1,12 +1,12 @@
 """Contains all the data models used in inputs/outputs"""
 
-from .answer_type import AnswerType
-from .answer_type_enum import AnswerTypeEnum
 from .balance_response import BalanceResponse
+from .binary_answer_type import BinaryAnswerType
 from .chat_completion_request import ChatCompletionRequest
 from .chat_completion_response import ChatCompletionResponse
 from .chat_message import ChatMessage
 from .choice import Choice
+from .continuous_answer_type import ContinuousAnswerType
 from .create_dataset_response import CreateDatasetResponse
 from .create_file_set_file_request import CreateFileSetFileRequest
 from .create_file_set_file_request_metadata_type_0 import CreateFileSetFileRequestMetadataType0
@@ -31,6 +31,7 @@ from .file_status_counts_response import FileStatusCountsResponse
 from .filter_criteria import FilterCriteria
 from .forward_looking_question import ForwardLookingQuestion
 from .forward_looking_question_generator import ForwardLookingQuestionGenerator
+from .free_response_answer_type import FreeResponseAnswerType
 from .gdelt_seed_generator import GdeltSeedGenerator
 from .http_validation_error import HTTPValidationError
 from .job_usage import JobUsage
@@ -46,6 +47,7 @@ from .mock_transform_config import MockTransformConfig
 from .mock_transform_config_metadata_additions import MockTransformConfigMetadataAdditions
 from .model_config import ModelConfig
 from .model_source_type import ModelSourceType
+from .multiple_choice_answer_type import MultipleChoiceAnswerType
 from .news_context import NewsContext
 from .news_context_generator import NewsContextGenerator
 from .news_seed_generator import NewsSeedGenerator
@@ -82,13 +84,13 @@ from .validation_error import ValidationError
 from .web_search_labeler import WebSearchLabeler
 
 __all__ = (
-    "AnswerType",
-    "AnswerTypeEnum",
     "BalanceResponse",
+    "BinaryAnswerType",
     "ChatCompletionRequest",
     "ChatCompletionResponse",
     "ChatMessage",
     "Choice",
+    "ContinuousAnswerType",
     "CreateDatasetResponse",
     "CreateFileSetFileRequest",
     "CreateFileSetFileRequestMetadataType0",
@@ -113,6 +115,7 @@ __all__ = (
     "FilterCriteria",
     "ForwardLookingQuestion",
     "ForwardLookingQuestionGenerator",
+    "FreeResponseAnswerType",
     "GdeltSeedGenerator",
     "HTTPValidationError",
     "JobUsage",
@@ -128,6 +131,7 @@ __all__ = (
     "MockTransformConfigMetadataAdditions",
     "ModelConfig",
     "ModelSourceType",
+    "MultipleChoiceAnswerType",
     "NewsContext",
     "NewsContextGenerator",
     "NewsSeedGenerator",

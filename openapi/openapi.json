@@ -1011,65 +1011,6 @@
   },
   "components": {
     "schemas": {
-      "AnswerType": {
-        "properties": {
-          "answer_type": {
-            "$ref": "#/components/schemas/AnswerTypeEnum",
-            "description": "The type of answer expected for this question"
-          },
-          "answer_format_instruction": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Answer Format Instruction",
-            "description": "Instructions describing how the answer should be formatted and given. If not set, uses default based on answer_type."
-          },
-          "labeler_instruction": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Labeler Instruction",
-            "description": "Custom instructions for the labeler. If not set, uses default based on answer_type."
-          },
-          "question_generation_instruction": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Question Generation Instruction",
-            "description": "Custom instructions for generating questions of this type. If not set, uses default based on answer_type."
-          }
-        },
-        "type": "object",
-        "required": [
-          "answer_type"
-        ],
-        "title": "AnswerType"
-      },
-      "AnswerTypeEnum": {
-        "type": "string",
-        "enum": [
-          "BINARY",
-          "MULTIPLE_CHOICE",
-          "CONTINUOUS",
-          "FREE_RESPONSE"
-        ],
-        "title": "AnswerTypeEnum"
-      },
       "BalanceResponse": {
         "properties": {
           "balance_dollars": {
@@ -1082,6 +1023,36 @@
           "balance_dollars"
         ],
         "title": "BalanceResponse"
+      },
+      "BinaryAnswerType": {
+        "properties": {
+          "answer_type": {
+            "type": "string",
+            "const": "BINARY",
+            "title": "Answer Type",
+            "default": "BINARY"
+          },
+          "answer_format_instruction": {
+            "type": "string",
+            "title": "Answer Format Instruction",
+            "description": "Instructions describing how the answer should be formatted and given.",
+            "default": "This is a binary yes/no question. You are estimating the probability that the answer is 'Yes'. Provide your confidence as a value between 0 (definitely No) and 1 (definitely Yes). Provide your probability estimate for Yes as a decimal between 0 and 1. Format your answer as: \\boxed{0.75}"
+          },
+          "labeler_instruction": {
+            "type": "string",
+            "title": "Labeler Instruction",
+            "description": "Instructions for the labeler.",
+            "default": "The answer should be ONLY '1', '0', or 'Undetermined'. '1' means yes, '0' means no, and 'Undetermined' means the answer is not clear. Do not include any other text or explanation."
+          },
+          "question_generation_instruction": {
+            "type": "string",
+            "title": "Question Generation Instruction",
+            "description": "Instructions for generating questions of this type.",
+            "default": "Generate questions that can be answered with Yes or No. Frame the question so it has exactly two possible outcomes: Yes or No. The question should start with words like 'Will', 'Is', 'Does', 'Has', 'Can', etc. A clear and unambiguous yes/no question, based on the provided seed_text."
+          }
+        },
+        "type": "object",
+        "title": "BinaryAnswerType"
       },
       "ChatCompletionRequest": {
         "properties": {
@@ -1306,6 +1277,36 @@
           "message"
         ],
         "title": "Choice"
+      },
+      "ContinuousAnswerType": {
+        "properties": {
+          "answer_type": {
+            "type": "string",
+            "const": "CONTINUOUS",
+            "title": "Answer Type",
+            "default": "CONTINUOUS"
+          },
+          "answer_format_instruction": {
+            "type": "string",
+            "title": "Answer Format Instruction",
+            "description": "Instructions describing how the answer should be formatted and given.",
+            "default": "This question expects a numeric value as the answer. Provide your best estimate as a single number. Include units if specified in the question. Provide your final answer wrapped in \\boxed{}. Example: \\boxed{42.5}"
+          },
+          "labeler_instruction": {
+            "type": "string",
+            "title": "Labeler Instruction",
+            "description": "Instructions for the labeler.",
+            "default": "The answer should be ONLY a single exact numeric value, not a range. For example: '42.5' or '1000', not '40-45' or 'between 900 and 1100', or 'Undetermined'. Do not include any other text or explanation."
+          },
+          "question_generation_instruction": {
+            "type": "string",
+            "title": "Question Generation Instruction",
+            "description": "Instructions for generating questions of this type.",
+            "default": "Generate questions that expect a numeric value as the answer. Specify the units if applicable (e.g., dollars, percent, count). A clear and unambiguous question, based on the provided seed_text, that expects a numeric value as the answer."
+          }
+        },
+        "type": "object",
+        "title": "ContinuousAnswerType"
       },
       "CreateDatasetResponse": {
         "properties": {
@@ -2272,17 +2273,70 @@
           "answer_type": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AnswerType"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BinaryAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MultipleChoiceAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ContinuousAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FreeResponseAnswerType"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "answer_type",
+                  "mapping": {
+                    "BINARY": "#/components/schemas/BinaryAnswerType",
+                    "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
+                    "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
+                  }
+                }
               },
               {
                 "type": "null"
               }
             ],
+            "title": "Answer Type",
             "description": "The type of answer expected for generated questions"
           }
         },
         "type": "object",
         "title": "ForwardLookingQuestionGenerator"
+      },
+      "FreeResponseAnswerType": {
+        "properties": {
+          "answer_type": {
+            "type": "string",
+            "const": "FREE_RESPONSE",
+            "title": "Answer Type",
+            "default": "FREE_RESPONSE"
+          },
+          "answer_format_instruction": {
+            "type": "string",
+            "title": "Answer Format Instruction",
+            "description": "Instructions describing how the answer should be formatted and given.",
+            "default": "This question expects a free-form text response. Provide an answer that directly addresses what the question is asking. Provide your final answer wrapped in \\boxed{}. Example: \\boxed{The company announced a new product line.}"
+          },
+          "labeler_instruction": {
+            "type": "string",
+            "title": "Labeler Instruction",
+            "description": "Instructions for the labeler.",
+            "default": "Respond with the correct answer as a text description."
+          },
+          "question_generation_instruction": {
+            "type": "string",
+            "title": "Question Generation Instruction",
+            "description": "Instructions for generating questions of this type.",
+            "default": "Generate questions that expect a free-form text response. A clear and unambiguous question, based on the provided seed_text, that expects a free-form text response."
+          }
+        },
+        "type": "object",
+        "title": "FreeResponseAnswerType"
       },
       "GdeltSeedGenerator": {
         "properties": {
@@ -2443,6 +2497,17 @@
           "label_confidence": {
             "type": "number",
             "title": "Label Confidence"
+          },
+          "answer_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer Type"
           },
           "resolution_date": {
             "anyOf": [
@@ -2930,6 +2995,36 @@
         ],
         "title": "ModelSourceType"
       },
+      "MultipleChoiceAnswerType": {
+        "properties": {
+          "answer_type": {
+            "type": "string",
+            "const": "MULTIPLE_CHOICE",
+            "title": "Answer Type",
+            "default": "MULTIPLE_CHOICE"
+          },
+          "answer_format_instruction": {
+            "type": "string",
+            "title": "Answer Format Instruction",
+            "description": "Instructions describing how the answer should be formatted and given.",
+            "default": "This is a multiple choice question with answer options labeled with letters starting from A. The list of options will be provided in the question. You are estimating the probability for each option being the correct answer. Provide your confidence for each option as a value between 0 and 1, where the probabilities must sum to 1. Provide your probability estimate for each option as a decimal between 0 and 1. Format your answer as: \\boxed{A: 0.3, B: 0.4, C: 0.2, D: 0.1}"
+          },
+          "labeler_instruction": {
+            "type": "string",
+            "title": "Labeler Instruction",
+            "description": "Instructions for the labeler.",
+            "default": "The answer should be ONLY one of the following options: 'A', 'B', 'C', or 'D', or 'Undetermined'. Do not include any other text or explanation."
+          },
+          "question_generation_instruction": {
+            "type": "string",
+            "title": "Question Generation Instruction",
+            "description": "Instructions for generating questions of this type.",
+            "default": "Generate questions with multiple choice options (up to 10). Format the options on separate lines after the question:\nA) First option\nB) Second option\nC) Third option\n... and so on\n\nEach option should be distinct and mutually exclusive. A clear and unambiguous multiple-choice question, based on the provided seed_text. Include the options in the question text."
+          }
+        },
+        "type": "object",
+        "title": "MultipleChoiceAnswerType"
+      },
       "NewsContext": {
         "properties": {
           "context_type": {
@@ -3265,12 +3360,35 @@
           "answer_type": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AnswerType"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BinaryAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MultipleChoiceAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ContinuousAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FreeResponseAnswerType"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "answer_type",
+                  "mapping": {
+                    "BINARY": "#/components/schemas/BinaryAnswerType",
+                    "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
+                    "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
+                  }
+                }
               },
               {
                 "type": "null"
               }
             ],
+            "title": "Answer Type",
             "description": "The type of answer expected for generated questions"
           }
         },
@@ -3347,12 +3465,35 @@
           "answer_type": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AnswerType"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BinaryAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MultipleChoiceAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ContinuousAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FreeResponseAnswerType"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "answer_type",
+                  "mapping": {
+                    "BINARY": "#/components/schemas/BinaryAnswerType",
+                    "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
+                    "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
+                  }
+                }
               },
               {
                 "type": "null"
               }
             ],
+            "title": "Answer Type",
             "description": "The type of answer expected for generated questions"
           }
         },
@@ -3558,12 +3699,35 @@
           "answer_type": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AnswerType"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BinaryAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MultipleChoiceAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ContinuousAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FreeResponseAnswerType"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "answer_type",
+                  "mapping": {
+                    "BINARY": "#/components/schemas/BinaryAnswerType",
+                    "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
+                    "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
+                  }
+                }
               },
               {
                 "type": "null"
               }
             ],
+            "title": "Answer Type",
             "description": "The type of answer expected, used to render answer instructions"
           }
         },
@@ -4324,12 +4488,35 @@
           "answer_type": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AnswerType"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BinaryAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MultipleChoiceAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ContinuousAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FreeResponseAnswerType"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "answer_type",
+                  "mapping": {
+                    "BINARY": "#/components/schemas/BinaryAnswerType",
+                    "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
+                    "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
+                  }
+                }
               },
               {
                 "type": "null"
               }
             ],
+            "title": "Answer Type",
             "description": "The type of answer expected, used to guide the labeler"
           },
           "resolve_redirects": {

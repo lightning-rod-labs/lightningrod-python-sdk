@@ -19,6 +19,7 @@ class Label:
     Attributes:
         label (str):
         label_confidence (float):
+        answer_type (None | str | Unset):
         resolution_date (datetime.datetime | None | Unset):
         reasoning (None | str | Unset):
         answer_sources (None | str | Unset):
@@ -26,6 +27,7 @@ class Label:
 
     label: str
     label_confidence: float
+    answer_type: None | str | Unset = UNSET
     resolution_date: datetime.datetime | None | Unset = UNSET
     reasoning: None | str | Unset = UNSET
     answer_sources: None | str | Unset = UNSET
@@ -35,6 +37,12 @@ class Label:
         label = self.label
 
         label_confidence = self.label_confidence
+
+        answer_type: None | str | Unset
+        if isinstance(self.answer_type, Unset):
+            answer_type = UNSET
+        else:
+            answer_type = self.answer_type
 
         resolution_date: None | str | Unset
         if isinstance(self.resolution_date, Unset):
@@ -64,6 +72,8 @@ class Label:
                 "label_confidence": label_confidence,
             }
         )
+        if answer_type is not UNSET:
+            field_dict["answer_type"] = answer_type
         if resolution_date is not UNSET:
             field_dict["resolution_date"] = resolution_date
         if reasoning is not UNSET:
@@ -79,6 +89,15 @@ class Label:
         label = d.pop("label")
 
         label_confidence = d.pop("label_confidence")
+
+        def _parse_answer_type(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        answer_type = _parse_answer_type(d.pop("answer_type", UNSET))
 
         def _parse_resolution_date(data: object) -> datetime.datetime | None | Unset:
             if data is None:
@@ -118,6 +137,7 @@ class Label:
         label = cls(
             label=label,
             label_confidence=label_confidence,
+            answer_type=answer_type,
             resolution_date=resolution_date,
             reasoning=reasoning,
             answer_sources=answer_sources,
