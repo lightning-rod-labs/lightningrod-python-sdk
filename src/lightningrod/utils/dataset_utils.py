@@ -6,6 +6,7 @@ from typing import Any, Callable, Optional
 
 from lightningrod._generated.models.answer_type import AnswerType
 from lightningrod._generated.models.answer_type_enum import AnswerTypeEnum
+from lightningrod._generated.models.sample import Sample
 
 
 def _parse_date(value: Any) -> Optional[date]:
@@ -22,50 +23,56 @@ def _parse_date(value: Any) -> Optional[date]:
     return None
 
 
-def _extract_contexts(item: dict[str, Any]) -> Optional[list[dict[str, Any]]]:
-    """Get context list from an item. If missing/empty and seed.seed_text exists, use that as one context block."""
-    context = item.get("context")
-    if context:
-        return context
-    seed = item.get("seed")
-    if seed:
-        seed_text = seed.get("seed_text")
+def _extract_contexts(sample: Sample) -> Optional[list[dict[str, Any]]]:
+    """Get context list from a sample. If missing/empty and seed.seed_text exists, use that as one context block."""
+    if sample.context:
+        return [ctx.to_dict() for ctx in sample.context]
+    
+    if sample.seed:
+        seed_text = sample.seed.seed_text
         if seed_text and str(seed_text).strip():
             return [{"context_type": "CONTEXT", "rendered_context": str(seed_text).strip()}]
     return None
 
 
 def filter_samples(
-    samples: list[dict[str, Any]],
+    samples: list[Sample],
     min_horizon: Optional[int] = None,
     max_horizon: Optional[int] = None,
     drop_missing_context: bool = True,
-) -> list[dict[str, Any]]:
+) -> list[Sample]:
     """Filter samples by time horizon and optional context.
 
     Args:
-        samples: List of sample dicts to filter.
+        samples: List of Sample objects to filter.
         min_horizon: Minimum allowed days between prediction and resolution; omit to skip filter.
         max_horizon: Maximum allowed days between prediction and resolution; omit to skip filter.
         drop_missing_context: If True, drop samples with no non-empty context.
 
     Returns:
-        Filtered list of samples.
+        Filtered list of Sample objects.
     """
-    filtered: list[dict[str, Any]] = []
+    filtered: list[Sample] = []
     for sample in samples:
-        is_valid: bool | None = sample.get("is_valid")
-        if is_valid is not True:
+        if sample.is_valid is not True:
             continue
 
-        # prediction_date: nested SDK format (question.prediction_date) or flat prediction_date
-        pred_raw: Any = (sample.get("question") or {}).get("prediction_date") or sample.get(
-            "prediction_date"
-        )
-        # resolution_date: nested SDK format (label.resolution_date) or flat resolution_date
-        res_raw: Any = (sample.get("label") or {}).get("resolution_date") or sample.get(
-            "resolution_date"
-        )
+        # prediction_date: from question.prediction_date (ForwardLookingQuestion only)
+        pred_raw: Any = None
+        if sample.question:
+            try:
+                pred_date = sample.question.prediction_date
+                if pred_date:
+                    pred_raw = pred_date
+            except AttributeError:
+                pass
+        
+        # resolution_date: from label.resolution_date
+        res_raw: Any = None
+        if sample.label:
+            res_date = sample.label.resolution_date
+            if res_date:
+                res_raw = res_date
 
         pred_d = _parse_date(pred_raw)
         res_d = _parse_date(res_raw)
@@ -92,22 +99,13 @@ def filter_samples(
     return filtered
 
 
-def _label_to_numeric(sample: dict[str, Any]) -> Optional[float]:
+def _label_to_numeric(sample: Sample) -> Optional[float]:
     """Extract a numeric label (for BINARY or CONTINUOUS)."""
-    raw_label: Any = sample.get("label")
-
-    if isinstance(raw_label, dict):
-        # Prefer "value" when present, fall back to "label".
-        if "value" in raw_label:
-            value = raw_label.get("value")
-        elif "label" in raw_label:
-            value = raw_label.get("label")
-        else:
-            value = None
-    else:
-        value = raw_label
-
-    if value is None:
+    if not sample.label:
+        return None
+    
+    value = sample.label.label
+    if not value:
         return None
 
     try:
@@ -119,21 +117,13 @@ def _label_to_numeric(sample: dict[str, Any]) -> Optional[float]:
         return None
 
 
-def _label_to_text(sample: dict[str, Any]) -> Optional[str]:
+def _label_to_text(sample: Sample) -> Optional[str]:
     """Extract a text label (for FREE_RESPONSE or MULTIPLE_CHOICE)."""
-    raw_label: Any = sample.get("label")
-
-    if isinstance(raw_label, dict):
-        if "label" in raw_label:
-            value = raw_label.get("label")
-        elif "value" in raw_label:
-            value = raw_label.get("value")
-        else:
-            value = None
-    else:
-        value = raw_label
-
-    if value is None:
+    if not sample.label:
+        return None
+    
+    value = sample.label.label
+    if not value:
         return None
 
     s = str(value).strip()
@@ -141,25 +131,25 @@ def _label_to_text(sample: dict[str, Any]) -> Optional[str]:
 
 
 def add_rl_training_fields(
-    samples: list[dict[str, Any]],
+    samples: list[Sample],
     answer_type: AnswerType,
-) -> list[dict[str, Any]]:
+) -> list[Sample]:
     """Add RL training fields and ``correct_answer`` to each sample in-place.
 
     Args:
-        samples: List of sample dicts to enrich in-place.
+        samples: List of Sample objects to enrich in-place.
         answer_type: An ``AnswerType`` object whose ``answer_type`` attribute is one of
             ``BINARY``, ``CONTINUOUS``, ``FREE_RESPONSE``, ``MULTIPLE_CHOICE``.
 
     Returns:
-        The same list of samples, updated with ``correct_answer`` and RL fields.
+        The same list of samples, updated with ``correct_answer`` and RL fields in additional_properties.
     """
     at = answer_type.answer_type
     answer_type_str = at.value.lower()
 
     if at is AnswerTypeEnum.BINARY:
         reward_type = "binary_log_score"
-        extract_fn: Callable[[dict[str, Any]], Any] = _label_to_numeric
+        extract_fn: Callable[[Sample], Any] = _label_to_numeric
     elif at is AnswerTypeEnum.CONTINUOUS:
         reward_type = "continuous_log_score"
         extract_fn = _label_to_numeric
@@ -183,29 +173,42 @@ def add_rl_training_fields(
     return samples
 
 
-def _default_leakage_keys() -> list[Callable[[dict], str | None]]:
+def _default_leakage_keys() -> list[Callable[[Sample], str | None]]:
     """Default leakage keys: date_close and resolution_date."""
-    return [
-        lambda r: r.get("question", {}).get("date_close"),
-        lambda r: r.get("label", {}).get("resolution_date"),
-    ]
+    def get_date_close(sample: Sample) -> str | None:
+        if not sample.question:
+            return None
+        try:
+            return sample.question.date_close.isoformat()
+        except AttributeError:
+            return None
+    
+    def get_resolution_date(sample: Sample) -> str | None:
+        if not sample.label:
+            return None
+        res_date = sample.label.resolution_date
+        if not res_date:
+            return None
+        return res_date.isoformat()
+    
+    return [get_date_close, get_resolution_date]
 
 
 def test_train_split(
-    samples: list[dict],
+    samples: list[Sample],
     *,
     temporal_split: bool = True,
     test_start: str | None = None,
     test_fraction: float | None = None,
-    seed: int | None = None,
-    sort_key: Callable[[dict], str] = lambda r: r["question"]["prediction_date"],
-    leakage_keys: list[Callable[[dict], str | None]] = _default_leakage_keys(),
+    seed: int = 196,
+    sort_key: Callable[[Sample], str | None] | None = None,
+    leakage_keys: list[Callable[[Sample], str | None]] | None = None,
     filter_leaky_train: bool = True,
-) -> tuple[list[dict], list[dict]]:
+) -> tuple[list[Sample], list[Sample]]:
     """Split samples into train/test sets. Temporal (time-ordered) or random.
 
     Args:
-        samples: List of row dicts to split.
+        samples: List of Sample objects to split.
         temporal_split: If True, split by time (test = latest fraction or after test_start).
             If False, shuffle and split by test_fraction (random split).
         test_start: Earliest prediction date (as a string) to include in the test
@@ -216,15 +219,15 @@ def test_train_split(
             Required when temporal_split=False.
         seed: Random seed for reproducible split when temporal_split=False; ignored when
             temporal_split=True.
-        sort_key: Function that returns the prediction date string for each row.
-            Only used when temporal_split=True.
+        sort_key: Function that returns the prediction date string for each sample.
+            Only used when temporal_split=True. Defaults to extracting prediction_date from ForwardLookingQuestion.
         leakage_keys: List of functions that extract date strings used to detect
-            information leakage. Only used when temporal_split=True.
+            information leakage. Only used when temporal_split=True. Defaults to date_close and resolution_date.
         filter_leaky_train: If True (and temporal_split=True), drop train samples whose
             leakage dates extend into the test period.
 
     Returns:
-        A `(train, test)` tuple of row lists.
+        A `(train, test)` tuple of Sample lists.
     """
     if temporal_split:
         if (test_start is None) == (test_fraction is None):
@@ -235,6 +238,24 @@ def test_train_split(
         if test_start is not None:
             raise ValueError("test_start is only valid when temporal_split=True")
 
+    # Default sort_key: extract prediction_date from ForwardLookingQuestion
+    if sort_key is None:
+        def default_sort_key(sample: Sample) -> str | None:
+            if not sample.question:
+                return None
+            try:
+                pred_date = sample.question.prediction_date
+                if not pred_date:
+                    return None
+                return pred_date.isoformat()
+            except AttributeError:
+                return None
+        sort_key = default_sort_key
+
+    # Default leakage_keys
+    if leakage_keys is None:
+        leakage_keys = _default_leakage_keys()
+
     if temporal_split:
         valid_samples = [r for r in samples if sort_key(r) is not None]
         sorted_samples = sorted(valid_samples, key=sort_key)
@@ -244,20 +265,20 @@ def test_train_split(
             train, test = sorted_samples[:split_idx], sorted_samples[split_idx:]
         else:
             assert test_start is not None
-            train = [r for r in sorted_samples if sort_key(r) < test_start]
-            test = [r for r in sorted_samples if sort_key(r) >= test_start]
+            train = [r for r in sorted_samples if sort_key(r) is not None and sort_key(r) < test_start]
+            test = [r for r in sorted_samples if sort_key(r) is not None and sort_key(r) >= test_start]
 
         if filter_leaky_train and test:
             test_cutoff = sort_key(test[0])
+            if test_cutoff is not None:
+                def is_safe(row: Sample) -> bool:
+                    for key_fn in leakage_keys:
+                        date_val = key_fn(row)
+                        if date_val is not None and date_val >= test_cutoff:
+                            return False
+                    return True
 
-            def is_safe(row: dict) -> bool:
-                for key_fn in leakage_keys:
-                    date_val = key_fn(row)
-                    if date_val is not None and date_val >= test_cutoff:
-                        return False
-                return True
-
-            train = [r for r in train if is_safe(r)]
+                train = [r for r in train if is_safe(r)]
 
         return train, test
 
@@ -311,44 +332,52 @@ def _flatten_sample_dict(d: dict[str, Any], parent_key: str = "", sep: str = "_"
     return dict(items)
 
 
-def flatten_samples(samples: list[dict[str, Any]], sep: str = "_") -> list[dict[str, Any]]:
+def flatten_samples(samples: list[Sample], sep: str = "_") -> list[dict[str, Any]]:
     """Flatten nested samples into flat dicts.
 
     Args:
-        samples: List of nested sample dicts.
+        samples: List of Sample objects to flatten.
         sep: String used to join nested field names in the flattened keys.
 
     Returns:
         List of flattened sample dicts.
     """
-    return [_flatten_sample_dict(sample, sep=sep) for sample in samples]
+    return [_flatten_sample_dict(sample.to_dict(), sep=sep) for sample in samples]
 
 
 def deduplicate_samples(
-    samples: list[dict[str, Any]],
-    key_fn: Callable[[dict[str, Any]], tuple[Any, ...]] | None = None,
-) -> list[dict[str, Any]]:
+    samples: list[Sample],
+    key_fn: Callable[[Sample], tuple[Any, ...]] | None = None,
+) -> list[Sample]:
     """Remove duplicate samples based on a key function.
 
     Args:
-        samples: List of row dicts to deduplicate.
-        key_fn: Optional function that turns a row into a hashable key; by default
+        samples: List of Sample objects to deduplicate.
+        key_fn: Optional function that turns a sample into a hashable key; by default
             uses `(question_text, resolution_date)` from the SDK-style schema.
 
     Returns:
         List of samples with duplicates removed (first occurrence kept).
     """
-    def _default_key_fn(row: dict[str, Any]) -> tuple[Any, ...]:
-        question: dict[str, Any] = row.get("question") or {}
-        label: dict[str, Any] = row.get("label") or {}
-        return question.get("question_text"), label.get("resolution_date")
+    def _default_key_fn(sample: Sample) -> tuple[Any, ...]:
+        question_text: Any = None
+        if sample.question:
+            question_text = sample.question.question_text
+        
+        resolution_date: Any = None
+        if sample.label:
+            res_date = sample.label.resolution_date
+            if res_date:
+                resolution_date = res_date.isoformat()
+        
+        return question_text, resolution_date
 
-    key_fn_local: Callable[[dict[str, Any]], tuple[Any, ...]] = key_fn or _default_key_fn
+    key_fn_local: Callable[[Sample], tuple[Any, ...]] = key_fn or _default_key_fn
     seen: set[tuple[Any, ...]] = set()
-    result: list[dict[str, Any]] = []
-    for row in samples:
-        key = key_fn_local(row)
+    result: list[Sample] = []
+    for sample in samples:
+        key = key_fn_local(sample)
         if key not in seen:
             seen.add(key)
-            result.append(row)
+            result.append(sample)
     return result
