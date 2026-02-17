@@ -112,7 +112,7 @@ def render_sample(
 
     # Use provided template
     if template is not None:
-        return template.format(**template_values)
+        return [{"role": "user", "content": template.format(**template_values)}]
 
     sections: List[str] = ["QUESTION:\n{question_text}"]
     if todays_date:
