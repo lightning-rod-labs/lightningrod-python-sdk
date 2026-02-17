@@ -1,4 +1,4 @@
-from .dataset_utils import (
+from .dataset import (
     add_rl_training_fields,
     filter_samples,
     test_train_split,
