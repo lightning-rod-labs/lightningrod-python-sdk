@@ -36,7 +36,7 @@ from lightningrod._generated.models import (
     FileSetFile,
 )
 
-__version__ = "0.1.11"
+__version__ = "0.1.12"
 __all__ = [
     "preprocessing",
     "utils",
