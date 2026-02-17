@@ -28,13 +28,12 @@ from lightningrod._generated.models import (
     ContinuousAnswerType,
     MultipleChoiceAnswerType,
     FreeResponseAnswerType,
-    # TODO(filesets): Enable when filesets are publicly supported
-    # FileSetSeedGenerator,
-    # FileSetQuerySeedGenerator,
-    # CreateFileSetRequest,
-    # CreateFileSetFileRequest,
-    # CreateFileUploadResponse,
-    # FileSetFile,
+    FileSetSeedGenerator,
+    FileSetQuerySeedGenerator,
+    CreateFileSetRequest,
+    CreateFileSetFileRequest,
+    CreateFileUploadResponse,
+    FileSetFile,
 )
 
 __version__ = "0.1.10"

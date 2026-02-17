@@ -2,11 +2,15 @@
 
 import random
 from datetime import date, datetime
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Union
 
-from lightningrod._generated.models.answer_type import AnswerType
-from lightningrod._generated.models.answer_type_enum import AnswerTypeEnum
+from lightningrod._generated.models.binary_answer_type import BinaryAnswerType
+from lightningrod._generated.models.continuous_answer_type import ContinuousAnswerType
+from lightningrod._generated.models.free_response_answer_type import FreeResponseAnswerType
+from lightningrod._generated.models.multiple_choice_answer_type import MultipleChoiceAnswerType
 from lightningrod._generated.models.sample import Sample
+
+AnswerType = Union[BinaryAnswerType, ContinuousAnswerType, MultipleChoiceAnswerType, FreeResponseAnswerType]
 
 
 def _parse_date(value: Any) -> Optional[date]:
@@ -132,23 +136,24 @@ def add_rl_training_fields(
     Returns:
         The same list of samples, updated with ``correct_answer`` and RL fields in additional_properties.
     """
-    at = answer_type.answer_type
-    answer_type_str = at.value.lower()
-
-    if at is AnswerTypeEnum.BINARY:
+    if isinstance(answer_type, BinaryAnswerType):
+        answer_type_str = "binary"
         reward_type = "binary_log_score"
         extract_fn: Callable[[Sample], Any] = _label_to_numeric
-    elif at is AnswerTypeEnum.CONTINUOUS:
+    elif isinstance(answer_type, ContinuousAnswerType):
+        answer_type_str = "continuous"
         reward_type = "continuous_log_score"
         extract_fn = _label_to_numeric
-    elif at is AnswerTypeEnum.MULTIPLE_CHOICE:
+    elif isinstance(answer_type, MultipleChoiceAnswerType):
+        answer_type_str = "multiple_choice"
         reward_type = "multi_choice_log_score"
         extract_fn = _label_to_text
-    elif at is AnswerTypeEnum.FREE_RESPONSE:
+    elif isinstance(answer_type, FreeResponseAnswerType):
+        answer_type_str = "free_response"
         reward_type = ""
         extract_fn = _label_to_text
     else:
-        # Fallback: treat as free-response-like text.
+        answer_type_str = "free_response"
         reward_type = ""
         extract_fn = _label_to_text
 
