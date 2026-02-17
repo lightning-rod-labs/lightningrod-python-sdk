@@ -2,13 +2,17 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import Mapping
-from typing import Any, TypeVar, cast
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 from dateutil.parser import isoparse
 
 from ..types import UNSET, Unset
+
+if TYPE_CHECKING:
+    from ..models.file_set_metadata_schema import FileSetMetadataSchema
+
 
 T = TypeVar("T", bound="FileSet")
 
@@ -24,6 +28,7 @@ class FileSet:
         indexed_file_count (int):
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
+        metadata_schema (FileSetMetadataSchema | None | Unset):
         is_public (bool | Unset):  Default: False.
     """
 
@@ -34,10 +39,13 @@ class FileSet:
     indexed_file_count: int
     created_at: datetime.datetime
     updated_at: datetime.datetime
+    metadata_schema: FileSetMetadataSchema | None | Unset = UNSET
     is_public: bool | Unset = False
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.file_set_metadata_schema import FileSetMetadataSchema
+
         id = self.id
 
         name = self.name
@@ -52,6 +60,14 @@ class FileSet:
         created_at = self.created_at.isoformat()
 
         updated_at = self.updated_at.isoformat()
+
+        metadata_schema: dict[str, Any] | None | Unset
+        if isinstance(self.metadata_schema, Unset):
+            metadata_schema = UNSET
+        elif isinstance(self.metadata_schema, FileSetMetadataSchema):
+            metadata_schema = self.metadata_schema.to_dict()
+        else:
+            metadata_schema = self.metadata_schema
 
         is_public = self.is_public
 
@@ -68,6 +84,8 @@ class FileSet:
                 "updated_at": updated_at,
             }
         )
+        if metadata_schema is not UNSET:
+            field_dict["metadata_schema"] = metadata_schema
         if is_public is not UNSET:
             field_dict["is_public"] = is_public
 
@@ -75,6 +93,8 @@ class FileSet:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.file_set_metadata_schema import FileSetMetadataSchema
+
         d = dict(src_dict)
         id = d.pop("id")
 
@@ -95,6 +115,23 @@ class FileSet:
 
         updated_at = isoparse(d.pop("updated_at"))
 
+        def _parse_metadata_schema(data: object) -> FileSetMetadataSchema | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                metadata_schema_type_0 = FileSetMetadataSchema.from_dict(data)
+
+                return metadata_schema_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(FileSetMetadataSchema | None | Unset, data)
+
+        metadata_schema = _parse_metadata_schema(d.pop("metadata_schema", UNSET))
+
         is_public = d.pop("is_public", UNSET)
 
         file_set = cls(
@@ -105,6 +142,7 @@ class FileSet:
             indexed_file_count=indexed_file_count,
             created_at=created_at,
             updated_at=updated_at,
+            metadata_schema=metadata_schema,
             is_public=is_public,
         )
 

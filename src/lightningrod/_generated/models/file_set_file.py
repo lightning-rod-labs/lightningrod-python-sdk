@@ -8,6 +8,9 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 from dateutil.parser import isoparse
 
+from ..models.file_set_file_status import FileSetFileStatus
+from ..types import UNSET, Unset
+
 if TYPE_CHECKING:
     from ..models.file_set_file_metadata_type_0 import FileSetFileMetadataType0
 
@@ -30,6 +33,9 @@ class FileSetFile:
         file_created_date (datetime.datetime | None):
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
+        status (FileSetFileStatus | Unset):
+        status_message (None | str | Unset):
+        retry_count (int | Unset):  Default: 0.
     """
 
     id: str
@@ -43,6 +49,9 @@ class FileSetFile:
     file_created_date: datetime.datetime | None
     created_at: datetime.datetime
     updated_at: datetime.datetime
+    status: FileSetFileStatus | Unset = UNSET
+    status_message: None | str | Unset = UNSET
+    retry_count: int | Unset = 0
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -81,6 +90,18 @@ class FileSetFile:
 
         updated_at = self.updated_at.isoformat()
 
+        status: str | Unset = UNSET
+        if not isinstance(self.status, Unset):
+            status = self.status.value
+
+        status_message: None | str | Unset
+        if isinstance(self.status_message, Unset):
+            status_message = UNSET
+        else:
+            status_message = self.status_message
+
+        retry_count = self.retry_count
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -98,6 +119,12 @@ class FileSetFile:
                 "updated_at": updated_at,
             }
         )
+        if status is not UNSET:
+            field_dict["status"] = status
+        if status_message is not UNSET:
+            field_dict["status_message"] = status_message
+        if retry_count is not UNSET:
+            field_dict["retry_count"] = retry_count
 
         return field_dict
 
@@ -169,6 +196,24 @@ class FileSetFile:
 
         updated_at = isoparse(d.pop("updated_at"))
 
+        _status = d.pop("status", UNSET)
+        status: FileSetFileStatus | Unset
+        if isinstance(_status, Unset):
+            status = UNSET
+        else:
+            status = FileSetFileStatus(_status)
+
+        def _parse_status_message(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        status_message = _parse_status_message(d.pop("status_message", UNSET))
+
+        retry_count = d.pop("retry_count", UNSET)
+
         file_set_file = cls(
             id=id,
             original_file_name=original_file_name,
@@ -181,6 +226,9 @@ class FileSetFile:
             file_created_date=file_created_date,
             created_at=created_at,
             updated_at=updated_at,
+            status=status,
+            status_message=status_message,
+            retry_count=retry_count,
         )
 
         file_set_file.additional_properties = d
