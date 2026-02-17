@@ -899,69 +899,118 @@
           }
         }
       }
+    },
+    "/filesets/{file_set_id}/status": {
+      "get": {
+        "tags": [
+          "FileSets"
+        ],
+        "summary": "Get File Set Status",
+        "description": "Get file status counts for a FileSet.",
+        "operationId": "get_file_set_status_filesets__file_set_id__status_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "file_set_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File Set Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileStatusCountsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/filesets/{file_set_id}/retry-failed": {
+      "post": {
+        "tags": [
+          "FileSets"
+        ],
+        "summary": "Retry Failed Files",
+        "description": "Retry all failed files in a FileSet.",
+        "operationId": "retry_failed_files_filesets__file_set_id__retry_failed_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "file_set_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File Set Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetryFailedFilesRequest",
+                "default": {
+                  "max_retries": 3
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetryFailedFilesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
-      "AnswerType": {
-        "properties": {
-          "answer_type": {
-            "$ref": "#/components/schemas/AnswerTypeEnum",
-            "description": "The type of answer expected for this question"
-          },
-          "answer_format_instruction": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Answer Format Instruction",
-            "description": "Instructions describing how the answer should be formatted and given. If not set, uses default based on answer_type."
-          },
-          "labeler_instruction": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Labeler Instruction",
-            "description": "Custom instructions for the labeler. If not set, uses default based on answer_type."
-          },
-          "question_generation_instruction": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Question Generation Instruction",
-            "description": "Custom instructions for generating questions of this type. If not set, uses default based on answer_type."
-          }
-        },
-        "type": "object",
-        "required": [
-          "answer_type"
-        ],
-        "title": "AnswerType"
-      },
-      "AnswerTypeEnum": {
-        "type": "string",
-        "enum": [
-          "BINARY",
-          "MULTIPLE_CHOICE",
-          "CONTINUOUS",
-          "FREE_RESPONSE"
-        ],
-        "title": "AnswerTypeEnum"
-      },
       "BalanceResponse": {
         "properties": {
           "balance_dollars": {
@@ -974,6 +1023,36 @@
           "balance_dollars"
         ],
         "title": "BalanceResponse"
+      },
+      "BinaryAnswerType": {
+        "properties": {
+          "answer_type": {
+            "type": "string",
+            "const": "BINARY",
+            "title": "Answer Type",
+            "default": "BINARY"
+          },
+          "answer_format_instruction": {
+            "type": "string",
+            "title": "Answer Format Instruction",
+            "description": "Instructions describing how the answer should be formatted and given.",
+            "default": "This is a binary yes/no question. You are estimating the probability that the answer is 'Yes'. Provide your confidence as a value between 0 (definitely No) and 1 (definitely Yes). Provide your probability estimate for Yes as a decimal between 0 and 1. Format your answer as: \\boxed{0.75}"
+          },
+          "labeler_instruction": {
+            "type": "string",
+            "title": "Labeler Instruction",
+            "description": "Instructions for the labeler.",
+            "default": "The answer should be ONLY '1', '0', or 'Undetermined'. '1' means yes, '0' means no, and 'Undetermined' means the answer is not clear. Do not include any other text or explanation."
+          },
+          "question_generation_instruction": {
+            "type": "string",
+            "title": "Question Generation Instruction",
+            "description": "Instructions for generating questions of this type.",
+            "default": "Generate questions that can be answered with Yes or No. Frame the question so it has exactly two possible outcomes: Yes or No. The question should start with words like 'Will', 'Is', 'Does', 'Has', 'Can', etc. A clear and unambiguous yes/no question, based on the provided seed_text."
+          }
+        },
+        "type": "object",
+        "title": "BinaryAnswerType"
       },
       "ChatCompletionRequest": {
         "properties": {
@@ -1199,6 +1278,36 @@
         ],
         "title": "Choice"
       },
+      "ContinuousAnswerType": {
+        "properties": {
+          "answer_type": {
+            "type": "string",
+            "const": "CONTINUOUS",
+            "title": "Answer Type",
+            "default": "CONTINUOUS"
+          },
+          "answer_format_instruction": {
+            "type": "string",
+            "title": "Answer Format Instruction",
+            "description": "Instructions describing how the answer should be formatted and given.",
+            "default": "This question expects a numeric value as the answer. Provide your best estimate as a single number. Include units if specified in the question. Provide your final answer wrapped in \\boxed{}. Example: \\boxed{42.5}"
+          },
+          "labeler_instruction": {
+            "type": "string",
+            "title": "Labeler Instruction",
+            "description": "Instructions for the labeler.",
+            "default": "The answer should be ONLY a single exact numeric value, not a range. For example: '42.5' or '1000', not '40-45' or 'between 900 and 1100', or 'Undetermined'. Do not include any other text or explanation."
+          },
+          "question_generation_instruction": {
+            "type": "string",
+            "title": "Question Generation Instruction",
+            "description": "Instructions for generating questions of this type.",
+            "default": "Generate questions that expect a numeric value as the answer. Specify the units if applicable (e.g., dollars, percent, count). A clear and unambiguous question, based on the provided seed_text, that expects a numeric value as the answer."
+          }
+        },
+        "type": "object",
+        "title": "ContinuousAnswerType"
+      },
       "CreateDatasetResponse": {
         "properties": {
           "id": {
@@ -1230,7 +1339,7 @@
               }
             ],
             "title": "File Date",
-            "description": "The date of the document - ensure this is set for documents to be used in forward-looking question generation generation pipelines"
+            "description": "The date of the document content. Critical for forward-looking question generation pipelines - this date determines the temporal context for forecasting questions."
           },
           "metadata": {
             "anyOf": [
@@ -1244,6 +1353,24 @@
             ],
             "title": "Metadata",
             "description": "Optional file-level metadata"
+          },
+          "deduplication_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deduplication Id",
+            "description": "Optional id used to deduplicate file additions to a FileSet"
+          },
+          "auto_extract_metadata": {
+            "type": "boolean",
+            "title": "Auto Extract Metadata",
+            "description": "If true and the FileSet has a metadata schema, automatically extract metadata from file content using LLM. User-provided metadata takes precedence over extracted values.",
+            "default": false
           }
         },
         "type": "object",
@@ -1270,6 +1397,17 @@
             ],
             "title": "Description",
             "description": "Optional description of the FileSet's purpose"
+          },
+          "metadata_schema": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FileSetMetadataSchemaInput"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional schema for validating file metadata"
           }
         },
         "type": "object",
@@ -1631,6 +1769,16 @@
             "type": "integer",
             "title": "Indexed File Count"
           },
+          "metadata_schema": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FileSetMetadataSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "is_public": {
             "type": "boolean",
             "title": "Is Public",
@@ -1749,6 +1897,26 @@
             ],
             "title": "File Created Date"
           },
+          "status": {
+            "$ref": "#/components/schemas/FileSetFileStatus",
+            "default": "PENDING"
+          },
+          "status_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status Message"
+          },
+          "retry_count": {
+            "type": "integer",
+            "title": "Retry Count",
+            "default": 0
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -1775,6 +1943,49 @@
           "updated_at"
         ],
         "title": "FileSetFile"
+      },
+      "FileSetFileStatus": {
+        "type": "string",
+        "enum": [
+          "PENDING",
+          "PROCESSING",
+          "ACTIVE",
+          "FAILED"
+        ],
+        "title": "FileSetFileStatus"
+      },
+      "FileSetMetadataSchema": {
+        "properties": {
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/MetadataFieldDefinition"
+            },
+            "type": "array",
+            "title": "Fields",
+            "description": "List of metadata field definitions"
+          }
+        },
+        "type": "object",
+        "title": "FileSetMetadataSchema",
+        "description": "Schema definition for file metadata in a FileSet."
+      },
+      "FileSetMetadataSchemaInput": {
+        "properties": {
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/MetadataFieldDefinitionInput"
+            },
+            "type": "array",
+            "title": "Fields",
+            "description": "List of metadata field definitions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fields"
+        ],
+        "title": "FileSetMetadataSchemaInput",
+        "description": "Schema definition for file metadata in a FileSet (input/request version)."
       },
       "FileSetQuerySeedGenerator": {
         "properties": {
@@ -1884,6 +2095,36 @@
         ],
         "title": "FileSetSeedGenerator",
         "description": "Configuration for FileSet Seed Generator transform."
+      },
+      "FileStatusCountsResponse": {
+        "properties": {
+          "pending": {
+            "type": "integer",
+            "title": "Pending",
+            "description": "Files awaiting processing",
+            "default": 0
+          },
+          "processing": {
+            "type": "integer",
+            "title": "Processing",
+            "description": "Files currently being processed",
+            "default": 0
+          },
+          "active": {
+            "type": "integer",
+            "title": "Active",
+            "description": "Successfully processed files",
+            "default": 0
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed",
+            "description": "Files that failed processing",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "FileStatusCountsResponse"
       },
       "FilterCriteria": {
         "properties": {
@@ -2032,17 +2273,70 @@
           "answer_type": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AnswerType"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BinaryAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MultipleChoiceAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ContinuousAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FreeResponseAnswerType"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "answer_type",
+                  "mapping": {
+                    "BINARY": "#/components/schemas/BinaryAnswerType",
+                    "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
+                    "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
+                  }
+                }
               },
               {
                 "type": "null"
               }
             ],
+            "title": "Answer Type",
             "description": "The type of answer expected for generated questions"
           }
         },
         "type": "object",
         "title": "ForwardLookingQuestionGenerator"
+      },
+      "FreeResponseAnswerType": {
+        "properties": {
+          "answer_type": {
+            "type": "string",
+            "const": "FREE_RESPONSE",
+            "title": "Answer Type",
+            "default": "FREE_RESPONSE"
+          },
+          "answer_format_instruction": {
+            "type": "string",
+            "title": "Answer Format Instruction",
+            "description": "Instructions describing how the answer should be formatted and given.",
+            "default": "This question expects a free-form text response. Provide an answer that directly addresses what the question is asking. Provide your final answer wrapped in \\boxed{}. Example: \\boxed{The company announced a new product line.}"
+          },
+          "labeler_instruction": {
+            "type": "string",
+            "title": "Labeler Instruction",
+            "description": "Instructions for the labeler.",
+            "default": "Respond with the correct answer as a text description."
+          },
+          "question_generation_instruction": {
+            "type": "string",
+            "title": "Question Generation Instruction",
+            "description": "Instructions for generating questions of this type.",
+            "default": "Generate questions that expect a free-form text response. A clear and unambiguous question, based on the provided seed_text, that expects a free-form text response."
+          }
+        },
+        "type": "object",
+        "title": "FreeResponseAnswerType"
       },
       "GdeltSeedGenerator": {
         "properties": {
@@ -2204,6 +2498,17 @@
             "type": "number",
             "title": "Label Confidence"
           },
+          "answer_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer Type"
+          },
           "resolution_date": {
             "anyOf": [
               {
@@ -2298,6 +2603,114 @@
           "file_sets"
         ],
         "title": "ListFileSetsResponse"
+      },
+      "MetadataFieldDefinition": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "The name/key of the metadata field"
+          },
+          "field_type": {
+            "$ref": "#/components/schemas/MetadataFieldType",
+            "description": "The data type of the field"
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required",
+            "description": "Whether this field is required for all files",
+            "default": false
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Human-readable description of this field"
+          },
+          "extraction_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extraction Hint",
+            "description": "Hint for LLM auto-extraction (e.g., 'the stock ticker symbol mentioned')"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "field_type"
+        ],
+        "title": "MetadataFieldDefinition",
+        "description": "Definition of a metadata field for a FileSet."
+      },
+      "MetadataFieldDefinitionInput": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "The name/key of the metadata field"
+          },
+          "field_type": {
+            "$ref": "#/components/schemas/MetadataFieldType",
+            "description": "The data type of the field"
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required",
+            "description": "Whether this field is required for all files"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Human-readable description of this field"
+          },
+          "extraction_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extraction Hint",
+            "description": "Hint for LLM auto-extraction (e.g., 'the stock ticker symbol mentioned')"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "field_type",
+          "required"
+        ],
+        "title": "MetadataFieldDefinitionInput",
+        "description": "Definition of a metadata field for a FileSet (input/request version)."
+      },
+      "MetadataFieldType": {
+        "type": "string",
+        "enum": [
+          "string",
+          "number"
+        ],
+        "title": "MetadataFieldType"
       },
       "MockTransformConfig": {
         "properties": {
@@ -2582,6 +2995,36 @@
         ],
         "title": "ModelSourceType"
       },
+      "MultipleChoiceAnswerType": {
+        "properties": {
+          "answer_type": {
+            "type": "string",
+            "const": "MULTIPLE_CHOICE",
+            "title": "Answer Type",
+            "default": "MULTIPLE_CHOICE"
+          },
+          "answer_format_instruction": {
+            "type": "string",
+            "title": "Answer Format Instruction",
+            "description": "Instructions describing how the answer should be formatted and given.",
+            "default": "This is a multiple choice question with answer options labeled with letters starting from A. The list of options will be provided in the question. You are estimating the probability for each option being the correct answer. Provide your confidence for each option as a value between 0 and 1, where the probabilities must sum to 1. Provide your probability estimate for each option as a decimal between 0 and 1. Format your answer as: \\boxed{A: 0.3, B: 0.4, C: 0.2, D: 0.1}"
+          },
+          "labeler_instruction": {
+            "type": "string",
+            "title": "Labeler Instruction",
+            "description": "Instructions for the labeler.",
+            "default": "The answer should be ONLY one of the following options: 'A', 'B', 'C', or 'D', or 'Undetermined'. Do not include any other text or explanation."
+          },
+          "question_generation_instruction": {
+            "type": "string",
+            "title": "Question Generation Instruction",
+            "description": "Instructions for generating questions of this type.",
+            "default": "Generate questions with multiple choice options (up to 10). Format the options on separate lines after the question:\nA) First option\nB) Second option\nC) Third option\n... and so on\n\nEach option should be distinct and mutually exclusive. A clear and unambiguous multiple-choice question, based on the provided seed_text. Include the options in the question text."
+          }
+        },
+        "type": "object",
+        "title": "MultipleChoiceAnswerType"
+      },
       "NewsContext": {
         "properties": {
           "context_type": {
@@ -2655,6 +3098,12 @@
             "type": "boolean",
             "title": "Enable Relevance Ranking",
             "description": "Whether to perform LLM-based relevance ranking",
+            "default": true
+          },
+          "enable_stage_cache": {
+            "type": "boolean",
+            "title": "Enable Stage Cache",
+            "description": "Cache entire transform output to skip all sub-operations on repeated questions",
             "default": true
           }
         },
@@ -2911,12 +3360,35 @@
           "answer_type": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AnswerType"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BinaryAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MultipleChoiceAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ContinuousAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FreeResponseAnswerType"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "answer_type",
+                  "mapping": {
+                    "BINARY": "#/components/schemas/BinaryAnswerType",
+                    "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
+                    "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
+                  }
+                }
               },
               {
                 "type": "null"
               }
             ],
+            "title": "Answer Type",
             "description": "The type of answer expected for generated questions"
           }
         },
@@ -2993,12 +3465,35 @@
           "answer_type": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AnswerType"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BinaryAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MultipleChoiceAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ContinuousAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FreeResponseAnswerType"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "answer_type",
+                  "mapping": {
+                    "BINARY": "#/components/schemas/BinaryAnswerType",
+                    "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
+                    "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
+                  }
+                }
               },
               {
                 "type": "null"
               }
             ],
+            "title": "Answer Type",
             "description": "The type of answer expected for generated questions"
           }
         },
@@ -3204,12 +3699,35 @@
           "answer_type": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AnswerType"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BinaryAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MultipleChoiceAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ContinuousAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FreeResponseAnswerType"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "answer_type",
+                  "mapping": {
+                    "BINARY": "#/components/schemas/BinaryAnswerType",
+                    "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
+                    "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
+                  }
+                }
               },
               {
                 "type": "null"
               }
             ],
+            "title": "Answer Type",
             "description": "The type of answer expected, used to render answer instructions"
           }
         },
@@ -3259,6 +3777,34 @@
           "content"
         ],
         "title": "ResponseMessage"
+      },
+      "RetryFailedFilesRequest": {
+        "properties": {
+          "max_retries": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Max Retries",
+            "description": "Maximum retry attempts per file",
+            "default": 3
+          }
+        },
+        "type": "object",
+        "title": "RetryFailedFilesRequest"
+      },
+      "RetryFailedFilesResponse": {
+        "properties": {
+          "files_reset": {
+            "type": "integer",
+            "title": "Files Reset",
+            "description": "Number of files reset to PENDING status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "files_reset"
+        ],
+        "title": "RetryFailedFilesResponse"
       },
       "Rollout": {
         "properties": {
@@ -3942,12 +4488,35 @@
           "answer_type": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AnswerType"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BinaryAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MultipleChoiceAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ContinuousAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FreeResponseAnswerType"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "answer_type",
+                  "mapping": {
+                    "BINARY": "#/components/schemas/BinaryAnswerType",
+                    "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
+                    "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
+                  }
+                }
               },
               {
                 "type": "null"
               }
             ],
+            "title": "Answer Type",
             "description": "The type of answer expected, used to guide the labeler"
           },
           "resolve_redirects": {

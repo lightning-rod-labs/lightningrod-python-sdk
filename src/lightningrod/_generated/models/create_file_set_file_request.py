@@ -22,14 +22,20 @@ class CreateFileSetFileRequest:
     """
     Attributes:
         file_id (str): ID of the file
-        file_date (datetime.datetime | None | Unset): The date of the document - ensure this is set for documents to be
-            used in forward-looking question generation generation pipelines
+        file_date (datetime.datetime | None | Unset): The date of the document content. Critical for forward-looking
+            question generation pipelines - this date determines the temporal context for forecasting questions.
         metadata (CreateFileSetFileRequestMetadataType0 | None | Unset): Optional file-level metadata
+        deduplication_id (None | str | Unset): Optional id used to deduplicate file additions to a FileSet
+        auto_extract_metadata (bool | Unset): If true and the FileSet has a metadata schema, automatically extract
+            metadata from file content using LLM. User-provided metadata takes precedence over extracted values. Default:
+            False.
     """
 
     file_id: str
     file_date: datetime.datetime | None | Unset = UNSET
     metadata: CreateFileSetFileRequestMetadataType0 | None | Unset = UNSET
+    deduplication_id: None | str | Unset = UNSET
+    auto_extract_metadata: bool | Unset = False
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -53,6 +59,14 @@ class CreateFileSetFileRequest:
         else:
             metadata = self.metadata
 
+        deduplication_id: None | str | Unset
+        if isinstance(self.deduplication_id, Unset):
+            deduplication_id = UNSET
+        else:
+            deduplication_id = self.deduplication_id
+
+        auto_extract_metadata = self.auto_extract_metadata
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -64,6 +78,10 @@ class CreateFileSetFileRequest:
             field_dict["file_date"] = file_date
         if metadata is not UNSET:
             field_dict["metadata"] = metadata
+        if deduplication_id is not UNSET:
+            field_dict["deduplication_id"] = deduplication_id
+        if auto_extract_metadata is not UNSET:
+            field_dict["auto_extract_metadata"] = auto_extract_metadata
 
         return field_dict
 
@@ -108,10 +126,23 @@ class CreateFileSetFileRequest:
 
         metadata = _parse_metadata(d.pop("metadata", UNSET))
 
+        def _parse_deduplication_id(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        deduplication_id = _parse_deduplication_id(d.pop("deduplication_id", UNSET))
+
+        auto_extract_metadata = d.pop("auto_extract_metadata", UNSET)
+
         create_file_set_file_request = cls(
             file_id=file_id,
             file_date=file_date,
             metadata=metadata,
+            deduplication_id=deduplication_id,
+            auto_extract_metadata=auto_extract_metadata,
         )
 
         create_file_set_file_request.additional_properties = d

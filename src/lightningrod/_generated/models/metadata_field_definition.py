@@ -1,38 +1,42 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, TypeVar, cast
+from typing import Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.metadata_field_type import MetadataFieldType
 from ..types import UNSET, Unset
 
-if TYPE_CHECKING:
-    from ..models.file_set_metadata_schema_input import FileSetMetadataSchemaInput
-
-
-T = TypeVar("T", bound="CreateFileSetRequest")
+T = TypeVar("T", bound="MetadataFieldDefinition")
 
 
 @_attrs_define
-class CreateFileSetRequest:
-    """
+class MetadataFieldDefinition:
+    """Definition of a metadata field for a FileSet.
+
     Attributes:
-        name (str): Human-readable name for the FileSet
-        description (None | str | Unset): Optional description of the FileSet's purpose
-        metadata_schema (FileSetMetadataSchemaInput | None | Unset): Optional schema for validating file metadata
+        name (str): The name/key of the metadata field
+        field_type (MetadataFieldType):
+        required (bool | Unset): Whether this field is required for all files Default: False.
+        description (None | str | Unset): Human-readable description of this field
+        extraction_hint (None | str | Unset): Hint for LLM auto-extraction (e.g., 'the stock ticker symbol mentioned')
     """
 
     name: str
+    field_type: MetadataFieldType
+    required: bool | Unset = False
     description: None | str | Unset = UNSET
-    metadata_schema: FileSetMetadataSchemaInput | None | Unset = UNSET
+    extraction_hint: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.file_set_metadata_schema_input import FileSetMetadataSchemaInput
-
         name = self.name
+
+        field_type = self.field_type.value
+
+        required = self.required
 
         description: None | str | Unset
         if isinstance(self.description, Unset):
@@ -40,34 +44,37 @@ class CreateFileSetRequest:
         else:
             description = self.description
 
-        metadata_schema: dict[str, Any] | None | Unset
-        if isinstance(self.metadata_schema, Unset):
-            metadata_schema = UNSET
-        elif isinstance(self.metadata_schema, FileSetMetadataSchemaInput):
-            metadata_schema = self.metadata_schema.to_dict()
+        extraction_hint: None | str | Unset
+        if isinstance(self.extraction_hint, Unset):
+            extraction_hint = UNSET
         else:
-            metadata_schema = self.metadata_schema
+            extraction_hint = self.extraction_hint
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
                 "name": name,
+                "field_type": field_type,
             }
         )
+        if required is not UNSET:
+            field_dict["required"] = required
         if description is not UNSET:
             field_dict["description"] = description
-        if metadata_schema is not UNSET:
-            field_dict["metadata_schema"] = metadata_schema
+        if extraction_hint is not UNSET:
+            field_dict["extraction_hint"] = extraction_hint
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.file_set_metadata_schema_input import FileSetMetadataSchemaInput
-
         d = dict(src_dict)
         name = d.pop("name")
+
+        field_type = MetadataFieldType(d.pop("field_type"))
+
+        required = d.pop("required", UNSET)
 
         def _parse_description(data: object) -> None | str | Unset:
             if data is None:
@@ -78,31 +85,25 @@ class CreateFileSetRequest:
 
         description = _parse_description(d.pop("description", UNSET))
 
-        def _parse_metadata_schema(data: object) -> FileSetMetadataSchemaInput | None | Unset:
+        def _parse_extraction_hint(data: object) -> None | str | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                metadata_schema_type_0 = FileSetMetadataSchemaInput.from_dict(data)
+            return cast(None | str | Unset, data)
 
-                return metadata_schema_type_0
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(FileSetMetadataSchemaInput | None | Unset, data)
+        extraction_hint = _parse_extraction_hint(d.pop("extraction_hint", UNSET))
 
-        metadata_schema = _parse_metadata_schema(d.pop("metadata_schema", UNSET))
-
-        create_file_set_request = cls(
+        metadata_field_definition = cls(
             name=name,
+            field_type=field_type,
+            required=required,
             description=description,
-            metadata_schema=metadata_schema,
+            extraction_hint=extraction_hint,
         )
 
-        create_file_set_request.additional_properties = d
-        return create_file_set_request
+        metadata_field_definition.additional_properties = d
+        return metadata_field_definition
 
     @property
     def additional_keys(self) -> list[str]:
