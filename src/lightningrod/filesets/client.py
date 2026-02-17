@@ -4,11 +4,11 @@ from typing import Any, List, Optional
 from lightningrod._generated.models import (
     FileSet,
     ListFileSetFilesResponse,
-    HTTPValidationError,
     CreateFileSetRequest,
     CreateFileSetFileRequest,
     CreateFileSetFileRequestMetadataType0,
     FileSetFile,
+    FileSetMetadataSchemaInput
 )
 from lightningrod._generated.api.file_sets import (
     create_file_set_filesets_post,
@@ -20,6 +20,7 @@ from lightningrod._generated.api.file_sets import (
 from lightningrod._generated.client import AuthenticatedClient
 from lightningrod.files.client import FilesClient
 from lightningrod._errors import handle_response_error
+from datetime import datetime
 
 class FileSetFilesClient:
     def __init__(self, client: AuthenticatedClient, files_client: FilesClient):
@@ -30,20 +31,26 @@ class FileSetFilesClient:
         self,
         file_set_id: str,
         file_path: str | Path,
-        metadata: Optional[dict[str, Any]] = None
+        metadata: Optional[dict[str, Any]] = None,
+        file_date: Optional[datetime] = None,
+        auto_extract_metadata: bool = False,
     ) -> FileSetFile:
         file = self._files_client.upload(file_path)
-        return self.add(file_set_id, file.id, metadata)
+        return self.add(file_set_id, file.id, metadata, file_date, auto_extract_metadata)
     
     def add(
         self,
         file_set_id: str,
         file_id: str,
-        metadata: Optional[dict[str, Any]] = None
+        metadata: Optional[dict[str, Any]] = None,
+        file_date: Optional[datetime] = None,
+        auto_extract_metadata: bool = False,
     ) -> FileSetFile:
         request = CreateFileSetFileRequest(
             file_id=file_id,
-            metadata=CreateFileSetFileRequestMetadataType0.from_dict(metadata) if metadata else None
+            metadata=CreateFileSetFileRequestMetadataType0.from_dict(metadata) if metadata else None,
+            file_date=file_date.isoformat() if file_date else None,
+            auto_extract_metadata=auto_extract_metadata,
         )
         
         response = add_file_to_set_filesets_file_set_id_files_post.sync_detailed(
@@ -78,11 +85,14 @@ class FileSetsClient:
     def create(
         self,
         name: str,
-        description: Optional[str] = None
+        description: Optional[str] = None,
+        metadata_schema: Optional[FileSetMetadataSchemaInput] = None
     ) -> FileSet:
         request = CreateFileSetRequest(name=name)
         if description is not None:
             request.description = description
+        if metadata_schema is not None:
+            request.metadata_schema = metadata_schema
         
         response = create_file_set_filesets_post.sync_detailed(
             client=self._client,
