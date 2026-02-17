@@ -9,7 +9,10 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.answer_type import AnswerType
+    from ..models.binary_answer_type import BinaryAnswerType
+    from ..models.continuous_answer_type import ContinuousAnswerType
+    from ..models.free_response_answer_type import FreeResponseAnswerType
+    from ..models.multiple_choice_answer_type import MultipleChoiceAnswerType
 
 
 T = TypeVar("T", bound="WebSearchLabeler")
@@ -22,18 +25,24 @@ class WebSearchLabeler:
         config_type (Literal['WEB_SEARCH_LABELER'] | Unset): Type of transform configuration Default:
             'WEB_SEARCH_LABELER'.
         confidence_threshold (float | Unset): Minimum confidence threshold for including questions Default: 0.9.
-        answer_type (AnswerType | None | Unset): The type of answer expected, used to guide the labeler
+        answer_type (BinaryAnswerType | ContinuousAnswerType | FreeResponseAnswerType | MultipleChoiceAnswerType | None
+            | Unset): The type of answer expected, used to guide the labeler
         resolve_redirects (bool | Unset): Resolve redirect URLs to actual destinations Default: False.
     """
 
     config_type: Literal["WEB_SEARCH_LABELER"] | Unset = "WEB_SEARCH_LABELER"
     confidence_threshold: float | Unset = 0.9
-    answer_type: AnswerType | None | Unset = UNSET
+    answer_type: (
+        BinaryAnswerType | ContinuousAnswerType | FreeResponseAnswerType | MultipleChoiceAnswerType | None | Unset
+    ) = UNSET
     resolve_redirects: bool | Unset = False
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.answer_type import AnswerType
+        from ..models.binary_answer_type import BinaryAnswerType
+        from ..models.continuous_answer_type import ContinuousAnswerType
+        from ..models.free_response_answer_type import FreeResponseAnswerType
+        from ..models.multiple_choice_answer_type import MultipleChoiceAnswerType
 
         config_type = self.config_type
 
@@ -42,7 +51,13 @@ class WebSearchLabeler:
         answer_type: dict[str, Any] | None | Unset
         if isinstance(self.answer_type, Unset):
             answer_type = UNSET
-        elif isinstance(self.answer_type, AnswerType):
+        elif isinstance(self.answer_type, BinaryAnswerType):
+            answer_type = self.answer_type.to_dict()
+        elif isinstance(self.answer_type, MultipleChoiceAnswerType):
+            answer_type = self.answer_type.to_dict()
+        elif isinstance(self.answer_type, ContinuousAnswerType):
+            answer_type = self.answer_type.to_dict()
+        elif isinstance(self.answer_type, FreeResponseAnswerType):
             answer_type = self.answer_type.to_dict()
         else:
             answer_type = self.answer_type
@@ -65,7 +80,10 @@ class WebSearchLabeler:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.answer_type import AnswerType
+        from ..models.binary_answer_type import BinaryAnswerType
+        from ..models.continuous_answer_type import ContinuousAnswerType
+        from ..models.free_response_answer_type import FreeResponseAnswerType
+        from ..models.multiple_choice_answer_type import MultipleChoiceAnswerType
 
         d = dict(src_dict)
         config_type = cast(Literal["WEB_SEARCH_LABELER"] | Unset, d.pop("config_type", UNSET))
@@ -74,7 +92,9 @@ class WebSearchLabeler:
 
         confidence_threshold = d.pop("confidence_threshold", UNSET)
 
-        def _parse_answer_type(data: object) -> AnswerType | None | Unset:
+        def _parse_answer_type(
+            data: object,
+        ) -> BinaryAnswerType | ContinuousAnswerType | FreeResponseAnswerType | MultipleChoiceAnswerType | None | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -82,12 +102,44 @@ class WebSearchLabeler:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                answer_type_type_0 = AnswerType.from_dict(data)
+                answer_type_type_0_type_0 = BinaryAnswerType.from_dict(data)
 
-                return answer_type_type_0
+                return answer_type_type_0_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(AnswerType | None | Unset, data)
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                answer_type_type_0_type_1 = MultipleChoiceAnswerType.from_dict(data)
+
+                return answer_type_type_0_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                answer_type_type_0_type_2 = ContinuousAnswerType.from_dict(data)
+
+                return answer_type_type_0_type_2
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                answer_type_type_0_type_3 = FreeResponseAnswerType.from_dict(data)
+
+                return answer_type_type_0_type_3
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(
+                BinaryAnswerType
+                | ContinuousAnswerType
+                | FreeResponseAnswerType
+                | MultipleChoiceAnswerType
+                | None
+                | Unset,
+                data,
+            )
 
         answer_type = _parse_answer_type(d.pop("answer_type", UNSET))
 
