@@ -2,7 +2,10 @@
 
 import random
 from datetime import date, datetime
-from typing import Any, Callable, Literal, Optional
+from typing import Any, Callable, Optional
+
+from lightningrod._generated.models.answer_type import AnswerType
+from lightningrod._generated.models.answer_type_enum import AnswerTypeEnum
 
 
 def _parse_date(value: Any) -> Optional[date]:
@@ -19,67 +22,6 @@ def _parse_date(value: Any) -> Optional[date]:
     return None
 
 
-binary_answer_format = """Think carefully in English about your answer and output your final prediction (a float between 0.0 and 1.0) between <answer></answer> tags.
-
-Example Outputs. These are just examples to illustrate the format and should not be considered baselines:
-<answer>0.92</answer>
-<answer>0.53</answer>
-<answer>0.05</answer>"""
-
-
-def _render_contexts(contexts: list[dict[str, Any]]) -> str:
-    """Render context dicts grouped by context_type with headers."""
-    if not contexts:
-        return ""
-
-    contexts_by_type: dict[str, list[dict[str, Any]]] = {}
-    for ctx in contexts:
-        ctx_type = ctx.get("context_type", "CONTEXT")
-        if ctx_type not in contexts_by_type:
-            contexts_by_type[ctx_type] = []
-        contexts_by_type[ctx_type].append(ctx)
-
-    headers: dict[str, str] = {"NEWS_CONTEXT": "NEWS:", "RAG_CONTEXT": "DOCUMENTS:"}
-    descriptions: dict[str, str] = {
-        "NEWS_CONTEXT": "Recent news articles relevant to this question:",
-        "RAG_CONTEXT": "Retrieved documents relevant to this question:",
-    }
-
-    rendered_sections: list[str] = []
-    for ctx_type, type_contexts in contexts_by_type.items():
-        header = headers.get(ctx_type, "CONTEXT:")
-        description = descriptions.get(ctx_type, "")
-        content = "\n\n".join(ctx.get("rendered_context", "") for ctx in type_contexts)
-        rendered_sections.append(f"{header}\n{description}\n\n{content}")
-
-    return "\n\n".join(rendered_sections)
-
-
-def render_prompt(
-    question_text: str,
-    contexts: Optional[list[dict[str, Any]]] = None,
-    resolution_criteria: str = "",
-    prediction_date: str = "",
-) -> str:
-    """Build a prompt from question, context, resolution criteria, and prediction date.
-
-    Builds section-by-section; omits any section whose value is missing or blank.
-    """
-    rendered_context: str = _render_contexts(contexts) if contexts else ""
-    sections: list[str] = ["You will make a prediction for the following question.", ""]
-    if str(question_text or "").strip():
-        sections.append(f"QUESTION: {question_text.strip()}")
-    if str(prediction_date or "").strip():
-        sections.append(f"TODAY'S DATE: {prediction_date.strip()}")
-    if str(resolution_criteria or "").strip():
-        sections.append(f"RESOLUTION CRITERIA: {resolution_criteria.strip()}")
-    if rendered_context.strip():
-        sections.append(f"CONTEXT: {rendered_context}")
-    sections.append("")
-    sections.append(f"ANSWER FORMAT: {binary_answer_format}")
-    return "\n".join(sections)
-
-
 def _extract_contexts(item: dict[str, Any]) -> Optional[list[dict[str, Any]]]:
     """Get context list from an item. If missing/empty and seed.seed_text exists, use that as one context block."""
     context = item.get("context")
@@ -90,29 +32,6 @@ def _extract_contexts(item: dict[str, Any]) -> Optional[list[dict[str, Any]]]:
         seed_text = seed.get("seed_text")
         if seed_text and str(seed_text).strip():
             return [{"context_type": "CONTEXT", "rendered_context": str(seed_text).strip()}]
-    return None
-
-
-def _label_to_correct_answer_binary(item: dict[str, Any]) -> Optional[float]:
-    """Label must be 0 or 1 (or "0"/"1"). Return 0.0 or 1.0, else None."""
-    raw_label: Any = item.get("label")
-
-    # Support nested SDK format where label is a dict, e.g. {"label": "1"}.
-    label_value: Any
-    if isinstance(raw_label, dict):
-        if "label" in raw_label:
-            label_value = raw_label.get("label")
-        elif "value" in raw_label:
-            label_value = raw_label.get("value")
-        else:
-            label_value = None
-    else:
-        label_value = raw_label
-
-    if label_value in (0, 1):
-        return float(label_value)
-    if label_value is not None and str(label_value).strip() in ("0", "1"):
-        return float(str(label_value).strip())
     return None
 
 
@@ -173,55 +92,94 @@ def filter_samples(
     return filtered
 
 
-def prepare_prompts(
+def _label_to_numeric(sample: dict[str, Any]) -> Optional[float]:
+    """Extract a numeric label (for BINARY or CONTINUOUS)."""
+    raw_label: Any = sample.get("label")
+
+    if isinstance(raw_label, dict):
+        # Prefer "value" when present, fall back to "label".
+        if "value" in raw_label:
+            value = raw_label.get("value")
+        elif "label" in raw_label:
+            value = raw_label.get("label")
+        else:
+            value = None
+    else:
+        value = raw_label
+
+    if value is None:
+        return None
+
+    try:
+        s = str(value).strip()
+        if not s:
+            return None
+        return float(s)
+    except (TypeError, ValueError):
+        return None
+
+
+def _label_to_text(sample: dict[str, Any]) -> Optional[str]:
+    """Extract a text label (for FREE_RESPONSE or MULTIPLE_CHOICE)."""
+    raw_label: Any = sample.get("label")
+
+    if isinstance(raw_label, dict):
+        if "label" in raw_label:
+            value = raw_label.get("label")
+        elif "value" in raw_label:
+            value = raw_label.get("value")
+        else:
+            value = None
+    else:
+        value = raw_label
+
+    if value is None:
+        return None
+
+    s = str(value).strip()
+    return s or None
+
+
+def add_rl_training_fields(
     samples: list[dict[str, Any]],
-    mode: Literal["user_only", "supervised"] = "user_only",
-    include_training_fields: bool = True,
+    answer_type: AnswerType,
 ) -> list[dict[str, Any]]:
-    """Attach chat prompts (and optional training metadata) to each sample.
+    """Add RL training fields and ``correct_answer`` to each sample in-place.
 
     Args:
         samples: List of sample dicts to enrich in-place.
-        mode: `"user_only"` for just a user message, `"supervised"` to also add the
-            assistant message with the correct answer when available.
-        include_training_fields: If True, set `answer_type`, `answer_parser_type`,
-            and `reward_function_type` for binary training.
+        answer_type: An ``AnswerType`` object whose ``answer_type`` attribute is one of
+            ``BINARY``, ``CONTINUOUS``, ``FREE_RESPONSE``, ``MULTIPLE_CHOICE``.
 
     Returns:
-        The same list of samples, updated with `prompt` and training fields.
+        The same list of samples, updated with ``correct_answer`` and RL fields.
     """
+    at = answer_type.answer_type
+    answer_type_str = at.value
+
+    if at is AnswerTypeEnum.BINARY:
+        reward_type = "binary_log_score"
+        extract_fn: Callable[[dict[str, Any]], Any] = _label_to_numeric
+    elif at is AnswerTypeEnum.CONTINUOUS:
+        reward_type = "continuous_log_score"
+        extract_fn = _label_to_numeric
+    elif at is AnswerTypeEnum.MULTIPLE_CHOICE:
+        reward_type = "multi_choice_log_score"
+        extract_fn = _label_to_text
+    elif at is AnswerTypeEnum.FREE_RESPONSE:
+        reward_type = ""
+        extract_fn = _label_to_text
+    else:
+        # Fallback: treat as free-response-like text.
+        reward_type = ""
+        extract_fn = _label_to_text
 
     for sample in samples:
-        question = sample.get("question") or {}
-        question_text: str = str(
-            question.get("question_text") or sample.get("question_text") or ""
-        )
-        contexts = _extract_contexts(sample)
-        resolution_criteria: str = str(
-            question.get("resolution_criteria") or sample.get("resolution_criteria") or ""
-        )
-        prediction_date = question.get("prediction_date") or ""
-        prompt_str = render_prompt(
-            question_text=question_text,
-            contexts=contexts,
-            resolution_criteria=resolution_criteria,
-            prediction_date=prediction_date,
-        )
-        sample["prompt"] = [{"role": "user", "content": prompt_str}]
+        sample["correct_answer"] = extract_fn(sample)
+        sample["answer_type"] = answer_type_str
+        sample["answer_parser_type"] = answer_type_str
+        sample["reward_function_type"] = reward_type
 
-        sample["correct_answer"] = _label_to_correct_answer_binary(sample)
-        if include_training_fields:
-            sample["answer_type"] = "binary"
-            sample["answer_parser_type"] = "binary"
-            sample["reward_function_type"] = "binary_log_score"
-
-        if mode == "supervised" and sample["correct_answer"] is not None:
-            assistant_content: str = f"<answer>{int(sample['correct_answer'])}</answer>"
-            sample["prompt"] = list(sample["prompt"]) + [
-                {"role": "assistant", "content": assistant_content}
-            ]
-
-    samples.sort(key=lambda s: _parse_date(s.get("prediction_date")) or date.min)
     return samples
 
 
