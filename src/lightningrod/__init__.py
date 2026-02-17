@@ -9,8 +9,6 @@ from lightningrod.datasets.dataset import Dataset
 from lightningrod import preprocessing, utils
 from lightningrod.utils.rendering import render_sample
 from lightningrod._generated.models import (
-    AnswerType,
-    AnswerTypeEnum,
     TransformJob,
     TransformJobStatus,
     NewsSeedGenerator,
@@ -26,6 +24,10 @@ from lightningrod._generated.models import (
     Sample,
     SampleMeta,
     Seed,
+    BinaryAnswerType,
+    ContinuousAnswerType,
+    MultipleChoiceAnswerType,
+    FreeResponseAnswerType,
     # TODO(filesets): Enable when filesets are publicly supported
     # FileSetSeedGenerator,
     # FileSetQuerySeedGenerator,
@@ -40,8 +42,10 @@ __all__ = [
     "preprocessing",
     "utils",
     "AnswerType",
-    "AnswerTypeEnum",
-    "AnswerTypes",
+    "BinaryAnswerType",
+    "ContinuousAnswerType",
+    "MultipleChoiceAnswerType",
+    "FreeResponseAnswerType",
     "AsyncDataset",
     "Dataset",
     "FileSetSeedGenerator",

@@ -26,11 +26,11 @@ Sign up at [dashboard.lightningrod.ai](https://dashboard.lightningrod.ai/?redire
 Generate **1000+ forecasting questions in minutes** - from raw sources to labeled dataset, automatically. ⚡
 
 ```python
-from lightningrod import LightningRod, AnswerType, QuestionPipeline, NewsSeedGenerator, ForwardLookingQuestionGenerator, WebSearchLabeler
+from lightningrod import LightningRod, BinaryAnswerType, QuestionPipeline, NewsSeedGenerator, ForwardLookingQuestionGenerator, WebSearchLabeler
 
 lr = LightningRod(api_key="your-api-key")
 
-binary_answer = AnswerType(answer_type=AnswerTypeEnum.BINARY)
+binary_answer = BinaryAnswerType()
 
 pipeline = QuestionPipeline(
     seed_generator=NewsSeedGenerator(
