@@ -4,13 +4,17 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Union
 
-from lightningrod._generated.models.answer_type import AnswerType
-from lightningrod._generated.models.answer_type_enum import AnswerTypeEnum
 from lightningrod._generated.models.forward_looking_question import ForwardLookingQuestion
 from lightningrod._generated.models.news_context import NewsContext
 from lightningrod._generated.models.rag_context import RAGContext
 from lightningrod._generated.models.sample import Sample
 from lightningrod._generated.types import Unset
+from lightningrod._generated.models.binary_answer_type import BinaryAnswerType
+from lightningrod._generated.models.continuous_answer_type import ContinuousAnswerType
+from lightningrod._generated.models.multiple_choice_answer_type import MultipleChoiceAnswerType
+from lightningrod._generated.models.free_response_answer_type import FreeResponseAnswerType
+
+AnswerType = Union[BinaryAnswerType, ContinuousAnswerType, MultipleChoiceAnswerType, FreeResponseAnswerType]
 
 # Headers and descriptions for each context type
 _CONTEXT_TYPE_HEADERS: Dict[str, str] = {
