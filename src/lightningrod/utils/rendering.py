@@ -63,8 +63,8 @@ def render_sample(
     sample: Sample,
     template: Optional[str] = None,
     answer_type: Optional[AnswerType] = None,
-) -> str:
-    """Render a sample into a prompt string.
+) -> List[dict[str, str]]:
+    """Render a sample into a messages object.
 
     Args:
         sample: The Sample to render.
@@ -73,7 +73,7 @@ def render_sample(
         answer_type: Optional AnswerType to include answer format instructions.
 
     Returns:
-        The rendered prompt string.
+        The rendered messages object.
     """
     template_values: Dict[str, Any] = {}
 
@@ -116,18 +116,18 @@ def render_sample(
 
     # Use provided template
     if template is not None:
-        return template.format(**template_values)
+        return [{"role": "user", "content": template.format(**template_values)}]
 
     sections: List[str] = ["QUESTION:\n{question_text}"]
+    if todays_date:
+        sections.append("TODAY'S DATE:\n{question_date}")
     if resolution_criteria:
         sections.append("RESOLUTION CRITERIA:\n{resolution_criteria}")
+    if date_close:
+        sections.append("CLOSE DATE:\n{date_close}")
     if rendered_context.strip():
         sections.append("CONTEXT:\n{context}")
     if answer_instructions.strip():
         sections.append("ANSWER FORMAT:\n{answer_instructions}")
-    if date_close:
-        sections.append("CLOSE DATE:\n{date_close}")
-    if todays_date:
-        sections.append("TODAY'S DATE:\n{question_date}")
 
-    return "\n\n".join(sections).format(**template_values)
+    return [{"role": "user", "content": "\n\n".join(sections).format(**template_values)}]
