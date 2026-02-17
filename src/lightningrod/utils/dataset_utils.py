@@ -23,18 +23,6 @@ def _parse_date(value: Any) -> Optional[date]:
     return None
 
 
-def _extract_contexts(sample: Sample) -> Optional[list[dict[str, Any]]]:
-    """Get context list from a sample. If missing/empty and seed.seed_text exists, use that as one context block."""
-    if sample.context:
-        return [ctx.to_dict() for ctx in sample.context]
-    
-    if sample.seed:
-        seed_text = sample.seed.seed_text
-        if seed_text and str(seed_text).strip():
-            return [{"context_type": "CONTEXT", "rendered_context": str(seed_text).strip()}]
-    return None
-
-
 def filter_samples(
     samples: list[Sample],
     min_horizon: Optional[int] = None,
@@ -85,9 +73,9 @@ def filter_samples(
             if max_horizon is not None and horizon_days > max_horizon:
                 continue
         if drop_missing_context:
-            contexts = _extract_contexts(sample)
-            if not contexts:
+            if not sample.context:
                 continue
+            contexts = [ctx.to_dict() for ctx in sample.context]
             # Keep only if at least one context block has non-empty rendered_context
             has_nonempty_rendered: bool = any(
                 bool(ctx.get("rendered_context")) and len(str(ctx.get("rendered_context"))) > 0
