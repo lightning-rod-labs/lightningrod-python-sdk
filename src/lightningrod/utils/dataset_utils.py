@@ -155,7 +155,7 @@ def add_rl_training_fields(
         The same list of samples, updated with ``correct_answer`` and RL fields.
     """
     at = answer_type.answer_type
-    answer_type_str = at.value
+    answer_type_str = at.value.lower()
 
     if at is AnswerTypeEnum.BINARY:
         reward_type = "binary_log_score"
@@ -178,7 +178,7 @@ def add_rl_training_fields(
         sample["correct_answer"] = extract_fn(sample)
         sample["answer_type"] = answer_type_str
         sample["answer_parser_type"] = answer_type_str
-        sample["reward_function_type"] = reward_type
+        sample["reward_function_type"] = reward_type.lower() if reward_type else reward_type
 
     return samples
 
@@ -265,6 +265,10 @@ def test_train_split(
     shuffled = list(samples)
     rng = random.Random(seed) if seed is not None else random
     rng.shuffle(shuffled)
+
+    # At this point, test_fraction is guaranteed non-None by the validation above,
+    # but we assert here to satisfy static type checkers.
+    assert test_fraction is not None
     split_idx = int(len(shuffled) * (1 - test_fraction))
     
     train = shuffled[:split_idx]
