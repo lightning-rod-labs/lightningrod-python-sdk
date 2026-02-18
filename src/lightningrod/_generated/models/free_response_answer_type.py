@@ -13,13 +13,13 @@ T = TypeVar("T", bound="FreeResponseAnswerType")
 
 @_attrs_define
 class FreeResponseAnswerType:
-    r"""
+    """
     Attributes:
         answer_type (Literal['FREE_RESPONSE'] | Unset):  Default: 'FREE_RESPONSE'.
         answer_format_instruction (str | Unset): Instructions describing how the answer should be formatted and given.
             Default: 'This question expects a free-form text response. Provide an answer that directly addresses what the
-            question is asking. Provide your final answer wrapped in \\boxed{}. Example: \\boxed{The company announced a new
-            product line.}'.
+            question is asking. Provide your answer between <answer></answer> tags. Example: <answer>The company announced a
+            new product line.</answer>'.
         labeler_instruction (str | Unset): Instructions for the labeler. Default: 'Respond with the correct answer as a
             text description.'.
         question_generation_instruction (str | Unset): Instructions for generating questions of this type. Default:
@@ -29,7 +29,7 @@ class FreeResponseAnswerType:
 
     answer_type: Literal["FREE_RESPONSE"] | Unset = "FREE_RESPONSE"
     answer_format_instruction: str | Unset = (
-        "This question expects a free-form text response. Provide an answer that directly addresses what the question is asking. Provide your final answer wrapped in \\boxed{}. Example: \\boxed{The company announced a new product line.}"
+        "This question expects a free-form text response. Provide an answer that directly addresses what the question is asking. Provide your answer between <answer></answer> tags. Example: <answer>The company announced a new product line.</answer>"
     )
     labeler_instruction: str | Unset = "Respond with the correct answer as a text description."
     question_generation_instruction: str | Unset = (

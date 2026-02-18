@@ -20,8 +20,8 @@ class MultipleChoiceAnswerType:
             Default: 'This is a multiple choice question with answer options labeled with letters starting from A. The list
             of options will be provided in the question. You are estimating the probability for each option being the
             correct answer. Provide your confidence for each option as a value between 0 and 1, where the probabilities must
-            sum to 1. Provide your probability estimate for each option as a decimal between 0 and 1. Format your answer as:
-            \\boxed{A: 0.3, B: 0.4, C: 0.2, D: 0.1}'.
+            sum to 1. Provide your probability estimate for each option as a decimal between 0 and 1. Provide your answer
+            between <answer></answer> tags. Example: <answer>A: 0.3, B: 0.4, C: 0.2, D: 0.1</answer>'.
         labeler_instruction (str | Unset): Instructions for the labeler. Default: "The answer should be ONLY one of the
             following options: 'A', 'B', 'C', or 'D', or 'Undetermined'. Do not include any other text or explanation.".
         question_generation_instruction (str | Unset): Instructions for generating questions of this type. Default:
@@ -33,7 +33,7 @@ class MultipleChoiceAnswerType:
 
     answer_type: Literal["MULTIPLE_CHOICE"] | Unset = "MULTIPLE_CHOICE"
     answer_format_instruction: str | Unset = (
-        "This is a multiple choice question with answer options labeled with letters starting from A. The list of options will be provided in the question. You are estimating the probability for each option being the correct answer. Provide your confidence for each option as a value between 0 and 1, where the probabilities must sum to 1. Provide your probability estimate for each option as a decimal between 0 and 1. Format your answer as: \\boxed{A: 0.3, B: 0.4, C: 0.2, D: 0.1}"
+        "This is a multiple choice question with answer options labeled with letters starting from A. The list of options will be provided in the question. You are estimating the probability for each option being the correct answer. Provide your confidence for each option as a value between 0 and 1, where the probabilities must sum to 1. Provide your probability estimate for each option as a decimal between 0 and 1. Provide your answer between <answer></answer> tags. Example: <answer>A: 0.3, B: 0.4, C: 0.2, D: 0.1</answer>"
     )
     labeler_instruction: str | Unset = (
         "The answer should be ONLY one of the following options: 'A', 'B', 'C', or 'D', or 'Undetermined'. Do not include any other text or explanation."

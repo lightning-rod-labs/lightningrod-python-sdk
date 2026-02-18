@@ -24,12 +24,14 @@ class Rollout:
         content (str):
         parsed_output (None | RolloutParsedOutputType0 | Unset):
         reasoning (None | str | Unset):
+        reward (float | None | Unset):
     """
 
     model_name: str
     content: str
     parsed_output: None | RolloutParsedOutputType0 | Unset = UNSET
     reasoning: None | str | Unset = UNSET
+    reward: float | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -53,6 +55,12 @@ class Rollout:
         else:
             reasoning = self.reasoning
 
+        reward: float | None | Unset
+        if isinstance(self.reward, Unset):
+            reward = UNSET
+        else:
+            reward = self.reward
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -65,6 +73,8 @@ class Rollout:
             field_dict["parsed_output"] = parsed_output
         if reasoning is not UNSET:
             field_dict["reasoning"] = reasoning
+        if reward is not UNSET:
+            field_dict["reward"] = reward
 
         return field_dict
 
@@ -103,11 +113,21 @@ class Rollout:
 
         reasoning = _parse_reasoning(d.pop("reasoning", UNSET))
 
+        def _parse_reward(data: object) -> float | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(float | None | Unset, data)
+
+        reward = _parse_reward(d.pop("reward", UNSET))
+
         rollout = cls(
             model_name=model_name,
             content=content,
             parsed_output=parsed_output,
             reasoning=reasoning,
+            reward=reward,
         )
 
         rollout.additional_properties = d

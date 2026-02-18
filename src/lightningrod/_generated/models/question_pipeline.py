@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from ..models.question_generator import QuestionGenerator
     from ..models.question_renderer import QuestionRenderer
     from ..models.rollout_generator import RolloutGenerator
+    from ..models.template_question_generator import TemplateQuestionGenerator
     from ..models.web_search_labeler import WebSearchLabeler
 
 
@@ -33,7 +34,7 @@ class QuestionPipeline:
         seed_generator (FileSetQuerySeedGenerator | FileSetSeedGenerator | GdeltSeedGenerator | MockTransformConfig |
             NewsSeedGenerator): Configuration for seed generation
         question_generator (ForwardLookingQuestionGenerator | MockTransformConfig | QuestionAndLabelGenerator |
-            QuestionGenerator): Configuration for question generation
+            QuestionGenerator | TemplateQuestionGenerator): Configuration for question generation
         config_type (Literal['QUESTION_PIPELINE'] | Unset): Type of transform configuration Default:
             'QUESTION_PIPELINE'.
         labeler (MockTransformConfig | None | Unset | WebSearchLabeler): Configuration for labeling. Not needed when
@@ -50,7 +51,11 @@ class QuestionPipeline:
         FileSetQuerySeedGenerator | FileSetSeedGenerator | GdeltSeedGenerator | MockTransformConfig | NewsSeedGenerator
     )
     question_generator: (
-        ForwardLookingQuestionGenerator | MockTransformConfig | QuestionAndLabelGenerator | QuestionGenerator
+        ForwardLookingQuestionGenerator
+        | MockTransformConfig
+        | QuestionAndLabelGenerator
+        | QuestionGenerator
+        | TemplateQuestionGenerator
     )
     config_type: Literal["QUESTION_PIPELINE"] | Unset = "QUESTION_PIPELINE"
     labeler: MockTransformConfig | None | Unset | WebSearchLabeler = UNSET
@@ -71,6 +76,7 @@ class QuestionPipeline:
         from ..models.question_generator import QuestionGenerator
         from ..models.question_renderer import QuestionRenderer
         from ..models.rollout_generator import RolloutGenerator
+        from ..models.template_question_generator import TemplateQuestionGenerator
         from ..models.web_search_labeler import WebSearchLabeler
 
         seed_generator: dict[str, Any]
@@ -91,6 +97,8 @@ class QuestionPipeline:
         elif isinstance(self.question_generator, ForwardLookingQuestionGenerator):
             question_generator = self.question_generator.to_dict()
         elif isinstance(self.question_generator, QuestionAndLabelGenerator):
+            question_generator = self.question_generator.to_dict()
+        elif isinstance(self.question_generator, TemplateQuestionGenerator):
             question_generator = self.question_generator.to_dict()
         else:
             question_generator = self.question_generator.to_dict()
@@ -178,6 +186,7 @@ class QuestionPipeline:
         from ..models.question_generator import QuestionGenerator
         from ..models.question_renderer import QuestionRenderer
         from ..models.rollout_generator import RolloutGenerator
+        from ..models.template_question_generator import TemplateQuestionGenerator
         from ..models.web_search_labeler import WebSearchLabeler
 
         d = dict(src_dict)
@@ -233,7 +242,13 @@ class QuestionPipeline:
 
         def _parse_question_generator(
             data: object,
-        ) -> ForwardLookingQuestionGenerator | MockTransformConfig | QuestionAndLabelGenerator | QuestionGenerator:
+        ) -> (
+            ForwardLookingQuestionGenerator
+            | MockTransformConfig
+            | QuestionAndLabelGenerator
+            | QuestionGenerator
+            | TemplateQuestionGenerator
+        ):
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
@@ -258,11 +273,19 @@ class QuestionPipeline:
                 return question_generator_type_2
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                question_generator_type_3 = TemplateQuestionGenerator.from_dict(data)
+
+                return question_generator_type_3
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
             if not isinstance(data, dict):
                 raise TypeError()
-            question_generator_type_3 = MockTransformConfig.from_dict(data)
+            question_generator_type_4 = MockTransformConfig.from_dict(data)
 
-            return question_generator_type_3
+            return question_generator_type_4
 
         question_generator = _parse_question_generator(d.pop("question_generator"))
 

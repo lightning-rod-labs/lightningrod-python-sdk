@@ -13,13 +13,13 @@ T = TypeVar("T", bound="ContinuousAnswerType")
 
 @_attrs_define
 class ContinuousAnswerType:
-    r"""
+    """
     Attributes:
         answer_type (Literal['CONTINUOUS'] | Unset):  Default: 'CONTINUOUS'.
         answer_format_instruction (str | Unset): Instructions describing how the answer should be formatted and given.
             Default: 'This question expects a numeric value as the answer. Provide your best estimate as a single number.
-            Include units if specified in the question. Provide your final answer wrapped in \\boxed{}. Example:
-            \\boxed{42.5}'.
+            Include units if specified in the question. Provide your answer between <answer></answer> tags. Example:
+            <answer>42.5</answer>'.
         labeler_instruction (str | Unset): Instructions for the labeler. Default: "The answer should be ONLY a single
             exact numeric value, not a range. For example: '42.5' or '1000', not '40-45' or 'between 900 and 1100', or
             'Undetermined'. Do not include any other text or explanation.".
@@ -31,7 +31,7 @@ class ContinuousAnswerType:
 
     answer_type: Literal["CONTINUOUS"] | Unset = "CONTINUOUS"
     answer_format_instruction: str | Unset = (
-        "This question expects a numeric value as the answer. Provide your best estimate as a single number. Include units if specified in the question. Provide your final answer wrapped in \\boxed{}. Example: \\boxed{42.5}"
+        "This question expects a numeric value as the answer. Provide your best estimate as a single number. Include units if specified in the question. Provide your answer between <answer></answer> tags. Example: <answer>42.5</answer>"
     )
     labeler_instruction: str | Unset = (
         "The answer should be ONLY a single exact numeric value, not a range. For example: '42.5' or '1000', not '40-45' or 'between 900 and 1100', or 'Undetermined'. Do not include any other text or explanation."

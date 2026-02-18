@@ -69,6 +69,7 @@ from .sample import Sample
 from .sample_meta import SampleMeta
 from .seed import Seed
 from .step_cost_breakdown import StepCostBreakdown
+from .template_question_generator import TemplateQuestionGenerator
 from .transform_job import TransformJob
 from .transform_job_status import TransformJobStatus
 from .transform_step_metrics_response import TransformStepMetricsResponse
@@ -153,6 +154,7 @@ __all__ = (
     "SampleMeta",
     "Seed",
     "StepCostBreakdown",
+    "TemplateQuestionGenerator",
     "TransformJob",
     "TransformJobStatus",
     "TransformStepMetricsResponse",

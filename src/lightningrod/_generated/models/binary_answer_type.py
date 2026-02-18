@@ -13,13 +13,14 @@ T = TypeVar("T", bound="BinaryAnswerType")
 
 @_attrs_define
 class BinaryAnswerType:
-    r"""
+    """
     Attributes:
         answer_type (Literal['BINARY'] | Unset):  Default: 'BINARY'.
         answer_format_instruction (str | Unset): Instructions describing how the answer should be formatted and given.
             Default: "This is a binary yes/no question. You are estimating the probability that the answer is 'Yes'. Provide
             your confidence as a value between 0 (definitely No) and 1 (definitely Yes). Provide your probability estimate
-            for Yes as a decimal between 0 and 1. Format your answer as: \\boxed{0.75}".
+            for Yes as a decimal between 0 and 1. Provide your answer between <answer></answer> tags. Example:
+            <answer>0.75</answer>".
         labeler_instruction (str | Unset): Instructions for the labeler. Default: "The answer should be ONLY '1', '0',
             or 'Undetermined'. '1' means yes, '0' means no, and 'Undetermined' means the answer is not clear. Do not include
             any other text or explanation.".
@@ -31,7 +32,7 @@ class BinaryAnswerType:
 
     answer_type: Literal["BINARY"] | Unset = "BINARY"
     answer_format_instruction: str | Unset = (
-        "This is a binary yes/no question. You are estimating the probability that the answer is 'Yes'. Provide your confidence as a value between 0 (definitely No) and 1 (definitely Yes). Provide your probability estimate for Yes as a decimal between 0 and 1. Format your answer as: \\boxed{0.75}"
+        "This is a binary yes/no question. You are estimating the probability that the answer is 'Yes'. Provide your confidence as a value between 0 (definitely No) and 1 (definitely Yes). Provide your probability estimate for Yes as a decimal between 0 and 1. Provide your answer between <answer></answer> tags. Example: <answer>0.75</answer>"
     )
     labeler_instruction: str | Unset = (
         "The answer should be ONLY '1', '0', or 'Undetermined'. '1' means yes, '0' means no, and 'Undetermined' means the answer is not clear. Do not include any other text or explanation."
