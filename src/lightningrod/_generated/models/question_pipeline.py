@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from ..models.question_generator import QuestionGenerator
     from ..models.question_renderer import QuestionRenderer
     from ..models.rollout_generator import RolloutGenerator
+    from ..models.rollout_scorer import RolloutScorer
     from ..models.template_question_generator import TemplateQuestionGenerator
     from ..models.web_search_labeler import WebSearchLabeler
 
@@ -45,6 +46,8 @@ class QuestionPipeline:
             prompt
         rollout_generator (MockTransformConfig | None | RolloutGenerator | Unset): Optional configuration for generating
             rollouts from multiple models
+        scorer (MockTransformConfig | None | RolloutScorer | Unset): Optional configuration for scoring rollouts against
+            ground truth
     """
 
     seed_generator: (
@@ -62,6 +65,7 @@ class QuestionPipeline:
     context_generators: list[MockTransformConfig | NewsContextGenerator] | None | Unset = UNSET
     renderer: MockTransformConfig | None | QuestionRenderer | Unset = UNSET
     rollout_generator: MockTransformConfig | None | RolloutGenerator | Unset = UNSET
+    scorer: MockTransformConfig | None | RolloutScorer | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -76,6 +80,7 @@ class QuestionPipeline:
         from ..models.question_generator import QuestionGenerator
         from ..models.question_renderer import QuestionRenderer
         from ..models.rollout_generator import RolloutGenerator
+        from ..models.rollout_scorer import RolloutScorer
         from ..models.template_question_generator import TemplateQuestionGenerator
         from ..models.web_search_labeler import WebSearchLabeler
 
@@ -152,6 +157,16 @@ class QuestionPipeline:
         else:
             rollout_generator = self.rollout_generator
 
+        scorer: dict[str, Any] | None | Unset
+        if isinstance(self.scorer, Unset):
+            scorer = UNSET
+        elif isinstance(self.scorer, RolloutScorer):
+            scorer = self.scorer.to_dict()
+        elif isinstance(self.scorer, MockTransformConfig):
+            scorer = self.scorer.to_dict()
+        else:
+            scorer = self.scorer
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -170,6 +185,8 @@ class QuestionPipeline:
             field_dict["renderer"] = renderer
         if rollout_generator is not UNSET:
             field_dict["rollout_generator"] = rollout_generator
+        if scorer is not UNSET:
+            field_dict["scorer"] = scorer
 
         return field_dict
 
@@ -186,6 +203,7 @@ class QuestionPipeline:
         from ..models.question_generator import QuestionGenerator
         from ..models.question_renderer import QuestionRenderer
         from ..models.rollout_generator import RolloutGenerator
+        from ..models.rollout_scorer import RolloutScorer
         from ..models.template_question_generator import TemplateQuestionGenerator
         from ..models.web_search_labeler import WebSearchLabeler
 
@@ -410,6 +428,31 @@ class QuestionPipeline:
 
         rollout_generator = _parse_rollout_generator(d.pop("rollout_generator", UNSET))
 
+        def _parse_scorer(data: object) -> MockTransformConfig | None | RolloutScorer | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                scorer_type_0_type_0 = RolloutScorer.from_dict(data)
+
+                return scorer_type_0_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                scorer_type_0_type_1 = MockTransformConfig.from_dict(data)
+
+                return scorer_type_0_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(MockTransformConfig | None | RolloutScorer | Unset, data)
+
+        scorer = _parse_scorer(d.pop("scorer", UNSET))
+
         question_pipeline = cls(
             seed_generator=seed_generator,
             question_generator=question_generator,
@@ -418,6 +461,7 @@ class QuestionPipeline:
             context_generators=context_generators,
             renderer=renderer,
             rollout_generator=rollout_generator,
+            scorer=scorer,
         )
 
         question_pipeline.additional_properties = d

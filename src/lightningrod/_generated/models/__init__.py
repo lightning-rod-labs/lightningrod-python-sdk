@@ -65,6 +65,8 @@ from .retry_failed_files_response import RetryFailedFilesResponse
 from .rollout import Rollout
 from .rollout_generator import RolloutGenerator
 from .rollout_parsed_output_type_0 import RolloutParsedOutputType0
+from .rollout_scorer import RolloutScorer
+from .rollout_scorer_multiple_choice_options_type_0 import RolloutScorerMultipleChoiceOptionsType0
 from .sample import Sample
 from .sample_meta import SampleMeta
 from .seed import Seed
@@ -150,6 +152,8 @@ __all__ = (
     "Rollout",
     "RolloutGenerator",
     "RolloutParsedOutputType0",
+    "RolloutScorer",
+    "RolloutScorerMultipleChoiceOptionsType0",
     "Sample",
     "SampleMeta",
     "Seed",

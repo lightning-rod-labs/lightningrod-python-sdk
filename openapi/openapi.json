@@ -3670,6 +3670,32 @@
             ],
             "title": "Rollout Generator",
             "description": "Optional configuration for generating rollouts from multiple models"
+          },
+          "scorer": {
+            "anyOf": [
+              {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/RolloutScorer"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MockTransformConfig"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "config_type",
+                  "mapping": {
+                    "MOCK": "#/components/schemas/MockTransformConfig",
+                    "ROLLOUT_SCORER": "#/components/schemas/RolloutScorer"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scorer",
+            "description": "Optional configuration for scoring rollouts against ground truth"
           }
         },
         "type": "object",
@@ -3915,6 +3941,67 @@
           "models"
         ],
         "title": "RolloutGenerator"
+      },
+      "RolloutScorer": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "ROLLOUT_SCORER",
+            "title": "Config Type",
+            "default": "ROLLOUT_SCORER"
+          },
+          "answer_type": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/BinaryAnswerType"
+              },
+              {
+                "$ref": "#/components/schemas/MultipleChoiceAnswerType"
+              },
+              {
+                "$ref": "#/components/schemas/ContinuousAnswerType"
+              },
+              {
+                "$ref": "#/components/schemas/FreeResponseAnswerType"
+              }
+            ],
+            "title": "Answer Type",
+            "description": "the answer type of the question",
+            "discriminator": {
+              "propertyName": "answer_type",
+              "mapping": {
+                "BINARY": "#/components/schemas/BinaryAnswerType",
+                "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
+                "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
+              }
+            }
+          },
+          "multiple_choice_options": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Multiple Choice Options"
+          },
+          "is_mutually_exclusive": {
+            "type": "boolean",
+            "title": "Is Mutually Exclusive",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "answer_type"
+        ],
+        "title": "RolloutScorer"
       },
       "Sample": {
         "properties": {
