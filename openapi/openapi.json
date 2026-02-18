@@ -3007,7 +3007,7 @@
             "type": "string",
             "title": "Answer Format Instruction",
             "description": "Instructions describing how the answer should be formatted and given.",
-            "default": "This is a multiple choice question with answer options labeled with letters starting from A. The list of options will be provided in the question. You are estimating the probability for each option being the correct answer. Provide your confidence for each option as a value between 0 and 1, where the probabilities must sum to 1. Provide your probability estimate for each option as a decimal between 0 and 1. Provide your answer between <answer></answer> tags. Example: <answer>A: 0.3, B: 0.4, C: 0.2, D: 0.1</answer>"
+            "default": "This is a multiple choice question with answer options. The list of options will be provided in the question. You are estimating the probability for each option being the correct answer. Provide your confidence for each option as a value between 0 and 1, where the probabilities must sum to 1. Provide your answer as a JSON dictionary between <answer></answer> tags, with keys like option_0, option_1, etc. corresponding to each option in order. Example: <answer>{\"option_0\": 0.3, \"option_1\": 0.4, \"option_2\": 0.2, \"option_3\": 0.1}</answer>"
           },
           "labeler_instruction": {
             "type": "string",
