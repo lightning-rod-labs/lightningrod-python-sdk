@@ -1036,7 +1036,7 @@
             "type": "string",
             "title": "Answer Format Instruction",
             "description": "Instructions describing how the answer should be formatted and given.",
-            "default": "This is a binary yes/no question. You are estimating the probability that the answer is 'Yes'. Provide your confidence as a value between 0 (definitely No) and 1 (definitely Yes). Provide your probability estimate for Yes as a decimal between 0 and 1. Format your answer as: \\boxed{0.75}"
+            "default": "This is a binary yes/no question. You are estimating the probability that the answer is 'Yes'. Provide your confidence as a value between 0 (definitely No) and 1 (definitely Yes). Provide your probability estimate for Yes as a decimal between 0 and 1. Provide your answer between <answer></answer> tags. Example: <answer>0.75</answer>"
           },
           "labeler_instruction": {
             "type": "string",
@@ -1290,7 +1290,7 @@
             "type": "string",
             "title": "Answer Format Instruction",
             "description": "Instructions describing how the answer should be formatted and given.",
-            "default": "This question expects a numeric value as the answer. Provide your best estimate as a single number. Include units if specified in the question. Provide your final answer wrapped in \\boxed{}. Example: \\boxed{42.5}"
+            "default": "This question expects a numeric value as the answer. Provide your best estimate as a single number. Include units if specified in the question. Provide your answer between <answer></answer> tags. Example: <answer>42.5</answer>"
           },
           "labeler_instruction": {
             "type": "string",
@@ -2320,7 +2320,7 @@
             "type": "string",
             "title": "Answer Format Instruction",
             "description": "Instructions describing how the answer should be formatted and given.",
-            "default": "This question expects a free-form text response. Provide an answer that directly addresses what the question is asking. Provide your final answer wrapped in \\boxed{}. Example: \\boxed{The company announced a new product line.}"
+            "default": "This question expects a free-form text response. Provide an answer that directly addresses what the question is asking. Provide your answer between <answer></answer> tags. Example: <answer>The company announced a new product line.</answer>"
           },
           "labeler_instruction": {
             "type": "string",
@@ -3007,7 +3007,7 @@
             "type": "string",
             "title": "Answer Format Instruction",
             "description": "Instructions describing how the answer should be formatted and given.",
-            "default": "This is a multiple choice question with answer options labeled with letters starting from A. The list of options will be provided in the question. You are estimating the probability for each option being the correct answer. Provide your confidence for each option as a value between 0 and 1, where the probabilities must sum to 1. Provide your probability estimate for each option as a decimal between 0 and 1. Format your answer as: \\boxed{A: 0.3, B: 0.4, C: 0.2, D: 0.1}"
+            "default": "This is a multiple choice question with answer options labeled with letters starting from A. The list of options will be provided in the question. You are estimating the probability for each option being the correct answer. Provide your confidence for each option as a value between 0 and 1, where the probabilities must sum to 1. Provide your probability estimate for each option as a decimal between 0 and 1. Provide your answer between <answer></answer> tags. Example: <answer>A: 0.3, B: 0.4, C: 0.2, D: 0.1</answer>"
           },
           "labeler_instruction": {
             "type": "string",
@@ -3552,6 +3552,9 @@
                 "$ref": "#/components/schemas/QuestionAndLabelGenerator"
               },
               {
+                "$ref": "#/components/schemas/TemplateQuestionGenerator"
+              },
+              {
                 "$ref": "#/components/schemas/MockTransformConfig"
               }
             ],
@@ -3563,7 +3566,8 @@
                 "FORWARD_LOOKING_QUESTION_GENERATOR": "#/components/schemas/ForwardLookingQuestionGenerator",
                 "MOCK": "#/components/schemas/MockTransformConfig",
                 "QUESTION_AND_LABEL_GENERATOR": "#/components/schemas/QuestionAndLabelGenerator",
-                "QUESTION_GENERATOR": "#/components/schemas/QuestionGenerator"
+                "QUESTION_GENERATOR": "#/components/schemas/QuestionGenerator",
+                "TEMPLATE_QUESTION_GENERATOR": "#/components/schemas/TemplateQuestionGenerator"
               }
             }
           },
@@ -3838,6 +3842,17 @@
               }
             ],
             "title": "Reasoning"
+          },
+          "reward": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reward"
           }
         },
         "type": "object",
@@ -4099,6 +4114,27 @@
         ],
         "title": "StepCostBreakdown"
       },
+      "TemplateQuestionGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "TEMPLATE_QUESTION_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "TEMPLATE_QUESTION_GENERATOR"
+          },
+          "question_template": {
+            "type": "string",
+            "title": "Question Template",
+            "description": "Template string with {field} placeholders. Supports {seed_text}, {seed}, and any key in {meta} (e.g. {meta.label})."
+          }
+        },
+        "type": "object",
+        "required": [
+          "question_template"
+        ],
+        "title": "TemplateQuestionGenerator"
+      },
       "TransformJob": {
         "properties": {
           "id": {
@@ -4327,6 +4363,8 @@
           "ROLLOUT_GENERATOR",
           "FILESET_SEED_GENERATOR",
           "FILESET_QUERY_SEED_GENERATOR",
+          "TEMPLATE_QUESTION_GENERATOR",
+          "ROLLOUT_SCORER",
           "MOCK"
         ],
         "title": "TransformType"
