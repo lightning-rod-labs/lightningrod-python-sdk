@@ -3510,66 +3510,80 @@
             "default": "QUESTION_PIPELINE"
           },
           "seed_generator": {
-            "oneOf": [
+            "anyOf": [
               {
-                "$ref": "#/components/schemas/NewsSeedGenerator"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/NewsSeedGenerator"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GdeltSeedGenerator"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FileSetSeedGenerator"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FileSetQuerySeedGenerator"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MockTransformConfig"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "config_type",
+                  "mapping": {
+                    "FILESET_QUERY_SEED_GENERATOR": "#/components/schemas/FileSetQuerySeedGenerator",
+                    "FILESET_SEED_GENERATOR": "#/components/schemas/FileSetSeedGenerator",
+                    "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
+                    "MOCK": "#/components/schemas/MockTransformConfig",
+                    "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator"
+                  }
+                }
               },
               {
-                "$ref": "#/components/schemas/GdeltSeedGenerator"
-              },
-              {
-                "$ref": "#/components/schemas/FileSetSeedGenerator"
-              },
-              {
-                "$ref": "#/components/schemas/FileSetQuerySeedGenerator"
-              },
-              {
-                "$ref": "#/components/schemas/MockTransformConfig"
+                "type": "null"
               }
             ],
             "title": "Seed Generator",
-            "description": "Configuration for seed generation",
-            "discriminator": {
-              "propertyName": "config_type",
-              "mapping": {
-                "FILESET_QUERY_SEED_GENERATOR": "#/components/schemas/FileSetQuerySeedGenerator",
-                "FILESET_SEED_GENERATOR": "#/components/schemas/FileSetSeedGenerator",
-                "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
-                "MOCK": "#/components/schemas/MockTransformConfig",
-                "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator"
-              }
-            }
+            "description": "Configuration for seed generation"
           },
           "question_generator": {
-            "oneOf": [
+            "anyOf": [
               {
-                "$ref": "#/components/schemas/QuestionGenerator"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/QuestionGenerator"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ForwardLookingQuestionGenerator"
+                  },
+                  {
+                    "$ref": "#/components/schemas/QuestionAndLabelGenerator"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TemplateQuestionGenerator"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MockTransformConfig"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "config_type",
+                  "mapping": {
+                    "FORWARD_LOOKING_QUESTION_GENERATOR": "#/components/schemas/ForwardLookingQuestionGenerator",
+                    "MOCK": "#/components/schemas/MockTransformConfig",
+                    "QUESTION_AND_LABEL_GENERATOR": "#/components/schemas/QuestionAndLabelGenerator",
+                    "QUESTION_GENERATOR": "#/components/schemas/QuestionGenerator",
+                    "TEMPLATE_QUESTION_GENERATOR": "#/components/schemas/TemplateQuestionGenerator"
+                  }
+                }
               },
               {
-                "$ref": "#/components/schemas/ForwardLookingQuestionGenerator"
-              },
-              {
-                "$ref": "#/components/schemas/QuestionAndLabelGenerator"
-              },
-              {
-                "$ref": "#/components/schemas/TemplateQuestionGenerator"
-              },
-              {
-                "$ref": "#/components/schemas/MockTransformConfig"
+                "type": "null"
               }
             ],
             "title": "Question Generator",
-            "description": "Configuration for question generation",
-            "discriminator": {
-              "propertyName": "config_type",
-              "mapping": {
-                "FORWARD_LOOKING_QUESTION_GENERATOR": "#/components/schemas/ForwardLookingQuestionGenerator",
-                "MOCK": "#/components/schemas/MockTransformConfig",
-                "QUESTION_AND_LABEL_GENERATOR": "#/components/schemas/QuestionAndLabelGenerator",
-                "QUESTION_GENERATOR": "#/components/schemas/QuestionGenerator",
-                "TEMPLATE_QUESTION_GENERATOR": "#/components/schemas/TemplateQuestionGenerator"
-              }
-            }
+            "description": "Configuration for question generation"
           },
           "labeler": {
             "anyOf": [
@@ -3699,10 +3713,6 @@
           }
         },
         "type": "object",
-        "required": [
-          "seed_generator",
-          "question_generator"
-        ],
         "title": "QuestionPipeline"
       },
       "QuestionRenderer": {
