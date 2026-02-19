@@ -31,9 +31,8 @@ def create_sample(
     if label is not None:
         label_obj = Label(label=label, label_confidence=1.0)
     
-    meta_obj = None
+    meta_obj = SampleMeta()
     if meta is not None:
-        meta_obj = SampleMeta()
         for k, v in meta.items():
             meta_obj[k] = v
 
