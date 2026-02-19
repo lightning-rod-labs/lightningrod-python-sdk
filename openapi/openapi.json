@@ -1049,6 +1049,17 @@
             "title": "Question Generation Instruction",
             "description": "Instructions for generating questions of this type.",
             "default": "Generate questions that can be answered with Yes or No. Frame the question so it has exactly two possible outcomes: Yes or No. The question should start with words like 'Will', 'Is', 'Does', 'Has', 'Can', etc. A clear and unambiguous yes/no question, based on the provided seed_text."
+          },
+          "reward_function_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RewardFunctionType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "binary_brier"
           }
         },
         "type": "object",
@@ -1303,6 +1314,17 @@
             "title": "Question Generation Instruction",
             "description": "Instructions for generating questions of this type.",
             "default": "Generate questions that expect a numeric value as the answer. Specify the units if applicable (e.g., dollars, percent, count). A clear and unambiguous question, based on the provided seed_text, that expects a numeric value as the answer."
+          },
+          "reward_function_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RewardFunctionType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "continuous_value_only_linear_score"
           }
         },
         "type": "object",
@@ -2333,6 +2355,17 @@
             "title": "Question Generation Instruction",
             "description": "Instructions for generating questions of this type.",
             "default": "Generate questions that expect a free-form text response. A clear and unambiguous question, based on the provided seed_text, that expects a free-form text response."
+          },
+          "reward_function_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RewardFunctionType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Reward function type for scoring rollouts. None for answer types that don't support scoring."
           }
         },
         "type": "object",
@@ -3020,6 +3053,17 @@
             "title": "Question Generation Instruction",
             "description": "Instructions for generating questions of this type.",
             "default": "Generate questions with multiple choice options (up to 10). Format the options on separate lines after the question:\nA) First option\nB) Second option\nC) Third option\n... and so on\n\nEach option should be distinct and mutually exclusive. A clear and unambiguous multiple-choice question, based on the provided seed_text. Include the options in the question text."
+          },
+          "reward_function_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RewardFunctionType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "multi_choice_log_score"
           }
         },
         "type": "object",
@@ -3068,7 +3112,7 @@
             "type": "integer",
             "title": "Articles Per Query",
             "description": "Number of news articles to return per search query",
-            "default": 5
+            "default": 3
           },
           "num_articles": {
             "type": "integer",
@@ -3845,6 +3889,19 @@
           "files_reset"
         ],
         "title": "RetryFailedFilesResponse"
+      },
+      "RewardFunctionType": {
+        "type": "string",
+        "enum": [
+          "binary_brier",
+          "binary_weighted_brier",
+          "binary_log_score",
+          "multi_choice_log_score",
+          "continuous_log_score",
+          "continuous_value_only_log_score",
+          "continuous_value_only_linear_score"
+        ],
+        "title": "RewardFunctionType"
       },
       "Rollout": {
         "properties": {

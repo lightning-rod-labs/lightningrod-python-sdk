@@ -6,6 +6,7 @@ from typing import Any, Literal, TypeVar, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.reward_function_type import RewardFunctionType
 from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="MultipleChoiceAnswerType")
@@ -30,6 +31,7 @@ class MultipleChoiceAnswerType:
             question:\nA) First option\nB) Second option\nC) Third option\n... and so on\n\nEach option should be distinct
             and mutually exclusive. A clear and unambiguous multiple-choice question, based on the provided seed_text.
             Include the options in the question text.'.
+        reward_function_type (None | RewardFunctionType | Unset):  Default: RewardFunctionType.MULTI_CHOICE_LOG_SCORE.
     """
 
     answer_type: Literal["MULTIPLE_CHOICE"] | Unset = "MULTIPLE_CHOICE"
@@ -42,6 +44,7 @@ class MultipleChoiceAnswerType:
     question_generation_instruction: str | Unset = (
         "Generate questions with multiple choice options (up to 10). Format the options on separate lines after the question:\nA) First option\nB) Second option\nC) Third option\n... and so on\n\nEach option should be distinct and mutually exclusive. A clear and unambiguous multiple-choice question, based on the provided seed_text. Include the options in the question text."
     )
+    reward_function_type: None | RewardFunctionType | Unset = RewardFunctionType.MULTI_CHOICE_LOG_SCORE
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -52,6 +55,14 @@ class MultipleChoiceAnswerType:
         labeler_instruction = self.labeler_instruction
 
         question_generation_instruction = self.question_generation_instruction
+
+        reward_function_type: None | str | Unset
+        if isinstance(self.reward_function_type, Unset):
+            reward_function_type = UNSET
+        elif isinstance(self.reward_function_type, RewardFunctionType):
+            reward_function_type = self.reward_function_type.value
+        else:
+            reward_function_type = self.reward_function_type
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -64,6 +75,8 @@ class MultipleChoiceAnswerType:
             field_dict["labeler_instruction"] = labeler_instruction
         if question_generation_instruction is not UNSET:
             field_dict["question_generation_instruction"] = question_generation_instruction
+        if reward_function_type is not UNSET:
+            field_dict["reward_function_type"] = reward_function_type
 
         return field_dict
 
@@ -80,11 +93,29 @@ class MultipleChoiceAnswerType:
 
         question_generation_instruction = d.pop("question_generation_instruction", UNSET)
 
+        def _parse_reward_function_type(data: object) -> None | RewardFunctionType | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                reward_function_type_type_0 = RewardFunctionType(data)
+
+                return reward_function_type_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | RewardFunctionType | Unset, data)
+
+        reward_function_type = _parse_reward_function_type(d.pop("reward_function_type", UNSET))
+
         multiple_choice_answer_type = cls(
             answer_type=answer_type,
             answer_format_instruction=answer_format_instruction,
             labeler_instruction=labeler_instruction,
             question_generation_instruction=question_generation_instruction,
+            reward_function_type=reward_function_type,
         )
 
         multiple_choice_answer_type.additional_properties = d

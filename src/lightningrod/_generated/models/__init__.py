@@ -62,6 +62,7 @@ from .rag_context import RAGContext
 from .response_message import ResponseMessage
 from .retry_failed_files_request import RetryFailedFilesRequest
 from .retry_failed_files_response import RetryFailedFilesResponse
+from .reward_function_type import RewardFunctionType
 from .rollout import Rollout
 from .rollout_generator import RolloutGenerator
 from .rollout_parsed_output_type_0 import RolloutParsedOutputType0
@@ -149,6 +150,7 @@ __all__ = (
     "ResponseMessage",
     "RetryFailedFilesRequest",
     "RetryFailedFilesResponse",
+    "RewardFunctionType",
     "Rollout",
     "RolloutGenerator",
     "RolloutParsedOutputType0",

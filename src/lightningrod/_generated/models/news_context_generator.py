@@ -18,7 +18,7 @@ class NewsContextGenerator:
         config_type (Literal['NEWS_CONTEXT_GENERATOR'] | Unset): Type of transform configuration Default:
             'NEWS_CONTEXT_GENERATOR'.
         num_search_queries (int | Unset): Number of search queries to generate per question Default: 5.
-        articles_per_query (int | Unset): Number of news articles to return per search query Default: 5.
+        articles_per_query (int | Unset): Number of news articles to return per search query Default: 3.
         num_articles (int | Unset): Maximum number of news articles to include in final output Default: 10.
         relevance_threshold (int | Unset): Minimum relevance rating (1-6 scale) to include article Default: 2.
         min_articles (int | Unset): Minimum number of articles to ensure Default: 6.
@@ -30,7 +30,7 @@ class NewsContextGenerator:
 
     config_type: Literal["NEWS_CONTEXT_GENERATOR"] | Unset = "NEWS_CONTEXT_GENERATOR"
     num_search_queries: int | Unset = 5
-    articles_per_query: int | Unset = 5
+    articles_per_query: int | Unset = 3
     num_articles: int | Unset = 10
     relevance_threshold: int | Unset = 2
     min_articles: int | Unset = 6
