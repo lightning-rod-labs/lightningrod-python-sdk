@@ -1036,7 +1036,7 @@
             "type": "string",
             "title": "Answer Format Instruction",
             "description": "Instructions describing how the answer should be formatted and given.",
-            "default": "This is a binary yes/no question. You are estimating the probability that the answer is 'Yes'. Provide your confidence as a value between 0 (definitely No) and 1 (definitely Yes). Provide your probability estimate for Yes as a decimal between 0 and 1. Format your answer as: \\boxed{0.75}"
+            "default": "This is a binary yes/no question. You are estimating the probability that the answer is 'Yes'. Provide your confidence as a value between 0 (definitely No) and 1 (definitely Yes). Provide your probability estimate for Yes as a decimal between 0 and 1. Provide your answer between <answer></answer> tags. Example: <answer>0.75</answer>"
           },
           "labeler_instruction": {
             "type": "string",
@@ -1049,6 +1049,17 @@
             "title": "Question Generation Instruction",
             "description": "Instructions for generating questions of this type.",
             "default": "Generate questions that can be answered with Yes or No. Frame the question so it has exactly two possible outcomes: Yes or No. The question should start with words like 'Will', 'Is', 'Does', 'Has', 'Can', etc. A clear and unambiguous yes/no question, based on the provided seed_text."
+          },
+          "reward_function_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RewardFunctionType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "binary_brier"
           }
         },
         "type": "object",
@@ -1290,7 +1301,7 @@
             "type": "string",
             "title": "Answer Format Instruction",
             "description": "Instructions describing how the answer should be formatted and given.",
-            "default": "This question expects a numeric value as the answer. Provide your best estimate as a single number. Include units if specified in the question. Provide your final answer wrapped in \\boxed{}. Example: \\boxed{42.5}"
+            "default": "This question expects a numeric value as the answer. Provide your best estimate as a single number. Include units if specified in the question. Provide your answer between <answer></answer> tags. Example: <answer>42.5</answer>"
           },
           "labeler_instruction": {
             "type": "string",
@@ -1303,6 +1314,17 @@
             "title": "Question Generation Instruction",
             "description": "Instructions for generating questions of this type.",
             "default": "Generate questions that expect a numeric value as the answer. Specify the units if applicable (e.g., dollars, percent, count). A clear and unambiguous question, based on the provided seed_text, that expects a numeric value as the answer."
+          },
+          "reward_function_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RewardFunctionType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Reward function type for scoring rollouts. None for answer types that don't support scoring."
           }
         },
         "type": "object",
@@ -2320,7 +2342,7 @@
             "type": "string",
             "title": "Answer Format Instruction",
             "description": "Instructions describing how the answer should be formatted and given.",
-            "default": "This question expects a free-form text response. Provide an answer that directly addresses what the question is asking. Provide your final answer wrapped in \\boxed{}. Example: \\boxed{The company announced a new product line.}"
+            "default": "This question expects a free-form text response. Provide an answer that directly addresses what the question is asking. Provide your answer between <answer></answer> tags. Example: <answer>The company announced a new product line.</answer>"
           },
           "labeler_instruction": {
             "type": "string",
@@ -2333,6 +2355,17 @@
             "title": "Question Generation Instruction",
             "description": "Instructions for generating questions of this type.",
             "default": "Generate questions that expect a free-form text response. A clear and unambiguous question, based on the provided seed_text, that expects a free-form text response."
+          },
+          "reward_function_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RewardFunctionType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Reward function type for scoring rollouts. None for answer types that don't support scoring."
           }
         },
         "type": "object",
@@ -3007,7 +3040,7 @@
             "type": "string",
             "title": "Answer Format Instruction",
             "description": "Instructions describing how the answer should be formatted and given.",
-            "default": "This is a multiple choice question with answer options labeled with letters starting from A. The list of options will be provided in the question. You are estimating the probability for each option being the correct answer. Provide your confidence for each option as a value between 0 and 1, where the probabilities must sum to 1. Provide your probability estimate for each option as a decimal between 0 and 1. Format your answer as: \\boxed{A: 0.3, B: 0.4, C: 0.2, D: 0.1}"
+            "default": "This is a multiple choice question with answer options. The list of options will be provided in the question. You are estimating the probability for each option being the correct answer. Provide your confidence for each option as a value between 0 and 1, where the probabilities must sum to 1. Provide your answer as a JSON dictionary between <answer></answer> tags, with keys like option_0, option_1, etc. corresponding to each option in order. Example: <answer>{\"option_0\": 0.3, \"option_1\": 0.4, \"option_2\": 0.2, \"option_3\": 0.1}</answer>"
           },
           "labeler_instruction": {
             "type": "string",
@@ -3020,6 +3053,17 @@
             "title": "Question Generation Instruction",
             "description": "Instructions for generating questions of this type.",
             "default": "Generate questions with multiple choice options (up to 10). Format the options on separate lines after the question:\nA) First option\nB) Second option\nC) Third option\n... and so on\n\nEach option should be distinct and mutually exclusive. A clear and unambiguous multiple-choice question, based on the provided seed_text. Include the options in the question text."
+          },
+          "reward_function_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RewardFunctionType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "multi_choice_log_score"
           }
         },
         "type": "object",
@@ -3068,7 +3112,7 @@
             "type": "integer",
             "title": "Articles Per Query",
             "description": "Number of news articles to return per search query",
-            "default": 5
+            "default": 3
           },
           "num_articles": {
             "type": "integer",
@@ -3510,62 +3554,80 @@
             "default": "QUESTION_PIPELINE"
           },
           "seed_generator": {
-            "oneOf": [
+            "anyOf": [
               {
-                "$ref": "#/components/schemas/NewsSeedGenerator"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/NewsSeedGenerator"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GdeltSeedGenerator"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FileSetSeedGenerator"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FileSetQuerySeedGenerator"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MockTransformConfig"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "config_type",
+                  "mapping": {
+                    "FILESET_QUERY_SEED_GENERATOR": "#/components/schemas/FileSetQuerySeedGenerator",
+                    "FILESET_SEED_GENERATOR": "#/components/schemas/FileSetSeedGenerator",
+                    "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
+                    "MOCK": "#/components/schemas/MockTransformConfig",
+                    "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator"
+                  }
+                }
               },
               {
-                "$ref": "#/components/schemas/GdeltSeedGenerator"
-              },
-              {
-                "$ref": "#/components/schemas/FileSetSeedGenerator"
-              },
-              {
-                "$ref": "#/components/schemas/FileSetQuerySeedGenerator"
-              },
-              {
-                "$ref": "#/components/schemas/MockTransformConfig"
+                "type": "null"
               }
             ],
             "title": "Seed Generator",
-            "description": "Configuration for seed generation",
-            "discriminator": {
-              "propertyName": "config_type",
-              "mapping": {
-                "FILESET_QUERY_SEED_GENERATOR": "#/components/schemas/FileSetQuerySeedGenerator",
-                "FILESET_SEED_GENERATOR": "#/components/schemas/FileSetSeedGenerator",
-                "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
-                "MOCK": "#/components/schemas/MockTransformConfig",
-                "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator"
-              }
-            }
+            "description": "Configuration for seed generation"
           },
           "question_generator": {
-            "oneOf": [
+            "anyOf": [
               {
-                "$ref": "#/components/schemas/QuestionGenerator"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/QuestionGenerator"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ForwardLookingQuestionGenerator"
+                  },
+                  {
+                    "$ref": "#/components/schemas/QuestionAndLabelGenerator"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TemplateQuestionGenerator"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MockTransformConfig"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "config_type",
+                  "mapping": {
+                    "FORWARD_LOOKING_QUESTION_GENERATOR": "#/components/schemas/ForwardLookingQuestionGenerator",
+                    "MOCK": "#/components/schemas/MockTransformConfig",
+                    "QUESTION_AND_LABEL_GENERATOR": "#/components/schemas/QuestionAndLabelGenerator",
+                    "QUESTION_GENERATOR": "#/components/schemas/QuestionGenerator",
+                    "TEMPLATE_QUESTION_GENERATOR": "#/components/schemas/TemplateQuestionGenerator"
+                  }
+                }
               },
               {
-                "$ref": "#/components/schemas/ForwardLookingQuestionGenerator"
-              },
-              {
-                "$ref": "#/components/schemas/QuestionAndLabelGenerator"
-              },
-              {
-                "$ref": "#/components/schemas/MockTransformConfig"
+                "type": "null"
               }
             ],
             "title": "Question Generator",
-            "description": "Configuration for question generation",
-            "discriminator": {
-              "propertyName": "config_type",
-              "mapping": {
-                "FORWARD_LOOKING_QUESTION_GENERATOR": "#/components/schemas/ForwardLookingQuestionGenerator",
-                "MOCK": "#/components/schemas/MockTransformConfig",
-                "QUESTION_AND_LABEL_GENERATOR": "#/components/schemas/QuestionAndLabelGenerator",
-                "QUESTION_GENERATOR": "#/components/schemas/QuestionGenerator"
-              }
-            }
+            "description": "Configuration for question generation"
           },
           "labeler": {
             "anyOf": [
@@ -3666,13 +3728,35 @@
             ],
             "title": "Rollout Generator",
             "description": "Optional configuration for generating rollouts from multiple models"
+          },
+          "scorer": {
+            "anyOf": [
+              {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/RolloutScorer"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MockTransformConfig"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "config_type",
+                  "mapping": {
+                    "MOCK": "#/components/schemas/MockTransformConfig",
+                    "ROLLOUT_SCORER": "#/components/schemas/RolloutScorer"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scorer",
+            "description": "Optional configuration for scoring rollouts against ground truth"
           }
         },
         "type": "object",
-        "required": [
-          "seed_generator",
-          "question_generator"
-        ],
         "title": "QuestionPipeline"
       },
       "QuestionRenderer": {
@@ -3806,6 +3890,19 @@
         ],
         "title": "RetryFailedFilesResponse"
       },
+      "RewardFunctionType": {
+        "type": "string",
+        "enum": [
+          "binary_brier",
+          "binary_weighted_brier",
+          "binary_log_score",
+          "multi_choice_log_score",
+          "continuous_log_score",
+          "continuous_value_only_log_score",
+          "continuous_value_only_linear_score"
+        ],
+        "title": "RewardFunctionType"
+      },
       "Rollout": {
         "properties": {
           "model_name": {
@@ -3838,6 +3935,17 @@
               }
             ],
             "title": "Reasoning"
+          },
+          "reward": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reward"
           }
         },
         "type": "object",
@@ -3900,6 +4008,67 @@
           "models"
         ],
         "title": "RolloutGenerator"
+      },
+      "RolloutScorer": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "ROLLOUT_SCORER",
+            "title": "Config Type",
+            "default": "ROLLOUT_SCORER"
+          },
+          "answer_type": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/BinaryAnswerType"
+              },
+              {
+                "$ref": "#/components/schemas/MultipleChoiceAnswerType"
+              },
+              {
+                "$ref": "#/components/schemas/ContinuousAnswerType"
+              },
+              {
+                "$ref": "#/components/schemas/FreeResponseAnswerType"
+              }
+            ],
+            "title": "Answer Type",
+            "description": "the answer type of the question",
+            "discriminator": {
+              "propertyName": "answer_type",
+              "mapping": {
+                "BINARY": "#/components/schemas/BinaryAnswerType",
+                "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
+                "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
+              }
+            }
+          },
+          "multiple_choice_options": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Multiple Choice Options"
+          },
+          "is_mutually_exclusive": {
+            "type": "boolean",
+            "title": "Is Mutually Exclusive",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "answer_type"
+        ],
+        "title": "RolloutScorer"
       },
       "Sample": {
         "properties": {
@@ -4098,6 +4267,27 @@
           "cost_per_output"
         ],
         "title": "StepCostBreakdown"
+      },
+      "TemplateQuestionGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "TEMPLATE_QUESTION_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "TEMPLATE_QUESTION_GENERATOR"
+          },
+          "question_template": {
+            "type": "string",
+            "title": "Question Template",
+            "description": "Template string with {field} placeholders. Supports {seed_text}, {seed}, and any key in {meta} (e.g. {meta.label})."
+          }
+        },
+        "type": "object",
+        "required": [
+          "question_template"
+        ],
+        "title": "TemplateQuestionGenerator"
       },
       "TransformJob": {
         "properties": {
@@ -4327,6 +4517,8 @@
           "ROLLOUT_GENERATOR",
           "FILESET_SEED_GENERATOR",
           "FILESET_QUERY_SEED_GENERATOR",
+          "TEMPLATE_QUESTION_GENERATOR",
+          "ROLLOUT_SCORER",
           "MOCK"
         ],
         "title": "TransformType"

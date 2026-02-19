@@ -6,6 +6,7 @@ from typing import Any, Literal, TypeVar, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.reward_function_type import RewardFunctionType
 from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="ContinuousAnswerType")
@@ -13,13 +14,13 @@ T = TypeVar("T", bound="ContinuousAnswerType")
 
 @_attrs_define
 class ContinuousAnswerType:
-    r"""
+    """
     Attributes:
         answer_type (Literal['CONTINUOUS'] | Unset):  Default: 'CONTINUOUS'.
         answer_format_instruction (str | Unset): Instructions describing how the answer should be formatted and given.
             Default: 'This question expects a numeric value as the answer. Provide your best estimate as a single number.
-            Include units if specified in the question. Provide your final answer wrapped in \\boxed{}. Example:
-            \\boxed{42.5}'.
+            Include units if specified in the question. Provide your answer between <answer></answer> tags. Example:
+            <answer>42.5</answer>'.
         labeler_instruction (str | Unset): Instructions for the labeler. Default: "The answer should be ONLY a single
             exact numeric value, not a range. For example: '42.5' or '1000', not '40-45' or 'between 900 and 1100', or
             'Undetermined'. Do not include any other text or explanation.".
@@ -27,11 +28,13 @@ class ContinuousAnswerType:
             'Generate questions that expect a numeric value as the answer. Specify the units if applicable (e.g., dollars,
             percent, count). A clear and unambiguous question, based on the provided seed_text, that expects a numeric value
             as the answer.'.
+        reward_function_type (None | RewardFunctionType | Unset): Reward function type for scoring rollouts. None for
+            answer types that don't support scoring.
     """
 
     answer_type: Literal["CONTINUOUS"] | Unset = "CONTINUOUS"
     answer_format_instruction: str | Unset = (
-        "This question expects a numeric value as the answer. Provide your best estimate as a single number. Include units if specified in the question. Provide your final answer wrapped in \\boxed{}. Example: \\boxed{42.5}"
+        "This question expects a numeric value as the answer. Provide your best estimate as a single number. Include units if specified in the question. Provide your answer between <answer></answer> tags. Example: <answer>42.5</answer>"
     )
     labeler_instruction: str | Unset = (
         "The answer should be ONLY a single exact numeric value, not a range. For example: '42.5' or '1000', not '40-45' or 'between 900 and 1100', or 'Undetermined'. Do not include any other text or explanation."
@@ -39,6 +42,7 @@ class ContinuousAnswerType:
     question_generation_instruction: str | Unset = (
         "Generate questions that expect a numeric value as the answer. Specify the units if applicable (e.g., dollars, percent, count). A clear and unambiguous question, based on the provided seed_text, that expects a numeric value as the answer."
     )
+    reward_function_type: None | RewardFunctionType | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -49,6 +53,14 @@ class ContinuousAnswerType:
         labeler_instruction = self.labeler_instruction
 
         question_generation_instruction = self.question_generation_instruction
+
+        reward_function_type: None | str | Unset
+        if isinstance(self.reward_function_type, Unset):
+            reward_function_type = UNSET
+        elif isinstance(self.reward_function_type, RewardFunctionType):
+            reward_function_type = self.reward_function_type.value
+        else:
+            reward_function_type = self.reward_function_type
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -61,6 +73,8 @@ class ContinuousAnswerType:
             field_dict["labeler_instruction"] = labeler_instruction
         if question_generation_instruction is not UNSET:
             field_dict["question_generation_instruction"] = question_generation_instruction
+        if reward_function_type is not UNSET:
+            field_dict["reward_function_type"] = reward_function_type
 
         return field_dict
 
@@ -77,11 +91,29 @@ class ContinuousAnswerType:
 
         question_generation_instruction = d.pop("question_generation_instruction", UNSET)
 
+        def _parse_reward_function_type(data: object) -> None | RewardFunctionType | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                reward_function_type_type_0 = RewardFunctionType(data)
+
+                return reward_function_type_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | RewardFunctionType | Unset, data)
+
+        reward_function_type = _parse_reward_function_type(d.pop("reward_function_type", UNSET))
+
         continuous_answer_type = cls(
             answer_type=answer_type,
             answer_format_instruction=answer_format_instruction,
             labeler_instruction=labeler_instruction,
             question_generation_instruction=question_generation_instruction,
+            reward_function_type=reward_function_type,
         )
 
         continuous_answer_type.additional_properties = d

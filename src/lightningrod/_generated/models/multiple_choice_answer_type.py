@@ -6,6 +6,7 @@ from typing import Any, Literal, TypeVar, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.reward_function_type import RewardFunctionType
 from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="MultipleChoiceAnswerType")
@@ -17,11 +18,12 @@ class MultipleChoiceAnswerType:
     Attributes:
         answer_type (Literal['MULTIPLE_CHOICE'] | Unset):  Default: 'MULTIPLE_CHOICE'.
         answer_format_instruction (str | Unset): Instructions describing how the answer should be formatted and given.
-            Default: 'This is a multiple choice question with answer options labeled with letters starting from A. The list
-            of options will be provided in the question. You are estimating the probability for each option being the
-            correct answer. Provide your confidence for each option as a value between 0 and 1, where the probabilities must
-            sum to 1. Provide your probability estimate for each option as a decimal between 0 and 1. Format your answer as:
-            \\boxed{A: 0.3, B: 0.4, C: 0.2, D: 0.1}'.
+            Default: 'This is a multiple choice question with answer options. The list of options will be provided in the
+            question. You are estimating the probability for each option being the correct answer. Provide your confidence
+            for each option as a value between 0 and 1, where the probabilities must sum to 1. Provide your answer as a JSON
+            dictionary between <answer></answer> tags, with keys like option_0, option_1, etc. corresponding to each option
+            in order. Example: <answer>{\\"option_0\\": 0.3, \\"option_1\\": 0.4, \\"option_2\\": 0.2, \\"option_3\\":
+            0.1}</answer>'.
         labeler_instruction (str | Unset): Instructions for the labeler. Default: "The answer should be ONLY one of the
             following options: 'A', 'B', 'C', or 'D', or 'Undetermined'. Do not include any other text or explanation.".
         question_generation_instruction (str | Unset): Instructions for generating questions of this type. Default:
@@ -29,11 +31,12 @@ class MultipleChoiceAnswerType:
             question:\nA) First option\nB) Second option\nC) Third option\n... and so on\n\nEach option should be distinct
             and mutually exclusive. A clear and unambiguous multiple-choice question, based on the provided seed_text.
             Include the options in the question text.'.
+        reward_function_type (None | RewardFunctionType | Unset):  Default: RewardFunctionType.MULTI_CHOICE_LOG_SCORE.
     """
 
     answer_type: Literal["MULTIPLE_CHOICE"] | Unset = "MULTIPLE_CHOICE"
     answer_format_instruction: str | Unset = (
-        "This is a multiple choice question with answer options labeled with letters starting from A. The list of options will be provided in the question. You are estimating the probability for each option being the correct answer. Provide your confidence for each option as a value between 0 and 1, where the probabilities must sum to 1. Provide your probability estimate for each option as a decimal between 0 and 1. Format your answer as: \\boxed{A: 0.3, B: 0.4, C: 0.2, D: 0.1}"
+        'This is a multiple choice question with answer options. The list of options will be provided in the question. You are estimating the probability for each option being the correct answer. Provide your confidence for each option as a value between 0 and 1, where the probabilities must sum to 1. Provide your answer as a JSON dictionary between <answer></answer> tags, with keys like option_0, option_1, etc. corresponding to each option in order. Example: <answer>{\\"option_0\\": 0.3, \\"option_1\\": 0.4, \\"option_2\\": 0.2, \\"option_3\\": 0.1}</answer>'
     )
     labeler_instruction: str | Unset = (
         "The answer should be ONLY one of the following options: 'A', 'B', 'C', or 'D', or 'Undetermined'. Do not include any other text or explanation."
@@ -41,6 +44,7 @@ class MultipleChoiceAnswerType:
     question_generation_instruction: str | Unset = (
         "Generate questions with multiple choice options (up to 10). Format the options on separate lines after the question:\nA) First option\nB) Second option\nC) Third option\n... and so on\n\nEach option should be distinct and mutually exclusive. A clear and unambiguous multiple-choice question, based on the provided seed_text. Include the options in the question text."
     )
+    reward_function_type: None | RewardFunctionType | Unset = RewardFunctionType.MULTI_CHOICE_LOG_SCORE
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -51,6 +55,14 @@ class MultipleChoiceAnswerType:
         labeler_instruction = self.labeler_instruction
 
         question_generation_instruction = self.question_generation_instruction
+
+        reward_function_type: None | str | Unset
+        if isinstance(self.reward_function_type, Unset):
+            reward_function_type = UNSET
+        elif isinstance(self.reward_function_type, RewardFunctionType):
+            reward_function_type = self.reward_function_type.value
+        else:
+            reward_function_type = self.reward_function_type
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -63,6 +75,8 @@ class MultipleChoiceAnswerType:
             field_dict["labeler_instruction"] = labeler_instruction
         if question_generation_instruction is not UNSET:
             field_dict["question_generation_instruction"] = question_generation_instruction
+        if reward_function_type is not UNSET:
+            field_dict["reward_function_type"] = reward_function_type
 
         return field_dict
 
@@ -79,11 +93,29 @@ class MultipleChoiceAnswerType:
 
         question_generation_instruction = d.pop("question_generation_instruction", UNSET)
 
+        def _parse_reward_function_type(data: object) -> None | RewardFunctionType | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                reward_function_type_type_0 = RewardFunctionType(data)
+
+                return reward_function_type_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | RewardFunctionType | Unset, data)
+
+        reward_function_type = _parse_reward_function_type(d.pop("reward_function_type", UNSET))
+
         multiple_choice_answer_type = cls(
             answer_type=answer_type,
             answer_format_instruction=answer_format_instruction,
             labeler_instruction=labeler_instruction,
             question_generation_instruction=question_generation_instruction,
+            reward_function_type=reward_function_type,
         )
 
         multiple_choice_answer_type.additional_properties = d

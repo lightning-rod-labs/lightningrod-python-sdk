@@ -7,6 +7,7 @@ AI-powered forecasting dataset generation platform.
 from lightningrod.client import LightningRod
 from lightningrod.datasets.dataset import Dataset
 from lightningrod import preprocessing, utils
+from lightningrod.utils.sample import create_sample
 from lightningrod.utils.rendering import render_sample
 from lightningrod._generated.models import (
     TransformJob,
@@ -19,6 +20,13 @@ from lightningrod._generated.models import (
     ForwardLookingQuestionGenerator,
     QuestionPipeline,
     QuestionRenderer,
+    TemplateQuestionGenerator,
+    RolloutGenerator,
+    ModelConfig,
+    ModelSourceType,
+    Label,
+    Rollout,
+    RolloutScorer,
     WebSearchLabeler,
     FilterCriteria,
     Sample,
@@ -56,18 +64,26 @@ __all__ = [
     "FilterCriteria",
     "ForwardLookingQuestionGenerator",
     "GdeltSeedGenerator",
+    "Label",
+    "LightningRod",
+    "ModelConfig",
+    "ModelSourceType",
     "NewsContextGenerator",
     "NewsSeedGenerator",
     "QuestionAndLabelGenerator",
     "QuestionGenerator",
     "QuestionPipeline",
     "QuestionRenderer",
+    "create_sample",
     "render_sample",
+    "Rollout",
+    "RolloutScorer",
+    "RolloutGenerator",
     "Sample",
     "SampleMeta",
     "Seed",
+    "TemplateQuestionGenerator",
     "TransformJob",
     "TransformJobStatus",
     "WebSearchLabeler",
-    "LightningRod",
 ]
