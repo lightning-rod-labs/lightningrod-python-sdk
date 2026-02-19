@@ -28,8 +28,8 @@ class ContinuousAnswerType:
             'Generate questions that expect a numeric value as the answer. Specify the units if applicable (e.g., dollars,
             percent, count). A clear and unambiguous question, based on the provided seed_text, that expects a numeric value
             as the answer.'.
-        reward_function_type (None | RewardFunctionType | Unset):  Default:
-            RewardFunctionType.CONTINUOUS_VALUE_ONLY_LINEAR_SCORE.
+        reward_function_type (None | RewardFunctionType | Unset): Reward function type for scoring rollouts. None for
+            answer types that don't support scoring.
     """
 
     answer_type: Literal["CONTINUOUS"] | Unset = "CONTINUOUS"
@@ -42,7 +42,7 @@ class ContinuousAnswerType:
     question_generation_instruction: str | Unset = (
         "Generate questions that expect a numeric value as the answer. Specify the units if applicable (e.g., dollars, percent, count). A clear and unambiguous question, based on the provided seed_text, that expects a numeric value as the answer."
     )
-    reward_function_type: None | RewardFunctionType | Unset = RewardFunctionType.CONTINUOUS_VALUE_ONLY_LINEAR_SCORE
+    reward_function_type: None | RewardFunctionType | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:

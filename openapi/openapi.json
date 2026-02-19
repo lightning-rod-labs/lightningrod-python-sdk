@@ -1324,7 +1324,7 @@
                 "type": "null"
               }
             ],
-            "default": "continuous_value_only_linear_score"
+            "description": "Reward function type for scoring rollouts. None for answer types that don't support scoring."
           }
         },
         "type": "object",
