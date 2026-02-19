@@ -20,6 +20,8 @@ def compute_metrics_summary(
     model_data: Dict[str, list] = defaultdict(list)
 
     for sample in samples:
+        if not sample.label:
+            continue
         correct_answer = sample.label.label
 
         for rollout in sample.rollouts or []:
