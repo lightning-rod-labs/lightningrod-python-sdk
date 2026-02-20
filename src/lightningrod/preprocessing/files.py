@@ -214,8 +214,8 @@ def file_to_samples(
     chunk_size: int = 1000,
     chunk_overlap: int = 100,
     *,
-    csv_text_column: str | None = None,
-    csv_label_column: str | None = None,
+    csv_seed_text_col: str | None = None,
+    csv_label_col: str | None = None,
 ) -> list[Sample]:
     """
     Read a file, split it into chunks, and convert to Sample objects.
@@ -253,7 +253,7 @@ def file_to_samples(
         if not rows:
             return []
         columns = list(rows[0].keys())
-        text_col = csv_text_column
+        text_col = csv_seed_text_col
         if text_col is None:
             for c in _DEFAULT_CSV_TEXT_COLUMNS:
                 if c in columns:
@@ -264,7 +264,7 @@ def file_to_samples(
                 f"CSV has no text column. Expected one of {list(_DEFAULT_CSV_TEXT_COLUMNS)}, "
                 f"or pass csv_text_column."
             )
-        label_col = csv_label_column if csv_label_column is not None else (
+        label_col = csv_label_col if csv_label_col is not None else (
             _DEFAULT_CSV_LABEL_COLUMN if _DEFAULT_CSV_LABEL_COLUMN in columns else None
         )
         return _csv_rows_to_samples(path, rows, text_col, label_col, meta)
@@ -321,8 +321,8 @@ def files_to_samples(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
             metadata=metadata,
-            csv_text_column=csv_text_column,
-            csv_label_column=csv_label_column,
+            csv_seed_text_col=csv_text_column,
+            csv_label_col=csv_label_column,
         )
         all_samples.extend(file_samples)
     return all_samples
