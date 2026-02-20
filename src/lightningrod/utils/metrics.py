@@ -1,5 +1,6 @@
 """Evaluation metrics — computes per-model accuracy from scored rollouts."""
 
+import math
 from collections import defaultdict
 from typing import Any, Dict, List, Optional
 
@@ -135,4 +136,127 @@ def compute_consensus(samples: List[Sample]) -> List[Dict[str, Any]]:
         })
 
     results.sort(key=lambda r: r["spread"], reverse=True)
+    return results
+
+
+def multi_choice_log_score(
+    predicted: Dict[str, float],
+    correct_answer: str,
+    multiple_choice_options: Dict[str, str],
+) -> float:
+    """Compute multi-choice log score matching the back-end formula.
+
+    ``sum(actual * log(clamp(predicted)))`` for mutually-exclusive options,
+    where *actual* is a one-hot vector built from *correct_answer*.
+
+    Args:
+        predicted: option_key → predicted probability (e.g. {"option_0": 0.8, …}).
+        correct_answer: the correct option **value** (e.g. "letter").
+        multiple_choice_options: option_key → option value mapping.
+
+    Returns:
+        The log score (always ≤ 0; higher is better).
+    """
+    resolution: Dict[str, int] = {}
+    for key, value in multiple_choice_options.items():
+        resolution[key] = 1 if value == correct_answer else 0
+
+    log_scores: List[float] = []
+    for key in multiple_choice_options:
+        actual = resolution.get(key, 0)
+        pred = predicted.get(key)
+        if pred is None:
+            continue
+        clamped = max(0.001, min(0.999, pred))
+        log_scores.append(actual * math.log(clamped))
+
+    return sum(log_scores)
+
+
+def compute_multi_choice_consensus(
+    samples: List[Sample],
+    multiple_choice_options: Dict[str, str],
+) -> List[Dict[str, Any]]:
+    """Compute model consensus for multiple-choice samples with 2+ parsed rollouts.
+
+    For each sample, averages the probability dicts across models and measures
+    agreement / spread.
+
+    Returns a list of dicts (one per qualifying sample) with:
+        consensus          – averaged probability dict across models
+        consensus_answer   – option *value* with highest avg probability
+        per_model_answers  – model_name → predicted option value
+        all_agree          – bool, all models pick the same top answer
+        max_spread         – largest range of any option's probs across models
+        label              – ground-truth label (str or None)
+        predictions        – model_name → raw probability dict
+    """
+    results: List[Dict[str, Any]] = []
+
+    for sample in samples:
+        predictions: Dict[str, Dict[str, float]] = {}
+
+        for rollout in sample.rollouts or []:
+            parsed_output = rollout.parsed_output
+            if parsed_output is None or isinstance(parsed_output, Unset):
+                continue
+
+            if isinstance(parsed_output, RolloutParsedOutputType0):
+                po_dict = parsed_output.to_dict()
+            else:
+                po_dict = parsed_output if isinstance(parsed_output, dict) else {}
+
+            if not po_dict:
+                continue
+
+            # Only keep dicts that look like option probability maps
+            if any(k in multiple_choice_options for k in po_dict):
+                predictions[rollout.model_name] = {
+                    k: float(v) for k, v in po_dict.items()
+                    if k in multiple_choice_options
+                }
+
+        if len(predictions) < 2:
+            continue
+
+        # Average probabilities across models
+        option_keys = list(multiple_choice_options.keys())
+        consensus: Dict[str, float] = {}
+        max_spread = 0.0
+        for key in option_keys:
+            values = [pred[key] for pred in predictions.values() if key in pred]
+            if values:
+                consensus[key] = sum(values) / len(values)
+                spread = max(values) - min(values)
+                if spread > max_spread:
+                    max_spread = spread
+
+        # Consensus answer = option value with highest avg probability
+        consensus_key = max(consensus, key=consensus.get)
+        consensus_answer = multiple_choice_options.get(consensus_key, consensus_key)
+
+        # Per-model top answers
+        per_model_answers: Dict[str, str] = {}
+        for model_name, pred in predictions.items():
+            top_key = max(pred, key=pred.get)
+            per_model_answers[model_name] = multiple_choice_options.get(top_key, top_key)
+
+        all_agree = len(set(per_model_answers.values())) == 1
+
+        label = None
+        if sample.label and not isinstance(sample.label, Unset):
+            lbl = sample.label.label
+            if lbl is not None and not isinstance(lbl, Unset):
+                label = lbl
+
+        results.append({
+            "consensus": consensus,
+            "consensus_answer": consensus_answer,
+            "per_model_answers": per_model_answers,
+            "all_agree": all_agree,
+            "max_spread": max_spread,
+            "label": label,
+            "predictions": predictions,
+        })
+
     return results
