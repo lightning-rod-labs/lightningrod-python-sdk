@@ -12,6 +12,7 @@ from lightningrod.utils.rendering import render_sample
 from lightningrod._generated.models import (
     TransformJob,
     TransformJobStatus,
+    BigQuerySeedGenerator,
     NewsSeedGenerator,
     GdeltSeedGenerator,
     NewsContextGenerator,
@@ -49,6 +50,7 @@ __all__ = [
     "preprocessing",
     "utils",
     "AnswerType",
+    "BigQuerySeedGenerator",
     "BinaryAnswerType",
     "ContinuousAnswerType",
     "MultipleChoiceAnswerType",
