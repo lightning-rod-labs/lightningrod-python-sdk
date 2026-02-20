@@ -70,7 +70,3 @@ We have some example notebooks to help you get started! If you have trouble usin
 
 
 For complete API reference documentation, see [API.md](API.md). This includes overview of the core system concepts, methods and types.
-
-## License
-
-MIT License - see LICENSE file for details
