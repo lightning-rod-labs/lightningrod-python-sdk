@@ -9,6 +9,7 @@ from lightningrod.datasets.dataset import Dataset
 from lightningrod import preprocessing, utils
 from lightningrod.utils.sample import create_sample
 from lightningrod.utils.rendering import render_sample
+from lightningrod.utils.models import open_router_model
 from lightningrod._generated.models import (
     TransformJob,
     TransformJobStatus,
@@ -75,6 +76,7 @@ __all__ = [
     "QuestionPipeline",
     "QuestionRenderer",
     "create_sample",
+    "open_router_model",
     "render_sample",
     "Rollout",
     "RolloutScorer",
