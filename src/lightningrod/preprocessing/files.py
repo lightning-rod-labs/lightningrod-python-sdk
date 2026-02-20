@@ -6,7 +6,10 @@ import re
 from pathlib import Path
 from typing import Any
 
-from lightningrod._generated.models import Sample, SampleMeta, Seed
+from lightningrod._generated.models import Label, Sample, SampleMeta, Seed
+
+_DEFAULT_CSV_TEXT_COLUMNS = ("text", "seed_text", "content")
+_DEFAULT_CSV_LABEL_COLUMN = "label"
 
 _SUPPORTED_FILE_TYPES = {"txt", "text", "md", "markdown", "pdf", "csv"}
 
@@ -54,18 +57,22 @@ def _read_pdf_file(path: Path) -> str:
         return "\n\n".join(text_parts)
 
 
-def _read_csv_file(path: Path) -> str:
-    """Read a CSV file and convert to text format."""
+def _read_csv_rows(path: Path) -> list[dict[str, str]]:
+    """Read a CSV file and return rows as list of dicts."""
     with open(path, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
-        rows: list[dict[str, str]] = list(reader)
-    
+        return list(reader)
+
+
+def _read_csv_file(path: Path) -> str:
+    """Read a CSV file and convert to text format."""
+    rows = _read_csv_rows(path)
     if not rows:
         return ""
-    
+
     fieldnames = list(rows[0].keys())
     text_parts: list[str] = [f"CSV File: {path.name}", f"Columns: {', '.join(fieldnames)}", ""]
-    
+
     for idx, row in enumerate(rows, 1):
         text_parts.append(f"Row {idx}:")
         for field in fieldnames:
@@ -73,8 +80,35 @@ def _read_csv_file(path: Path) -> str:
             if value:
                 text_parts.append(f"  {field}: {value}")
         text_parts.append("")
-    
+
     return "\n".join(text_parts)
+
+
+def _csv_rows_to_samples(
+    path: Path,
+    rows: list[dict[str, str]],
+    text_column: str,
+    label_column: str | None,
+    metadata: dict[str, Any],
+) -> list[Sample]:
+    samples: list[Sample] = []
+    for idx, row in enumerate(rows):
+        text_val = row.get(text_column, "")
+        if not text_val or not str(text_val).strip():
+            continue
+        seed_text = _sanitize_text(str(text_val).strip())
+
+        label_obj = None
+        if label_column and label_column in row:
+            label_val = row.get(label_column, "")
+            if label_val is not None and str(label_val).strip():
+                label_obj = Label(label=str(label_val).strip(), label_confidence=1.0)
+
+        meta_dict = {**metadata, "row_index": idx, "file_name": path.name, "file_type": "csv"}
+        sample_meta = SampleMeta.from_dict(meta_dict)
+        sample = Sample(seed=Seed(seed_text=seed_text), label=label_obj, meta=sample_meta)
+        samples.append(sample)
+    return samples
 
 
 def _read_file_content(path: Path, file_type: str) -> str:
@@ -179,17 +213,25 @@ def file_to_samples(
     metadata: dict[str, Any] = {},
     chunk_size: int = 1000,
     chunk_overlap: int = 100,
+    *,
+    csv_text_column: str | None = None,
+    csv_label_column: str | None = None,
 ) -> list[Sample]:
     """
     Read a file, split it into chunks, and convert to Sample objects.
 
     Supported file types: .txt, .text, .md, .markdown, .pdf, .csv
 
+    For CSV files: creates one sample per row (no chunking). Uses standard column
+    names (text/seed_text/content for seed, label for label) unless overridden.
+
     Args:
         file_path: Path to the file to read
         metadata: Additional metadata to include in SampleMeta (optional)
-        chunk_size: Maximum size of each chunk
-        chunk_overlap: Number of characters to overlap between chunks
+        chunk_size: Maximum size of each chunk (ignored for CSV)
+        chunk_overlap: Number of characters to overlap between chunks (ignored for CSV)
+        csv_text_column: CSV column for seed text. Default: first of text, seed_text, content
+        csv_label_column: CSV column for label. Default: label
 
     Returns:
         List of Sample objects
@@ -197,22 +239,40 @@ def file_to_samples(
     Raises:
         FileNotFoundError: If the file doesn't exist
         ValueError: If the file type is not supported
-        ImportError: If required dependencies (langchain-text-splitters, PyPDF2/pdfplumber) are not installed
+        ImportError: If required dependencies (langchain-text-splitters, PyPDF2) are not installed
     """
     path = Path(file_path)
     if not path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")
 
     inferred_file_type = path.suffix.lower().lstrip(".")
+    meta = dict(metadata)
+
+    if inferred_file_type == "csv":
+        rows = _read_csv_rows(path)
+        if not rows:
+            return []
+        columns = list(rows[0].keys())
+        text_col = csv_text_column
+        if text_col is None:
+            for c in _DEFAULT_CSV_TEXT_COLUMNS:
+                if c in columns:
+                    text_col = c
+                    break
+        if text_col is None:
+            raise ValueError(
+                f"CSV has no text column. Expected one of {list(_DEFAULT_CSV_TEXT_COLUMNS)}, "
+                f"or pass csv_text_column."
+            )
+        label_col = csv_label_column if csv_label_column is not None else (
+            _DEFAULT_CSV_LABEL_COLUMN if _DEFAULT_CSV_LABEL_COLUMN in columns else None
+        )
+        return _csv_rows_to_samples(path, rows, text_col, label_col, meta)
+
     text = _read_file_content(path, file_type=inferred_file_type)
-
     chunks = chunk_text(text, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-
-    metadata.update({"file_name": path.name, "file_type": inferred_file_type})
-    return chunks_to_samples(
-        chunks,
-        metadata=metadata,
-    )
+    meta.update({"file_name": path.name, "file_type": inferred_file_type})
+    return chunks_to_samples(chunks, metadata=meta)
 
 
 def files_to_samples(
@@ -220,6 +280,9 @@ def files_to_samples(
     metadata: dict[str, Any] | None = None,
     chunk_size: int = 1000,
     chunk_overlap: int = 100,
+    *,
+    csv_text_column: str | None = None,
+    csv_label_column: str | None = None,
 ) -> list[Sample]:
     """
     Process multiple files matching a glob pattern and convert to Sample objects.
@@ -231,6 +294,8 @@ def files_to_samples(
         metadata: Additional metadata to include in SampleMeta (optional)
         chunk_size: Maximum size of each chunk
         chunk_overlap: Number of characters to overlap between chunks
+        csv_text_column: CSV column for seed text (CSV files only)
+        csv_label_column: CSV column for label (CSV files only)
 
     Returns:
         List of Sample objects from all matching files
@@ -243,23 +308,21 @@ def files_to_samples(
         metadata = {}
 
     matched_files = sorted(glob.glob(pattern, recursive=True))
-    
     if not matched_files:
         raise ValueError(f"No files found matching pattern: {pattern}")
-    
+
     all_samples: list[Sample] = []
-    
     for file_path_str in matched_files:
         file_path = Path(file_path_str)
         if not file_path.is_file():
             continue
-        
         file_samples = file_to_samples(
             file_path,
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
             metadata=metadata,
+            csv_text_column=csv_text_column,
+            csv_label_column=csv_label_column,
         )
         all_samples.extend(file_samples)
-    
     return all_samples
