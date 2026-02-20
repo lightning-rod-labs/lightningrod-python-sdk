@@ -1024,6 +1024,69 @@
         ],
         "title": "BalanceResponse"
       },
+      "BigQuerySeedGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "BIGQUERY_SEED_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "BIGQUERY_SEED_GENERATOR"
+          },
+          "query": {
+            "type": "string",
+            "title": "Query",
+            "description": "BigQuery SQL query to execute"
+          },
+          "seed_text_column": {
+            "type": "string",
+            "title": "Seed Text Column",
+            "description": "Column name for Seed.seed_text",
+            "default": "text"
+          },
+          "date_column": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Column",
+            "description": "Column name for Seed.seed_creation_date"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id",
+            "description": "GCP project; None = default from credentials"
+          },
+          "max_rows": {
+            "type": "integer",
+            "title": "Max Rows",
+            "description": "Total rows to fetch across all batches",
+            "default": 10000
+          },
+          "batch_size": {
+            "type": "integer",
+            "title": "Batch Size",
+            "description": "Rows per batch; each batch becomes one seed interval",
+            "default": 1000
+          }
+        },
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "BigQuerySeedGenerator"
+      },
       "BinaryAnswerType": {
         "properties": {
           "answer_type": {
@@ -3143,12 +3206,6 @@
             "title": "Enable Relevance Ranking",
             "description": "Whether to perform LLM-based relevance ranking",
             "default": true
-          },
-          "enable_stage_cache": {
-            "type": "boolean",
-            "title": "Enable Stage Cache",
-            "description": "Cache entire transform output to skip all sub-operations on repeated questions",
-            "default": true
           }
         },
         "type": "object",
@@ -3558,6 +3615,9 @@
               {
                 "oneOf": [
                   {
+                    "$ref": "#/components/schemas/BigQuerySeedGenerator"
+                  },
+                  {
                     "$ref": "#/components/schemas/NewsSeedGenerator"
                   },
                   {
@@ -3576,6 +3636,7 @@
                 "discriminator": {
                   "propertyName": "config_type",
                   "mapping": {
+                    "BIGQUERY_SEED_GENERATOR": "#/components/schemas/BigQuerySeedGenerator",
                     "FILESET_QUERY_SEED_GENERATOR": "#/components/schemas/FileSetQuerySeedGenerator",
                     "FILESET_SEED_GENERATOR": "#/components/schemas/FileSetSeedGenerator",
                     "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
@@ -4515,6 +4576,7 @@
           "QUESTION_PIPELINE",
           "QUESTION_RENDERER",
           "ROLLOUT_GENERATOR",
+          "BIGQUERY_SEED_GENERATOR",
           "FILESET_SEED_GENERATOR",
           "FILESET_QUERY_SEED_GENERATOR",
           "TEMPLATE_QUESTION_GENERATOR",
