@@ -9,6 +9,22 @@ from lightningrod._generated.models.sample import Sample
 from lightningrod._generated.types import Unset
 
 
+def _parsed_output_dict(rollout) -> dict:
+    """Convert a rollout's parsed_output to a plain dict (or {} if absent)."""
+    po = rollout.parsed_output
+    if po is None or isinstance(po, Unset):
+        return {}
+    return po.to_dict() if isinstance(po, RolloutParsedOutputType0) else (po if isinstance(po, dict) else {})
+
+
+def _get_label(sample) -> Optional[str]:
+    """Extract the label string from a sample, or None if missing/unset."""
+    if not sample.label or isinstance(sample.label, Unset):
+        return None
+    lbl = sample.label.label
+    return None if lbl is None or isinstance(lbl, Unset) else lbl
+
+
 def compute_metrics_summary(
     samples: List[Sample],
     multiple_choice_options: Optional[Dict[str, str]] = None,
@@ -26,19 +42,11 @@ def compute_metrics_summary(
         correct_answer = sample.label.label
 
         for rollout in sample.rollouts or []:
-            parsed_output = rollout.parsed_output
-            parsed = (
-                parsed_output is not None
-                and not isinstance(parsed_output, Unset)
-            )
+            parsed = rollout.parsed_output is not None and not isinstance(rollout.parsed_output, Unset)
             correct = False
 
             if parsed and correct_answer is not None:
-                # Convert RolloutParsedOutputType0 to a plain dict
-                if isinstance(parsed_output, RolloutParsedOutputType0):
-                    po_dict = parsed_output.to_dict()
-                else:
-                    po_dict = parsed_output if isinstance(parsed_output, dict) else {}
+                po_dict = _parsed_output_dict(rollout)
 
                 if multiple_choice_options and po_dict:
                     predicted_key = max(po_dict, key=po_dict.get)
@@ -92,14 +100,9 @@ def compute_consensus(samples: List[Sample]) -> List[Dict[str, Any]]:
         predictions: Dict[str, float] = {}
 
         for rollout in sample.rollouts or []:
-            parsed_output = rollout.parsed_output
-            if parsed_output is None or isinstance(parsed_output, Unset):
+            po_dict = _parsed_output_dict(rollout)
+            if not po_dict:
                 continue
-
-            if isinstance(parsed_output, RolloutParsedOutputType0):
-                po_dict = parsed_output.to_dict()
-            else:
-                po_dict = parsed_output if isinstance(parsed_output, dict) else {}
 
             value = po_dict.get("value")
             if value is not None:
@@ -121,11 +124,7 @@ def compute_consensus(samples: List[Sample]) -> List[Dict[str, Any]]:
             if qt and not isinstance(qt, Unset):
                 question_text = qt
 
-        label = None
-        if sample.label and not isinstance(sample.label, Unset):
-            lbl = sample.label.label
-            if lbl is not None and not isinstance(lbl, Unset):
-                label = lbl
+        label = _get_label(sample)
 
         results.append({
             "question_text": question_text,
@@ -139,38 +138,12 @@ def compute_consensus(samples: List[Sample]) -> List[Dict[str, Any]]:
     return results
 
 
-def multi_choice_log_score(
-    predicted: Dict[str, float],
-    correct_answer: str,
-    multiple_choice_options: Dict[str, str],
-) -> float:
-    """Compute multi-choice log score matching the back-end formula.
-
-    ``sum(actual * log(clamp(predicted)))`` for mutually-exclusive options,
-    where *actual* is a one-hot vector built from *correct_answer*.
-
-    Args:
-        predicted: option_key → predicted probability (e.g. {"option_0": 0.8, …}).
-        correct_answer: the correct option **value** (e.g. "letter").
-        multiple_choice_options: option_key → option value mapping.
-
-    Returns:
-        The log score (always ≤ 0; higher is better).
-    """
-    resolution: Dict[str, int] = {}
-    for key, value in multiple_choice_options.items():
-        resolution[key] = 1 if value == correct_answer else 0
-
-    log_scores: List[float] = []
-    for key in multiple_choice_options:
-        actual = resolution.get(key, 0)
-        pred = predicted.get(key)
-        if pred is None:
-            continue
-        clamped = max(0.001, min(0.999, pred))
-        log_scores.append(actual * math.log(clamped))
-
-    return sum(log_scores)
+def _multi_choice_log_score(predicted, correct_answer, multiple_choice_options):
+    """Log score for mutually-exclusive multi-choice options."""
+    return sum(
+        int(v == correct_answer) * math.log(max(0.001, min(0.999, predicted[k])))
+        for k, v in multiple_choice_options.items() if k in predicted
+    )
 
 
 def compute_multi_choice_consensus(
@@ -197,15 +170,7 @@ def compute_multi_choice_consensus(
         predictions: Dict[str, Dict[str, float]] = {}
 
         for rollout in sample.rollouts or []:
-            parsed_output = rollout.parsed_output
-            if parsed_output is None or isinstance(parsed_output, Unset):
-                continue
-
-            if isinstance(parsed_output, RolloutParsedOutputType0):
-                po_dict = parsed_output.to_dict()
-            else:
-                po_dict = parsed_output if isinstance(parsed_output, dict) else {}
-
+            po_dict = _parsed_output_dict(rollout)
             if not po_dict:
                 continue
 
@@ -220,10 +185,9 @@ def compute_multi_choice_consensus(
             continue
 
         # Average probabilities across models
-        option_keys = list(multiple_choice_options.keys())
         consensus: Dict[str, float] = {}
         max_spread = 0.0
-        for key in option_keys:
+        for key in multiple_choice_options:
             values = [pred[key] for pred in predictions.values() if key in pred]
             if values:
                 consensus[key] = sum(values) / len(values)
@@ -236,18 +200,14 @@ def compute_multi_choice_consensus(
         consensus_answer = multiple_choice_options.get(consensus_key, consensus_key)
 
         # Per-model top answers
-        per_model_answers: Dict[str, str] = {}
-        for model_name, pred in predictions.items():
-            top_key = max(pred, key=pred.get)
-            per_model_answers[model_name] = multiple_choice_options.get(top_key, top_key)
+        per_model_answers = {
+            m: multiple_choice_options.get(max(p, key=p.get), max(p, key=p.get))
+            for m, p in predictions.items()
+        }
 
         all_agree = len(set(per_model_answers.values())) == 1
 
-        label = None
-        if sample.label and not isinstance(sample.label, Unset):
-            lbl = sample.label.label
-            if lbl is not None and not isinstance(lbl, Unset):
-                label = lbl
+        label = _get_label(sample)
 
         results.append({
             "consensus": consensus,
@@ -260,3 +220,53 @@ def compute_multi_choice_consensus(
         })
 
     return results
+
+
+def compute_consensus_summary(
+    samples: List[Sample],
+    multiple_choice_options: Dict[str, str],
+) -> Dict[str, Any]:
+    """Consensus analysis: averaged prediction vs individual models.
+
+    Returns a dict with:
+        model_comparison   – {"averaged": {...}, "model_a": {...}, ...}
+                             each with keys: accuracy, mean_log_score, n
+        agreement_analysis – {"all": {...}, "agreement_set": {...}, "disagreement_set": {...}}
+                             each with keys: n, accuracy, mean_log_score
+        n_consensus        – number of samples with 2+ parsed rollouts
+        n_agree            – number of samples where all models agree
+    """
+    consensus_rows = compute_multi_choice_consensus(samples, multiple_choice_options)
+    labeled = [r for r in consensus_rows if r["label"] is not None]
+
+    n_consensus = len(consensus_rows)
+    n_agree = sum(1 for r in consensus_rows if r["all_agree"])
+
+    # Model comparison: averaged vs each individual model
+    model_comparison: Dict[str, Dict[str, Any]] = {}
+    if labeled:
+        model_comparison["averaged"] = {
+            "accuracy": sum(r["consensus_answer"] == r["label"] for r in labeled) / len(labeled),
+            "mean_log_score": sum(
+                _multi_choice_log_score(r["consensus"], r["label"], multiple_choice_options)
+                for r in labeled
+            ) / len(labeled),
+            "n": len(labeled),
+        }
+        for model in sorted({m for r in labeled for m in r["predictions"]}):
+            ml = [r for r in labeled if model in r["per_model_answers"]]
+            if ml:
+                model_comparison[model] = {
+                    "accuracy": sum(r["per_model_answers"][model] == r["label"] for r in ml) / len(ml),
+                    "mean_log_score": sum(
+                        _multi_choice_log_score(r["predictions"][model], r["label"], multiple_choice_options)
+                        for r in ml if model in r["predictions"]
+                    ) / len(ml),
+                    "n": len(ml),
+                }
+
+    return {
+        "model_comparison": model_comparison,
+        "n_consensus": n_consensus,
+        "n_agree": n_agree,
+    }
