@@ -67,6 +67,7 @@ We have some example notebooks to help you get started! If you have trouble usin
 | Continuous Answer Type | `notebooks/05_continuous_answer_type.ipynb` | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/05_continuous_answer_type.ipynb) |
 | Multiple Choice Answer Type | `notebooks/06_multiple_choice_answer_type.ipynb` | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/06_multiple_choice_answer_type.ipynb) |
 | Free Response Answer Type | `notebooks/07_free_response_answer_type.ipynb` | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/07_free_response_answer_type.ipynb) |
-
+| Use-case: Golf Forecasting | `notebooks/use_case_golf.ipynb` | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/use_case_golf.ipynb) |
+| Use-case: Trump Forecasting | `notebooks/use_case_wwtd.ipynb` | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/use_case_wwtd.ipynb) |
 
 For complete API reference documentation, see [API.md](API.md). This includes overview of the core system concepts, methods and types.

@@ -66,6 +66,7 @@ def filter_samples(
             if res_date:
                 res_raw = res_date
 
+        # TODO(bart): always exclude samples where date close > today (like in the internal golf example?
         pred_d = _parse_date(pred_raw)
         res_d = _parse_date(res_raw)
         if min_horizon is not None or max_horizon is not None:
