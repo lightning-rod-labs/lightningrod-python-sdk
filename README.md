@@ -1,9 +1,6 @@
-<div align="center">
-<!-- Note: only an absolute image URL works on PyPi: https://pypi.org/project/lightningrod-ai -->
-  <img src="https://github.com/lightning-rod-labs/lightningrod-python-sdk/blob/main/banner.png?raw=true" alt="Lightning Rod Labs" />
-</div>
 
-# Lightning Rod Python SDK [![Beta](https://img.shields.io/badge/beta-0.1.14-orange)](https://pypi.org/project/lightningrod-ai/0.1.14/)
+
+# Lightning Rod Python SDK [Beta](https://pypi.org/project/lightningrod-ai/0.1.14/)
 
 The Lightning Rod SDK provides a simple Python API for generating custom forecasting datasets to train your LLMs. Transform news articles, documents, and other real-world data into high-quality training samples automatically.
 
@@ -58,16 +55,29 @@ dataset.flattened(binary_answer)  # Ready-to-use data for your training pipeline
 
 We have some example notebooks to help you get started! If you have trouble using the SDK, please submit an issue on Github.
 
-| Example Name | Path | Google Colab Link |
-|--------------|------|-------------------|
-| Quick Start | `notebooks/01_quick_start.ipynb` | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/01_quick_start.ipynb) |
-| News Datasource | `notebooks/02_news_datasource.ipynb` | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/02_news_datasource.ipynb) |
-| Custom Documents | `notebooks/03_custom_documents_datasource.ipynb` | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/03_custom_documents_datasource.ipynb) |
-| Binary Answer Type | `notebooks/04_binary_answer_type.ipynb` | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/04_binary_answer_type.ipynb) |
-| Continuous Answer Type | `notebooks/05_continuous_answer_type.ipynb` | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/05_continuous_answer_type.ipynb) |
+### Tutorials
+
+
+| Example Name                | Path                                             | Google Colab Link                                                                                                                                             |
+| --------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Quick Start                 | `notebooks/01_quick_start.ipynb`                 | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/01_quick_start.ipynb)                 |
+| News Datasource             | `notebooks/02_news_datasource.ipynb`             | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/02_news_datasource.ipynb)             |
+| Custom Documents            | `notebooks/03_custom_documents_datasource.ipynb` | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/03_custom_documents_datasource.ipynb) |
+| Binary Answer Type          | `notebooks/04_binary_answer_type.ipynb`          | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/04_binary_answer_type.ipynb)          |
+| Continuous Answer Type      | `notebooks/05_continuous_answer_type.ipynb`      | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/05_continuous_answer_type.ipynb)      |
 | Multiple Choice Answer Type | `notebooks/06_multiple_choice_answer_type.ipynb` | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/06_multiple_choice_answer_type.ipynb) |
-| Free Response Answer Type | `notebooks/07_free_response_answer_type.ipynb` | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/07_free_response_answer_type.ipynb) |
-| Use-case: Golf Forecasting | `notebooks/use_case_golf.ipynb` | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/use_case_golf.ipynb) |
-| Use-case: Trump Forecasting | `notebooks/use_case_wwtd.ipynb` | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/use_case_wwtd.ipynb) |
+| Free Response Answer Type   | `notebooks/07_free_response_answer_type.ipynb`   | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/07_free_response_answer_type.ipynb)   |
+
+
+### End-to-end
+
+| Example Name            | Path                                          | Google Colab Link                                                                                                                                          |
+| ----------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Golf Forecasting        | `notebooks/e2e/golf_forecasting.ipynb`        | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/golf_forecasting.ipynb)        |
+| Trump Forecasting       | `notebooks/e2e/trump_forecasting.ipynb`       | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/trump_forecasting.ipynb)       |
+| Document Classification | `notebooks/e2e/document_classification.ipynb` | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/document_classification.ipynb) |
+| Polymarket Backtesting  | `notebooks/e2e/polymarket_backtesting.ipynb`  | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/polymarket_backtesting.ipynb)  |
+| Model Consensus         | `notebooks/e2e/model_consensus.ipynb`         | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/model_consensus.ipynb)         |
+
 
 For complete API reference documentation, see [API.md](API.md). This includes overview of the core system concepts, methods and types.
