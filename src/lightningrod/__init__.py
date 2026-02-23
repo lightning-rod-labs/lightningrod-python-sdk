@@ -8,8 +8,9 @@ from lightningrod.client import LightningRod
 from lightningrod.datasets.dataset import Dataset
 from lightningrod import preprocessing, utils
 from lightningrod.utils.sample import create_sample
-from lightningrod.utils.rendering import render_sample
 from lightningrod.utils.models import open_router_model
+from lightningrod import preprocessing, training, utils
+from lightningrod.training import to_messages
 from lightningrod._generated.models import (
     TransformJob,
     TransformJobStatus,
@@ -48,6 +49,7 @@ from lightningrod._generated.models import (
 __version__ = "0.1.14"
 __all__ = [
     "preprocessing",
+    "training",
     "utils",
     "AnswerType",
     "BinaryAnswerType",
@@ -81,6 +83,7 @@ __all__ = [
     "Rollout",
     "RolloutScorer",
     "RolloutGenerator",
+    "to_messages",
     "Sample",
     "SampleMeta",
     "Seed",

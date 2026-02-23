@@ -49,7 +49,7 @@ pipeline = QuestionPipeline(
 )
 
 dataset = lr.transforms.run(pipeline, max_questions=3000)
-dataset.flattened() # Ready-to-use data for your training pipelines
+dataset.flattened(binary_answer)  # Ready-to-use data for your training pipelines
 ```
 
 **We use this to generate the [Future-as-Label training dataset](https://huggingface.co/datasets/LightningRodLabs/future-as-label-paper-training-dataset) for our research paper.**

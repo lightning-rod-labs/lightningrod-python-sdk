@@ -92,7 +92,7 @@ See examples in the `examples/` directory for detailed usage of the pipeline typ
 
 **`Dataset.samples() -> List[Sample]`** - Returns cached samples (auto-downloads if needed)
 
-**`Dataset.flattened() -> List[Dict[str, Any]]`** - Returns cached samples in a flat-object list format (auto-downloads if needed)
+**`Dataset.flattened(answer_type: AnswerType) -> List[Dict[str, Any]]`** - Returns cached samples in a flat-object list format (auto-downloads if needed)
 
 ### Types
 
