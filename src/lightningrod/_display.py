@@ -115,6 +115,89 @@ def build_live_display(
     )
 
 
+def _make_progress_bar(current: int, total: int, width: int = 24) -> str:
+    if total <= 0:
+        return "░" * width
+    pct = min(1.0, current / total)
+    filled = int(width * pct)
+    return "█" * filled + "░" * (width - filled)
+
+
+def build_training_live_display(job: Any) -> RenderableType:
+    renderables: list[RenderableType] = []
+    status = str(job.status) if job is not None else ""
+    header_style = {
+        "COMPLETED": "bright_green",
+        "FAILED": "bright_red",
+        "RUNNING": "bright_blue",
+        "STARTING": "bright_blue",
+    }.get(status, "bright_blue") if status else "bright_blue"
+    header = f">> Training {status}" if status else ">> Training"
+    renderables.append(_safe_markup(f"[bold {header_style}]{header}[/bold {header_style}]"))
+    renderables.append(Text(""))
+    if job is not None:
+        has_step_progress = _is_set(job.current_step) and _is_set(job.total_steps) and job.total_steps and job.total_steps > 0
+        if has_step_progress:
+            current = job.current_step or 0
+            total = job.total_steps or 1
+            pct = min(100, int(100 * current / total))
+            bar = _make_progress_bar(current, total)
+            renderables.append(_safe_markup(f"  [bold]Progress:[/bold] [{bar}] {current}/{total} ({pct}%)"))
+        else:
+            bar = _make_progress_bar(0, 1)
+            renderables.append(_safe_markup(f"  [bold]Progress:[/bold] [{bar}] [dim]--/-- (--%)[/dim]"))
+        renderables.append(Text(""))
+        if _is_set(job.reward_history) and job.reward_history:
+            latest = job.reward_history[-1]
+            count = len(job.reward_history)
+            avg = sum(job.reward_history) / count
+            reward_line = f"  [bold]Reward:[/bold] latest {latest:.4f}  avg {avg:.4f}  ({count} steps)"
+            renderables.append(_safe_markup(reward_line))
+            renderables.append(Text(""))
+        if _is_set(job.name) and job.name:
+            renderables.append(_safe_markup(f"  [bold]Job:[/bold] {job.name}"))
+            renderables.append(Text(""))
+    return Panel(
+        Group(*renderables),
+        border_style="bright_blue",
+        padding=(1, 2),
+    )
+
+
+def run_training_live_display(
+    poll_callback: Any,
+    poll_interval: float = 15,
+    initial_job: Any = None,
+) -> None:
+    import time
+    console = Console()
+    if _is_notebook():
+        from IPython.display import clear_output
+        console.print(build_training_live_display(initial_job))
+        job, is_running = poll_callback()
+        while is_running:
+            clear_output(wait=True)
+            console.print(build_training_live_display(job))
+            time.sleep(poll_interval)
+            job, is_running = poll_callback()
+        clear_output(wait=True)
+        console.print(build_training_live_display(job))
+    else:
+        from rich.live import Live
+        with Live(
+            build_training_live_display(initial_job),
+            console=console,
+            refresh_per_second=1,
+            transient=True,
+        ) as live:
+            job, is_running = poll_callback()
+            while is_running:
+                live.update(build_training_live_display(job))
+                time.sleep(poll_interval)
+                job, is_running = poll_callback()
+            live.update(build_training_live_display(job))
+
+
 def _is_notebook() -> bool:
     """Check if we're running inside a Jupyter notebook."""
     try:

@@ -2,6 +2,7 @@ from lightningrod._generated.client import AuthenticatedClient
 from lightningrod.datasets.client import DatasetSamplesClient, DatasetsClient
 from lightningrod.organization.client import OrganizationsClient
 from lightningrod.transforms.client import TransformsClient
+from lightningrod.training.client import TrainingClient
 from lightningrod.utils import config
 from lightningrod.files.client import FilesClient
 from lightningrod.filesets.client import FileSetsClient
@@ -46,5 +47,6 @@ class LightningRod:
         self.transforms: TransformsClient = TransformsClient(self._generated_client, self._dataset_samples)
         self.datasets: DatasetsClient = DatasetsClient(self._generated_client, self._dataset_samples)
         self.organization: OrganizationsClient = OrganizationsClient(self._generated_client)
+        self.training: TrainingClient = TrainingClient(self._generated_client)
         self.files: FilesClient = FilesClient(self._generated_client)
         self.filesets: FileSetsClient = FileSetsClient(self._generated_client, self.files)

@@ -1,3 +1,4 @@
+from lightningrod.training.client import TrainingClient
 from lightningrod.training.samples import (
     deduplicate_samples,
     filter_samples,
@@ -8,6 +9,7 @@ from lightningrod.training.samples import (
 )
 
 __all__ = [
+    "TrainingClient",
     "prepare_for_training",
     "train_test_split",
     "deduplicate_samples",

@@ -1,40 +1,34 @@
 from http import HTTPStatus
 from typing import Any
+from urllib.parse import quote
 
 import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.chat_completion_request import ChatCompletionRequest
-from ...models.chat_completion_response import ChatCompletionResponse
 from ...models.http_validation_error import HTTPValidationError
+from ...models.session_response import SessionResponse
 from ...types import Response
 
 
 def _get_kwargs(
-    *,
-    body: ChatCompletionRequest,
+    session_id: str,
 ) -> dict[str, Any]:
-    headers: dict[str, Any] = {}
-
     _kwargs: dict[str, Any] = {
-        "method": "post",
-        "url": "/openai/chat/completions",
+        "method": "get",
+        "url": "/pipeline-assistant/sessions/{session_id}".format(
+            session_id=quote(str(session_id), safe=""),
+        ),
     }
 
-    _kwargs["json"] = body.to_dict()
-
-    headers["Content-Type"] = "application/json"
-
-    _kwargs["headers"] = headers
     return _kwargs
 
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> ChatCompletionResponse | HTTPValidationError | None:
+) -> HTTPValidationError | SessionResponse | None:
     if response.status_code == 200:
-        response_200 = ChatCompletionResponse.from_dict(response.json())
+        response_200 = SessionResponse.from_dict(response.json())
 
         return response_200
 
@@ -51,7 +45,7 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[ChatCompletionResponse | HTTPValidationError]:
+) -> Response[HTTPValidationError | SessionResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -61,27 +55,27 @@ def _build_response(
 
 
 def sync_detailed(
+    session_id: str,
     *,
     client: AuthenticatedClient,
-    body: ChatCompletionRequest,
-) -> Response[ChatCompletionResponse | HTTPValidationError]:
-    """Chat Completions
+) -> Response[HTTPValidationError | SessionResponse]:
+    """Get Session
 
-     OpenAI Compatible API Endpoint for Foresight Models.
+     Get the current state of a session
 
     Args:
-        body (ChatCompletionRequest):
+        session_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ChatCompletionResponse | HTTPValidationError]
+        Response[HTTPValidationError | SessionResponse]
     """
 
     kwargs = _get_kwargs(
-        body=body,
+        session_id=session_id,
     )
 
     response = client.get_httpx_client().request(
@@ -92,53 +86,53 @@ def sync_detailed(
 
 
 def sync(
+    session_id: str,
     *,
     client: AuthenticatedClient,
-    body: ChatCompletionRequest,
-) -> ChatCompletionResponse | HTTPValidationError | None:
-    """Chat Completions
+) -> HTTPValidationError | SessionResponse | None:
+    """Get Session
 
-     OpenAI Compatible API Endpoint for Foresight Models.
+     Get the current state of a session
 
     Args:
-        body (ChatCompletionRequest):
+        session_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ChatCompletionResponse | HTTPValidationError
+        HTTPValidationError | SessionResponse
     """
 
     return sync_detailed(
+        session_id=session_id,
         client=client,
-        body=body,
     ).parsed
 
 
 async def asyncio_detailed(
+    session_id: str,
     *,
     client: AuthenticatedClient,
-    body: ChatCompletionRequest,
-) -> Response[ChatCompletionResponse | HTTPValidationError]:
-    """Chat Completions
+) -> Response[HTTPValidationError | SessionResponse]:
+    """Get Session
 
-     OpenAI Compatible API Endpoint for Foresight Models.
+     Get the current state of a session
 
     Args:
-        body (ChatCompletionRequest):
+        session_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ChatCompletionResponse | HTTPValidationError]
+        Response[HTTPValidationError | SessionResponse]
     """
 
     kwargs = _get_kwargs(
-        body=body,
+        session_id=session_id,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -147,28 +141,28 @@ async def asyncio_detailed(
 
 
 async def asyncio(
+    session_id: str,
     *,
     client: AuthenticatedClient,
-    body: ChatCompletionRequest,
-) -> ChatCompletionResponse | HTTPValidationError | None:
-    """Chat Completions
+) -> HTTPValidationError | SessionResponse | None:
+    """Get Session
 
-     OpenAI Compatible API Endpoint for Foresight Models.
+     Get the current state of a session
 
     Args:
-        body (ChatCompletionRequest):
+        session_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ChatCompletionResponse | HTTPValidationError
+        HTTPValidationError | SessionResponse
     """
 
     return (
         await asyncio_detailed(
+            session_id=session_id,
             client=client,
-            body=body,
         )
     ).parsed
