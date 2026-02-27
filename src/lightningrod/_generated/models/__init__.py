@@ -24,6 +24,8 @@ from .create_transform_job_request import CreateTransformJobRequest
 from .dataset_metadata import DatasetMetadata
 from .estimate_cost_request import EstimateCostRequest
 from .estimate_cost_response import EstimateCostResponse
+from .estimate_training_cost_request import EstimateTrainingCostRequest
+from .estimate_training_cost_response import EstimateTrainingCostResponse
 from .event_usage_summary import EventUsageSummary
 from .file_set import FileSet
 from .file_set_file import FileSetFile
@@ -96,6 +98,7 @@ from .template_question_generator import TemplateQuestionGenerator
 from .training_job import TrainingJob
 from .training_job_list_response import TrainingJobListResponse
 from .training_job_status import TrainingJobStatus
+from .training_job_usage_type_0 import TrainingJobUsageType0
 from .transform_job import TransformJob
 from .transform_job_status import TransformJobStatus
 from .transform_step_metrics_response import TransformStepMetricsResponse
@@ -135,6 +138,8 @@ __all__ = (
     "DatasetMetadata",
     "EstimateCostRequest",
     "EstimateCostResponse",
+    "EstimateTrainingCostRequest",
+    "EstimateTrainingCostResponse",
     "EventUsageSummary",
     "FileSet",
     "FileSetFile",
@@ -207,6 +212,7 @@ __all__ = (
     "TrainingJob",
     "TrainingJobListResponse",
     "TrainingJobStatus",
+    "TrainingJobUsageType0",
     "TransformJob",
     "TransformJobStatus",
     "TransformStepMetricsResponse",

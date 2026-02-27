@@ -1013,6 +1013,53 @@
         }
       }
     },
+    "/training-jobs/cost-estimation": {
+      "post": {
+        "tags": [
+          "Training Jobs"
+        ],
+        "summary": "Estimate Training Cost",
+        "description": "Estimate training cost before execution",
+        "operationId": "estimate_training_cost_training_jobs_cost_estimation_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EstimateTrainingCostRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EstimateTrainingCostResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/training-jobs/{job_id}": {
       "get": {
         "tags": [
@@ -2523,6 +2570,127 @@
           "steps"
         ],
         "title": "EstimateCostResponse"
+      },
+      "EstimateTrainingCostRequest": {
+        "properties": {
+          "input_dataset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Dataset Id"
+          },
+          "dataset_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Path"
+          },
+          "base_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Model"
+          },
+          "training_steps": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Training Steps"
+          },
+          "batch_size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Batch Size"
+          },
+          "lora_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lora Rank"
+          }
+        },
+        "type": "object",
+        "title": "EstimateTrainingCostRequest"
+      },
+      "EstimateTrainingCostResponse": {
+        "properties": {
+          "total_cost_dollars": {
+            "type": "number",
+            "title": "Total Cost Dollars"
+          },
+          "prefill_tokens": {
+            "type": "integer",
+            "title": "Prefill Tokens"
+          },
+          "sample_tokens": {
+            "type": "integer",
+            "title": "Sample Tokens"
+          },
+          "train_tokens": {
+            "type": "integer",
+            "title": "Train Tokens"
+          },
+          "effective_steps": {
+            "type": "integer",
+            "title": "Effective Steps"
+          },
+          "notes": {
+            "type": "string",
+            "title": "Notes"
+          },
+          "warning_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warning Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_cost_dollars",
+          "prefill_tokens",
+          "sample_tokens",
+          "train_tokens",
+          "effective_steps",
+          "notes"
+        ],
+        "title": "EstimateTrainingCostResponse"
       },
       "EventUsageSummary": {
         "properties": {
@@ -5575,6 +5743,18 @@
               }
             ],
             "title": "Total Steps"
+          },
+          "usage": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usage"
           },
           "input_dataset_id": {
             "anyOf": [

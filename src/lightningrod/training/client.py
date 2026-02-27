@@ -1,17 +1,34 @@
+from attr import dataclass
 from lightningrod._display import _is_notebook, display_error, run_training_live_display
 from lightningrod._generated.api.training_jobs import (
     create_training_job_training_jobs_post,
+    estimate_training_cost_training_jobs_cost_estimation_post,
     get_training_job_training_jobs_job_id_get,
     list_training_jobs_training_jobs_get,
 )
 from lightningrod._generated.client import AuthenticatedClient
 from lightningrod._generated.models.create_training_job_request import CreateTrainingJobRequest
+from lightningrod._generated.models.estimate_training_cost_request import (
+    EstimateTrainingCostRequest,
+)
+from lightningrod._generated.models.estimate_training_cost_response import (
+    EstimateTrainingCostResponse,
+)
 from lightningrod._generated.models.training_job import TrainingJob
 from lightningrod._generated.models.training_job_list_response import TrainingJobListResponse
 from lightningrod._generated.models.training_job_status import TrainingJobStatus
 from lightningrod._generated.types import UNSET, Unset
 from lightningrod._errors import handle_response_error
 
+@dataclass
+class TrainingConfig:
+    input_dataset_id: str | None = None
+    dataset_path: str | None = None
+    name: str | None = None
+    base_model: str | None = None
+    training_steps: int | None = None
+    batch_size: int | None = None
+    lora_rank: int | None = None
 
 class TrainingClient:
     def __init__(self, client: AuthenticatedClient):
@@ -19,29 +36,40 @@ class TrainingClient:
 
     def create(
         self,
-        *,
-        input_dataset_id: str | None = None,
-        dataset_path: str | None = None,
-        name: str | None = None,
-        base_model: str | None = None,
-        training_steps: int | None = None,
-        batch_size: int | None = None,
-        lora_rank: int | None = None,
+        config: TrainingConfig,
     ) -> TrainingJob:
         body = CreateTrainingJobRequest(
-            input_dataset_id=input_dataset_id if input_dataset_id is not None else UNSET,
-            dataset_path=dataset_path if dataset_path is not None else UNSET,
-            name=name if name is not None else UNSET,
-            base_model=base_model if base_model is not None else UNSET,
-            training_steps=training_steps if training_steps is not None else UNSET,
-            batch_size=batch_size if batch_size is not None else UNSET,
-            lora_rank=lora_rank if lora_rank is not None else UNSET,
+            input_dataset_id=config.input_dataset_id,
+            dataset_path=config.dataset_path,
+            name=config.name,
+            base_model=config.base_model,
+            training_steps=config.training_steps,
+            batch_size=config.batch_size,
+            lora_rank=config.lora_rank,
         )
         response = create_training_job_training_jobs_post.sync_detailed(
             client=self._client,
             body=body,
         )
         return handle_response_error(response, "create training job")
+
+    def estimate_cost(
+        self,
+        config: TrainingConfig,
+    ) -> EstimateTrainingCostResponse:
+        body = EstimateTrainingCostRequest(
+            input_dataset_id=config.input_dataset_id,
+            dataset_path=config.dataset_path,
+            base_model=config.base_model,
+            training_steps=config.training_steps,
+            batch_size=config.batch_size,
+            lora_rank=config.lora_rank,
+        )
+        response = estimate_training_cost_training_jobs_cost_estimation_post.sync_detailed(
+            client=self._client,
+            body=body,
+        )
+        return handle_response_error(response, "estimate training cost")
 
     def get(self, job_id: str) -> TrainingJob:
         response = get_training_job_training_jobs_job_id_get.sync_detailed(
@@ -67,25 +95,10 @@ class TrainingClient:
 
     def run(
         self,
-        *,
-        input_dataset_id: str | None = None,
-        dataset_path: str | None = None,
-        name: str | None = None,
-        base_model: str | None = None,
-        training_steps: int | None = None,
-        batch_size: int | None = None,
-        lora_rank: int | None = None,
+        config: TrainingConfig,
         poll_interval: float = 15,
     ) -> TrainingJob:
-        job = self.create(
-            input_dataset_id=input_dataset_id,
-            dataset_path=dataset_path,
-            name=name,
-            base_model=base_model,
-            training_steps=training_steps,
-            batch_size=batch_size,
-            lora_rank=lora_rank,
-        )
+        job = self.create(config=config)
 
         job_id = job.id
 

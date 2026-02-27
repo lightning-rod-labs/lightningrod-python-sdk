@@ -115,10 +115,7 @@ def build_live_display(
     )
 
 
-def _make_progress_bar(current: int, total: int, width: int = 24) -> str:
-    if total <= 0:
-        return "░" * width
-    pct = min(1.0, current / total)
+def _make_progress_bar(pct: float, width: int = 24) -> str:
     filled = int(width * pct)
     return "█" * filled + "░" * (width - filled)
 
@@ -136,22 +133,21 @@ def build_training_live_display(job: Any) -> RenderableType:
     renderables.append(_safe_markup(f"[bold {header_style}]{header}[/bold {header_style}]"))
     renderables.append(Text(""))
     if job is not None:
-        has_step_progress = _is_set(job.current_step) and _is_set(job.total_steps) and job.total_steps and job.total_steps > 0
-        if has_step_progress:
-            current = job.current_step or 0
-            total = job.total_steps or 1
+        current = job.current_step or 0
+        total = job.total_steps or None
+        if total is not None:
             pct = min(100, int(100 * current / total))
-            bar = _make_progress_bar(current, total)
-            renderables.append(_safe_markup(f"  [bold]Progress:[/bold] [{bar}] {current}/{total} ({pct}%)"))
         else:
-            bar = _make_progress_bar(0, 1)
-            renderables.append(_safe_markup(f"  [bold]Progress:[/bold] [{bar}] [dim]--/-- (--%)[/dim]"))
+            pct = 0
+        bar = _make_progress_bar(pct)
+        renderables.append(_safe_markup(f"  [bold]Progress:[/bold] [{bar}] {current}/{total} ({pct}%)"))
+
         renderables.append(Text(""))
         if _is_set(job.reward_history) and job.reward_history:
             latest = job.reward_history[-1]
             count = len(job.reward_history)
             avg = sum(job.reward_history) / count
-            reward_line = f"  [bold]Reward:[/bold] latest {latest:.4f}  avg {avg:.4f}  ({count} steps)"
+            reward_line = f"  [bold]Reward:[/bold] latest {latest:.4f}  avg {avg:.4f}  ({count} steps)  [dim](higher is better)[/dim]"
             renderables.append(_safe_markup(reward_line))
             renderables.append(Text(""))
         if _is_set(job.name) and job.name:
