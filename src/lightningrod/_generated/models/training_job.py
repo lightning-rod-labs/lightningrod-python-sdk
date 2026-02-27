@@ -12,6 +12,7 @@ from ..models.training_job_status import TrainingJobStatus
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
+    from ..models.training_config import TrainingConfig
     from ..models.training_job_usage_type_0 import TrainingJobUsageType0
 
 
@@ -25,36 +26,32 @@ class TrainingJob:
         id (str):
         organization_id (str):
         status (TrainingJobStatus):
-        modal_function_call_id (str):
-        modal_app_id (str):
+        config (TrainingConfig):
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
-        tinker_checkpoint_path (None | str | Unset):
+        name (None | str | Unset):
+        model_id (None | str | Unset):
         reward_history (list[float] | None | Unset):
         current_step (int | None | Unset):
         total_steps (int | None | Unset):
         usage (None | TrainingJobUsageType0 | Unset):
         input_dataset_id (None | str | Unset):
-        dataset_path (None | str | Unset):
-        name (None | str | Unset):
         error_message (None | str | Unset):
     """
 
     id: str
     organization_id: str
     status: TrainingJobStatus
-    modal_function_call_id: str
-    modal_app_id: str
+    config: TrainingConfig
     created_at: datetime.datetime
     updated_at: datetime.datetime
-    tinker_checkpoint_path: None | str | Unset = UNSET
+    name: None | str | Unset = UNSET
+    model_id: None | str | Unset = UNSET
     reward_history: list[float] | None | Unset = UNSET
     current_step: int | None | Unset = UNSET
     total_steps: int | None | Unset = UNSET
     usage: None | TrainingJobUsageType0 | Unset = UNSET
     input_dataset_id: None | str | Unset = UNSET
-    dataset_path: None | str | Unset = UNSET
-    name: None | str | Unset = UNSET
     error_message: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -67,19 +64,23 @@ class TrainingJob:
 
         status = self.status.value
 
-        modal_function_call_id = self.modal_function_call_id
-
-        modal_app_id = self.modal_app_id
+        config = self.config.to_dict()
 
         created_at = self.created_at.isoformat()
 
         updated_at = self.updated_at.isoformat()
 
-        tinker_checkpoint_path: None | str | Unset
-        if isinstance(self.tinker_checkpoint_path, Unset):
-            tinker_checkpoint_path = UNSET
+        name: None | str | Unset
+        if isinstance(self.name, Unset):
+            name = UNSET
         else:
-            tinker_checkpoint_path = self.tinker_checkpoint_path
+            name = self.name
+
+        model_id: None | str | Unset
+        if isinstance(self.model_id, Unset):
+            model_id = UNSET
+        else:
+            model_id = self.model_id
 
         reward_history: list[float] | None | Unset
         if isinstance(self.reward_history, Unset):
@@ -116,18 +117,6 @@ class TrainingJob:
         else:
             input_dataset_id = self.input_dataset_id
 
-        dataset_path: None | str | Unset
-        if isinstance(self.dataset_path, Unset):
-            dataset_path = UNSET
-        else:
-            dataset_path = self.dataset_path
-
-        name: None | str | Unset
-        if isinstance(self.name, Unset):
-            name = UNSET
-        else:
-            name = self.name
-
         error_message: None | str | Unset
         if isinstance(self.error_message, Unset):
             error_message = UNSET
@@ -141,14 +130,15 @@ class TrainingJob:
                 "id": id,
                 "organization_id": organization_id,
                 "status": status,
-                "modal_function_call_id": modal_function_call_id,
-                "modal_app_id": modal_app_id,
+                "config": config,
                 "created_at": created_at,
                 "updated_at": updated_at,
             }
         )
-        if tinker_checkpoint_path is not UNSET:
-            field_dict["tinker_checkpoint_path"] = tinker_checkpoint_path
+        if name is not UNSET:
+            field_dict["name"] = name
+        if model_id is not UNSET:
+            field_dict["model_id"] = model_id
         if reward_history is not UNSET:
             field_dict["reward_history"] = reward_history
         if current_step is not UNSET:
@@ -159,10 +149,6 @@ class TrainingJob:
             field_dict["usage"] = usage
         if input_dataset_id is not UNSET:
             field_dict["input_dataset_id"] = input_dataset_id
-        if dataset_path is not UNSET:
-            field_dict["dataset_path"] = dataset_path
-        if name is not UNSET:
-            field_dict["name"] = name
         if error_message is not UNSET:
             field_dict["error_message"] = error_message
 
@@ -170,6 +156,7 @@ class TrainingJob:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.training_config import TrainingConfig
         from ..models.training_job_usage_type_0 import TrainingJobUsageType0
 
         d = dict(src_dict)
@@ -179,22 +166,29 @@ class TrainingJob:
 
         status = TrainingJobStatus(d.pop("status"))
 
-        modal_function_call_id = d.pop("modal_function_call_id")
-
-        modal_app_id = d.pop("modal_app_id")
+        config = TrainingConfig.from_dict(d.pop("config"))
 
         created_at = isoparse(d.pop("created_at"))
 
         updated_at = isoparse(d.pop("updated_at"))
 
-        def _parse_tinker_checkpoint_path(data: object) -> None | str | Unset:
+        def _parse_name(data: object) -> None | str | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
             return cast(None | str | Unset, data)
 
-        tinker_checkpoint_path = _parse_tinker_checkpoint_path(d.pop("tinker_checkpoint_path", UNSET))
+        name = _parse_name(d.pop("name", UNSET))
+
+        def _parse_model_id(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        model_id = _parse_model_id(d.pop("model_id", UNSET))
 
         def _parse_reward_history(data: object) -> list[float] | None | Unset:
             if data is None:
@@ -257,24 +251,6 @@ class TrainingJob:
 
         input_dataset_id = _parse_input_dataset_id(d.pop("input_dataset_id", UNSET))
 
-        def _parse_dataset_path(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        dataset_path = _parse_dataset_path(d.pop("dataset_path", UNSET))
-
-        def _parse_name(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        name = _parse_name(d.pop("name", UNSET))
-
         def _parse_error_message(data: object) -> None | str | Unset:
             if data is None:
                 return data
@@ -288,18 +264,16 @@ class TrainingJob:
             id=id,
             organization_id=organization_id,
             status=status,
-            modal_function_call_id=modal_function_call_id,
-            modal_app_id=modal_app_id,
+            config=config,
             created_at=created_at,
             updated_at=updated_at,
-            tinker_checkpoint_path=tinker_checkpoint_path,
+            name=name,
+            model_id=model_id,
             reward_history=reward_history,
             current_step=current_step,
             total_steps=total_steps,
             usage=usage,
             input_dataset_id=input_dataset_id,
-            dataset_path=dataset_path,
-            name=name,
             error_message=error_message,
         )
 

@@ -2293,28 +2293,6 @@
       },
       "CreateTrainingJobRequest": {
         "properties": {
-          "input_dataset_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Input Dataset Id"
-          },
-          "dataset_path": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Dataset Path"
-          },
           "name": {
             "anyOf": [
               {
@@ -2326,52 +2304,14 @@
             ],
             "title": "Name"
           },
-          "base_model": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Base Model"
-          },
-          "training_steps": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Training Steps"
-          },
-          "batch_size": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Batch Size"
-          },
-          "lora_rank": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Lora Rank"
+          "config": {
+            "$ref": "#/components/schemas/TrainingConfig"
           }
         },
         "type": "object",
+        "required": [
+          "config"
+        ],
         "title": "CreateTrainingJobRequest"
       },
       "CreateTransformConfig": {
@@ -2573,74 +2513,14 @@
       },
       "EstimateTrainingCostRequest": {
         "properties": {
-          "input_dataset_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Input Dataset Id"
-          },
-          "dataset_path": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Dataset Path"
-          },
-          "base_model": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Base Model"
-          },
-          "training_steps": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Training Steps"
-          },
-          "batch_size": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Batch Size"
-          },
-          "lora_rank": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Lora Rank"
+          "config": {
+            "$ref": "#/components/schemas/TrainingConfig"
           }
         },
         "type": "object",
+        "required": [
+          "config"
+        ],
         "title": "EstimateTrainingCostRequest"
       },
       "EstimateTrainingCostResponse": {
@@ -5676,28 +5556,9 @@
         ],
         "title": "TemplateQuestionGenerator"
       },
-      "TrainingJob": {
+      "TrainingConfig": {
         "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "organization_id": {
-            "type": "string",
-            "title": "Organization Id"
-          },
-          "status": {
-            "$ref": "#/components/schemas/TrainingJobStatus"
-          },
-          "modal_function_call_id": {
-            "type": "string",
-            "title": "Modal Function Call Id"
-          },
-          "modal_app_id": {
-            "type": "string",
-            "title": "Modal App Id"
-          },
-          "tinker_checkpoint_path": {
+          "input_dataset_id": {
             "anyOf": [
               {
                 "type": "string"
@@ -5706,7 +5567,93 @@
                 "type": "null"
               }
             ],
-            "title": "Tinker Checkpoint Path"
+            "title": "Input Dataset Id"
+          },
+          "base_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Model"
+          },
+          "training_steps": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Training Steps"
+          },
+          "batch_size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Batch Size"
+          },
+          "lora_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lora Rank"
+          }
+        },
+        "type": "object",
+        "title": "TrainingConfig"
+      },
+      "TrainingJob": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "organization_id": {
+            "type": "string",
+            "title": "Organization Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TrainingJobStatus"
+          },
+          "config": {
+            "$ref": "#/components/schemas/TrainingConfig"
+          },
+          "model_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Id"
           },
           "reward_history": {
             "anyOf": [
@@ -5767,28 +5714,6 @@
             ],
             "title": "Input Dataset Id"
           },
-          "dataset_path": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Dataset Path"
-          },
-          "name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name"
-          },
           "error_message": {
             "anyOf": [
               {
@@ -5816,8 +5741,7 @@
           "id",
           "organization_id",
           "status",
-          "modal_function_call_id",
-          "modal_app_id",
+          "config",
           "created_at",
           "updated_at"
         ],

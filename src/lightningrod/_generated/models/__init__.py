@@ -95,6 +95,7 @@ from .session_response_current_config_type_0 import SessionResponseCurrentConfig
 from .step_cost_breakdown import StepCostBreakdown
 from .structured_question import StructuredQuestion
 from .template_question_generator import TemplateQuestionGenerator
+from .training_config import TrainingConfig
 from .training_job import TrainingJob
 from .training_job_list_response import TrainingJobListResponse
 from .training_job_status import TrainingJobStatus
@@ -209,6 +210,7 @@ __all__ = (
     "StepCostBreakdown",
     "StructuredQuestion",
     "TemplateQuestionGenerator",
+    "TrainingConfig",
     "TrainingJob",
     "TrainingJobListResponse",
     "TrainingJobStatus",

@@ -14,21 +14,12 @@ from lightningrod._generated.models.estimate_training_cost_request import (
 from lightningrod._generated.models.estimate_training_cost_response import (
     EstimateTrainingCostResponse,
 )
+from lightningrod._generated.models.training_config import TrainingConfig
 from lightningrod._generated.models.training_job import TrainingJob
 from lightningrod._generated.models.training_job_list_response import TrainingJobListResponse
 from lightningrod._generated.models.training_job_status import TrainingJobStatus
 from lightningrod._generated.types import UNSET, Unset
 from lightningrod._errors import handle_response_error
-
-@dataclass
-class TrainingConfig:
-    input_dataset_id: str | None = None
-    dataset_path: str | None = None
-    name: str | None = None
-    base_model: str | None = None
-    training_steps: int | None = None
-    batch_size: int | None = None
-    lora_rank: int | None = None
 
 class TrainingClient:
     def __init__(self, client: AuthenticatedClient):
@@ -37,15 +28,11 @@ class TrainingClient:
     def create(
         self,
         config: TrainingConfig,
+        name: str | None = None,
     ) -> TrainingJob:
         body = CreateTrainingJobRequest(
-            input_dataset_id=config.input_dataset_id,
-            dataset_path=config.dataset_path,
-            name=config.name,
-            base_model=config.base_model,
-            training_steps=config.training_steps,
-            batch_size=config.batch_size,
-            lora_rank=config.lora_rank,
+            config=config,
+            name=name,
         )
         response = create_training_job_training_jobs_post.sync_detailed(
             client=self._client,
@@ -57,14 +44,7 @@ class TrainingClient:
         self,
         config: TrainingConfig,
     ) -> EstimateTrainingCostResponse:
-        body = EstimateTrainingCostRequest(
-            input_dataset_id=config.input_dataset_id,
-            dataset_path=config.dataset_path,
-            base_model=config.base_model,
-            training_steps=config.training_steps,
-            batch_size=config.batch_size,
-            lora_rank=config.lora_rank,
-        )
+        body = EstimateTrainingCostRequest(config=config)
         response = estimate_training_cost_training_jobs_cost_estimation_post.sync_detailed(
             client=self._client,
             body=body,
@@ -96,9 +76,10 @@ class TrainingClient:
     def run(
         self,
         config: TrainingConfig,
+        name: str | None = None,
         poll_interval: float = 15,
     ) -> TrainingJob:
-        job = self.create(config=config)
+        job = self.create(config=config, name=name)
 
         job_id = job.id
 

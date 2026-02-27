@@ -1,4 +1,5 @@
-from lightningrod.training.client import TrainingClient, TrainingConfig
+from lightningrod.training.client import TrainingClient
+from lightningrod._generated.models.training_config import TrainingConfig
 from lightningrod.training.samples import (
     deduplicate_samples,
     filter_samples,
