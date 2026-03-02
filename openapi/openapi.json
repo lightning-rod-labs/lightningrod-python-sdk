@@ -1056,18 +1056,6 @@
             "title": "Date Column",
             "description": "Column name for Seed.seed_creation_date"
           },
-          "project_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Project Id",
-            "description": "GCP project; None = default from credentials"
-          },
           "max_rows": {
             "type": "integer",
             "title": "Max Rows",
@@ -1781,6 +1769,16 @@
             "type": "number",
             "title": "Url Download Cost Dollars"
           },
+          "gemini_grounding_cost_dollars": {
+            "type": "number",
+            "title": "Gemini Grounding Cost Dollars",
+            "default": 0.0
+          },
+          "bigquery_cost_dollars": {
+            "type": "number",
+            "title": "Bigquery Cost Dollars",
+            "default": 0.0
+          },
           "usage": {
             "$ref": "#/components/schemas/UsageSummary"
           },
@@ -1809,6 +1807,11 @@
             "type": "integer",
             "title": "Count",
             "default": 0
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount",
+            "default": 0.0
           },
           "cost": {
             "type": "number",

@@ -20,7 +20,6 @@ class BigQuerySeedGenerator:
             'BIGQUERY_SEED_GENERATOR'.
         seed_text_column (str | Unset): Column name for Seed.seed_text Default: 'text'.
         date_column (None | str | Unset): Column name for Seed.seed_creation_date
-        project_id (None | str | Unset): GCP project; None = default from credentials
         max_rows (int | Unset): Total rows to fetch across all batches Default: 10000.
         batch_size (int | Unset): Rows per batch; each batch becomes one seed interval Default: 1000.
     """
@@ -29,7 +28,6 @@ class BigQuerySeedGenerator:
     config_type: Literal["BIGQUERY_SEED_GENERATOR"] | Unset = "BIGQUERY_SEED_GENERATOR"
     seed_text_column: str | Unset = "text"
     date_column: None | str | Unset = UNSET
-    project_id: None | str | Unset = UNSET
     max_rows: int | Unset = 10000
     batch_size: int | Unset = 1000
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -46,12 +44,6 @@ class BigQuerySeedGenerator:
             date_column = UNSET
         else:
             date_column = self.date_column
-
-        project_id: None | str | Unset
-        if isinstance(self.project_id, Unset):
-            project_id = UNSET
-        else:
-            project_id = self.project_id
 
         max_rows = self.max_rows
 
@@ -70,8 +62,6 @@ class BigQuerySeedGenerator:
             field_dict["seed_text_column"] = seed_text_column
         if date_column is not UNSET:
             field_dict["date_column"] = date_column
-        if project_id is not UNSET:
-            field_dict["project_id"] = project_id
         if max_rows is not UNSET:
             field_dict["max_rows"] = max_rows
         if batch_size is not UNSET:
@@ -99,15 +89,6 @@ class BigQuerySeedGenerator:
 
         date_column = _parse_date_column(d.pop("date_column", UNSET))
 
-        def _parse_project_id(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        project_id = _parse_project_id(d.pop("project_id", UNSET))
-
         max_rows = d.pop("max_rows", UNSET)
 
         batch_size = d.pop("batch_size", UNSET)
@@ -117,7 +98,6 @@ class BigQuerySeedGenerator:
             config_type=config_type,
             seed_text_column=seed_text_column,
             date_column=date_column,
-            project_id=project_id,
             max_rows=max_rows,
             batch_size=batch_size,
         )
