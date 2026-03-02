@@ -1,6 +1,6 @@
 
 
-# Lightning Rod Python SDK [Beta](https://pypi.org/project/lightningrod-ai/0.1.15/)
+# Lightning Rod Python SDK [Beta](https://pypi.org/project/lightningrod-ai/0.1.16/)
 
 The Lightning Rod SDK provides a simple Python API for generating custom forecasting datasets to train your LLMs. Transform news articles, documents, and other real-world data into high-quality training samples automatically.
 
