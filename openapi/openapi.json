@@ -1508,6 +1508,57 @@
         ],
         "title": "BalanceResponse"
       },
+      "BigQuerySeedGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "BIGQUERY_SEED_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "BIGQUERY_SEED_GENERATOR"
+          },
+          "query": {
+            "type": "string",
+            "title": "Query",
+            "description": "BigQuery SQL query to execute"
+          },
+          "seed_text_column": {
+            "type": "string",
+            "title": "Seed Text Column",
+            "description": "Column name for Seed.seed_text",
+            "default": "text"
+          },
+          "date_column": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Column",
+            "description": "Column name for Seed.seed_creation_date"
+          },
+          "max_rows": {
+            "type": "integer",
+            "title": "Max Rows",
+            "description": "Total rows to fetch across all batches",
+            "default": 10000
+          },
+          "batch_size": {
+            "type": "integer",
+            "title": "Batch Size",
+            "description": "Rows per batch; each batch becomes one seed interval",
+            "default": 250
+          }
+        },
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "BigQuerySeedGenerator"
+      },
       "BinaryAnswerType": {
         "properties": {
           "answer_type": {
@@ -2489,6 +2540,16 @@
             "type": "number",
             "title": "Url Download Cost Dollars"
           },
+          "gemini_grounding_cost_dollars": {
+            "type": "number",
+            "title": "Gemini Grounding Cost Dollars",
+            "default": 0.0
+          },
+          "bigquery_cost_dollars": {
+            "type": "number",
+            "title": "Bigquery Cost Dollars",
+            "default": 0.0
+          },
           "usage": {
             "$ref": "#/components/schemas/UsageSummary"
           },
@@ -2578,6 +2639,11 @@
             "type": "integer",
             "title": "Count",
             "default": 0
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount",
+            "default": 0.0
           },
           "cost": {
             "type": "number",
@@ -3988,6 +4054,36 @@
             "title": "Owned By",
             "description": "The organization that owns the model",
             "default": "lightningrodlabs"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Display name of the model",
+            "default": ""
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Description of the model",
+            "default": ""
+          },
+          "context_length": {
+            "type": "integer",
+            "title": "Context Length",
+            "description": "Maximum context length in tokens",
+            "default": 0
+          },
+          "max_completion_tokens": {
+            "type": "integer",
+            "title": "Max Completion Tokens",
+            "description": "Maximum number of tokens to generate",
+            "default": 0
+          },
+          "pricing": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Pricing",
+            "description": "Per-token pricing"
           }
         },
         "type": "object",
@@ -4001,13 +4097,15 @@
         "enum": [
           "OPENAI",
           "VLLM",
+          "DIRECT_COMPLETIONS",
           "OPEN_ROUTER",
           "HUGGINGFACE_ENDPOINTS",
           "DEEPSEEK",
           "DEEPINFRA",
           "RUNPOD",
           "SGLANG",
-          "TINKER"
+          "TINKER",
+          "MODAL_LORA_VLLM"
         ],
         "title": "ModelSourceType"
       },
@@ -4718,6 +4816,9 @@
               {
                 "oneOf": [
                   {
+                    "$ref": "#/components/schemas/BigQuerySeedGenerator"
+                  },
+                  {
                     "$ref": "#/components/schemas/NewsSeedGenerator"
                   },
                   {
@@ -4736,6 +4837,7 @@
                 "discriminator": {
                   "propertyName": "config_type",
                   "mapping": {
+                    "BIGQUERY_SEED_GENERATOR": "#/components/schemas/BigQuerySeedGenerator",
                     "FILESET_QUERY_SEED_GENERATOR": "#/components/schemas/FileSetQuerySeedGenerator",
                     "FILESET_SEED_GENERATOR": "#/components/schemas/FileSetSeedGenerator",
                     "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
@@ -5559,36 +5661,15 @@
       "TrainingConfig": {
         "properties": {
           "input_dataset_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
+            "type": "string",
             "title": "Input Dataset Id"
           },
           "base_model": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
+            "type": "string",
             "title": "Base Model"
           },
           "training_steps": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
+            "type": "integer",
             "title": "Training Steps"
           },
           "batch_size": {
@@ -5615,6 +5696,11 @@
           }
         },
         "type": "object",
+        "required": [
+          "input_dataset_id",
+          "base_model",
+          "training_steps"
+        ],
         "title": "TrainingConfig"
       },
       "TrainingJob": {
@@ -6004,6 +6090,7 @@
           "QUESTION_PIPELINE",
           "QUESTION_RENDERER",
           "ROLLOUT_GENERATOR",
+          "BIGQUERY_SEED_GENERATOR",
           "FILESET_SEED_GENERATOR",
           "FILESET_QUERY_SEED_GENERATOR",
           "TEMPLATE_QUESTION_GENERATOR",

@@ -15,38 +15,26 @@ T = TypeVar("T", bound="TrainingConfig")
 class TrainingConfig:
     """
     Attributes:
-        input_dataset_id (None | str | Unset):
-        base_model (None | str | Unset):
-        training_steps (int | None | Unset):
+        input_dataset_id (str):
+        base_model (str):
+        training_steps (int):
         batch_size (int | None | Unset):
         lora_rank (int | None | Unset):
     """
 
-    input_dataset_id: None | str | Unset = UNSET
-    base_model: None | str | Unset = UNSET
-    training_steps: int | None | Unset = UNSET
+    input_dataset_id: str
+    base_model: str
+    training_steps: int
     batch_size: int | None | Unset = UNSET
     lora_rank: int | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        input_dataset_id: None | str | Unset
-        if isinstance(self.input_dataset_id, Unset):
-            input_dataset_id = UNSET
-        else:
-            input_dataset_id = self.input_dataset_id
+        input_dataset_id = self.input_dataset_id
 
-        base_model: None | str | Unset
-        if isinstance(self.base_model, Unset):
-            base_model = UNSET
-        else:
-            base_model = self.base_model
+        base_model = self.base_model
 
-        training_steps: int | None | Unset
-        if isinstance(self.training_steps, Unset):
-            training_steps = UNSET
-        else:
-            training_steps = self.training_steps
+        training_steps = self.training_steps
 
         batch_size: int | None | Unset
         if isinstance(self.batch_size, Unset):
@@ -62,13 +50,13 @@ class TrainingConfig:
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update({})
-        if input_dataset_id is not UNSET:
-            field_dict["input_dataset_id"] = input_dataset_id
-        if base_model is not UNSET:
-            field_dict["base_model"] = base_model
-        if training_steps is not UNSET:
-            field_dict["training_steps"] = training_steps
+        field_dict.update(
+            {
+                "input_dataset_id": input_dataset_id,
+                "base_model": base_model,
+                "training_steps": training_steps,
+            }
+        )
         if batch_size is not UNSET:
             field_dict["batch_size"] = batch_size
         if lora_rank is not UNSET:
@@ -79,33 +67,11 @@ class TrainingConfig:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
+        input_dataset_id = d.pop("input_dataset_id")
 
-        def _parse_input_dataset_id(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
+        base_model = d.pop("base_model")
 
-        input_dataset_id = _parse_input_dataset_id(d.pop("input_dataset_id", UNSET))
-
-        def _parse_base_model(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        base_model = _parse_base_model(d.pop("base_model", UNSET))
-
-        def _parse_training_steps(data: object) -> int | None | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(int | None | Unset, data)
-
-        training_steps = _parse_training_steps(d.pop("training_steps", UNSET))
+        training_steps = d.pop("training_steps")
 
         def _parse_batch_size(data: object) -> int | None | Unset:
             if data is None:
