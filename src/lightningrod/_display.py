@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 from rich.console import Console, Group, RenderableType
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from lightningrod._generated.models.training_job import TrainingJob
+from lightningrod._generated.models.training_job_status import TrainingJobStatus
 from lightningrod._generated.types import Unset
 
 
@@ -116,7 +118,7 @@ def build_live_display(
 
 
 def _make_progress_bar(pct: float, width: int = 24) -> str:
-    filled = int(width * pct)
+    filled = int(width * (pct / 100))
     return "█" * filled + "░" * (width - filled)
 
 
@@ -133,16 +135,22 @@ def build_training_live_display(job: Any) -> RenderableType:
     renderables.append(_safe_markup(f"[bold {header_style}]{header}[/bold {header_style}]"))
     renderables.append(Text(""))
     if job is not None:
-        current = job.current_step or 0
-        total = job.total_steps or None
-        if total is not None:
-            pct = min(100, int(100 * current / total))
-        else:
-            pct = 0
-        bar = _make_progress_bar(pct)
-        renderables.append(_safe_markup(f"  [bold]Progress:[/bold] [{bar}] {current}/{total} ({pct}%)"))
+        if _is_set(job.name) and job.name:
+            renderables.append(_safe_markup(f"  [bold]Job:[/bold] {job.name}"))
+            renderables.append(Text(""))
 
-        renderables.append(Text(""))
+        if job.status == TrainingJobStatus.RUNNING:
+            current = job.current_step or 0
+            total = job.total_steps or None
+            if total is not None:
+                pct = min(100, int(100 * current / total))
+            else:
+                pct = 0
+            step_progress = f"{current}/{total} ({pct}%)" if total is not None else "(0%)"
+            bar = _make_progress_bar(pct)
+            renderables.append(_safe_markup(f"  [bold]Progress:[/bold] [{bar}] {step_progress}"))
+            renderables.append(Text(""))
+
         if _is_set(job.reward_history) and job.reward_history:
             latest = job.reward_history[-1]
             count = len(job.reward_history)
@@ -150,9 +158,11 @@ def build_training_live_display(job: Any) -> RenderableType:
             reward_line = f"  [bold]Reward:[/bold] latest {latest:.4f}  avg {avg:.4f}  ({count} steps)  [dim](higher is better)[/dim]"
             renderables.append(_safe_markup(reward_line))
             renderables.append(Text(""))
-        if _is_set(job.name) and job.name:
-            renderables.append(_safe_markup(f"  [bold]Job:[/bold] {job.name}"))
+
+        if job.status == TrainingJobStatus.FAILED:
+            renderables.append(_safe_markup(f"  [bold]Error:[/bold] {job.error_message}"))
             renderables.append(Text(""))
+        
     return Panel(
         Group(*renderables),
         border_style="bright_blue",
@@ -161,7 +171,7 @@ def build_training_live_display(job: Any) -> RenderableType:
 
 
 def run_training_live_display(
-    poll_callback: Any,
+    poll_callback: Callable[[], TrainingJob],
     poll_interval: float = 15,
     initial_job: Any = None,
 ) -> None:
@@ -170,12 +180,12 @@ def run_training_live_display(
     if _is_notebook():
         from IPython.display import clear_output
         console.print(build_training_live_display(initial_job))
-        job, is_running = poll_callback()
-        while is_running:
+        job = poll_callback()
+        while job.status in (TrainingJobStatus.RUNNING, TrainingJobStatus.STARTING):
             clear_output(wait=True)
             console.print(build_training_live_display(job))
             time.sleep(poll_interval)
-            job, is_running = poll_callback()
+            job = poll_callback()
         clear_output(wait=True)
         console.print(build_training_live_display(job))
     else:
@@ -186,16 +196,30 @@ def run_training_live_display(
             refresh_per_second=1,
             transient=True,
         ) as live:
-            job, is_running = poll_callback()
-            while is_running:
+            job = poll_callback()
+            while job.status in (TrainingJobStatus.RUNNING, TrainingJobStatus.STARTING):
                 live.update(build_training_live_display(job))
                 time.sleep(poll_interval)
-                job, is_running = poll_callback()
+                job = poll_callback()
             live.update(build_training_live_display(job))
 
-
 def _is_notebook() -> bool:
-    """Check if we're running inside a Jupyter notebook."""
+    """Check if we're running inside a Jupyter or Colab notebook."""
+    try:
+        from IPython import get_ipython
+        shell = get_ipython()
+        if shell is None:
+            return False  # Not running in IPython at all
+        # Jupyter notebook or qtconsole
+        if "IPKernelApp" in shell.config:
+            return True
+        else:
+            return False
+    except Exception:
+        return False
+
+def _is_colab_notebook() -> bool:
+    """Check if we're running inside a Jupyter or Colab notebook."""
     try:
         import google.colab.userdata
     except ImportError as e:

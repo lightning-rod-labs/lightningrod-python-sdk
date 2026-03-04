@@ -81,16 +81,6 @@ class TrainingClient:
     ) -> TrainingJob:
         job = self.create(config=config, name=name)
 
-        job_id = job.id
-
-        def poll() -> tuple[TrainingJob, bool]:
-            current = self.get(job_id)
-            is_running = current.status in (TrainingJobStatus.RUNNING, TrainingJobStatus.STARTING)
-            return current, is_running
-
-        run_training_live_display(poll, poll_interval=poll_interval, initial_job=job)
-
-        job = self.get(job_id)
         if job.status == TrainingJobStatus.FAILED:
             error_msg = (
                 job.error_message
@@ -100,5 +90,10 @@ class TrainingClient:
             display_error(error_msg, title="Training Failed", job=job)
             if not _is_notebook():
                 raise Exception(f"Training job {job.id} failed: {error_msg}")
+
+        def poll() -> TrainingJob:
+            return self.get(job.id)
+
+        run_training_live_display(poll, poll_interval=poll_interval, initial_job=job)
 
         return job

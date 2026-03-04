@@ -89,6 +89,7 @@ We have some example notebooks to help you get started! If you have trouble usin
 | Multiple Choice Answer Type | `notebooks/06_multiple_choice_answer_type.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/06_multiple_choice_answer_type.ipynb) |
 | Free Response Answer Type   | `notebooks/07_free_response_answer_type.ipynb`   | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/07_free_response_answer_type.ipynb)   |
 | Foresight-v3 Model          | `notebooks/08_foresight_model.ipynb`             | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/08_foresight_model.ipynb)             |
+| Training on Generated Datasets                | `notebooks/09_training_api.ipynb`                | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/09_training_api.ipynb)                |
 
 
 ### End-to-end
