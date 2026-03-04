@@ -1,4 +1,5 @@
 from lightningrod.training.client import TrainingClient
+from lightningrod.training.evals import EvalsClient
 from lightningrod._generated.models.training_config import TrainingConfig
 from lightningrod.training.samples import (
     deduplicate_samples,
@@ -10,6 +11,7 @@ from lightningrod.training.samples import (
 )
 
 __all__ = [
+    "EvalsClient",
     "TrainingClient",
     "TrainingConfig",
     "prepare_for_training",

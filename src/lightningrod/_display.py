@@ -203,6 +203,71 @@ def run_training_live_display(
                 job = poll_callback()
             live.update(build_training_live_display(job))
 
+
+def build_eval_live_display(job: Any) -> RenderableType:
+    renderables: list[RenderableType] = []
+    status = str(job.status) if job is not None else ""
+    header_style = {
+        "COMPLETED": "bright_green",
+        "FAILED": "bright_red",
+        "RUNNING": "bright_blue",
+        "STARTING": "bright_blue",
+    }.get(status, "bright_blue") if status else "bright_blue"
+    header = f">> Eval {status}" if status else ">> Eval"
+    renderables.append(_safe_markup(f"[bold {header_style}]{header}[/bold {header_style}]"))
+    renderables.append(Text(""))
+    if job is not None:
+        renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.model_id}"))
+        renderables.append(_safe_markup(f"  [bold]Test dataset:[/bold] {job.test_dataset_id}"))
+        renderables.append(Text(""))
+        if _is_set(job.metrics) and job.metrics and job.metrics.additional_properties:
+            for k, v in job.metrics.additional_properties.items():
+                renderables.append(_safe_markup(f"  [bold]{k}:[/bold] {v}"))
+            renderables.append(Text(""))
+        if job.status == TrainingJobStatus.FAILED and _is_set(job.error_message):
+            renderables.append(_safe_markup(f"  [bold]Error:[/bold] {job.error_message}"))
+            renderables.append(Text(""))
+    return Panel(
+        Group(*renderables),
+        border_style="bright_blue",
+        padding=(1, 2),
+    )
+
+
+def run_eval_live_display(
+    poll_callback: Callable[[], Any],
+    poll_interval: float = 15,
+    initial_job: Any = None,
+) -> None:
+    import time
+    console = Console()
+    if _is_notebook():
+        from IPython.display import clear_output
+        console.print(build_eval_live_display(initial_job))
+        job = poll_callback()
+        while job.status in (TrainingJobStatus.RUNNING, TrainingJobStatus.STARTING):
+            clear_output(wait=True)
+            console.print(build_eval_live_display(job))
+            time.sleep(poll_interval)
+            job = poll_callback()
+        clear_output(wait=True)
+        console.print(build_eval_live_display(job))
+    else:
+        from rich.live import Live
+        with Live(
+            build_eval_live_display(initial_job),
+            console=console,
+            refresh_per_second=1,
+            transient=True,
+        ) as live:
+            job = poll_callback()
+            while job.status in (TrainingJobStatus.RUNNING, TrainingJobStatus.STARTING):
+                live.update(build_eval_live_display(job))
+                time.sleep(poll_interval)
+                job = poll_callback()
+            live.update(build_eval_live_display(job))
+
+
 def _is_notebook() -> bool:
     """Check if we're running inside a Jupyter or Colab notebook."""
     try:

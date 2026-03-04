@@ -12,6 +12,7 @@ from .completion_request import CompletionRequest
 from .completion_response import CompletionResponse
 from .continuous_answer_type import ContinuousAnswerType
 from .create_dataset_response import CreateDatasetResponse
+from .create_eval_job_request import CreateEvalJobRequest
 from .create_file_set_file_request import CreateFileSetFileRequest
 from .create_file_set_file_request_metadata_type_0 import CreateFileSetFileRequestMetadataType0
 from .create_file_set_request import CreateFileSetRequest
@@ -27,6 +28,9 @@ from .estimate_cost_request import EstimateCostRequest
 from .estimate_cost_response import EstimateCostResponse
 from .estimate_training_cost_request import EstimateTrainingCostRequest
 from .estimate_training_cost_response import EstimateTrainingCostResponse
+from .eval_job import EvalJob
+from .eval_job_list_response import EvalJobListResponse
+from .eval_job_metrics_type_0 import EvalJobMetricsType0
 from .event_usage_summary import EventUsageSummary
 from .file_set import FileSet
 from .file_set_file import FileSetFile
@@ -129,6 +133,7 @@ __all__ = (
     "CompletionResponse",
     "ContinuousAnswerType",
     "CreateDatasetResponse",
+    "CreateEvalJobRequest",
     "CreateFileSetFileRequest",
     "CreateFileSetFileRequestMetadataType0",
     "CreateFileSetRequest",
@@ -144,6 +149,9 @@ __all__ = (
     "EstimateCostResponse",
     "EstimateTrainingCostRequest",
     "EstimateTrainingCostResponse",
+    "EvalJob",
+    "EvalJobListResponse",
+    "EvalJobMetricsType0",
     "EventUsageSummary",
     "FileSet",
     "FileSetFile",
