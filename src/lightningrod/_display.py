@@ -7,6 +7,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from lightningrod._generated.models import EvalJob
 from lightningrod._generated.models.training_job import TrainingJob
 from lightningrod._generated.models.training_job_status import TrainingJobStatus
 from lightningrod._generated.types import Unset
@@ -204,7 +205,7 @@ def run_training_live_display(
             live.update(build_training_live_display(job))
 
 
-def build_eval_live_display(job: Any) -> RenderableType:
+def build_eval_live_display(job: EvalJob) -> RenderableType:
     renderables: list[RenderableType] = []
     status = str(job.status) if job is not None else ""
     header_style = {
@@ -218,7 +219,7 @@ def build_eval_live_display(job: Any) -> RenderableType:
     renderables.append(Text(""))
     if job is not None:
         renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.model_id}"))
-        renderables.append(_safe_markup(f"  [bold]Test dataset:[/bold] {job.test_dataset_id}"))
+        renderables.append(_safe_markup(f"  [bold]Dataset:[/bold] {job.dataset_hf_repo}"))
         renderables.append(Text(""))
         if _is_set(job.metrics) and job.metrics and job.metrics.additional_properties:
             for k, v in job.metrics.additional_properties.items():

@@ -20,13 +20,13 @@ class EvalsClient:
     def create(
         self,
         model_id: str,
-        test_dataset_id: str,
+        dataset_hf_repo: str,
         benchmark_model_id: str | None = None,
         temperature: float = 0.0,
     ) -> EvalJob:
         body = CreateEvalJobRequest(
             model_id=model_id,
-            test_dataset_id=test_dataset_id,
+            dataset_hf_repo=dataset_hf_repo,
             benchmark_model_id=benchmark_model_id if benchmark_model_id is not None else UNSET,
             temperature=temperature,
         )
@@ -61,14 +61,14 @@ class EvalsClient:
     def run(
         self,
         model_id: str,
-        test_dataset_id: str,
+        dataset_hf_repo: str,
         benchmark_model_id: str | None = None,
         temperature: float = 0.0,
         poll_interval: float = 15,
     ) -> EvalJob:
         job = self.create(
             model_id=model_id,
-            test_dataset_id=test_dataset_id,
+            dataset_hf_repo=dataset_hf_repo,
             benchmark_model_id=benchmark_model_id,
             temperature=temperature,
         )
@@ -84,8 +84,10 @@ class EvalsClient:
                 raise Exception(f"Eval job {job.id} failed: {error_msg}")
 
         def poll() -> EvalJob:
-            return self.get(job.id)
+            nonlocal job
+            job = self.get(job.id)
+            return job
 
         run_eval_live_display(poll, poll_interval=poll_interval, initial_job=job)
 
-        return self.get(job.id)
+        return job

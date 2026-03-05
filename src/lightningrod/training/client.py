@@ -92,7 +92,10 @@ class TrainingClient:
                 raise Exception(f"Training job {job.id} failed: {error_msg}")
 
         def poll() -> TrainingJob:
-            return self.get(job.id)
+            # Update to return the latest job object at the end
+            nonlocal job
+            job = self.get(job.id)
+            return job
 
         run_training_live_display(poll, poll_interval=poll_interval, initial_job=job)
 

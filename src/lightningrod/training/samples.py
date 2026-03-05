@@ -5,6 +5,7 @@ and converts samples to training-ready records.
 """
 
 import random
+from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any, Callable, Optional, Union
 
@@ -24,6 +25,28 @@ AnswerType = Union[BinaryAnswerType, ContinuousAnswerType, MultipleChoiceAnswerT
 DaysToResolutionRange = Optional[tuple[Optional[int], Optional[int]]]
 
 TrainingSample = dict[str, Any]
+
+
+@dataclass
+class PrepareStats:
+    """Tracks metrics collected during prepare_for_training."""
+    total: int = 0
+
+    filter_invalid: int = 0
+    filter_horizon: int = 0
+    filter_context: int = 0
+    filter_kept: int = 0
+
+    dedup_removed: int = 0
+    dedup_kept: int = 0
+    dedup_top_collisions: list[tuple[tuple[Any, ...], int]] = field(default_factory=list)
+
+    split_strategy: str = ""
+    split_test_size: float | None = None
+    split_no_sort_key: int = 0
+    split_leaky: int = 0
+    split_train: int = 0
+    split_test: int = 0
 
 def _validate_days_to_resolution_range(value: Any) -> None:
     if value is None:
@@ -59,15 +82,18 @@ def filter_samples(
     samples: list[Sample],
     days_to_resolution_range: DaysToResolutionRange = None,
     drop_missing_context: bool = True,
+    stats: PrepareStats | None = None,
 ) -> list[Sample]:
     """Filter samples by validity, horizon, and optional context presence."""
     _validate_days_to_resolution_range(days_to_resolution_range)
     min_horizon = days_to_resolution_range[0] if days_to_resolution_range else None
     max_horizon = days_to_resolution_range[1] if days_to_resolution_range else None
 
+    n_invalid = n_horizon = n_context = 0
     filtered: list[Sample] = []
     for sample in samples:
         if sample.is_valid is not True:
+            n_invalid += 1
             continue
 
         pred_raw: Any = None
@@ -89,14 +115,18 @@ def filter_samples(
         res_d = _parse_date(res_raw)
         if min_horizon is not None or max_horizon is not None:
             if pred_d is None or res_d is None:
+                n_horizon += 1
                 continue
             horizon_days: int = (res_d - pred_d).days
             if min_horizon is not None and horizon_days < min_horizon:
+                n_horizon += 1
                 continue
             if max_horizon is not None and horizon_days > max_horizon:
+                n_horizon += 1
                 continue
         if drop_missing_context:
             if not sample.context:
+                n_context += 1
                 continue
             contexts = [ctx.to_dict() for ctx in sample.context]
             has_nonempty_rendered: bool = any(
@@ -104,8 +134,16 @@ def filter_samples(
                 for ctx in contexts
             )
             if not has_nonempty_rendered:
+                n_context += 1
                 continue
         filtered.append(sample)
+
+    if stats is not None:
+        stats.filter_invalid = n_invalid
+        stats.filter_horizon = n_horizon
+        stats.filter_context = n_context
+        stats.filter_kept = len(filtered)
+
     return filtered
 
 
@@ -184,6 +222,7 @@ def train_test_split(
     sort_key: Callable[[Sample], str | None] | None = None,
     leakage_keys: list[Callable[[Sample], str | None]] | None = None,
     filter_leaky_train: bool = True,
+    stats: PrepareStats | None = None,
 ) -> tuple[list[Sample], list[Sample]]:
     """Split samples into train/test by temporal order or random shuffle, with optional leakage filtering."""
     temporal_split = split_strategy == "temporal"
@@ -214,6 +253,7 @@ def train_test_split(
 
     if temporal_split:
         valid_samples = [r for r in samples if sort_key(r) is not None]
+        n_no_sort_key = len(samples) - len(valid_samples)
         sorted_samples = sorted(valid_samples, key=sort_key)
 
         if test_size is not None:
@@ -224,6 +264,7 @@ def train_test_split(
             train = [r for r in sorted_samples if sort_key(r) is not None and sort_key(r) < test_start]
             test = [r for r in sorted_samples if sort_key(r) is not None and sort_key(r) >= test_start]
 
+        n_leaky = 0
         if filter_leaky_train and test:
             test_cutoff = sort_key(test[0])
             if test_cutoff is not None:
@@ -234,7 +275,16 @@ def train_test_split(
                             return False
                     return True
 
+                train_before = len(train)
                 train = [r for r in train if is_safe(r)]
+                n_leaky = train_before - len(train)
+
+        if stats is not None:
+            stats.split_strategy = "temporal"
+            stats.split_no_sort_key = n_no_sort_key
+            stats.split_leaky = n_leaky
+            stats.split_train = len(train)
+            stats.split_test = len(test)
 
         return train, test
 
@@ -246,33 +296,54 @@ def train_test_split(
     split_idx = int(len(shuffled) * (1 - test_size))
     train = shuffled[:split_idx]
     test = shuffled[split_idx:]
+
+    if stats is not None:
+        stats.split_strategy = "random"
+        stats.split_test_size = test_size
+        stats.split_train = len(train)
+        stats.split_test = len(test)
+
     return train, test
+
+
+def _default_dedup_key(sample: Sample) -> tuple[Any, ...]:
+    question_text: Any = None
+    if sample.question:
+        question_text = sample.question.question_text
+    resolution_date: Any = None
+    if sample.label:
+        res_date = sample.label.resolution_date
+        if res_date:
+            resolution_date = res_date.isoformat()
+    return question_text, resolution_date
 
 
 def deduplicate_samples(
     samples: list[Sample],
     key_fn: Callable[[Sample], tuple[Any, ...]] | None = None,
+    stats: PrepareStats | None = None,
 ) -> list[Sample]:
     """Remove duplicate samples by (question_text, resolution_date) or custom key."""
-    def _default_key_fn(sample: Sample) -> tuple[Any, ...]:
-        question_text: Any = None
-        if sample.question:
-            question_text = sample.question.question_text
-        resolution_date: Any = None
-        if sample.label:
-            res_date = sample.label.resolution_date
-            if res_date:
-                resolution_date = res_date.isoformat()
-        return question_text, resolution_date
-
-    key_fn_local: Callable[[Sample], tuple[Any, ...]] = key_fn or _default_key_fn
+    key_fn_local: Callable[[Sample], tuple[Any, ...]] = key_fn or _default_dedup_key
     seen: set[tuple[Any, ...]] = set()
+    key_counts: dict[tuple[Any, ...], int] = {}
     result: list[Sample] = []
     for sample in samples:
         key = key_fn_local(sample)
+        key_counts[key] = key_counts.get(key, 0) + 1
         if key not in seen:
             seen.add(key)
             result.append(sample)
+
+    if stats is not None:
+        removed = len(samples) - len(result)
+        stats.dedup_removed = removed
+        stats.dedup_kept = len(result)
+        stats.dedup_top_collisions = sorted(
+            ((k, c) for k, c in key_counts.items() if c > 1),
+            key=lambda x: -x[1],
+        )[:3]
+
     return result
 
 def to_record(
@@ -484,6 +555,39 @@ def _render_context(context: list[Union[NewsContext, RAGContext]]) -> str:
     return "\n\n".join(rendered_sections)
 
 
+def _print_stats(stats: PrepareStats) -> None:
+    print(f"[prepare_for_training] Starting with {stats.total} samples")
+
+    parts = []
+    if stats.filter_invalid:
+        parts.append(f"{stats.filter_invalid} invalid")
+    if stats.filter_horizon:
+        parts.append(f"{stats.filter_horizon} horizon")
+    if stats.filter_context:
+        parts.append(f"{stats.filter_context} missing context")
+    if parts:
+        print(f"[filter] Dropped {', '.join(parts)} → {stats.filter_kept} remain")
+    else:
+        print(f"[filter] {stats.filter_kept} remain (0 dropped)")
+
+    if stats.dedup_removed > 0:
+        print(f"[dedup] Removed {stats.dedup_removed} duplicates ({stats.dedup_kept + stats.dedup_removed} → {stats.dedup_kept}). Top colliding keys:")
+        for k, c in stats.dedup_top_collisions:
+            q = repr(k[0])[:60] + ("..." if len(repr(k[0])) > 60 else "")
+            print(f"  ({q}, {k[1]}): {c} samples → 1")
+    else:
+        print(f"[dedup] {stats.dedup_kept} remain (0 duplicates)")
+
+    if stats.split_strategy == "temporal":
+        if stats.split_no_sort_key:
+            print(f"[split] {stats.split_no_sort_key} samples had no prediction_date (dropped)")
+        if stats.split_leaky:
+            print(f"[split] {stats.split_leaky} train samples removed for leakage")
+        print(f"[split] Temporal split: {stats.split_train} train, {stats.split_test} test")
+    else:
+        print(f"[split] Random split (test_size={stats.split_test_size}): {stats.split_train} train, {stats.split_test} test")
+
+
 def prepare_for_training(
     samples: list[Sample],
     answer_type: AnswerType,
@@ -496,6 +600,8 @@ def prepare_for_training(
     random_state: int = 196,
     filter_leaky_train: bool = True,
     include_assistant: bool = False,
+    deduplicate_key_fn: Callable[[Sample], tuple[Any, ...]] | None = None,
+    verbose: bool = False,
 ) -> tuple[list[TrainingSample], list[TrainingSample]]:
     """Prepare samples for model training: filter, deduplicate, split, and convert to training records.
 
@@ -528,18 +634,24 @@ def prepare_for_training(
             to avoid temporal leakage.
         include_assistant: When True, prompt includes assistant message with the
             correct answer (for SFT). Set False for GRPO or when label is used separately.
+        deduplicate_key_fn: Optional function to customize deduplication key.
+            By default, uses (question_text, resolution_date).
+        verbose: When True, print step-by-step stats for filter, dedup, and split.
 
     Returns:
         (train_records, test_records): Two lists of dicts. Each dict has keys like
         question_text, label, prompt (chat messages), context, etc., ready for
         DataFrame construction or direct use in training pipelines.
     """
+    stats = PrepareStats(total=len(samples))
+
     filtered = filter_samples(
         samples,
         days_to_resolution_range=days_to_resolution_range,
         drop_missing_context=drop_missing_context,
+        stats=stats,
     )
-    deduped = deduplicate_samples(filtered)
+    deduped = deduplicate_samples(filtered, key_fn=deduplicate_key_fn, stats=stats)
 
     train, test = train_test_split(
         deduped,
@@ -548,7 +660,11 @@ def prepare_for_training(
         filter_leaky_train=filter_leaky_train,
         test_size=test_size,
         random_state=random_state,
+        stats=stats,
     )
+
+    if verbose:
+        _print_stats(stats)
 
     return (
         _to_training_records(train, answer_type, include_assistant),
