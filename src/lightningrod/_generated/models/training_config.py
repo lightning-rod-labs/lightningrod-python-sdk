@@ -15,14 +15,14 @@ T = TypeVar("T", bound="TrainingConfig")
 class TrainingConfig:
     """
     Attributes:
-        input_dataset_id (str):
+        dataset_hf_repo (str):
         base_model (str):
         training_steps (int):
         batch_size (int | None | Unset):
         lora_rank (int | None | Unset):
     """
 
-    input_dataset_id: str
+    dataset_hf_repo: str
     base_model: str
     training_steps: int
     batch_size: int | None | Unset = UNSET
@@ -30,7 +30,7 @@ class TrainingConfig:
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        input_dataset_id = self.input_dataset_id
+        dataset_hf_repo = self.dataset_hf_repo
 
         base_model = self.base_model
 
@@ -52,7 +52,7 @@ class TrainingConfig:
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "input_dataset_id": input_dataset_id,
+                "dataset_hf_repo": dataset_hf_repo,
                 "base_model": base_model,
                 "training_steps": training_steps,
             }
@@ -67,7 +67,7 @@ class TrainingConfig:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        input_dataset_id = d.pop("input_dataset_id")
+        dataset_hf_repo = d.pop("dataset_hf_repo")
 
         base_model = d.pop("base_model")
 
@@ -92,7 +92,7 @@ class TrainingConfig:
         lora_rank = _parse_lora_rank(d.pop("lora_rank", UNSET))
 
         training_config = cls(
-            input_dataset_id=input_dataset_id,
+            dataset_hf_repo=dataset_hf_repo,
             base_model=base_model,
             training_steps=training_steps,
             batch_size=batch_size,

@@ -123,6 +123,15 @@ def _label_to_numeric(sample: Sample) -> Optional[float]:
     except (TypeError, ValueError):
         return None
 
+def _label_to_boolean(sample: Sample) -> Optional[int]:
+    if not sample.label:
+        return None
+    value = sample.label.label
+    if value.lower() in ["yes", "true", "1"]:
+        return 1
+    elif value.lower() in ["no", "false", "0"]:
+        return 0
+    return None
 
 def _label_to_text(sample: Sample) -> Optional[str]:
     if not sample.label:
@@ -136,7 +145,7 @@ def _label_to_text(sample: Sample) -> Optional[str]:
 def sample_label(sample: Sample, answer_type: AnswerType) -> str:
     """Extract the label value from a sample as numeric (float) or text (str) based on answer type."""
     if isinstance(answer_type, BinaryAnswerType):
-        return _label_to_numeric(sample)
+        return _label_to_boolean(sample)
     elif isinstance(answer_type, ContinuousAnswerType):
         return _label_to_numeric(sample)
     elif isinstance(answer_type, MultipleChoiceAnswerType):
@@ -269,8 +278,6 @@ def deduplicate_samples(
 def to_record(
     sample: Sample,
     answer_type: AnswerType,
-    training: bool = True,
-    include_assistant: bool = True,
 ) -> dict[str, Any]:
     """Convert a sample to a flat dict for DataFrame inspection or training.
 
@@ -287,7 +294,9 @@ def to_record(
     Returns:
         Flat dict suitable for pd.DataFrame([to_record(s, ...) for s in samples]).
     """
-    row: TrainingSample = {}
+    row: TrainingSample = {
+        "sample_id": sample.id,
+    }
     question = sample.question if not isinstance(sample.question, Unset) else None
 
     if question:
@@ -330,14 +339,8 @@ def to_record(
         # Serialize context objects to dicts to ensure compatibility with DataFrame/from_dict() operations
         row["context"] = [ctx.to_dict() if hasattr(ctx, "to_dict") else ctx for ctx in sample.context]
 
-    if training:
-        row["prompt"] = to_messages(sample, answer_type=answer_type, include_assistant=include_assistant)
-
-    if not training and sample.is_valid is not None and not isinstance(sample.is_valid, Unset):
-        row["is_valid"] = sample.is_valid
-
     meta_key_map = {"filter_reason": "invalid_reason"}
-    if not training and sample.meta is not None and not isinstance(sample.meta, Unset):
+    if sample.meta is not None and not isinstance(sample.meta, Unset):
         if isinstance(sample.meta, SampleMeta):
             for key, value in sample.meta.additional_properties.items():
                 row[meta_key_map.get(key, f"meta_{key}")] = value
@@ -348,6 +351,35 @@ def to_record(
 
     return row
 
+# to_training_record is used to convert a sample to a record with minimum required fields for training (expected by the training API).
+def to_training_record(
+    sample: Sample,
+    answer_type: AnswerType,
+    include_assistant: bool = False,
+) -> TrainingSample:
+    row: TrainingSample = {
+        "sample_id": sample.id,
+        "prompt": to_messages(sample, answer_type=answer_type, include_assistant=include_assistant),
+        "correct_answer": sample_label(sample, answer_type),
+    }
+
+    if isinstance(answer_type, BinaryAnswerType):
+        row["answer_type"] = "binary"
+        row["reward_function_type"] = "binary_log_score"
+    elif isinstance(answer_type, ContinuousAnswerType):
+        row["answer_type"] = "continuous"
+        row["reward_function_type"] = "continuous_log_score"
+    elif isinstance(answer_type, MultipleChoiceAnswerType):
+        row["answer_type"] = "multiple_choice"
+        row["reward_function_type"] = "multi_choice_log_score"
+    elif isinstance(answer_type, FreeResponseAnswerType):
+        row["answer_type"] = "free_response"
+        row["reward_function_type"] = ""
+
+    row["answer_parser_type"] = row["answer_type"]
+
+    return row
+    
 
 def to_messages(
     sample: Sample,
@@ -530,4 +562,4 @@ def _to_training_records(
     include_assistant: bool = True,
 ) -> list[TrainingSample]:
     """Convert samples to training records with prompt messages."""
-    return [to_record(s, answer_type, training=True, include_assistant=include_assistant) for s in samples]
+    return [to_training_record(s, answer_type, include_assistant=include_assistant) for s in samples]

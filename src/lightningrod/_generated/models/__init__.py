@@ -31,6 +31,7 @@ from .estimate_training_cost_response import EstimateTrainingCostResponse
 from .eval_job import EvalJob
 from .eval_job_list_response import EvalJobListResponse
 from .eval_job_metrics_type_0 import EvalJobMetricsType0
+from .eval_job_status import EvalJobStatus
 from .event_usage_summary import EventUsageSummary
 from .file_set import FileSet
 from .file_set_file import FileSetFile
@@ -152,6 +153,7 @@ __all__ = (
     "EvalJob",
     "EvalJobListResponse",
     "EvalJobMetricsType0",
+    "EvalJobStatus",
     "EventUsageSummary",
     "FileSet",
     "FileSetFile",

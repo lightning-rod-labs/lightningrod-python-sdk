@@ -8,7 +8,7 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 from dateutil.parser import isoparse
 
-from ..models.training_job_status import TrainingJobStatus
+from ..models.eval_job_status import EvalJobStatus
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
@@ -25,10 +25,11 @@ class EvalJob:
         id (str):
         organization_id (str):
         model_id (str):
-        test_dataset_id (str):
-        status (TrainingJobStatus):
+        status (EvalJobStatus):
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
+        test_dataset_id (None | str | Unset):
+        dataset_hf_repo (None | str | Unset):
         benchmark_model_id (None | str | Unset):
         metrics (EvalJobMetricsType0 | None | Unset):
         error_message (None | str | Unset):
@@ -37,10 +38,11 @@ class EvalJob:
     id: str
     organization_id: str
     model_id: str
-    test_dataset_id: str
-    status: TrainingJobStatus
+    status: EvalJobStatus
     created_at: datetime.datetime
     updated_at: datetime.datetime
+    test_dataset_id: None | str | Unset = UNSET
+    dataset_hf_repo: None | str | Unset = UNSET
     benchmark_model_id: None | str | Unset = UNSET
     metrics: EvalJobMetricsType0 | None | Unset = UNSET
     error_message: None | str | Unset = UNSET
@@ -55,13 +57,23 @@ class EvalJob:
 
         model_id = self.model_id
 
-        test_dataset_id = self.test_dataset_id
-
         status = self.status.value
 
         created_at = self.created_at.isoformat()
 
         updated_at = self.updated_at.isoformat()
+
+        test_dataset_id: None | str | Unset
+        if isinstance(self.test_dataset_id, Unset):
+            test_dataset_id = UNSET
+        else:
+            test_dataset_id = self.test_dataset_id
+
+        dataset_hf_repo: None | str | Unset
+        if isinstance(self.dataset_hf_repo, Unset):
+            dataset_hf_repo = UNSET
+        else:
+            dataset_hf_repo = self.dataset_hf_repo
 
         benchmark_model_id: None | str | Unset
         if isinstance(self.benchmark_model_id, Unset):
@@ -90,12 +102,15 @@ class EvalJob:
                 "id": id,
                 "organization_id": organization_id,
                 "model_id": model_id,
-                "test_dataset_id": test_dataset_id,
                 "status": status,
                 "created_at": created_at,
                 "updated_at": updated_at,
             }
         )
+        if test_dataset_id is not UNSET:
+            field_dict["test_dataset_id"] = test_dataset_id
+        if dataset_hf_repo is not UNSET:
+            field_dict["dataset_hf_repo"] = dataset_hf_repo
         if benchmark_model_id is not UNSET:
             field_dict["benchmark_model_id"] = benchmark_model_id
         if metrics is not UNSET:
@@ -116,13 +131,29 @@ class EvalJob:
 
         model_id = d.pop("model_id")
 
-        test_dataset_id = d.pop("test_dataset_id")
-
-        status = TrainingJobStatus(d.pop("status"))
+        status = EvalJobStatus(d.pop("status"))
 
         created_at = isoparse(d.pop("created_at"))
 
         updated_at = isoparse(d.pop("updated_at"))
+
+        def _parse_test_dataset_id(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        test_dataset_id = _parse_test_dataset_id(d.pop("test_dataset_id", UNSET))
+
+        def _parse_dataset_hf_repo(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        dataset_hf_repo = _parse_dataset_hf_repo(d.pop("dataset_hf_repo", UNSET))
 
         def _parse_benchmark_model_id(data: object) -> None | str | Unset:
             if data is None:
@@ -163,10 +194,11 @@ class EvalJob:
             id=id,
             organization_id=organization_id,
             model_id=model_id,
-            test_dataset_id=test_dataset_id,
             status=status,
             created_at=created_at,
             updated_at=updated_at,
+            test_dataset_id=test_dataset_id,
+            dataset_hf_repo=dataset_hf_repo,
             benchmark_model_id=benchmark_model_id,
             metrics=metrics,
             error_message=error_message,

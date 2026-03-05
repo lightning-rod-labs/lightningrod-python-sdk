@@ -2274,9 +2274,9 @@
             "type": "string",
             "title": "Model Id"
           },
-          "test_dataset_id": {
+          "dataset_hf_repo": {
             "type": "string",
-            "title": "Test Dataset Id"
+            "title": "Dataset Hf Repo"
           },
           "benchmark_model_id": {
             "anyOf": [
@@ -2298,7 +2298,7 @@
         "type": "object",
         "required": [
           "model_id",
-          "test_dataset_id"
+          "dataset_hf_repo"
         ],
         "title": "CreateEvalJobRequest"
       },
@@ -2853,8 +2853,26 @@
             "title": "Model Id"
           },
           "test_dataset_id": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Test Dataset Id"
+          },
+          "dataset_hf_repo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Hf Repo"
           },
           "benchmark_model_id": {
             "anyOf": [
@@ -2868,7 +2886,7 @@
             "title": "Benchmark Model Id"
           },
           "status": {
-            "$ref": "#/components/schemas/TrainingJobStatus"
+            "$ref": "#/components/schemas/EvalJobStatus"
           },
           "metrics": {
             "anyOf": [
@@ -2909,7 +2927,6 @@
           "id",
           "organization_id",
           "model_id",
-          "test_dataset_id",
           "status",
           "created_at",
           "updated_at"
@@ -2936,6 +2953,16 @@
           "total_count"
         ],
         "title": "EvalJobListResponse"
+      },
+      "EvalJobStatus": {
+        "type": "string",
+        "enum": [
+          "STARTING",
+          "RUNNING",
+          "COMPLETED",
+          "FAILED"
+        ],
+        "title": "EvalJobStatus"
       },
       "EventUsageSummary": {
         "properties": {
@@ -5638,6 +5665,17 @@
       },
       "Sample": {
         "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
           "seed": {
             "anyOf": [
               {
@@ -5964,9 +6002,9 @@
       },
       "TrainingConfig": {
         "properties": {
-          "input_dataset_id": {
+          "dataset_hf_repo": {
             "type": "string",
-            "title": "Input Dataset Id"
+            "title": "Dataset Hf Repo"
           },
           "base_model": {
             "type": "string",
@@ -6001,7 +6039,7 @@
         },
         "type": "object",
         "required": [
-          "input_dataset_id",
+          "dataset_hf_repo",
           "base_model",
           "training_steps"
         ],
@@ -6103,6 +6141,17 @@
               }
             ],
             "title": "Input Dataset Id"
+          },
+          "dataset_hf_repo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Hf Repo"
           },
           "error_message": {
             "anyOf": [

@@ -36,6 +36,7 @@ class TrainingJob:
         total_steps (int | None | Unset):
         usage (None | TrainingJobUsageType0 | Unset):
         input_dataset_id (None | str | Unset):
+        dataset_hf_repo (None | str | Unset):
         error_message (None | str | Unset):
     """
 
@@ -52,6 +53,7 @@ class TrainingJob:
     total_steps: int | None | Unset = UNSET
     usage: None | TrainingJobUsageType0 | Unset = UNSET
     input_dataset_id: None | str | Unset = UNSET
+    dataset_hf_repo: None | str | Unset = UNSET
     error_message: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -117,6 +119,12 @@ class TrainingJob:
         else:
             input_dataset_id = self.input_dataset_id
 
+        dataset_hf_repo: None | str | Unset
+        if isinstance(self.dataset_hf_repo, Unset):
+            dataset_hf_repo = UNSET
+        else:
+            dataset_hf_repo = self.dataset_hf_repo
+
         error_message: None | str | Unset
         if isinstance(self.error_message, Unset):
             error_message = UNSET
@@ -149,6 +157,8 @@ class TrainingJob:
             field_dict["usage"] = usage
         if input_dataset_id is not UNSET:
             field_dict["input_dataset_id"] = input_dataset_id
+        if dataset_hf_repo is not UNSET:
+            field_dict["dataset_hf_repo"] = dataset_hf_repo
         if error_message is not UNSET:
             field_dict["error_message"] = error_message
 
@@ -251,6 +261,15 @@ class TrainingJob:
 
         input_dataset_id = _parse_input_dataset_id(d.pop("input_dataset_id", UNSET))
 
+        def _parse_dataset_hf_repo(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        dataset_hf_repo = _parse_dataset_hf_repo(d.pop("dataset_hf_repo", UNSET))
+
         def _parse_error_message(data: object) -> None | str | Unset:
             if data is None:
                 return data
@@ -274,6 +293,7 @@ class TrainingJob:
             total_steps=total_steps,
             usage=usage,
             input_dataset_id=input_dataset_id,
+            dataset_hf_repo=dataset_hf_repo,
             error_message=error_message,
         )
 

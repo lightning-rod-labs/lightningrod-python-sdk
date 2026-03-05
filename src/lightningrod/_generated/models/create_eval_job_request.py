@@ -16,13 +16,13 @@ class CreateEvalJobRequest:
     """
     Attributes:
         model_id (str):
-        test_dataset_id (str):
+        dataset_hf_repo (str):
         benchmark_model_id (None | str | Unset):
         temperature (float | Unset):  Default: 0.0.
     """
 
     model_id: str
-    test_dataset_id: str
+    dataset_hf_repo: str
     benchmark_model_id: None | str | Unset = UNSET
     temperature: float | Unset = 0.0
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -30,7 +30,7 @@ class CreateEvalJobRequest:
     def to_dict(self) -> dict[str, Any]:
         model_id = self.model_id
 
-        test_dataset_id = self.test_dataset_id
+        dataset_hf_repo = self.dataset_hf_repo
 
         benchmark_model_id: None | str | Unset
         if isinstance(self.benchmark_model_id, Unset):
@@ -45,7 +45,7 @@ class CreateEvalJobRequest:
         field_dict.update(
             {
                 "model_id": model_id,
-                "test_dataset_id": test_dataset_id,
+                "dataset_hf_repo": dataset_hf_repo,
             }
         )
         if benchmark_model_id is not UNSET:
@@ -60,7 +60,7 @@ class CreateEvalJobRequest:
         d = dict(src_dict)
         model_id = d.pop("model_id")
 
-        test_dataset_id = d.pop("test_dataset_id")
+        dataset_hf_repo = d.pop("dataset_hf_repo")
 
         def _parse_benchmark_model_id(data: object) -> None | str | Unset:
             if data is None:
@@ -75,7 +75,7 @@ class CreateEvalJobRequest:
 
         create_eval_job_request = cls(
             model_id=model_id,
-            test_dataset_id=test_dataset_id,
+            dataset_hf_repo=dataset_hf_repo,
             benchmark_model_id=benchmark_model_id,
             temperature=temperature,
         )
