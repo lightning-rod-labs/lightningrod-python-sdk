@@ -1,37 +1,33 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, TypeVar, cast
+from typing import Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-if TYPE_CHECKING:
-    from ..models.chat_message import ChatMessage
-
-
-T = TypeVar("T", bound="ChatCompletionRequest")
+T = TypeVar("T", bound="CompletionRequest")
 
 
 @_attrs_define
-class ChatCompletionRequest:
+class CompletionRequest:
     """
     Attributes:
         model (str): ID of the model to use
-        messages (list[ChatMessage]): A list of messages comprising the conversation so far
+        prompt (list[str] | str): The prompt(s) to generate completions for
         temperature (float | None | Unset): Sampling temperature between 0 and 2
         max_tokens (int | None | Unset): Maximum number of tokens to generate
         top_p (float | None | Unset): Nucleus sampling parameter
         stream (bool | None | Unset): Whether to stream back partial progress Default: False.
-        n (int | None | Unset): Number of chat completion choices to generate Default: 1.
+        n (int | None | Unset): Number of completions to generate Default: 1.
         stop (list[str] | None | str | Unset): Up to 4 sequences where the API will stop generating
         seed (int | None | Unset): Deterministic sampling seed
     """
 
     model: str
-    messages: list[ChatMessage]
+    prompt: list[str] | str
     temperature: float | None | Unset = UNSET
     max_tokens: int | None | Unset = UNSET
     top_p: float | None | Unset = UNSET
@@ -44,10 +40,12 @@ class ChatCompletionRequest:
     def to_dict(self) -> dict[str, Any]:
         model = self.model
 
-        messages = []
-        for messages_item_data in self.messages:
-            messages_item = messages_item_data.to_dict()
-            messages.append(messages_item)
+        prompt: list[str] | str
+        if isinstance(self.prompt, list):
+            prompt = self.prompt
+
+        else:
+            prompt = self.prompt
 
         temperature: float | None | Unset
         if isinstance(self.temperature, Unset):
@@ -99,7 +97,7 @@ class ChatCompletionRequest:
         field_dict.update(
             {
                 "model": model,
-                "messages": messages,
+                "prompt": prompt,
             }
         )
         if temperature is not UNSET:
@@ -121,17 +119,21 @@ class ChatCompletionRequest:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.chat_message import ChatMessage
-
         d = dict(src_dict)
         model = d.pop("model")
 
-        messages = []
-        _messages = d.pop("messages")
-        for messages_item_data in _messages:
-            messages_item = ChatMessage.from_dict(messages_item_data)
+        def _parse_prompt(data: object) -> list[str] | str:
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                prompt_type_1 = cast(list[str], data)
 
-            messages.append(messages_item)
+                return prompt_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(list[str] | str, data)
+
+        prompt = _parse_prompt(d.pop("prompt"))
 
         def _parse_temperature(data: object) -> float | None | Unset:
             if data is None:
@@ -204,9 +206,9 @@ class ChatCompletionRequest:
 
         seed = _parse_seed(d.pop("seed", UNSET))
 
-        chat_completion_request = cls(
+        completion_request = cls(
             model=model,
-            messages=messages,
+            prompt=prompt,
             temperature=temperature,
             max_tokens=max_tokens,
             top_p=top_p,
@@ -216,8 +218,8 @@ class ChatCompletionRequest:
             seed=seed,
         )
 
-        chat_completion_request.additional_properties = d
-        return chat_completion_request
+        completion_request.additional_properties = d
+        return completion_request
 
     @property
     def additional_keys(self) -> list[str]:

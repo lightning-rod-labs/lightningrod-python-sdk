@@ -7,6 +7,9 @@ from .chat_completion_request import ChatCompletionRequest
 from .chat_completion_response import ChatCompletionResponse
 from .chat_message import ChatMessage
 from .choice import Choice
+from .completion_choice import CompletionChoice
+from .completion_request import CompletionRequest
+from .completion_response import CompletionResponse
 from .continuous_answer_type import ContinuousAnswerType
 from .create_dataset_response import CreateDatasetResponse
 from .create_file_set_file_request import CreateFileSetFileRequest
@@ -15,6 +18,8 @@ from .create_file_set_request import CreateFileSetRequest
 from .create_file_upload_request import CreateFileUploadRequest
 from .create_file_upload_response import CreateFileUploadResponse
 from .create_file_upload_response_metadata_type_0 import CreateFileUploadResponseMetadataType0
+from .create_session_request import CreateSessionRequest
+from .create_session_request_autonomy_level_type_0 import CreateSessionRequestAutonomyLevelType0
 from .create_transform_job_request import CreateTransformJobRequest
 from .dataset_metadata import DatasetMetadata
 from .estimate_cost_request import EstimateCostRequest
@@ -38,15 +43,24 @@ from .http_validation_error import HTTPValidationError
 from .job_usage import JobUsage
 from .job_usage_by_step_type_0 import JobUsageByStepType0
 from .label import Label
+from .list_datasets_response import ListDatasetsResponse
 from .list_file_set_files_response import ListFileSetFilesResponse
 from .list_file_sets_response import ListFileSetsResponse
+from .list_transform_jobs_response import ListTransformJobsResponse
 from .llm_model_usage_summary import LLMModelUsageSummary
+from .message import Message
+from .message_response import MessageResponse
+from .message_response_current_config_type_0 import MessageResponseCurrentConfigType0
+from .message_role import MessageRole
 from .metadata_field_definition import MetadataFieldDefinition
 from .metadata_field_definition_input import MetadataFieldDefinitionInput
 from .metadata_field_type import MetadataFieldType
 from .mock_transform_config import MockTransformConfig
 from .mock_transform_config_metadata_additions import MockTransformConfigMetadataAdditions
 from .model_config import ModelConfig
+from .model_list_response import ModelListResponse
+from .model_object import ModelObject
+from .model_object_pricing import ModelObjectPricing
 from .model_source_type import ModelSourceType
 from .multiple_choice_answer_type import MultipleChoiceAnswerType
 from .news_context import NewsContext
@@ -54,9 +68,14 @@ from .news_context_generator import NewsContextGenerator
 from .news_seed_generator import NewsSeedGenerator
 from .paginated_samples_response import PaginatedSamplesResponse
 from .pipeline_metrics_response import PipelineMetricsResponse
+from .pipeline_step_summary import PipelineStepSummary
+from .pipeline_step_summary_rejection_reasons import PipelineStepSummaryRejectionReasons
+from .preview_results import PreviewResults
+from .preview_sample import PreviewSample
 from .question import Question
 from .question_and_label_generator import QuestionAndLabelGenerator
 from .question_generator import QuestionGenerator
+from .question_option import QuestionOption
 from .question_pipeline import QuestionPipeline
 from .question_renderer import QuestionRenderer
 from .rag_context import RAGContext
@@ -72,7 +91,12 @@ from .rollout_scorer_multiple_choice_options_type_0 import RolloutScorerMultiple
 from .sample import Sample
 from .sample_meta import SampleMeta
 from .seed import Seed
+from .send_message_request import SendMessageRequest
+from .session_response import SessionResponse
+from .session_response_autonomy_level import SessionResponseAutonomyLevel
+from .session_response_current_config_type_0 import SessionResponseCurrentConfigType0
 from .step_cost_breakdown import StepCostBreakdown
+from .structured_question import StructuredQuestion
 from .template_question_generator import TemplateQuestionGenerator
 from .transform_job import TransformJob
 from .transform_job_status import TransformJobStatus
@@ -96,6 +120,9 @@ __all__ = (
     "ChatCompletionResponse",
     "ChatMessage",
     "Choice",
+    "CompletionChoice",
+    "CompletionRequest",
+    "CompletionResponse",
     "ContinuousAnswerType",
     "CreateDatasetResponse",
     "CreateFileSetFileRequest",
@@ -104,6 +131,8 @@ __all__ = (
     "CreateFileUploadRequest",
     "CreateFileUploadResponse",
     "CreateFileUploadResponseMetadataType0",
+    "CreateSessionRequest",
+    "CreateSessionRequestAutonomyLevelType0",
     "CreateTransformJobRequest",
     "DatasetMetadata",
     "EstimateCostRequest",
@@ -127,15 +156,24 @@ __all__ = (
     "JobUsage",
     "JobUsageByStepType0",
     "Label",
+    "ListDatasetsResponse",
     "ListFileSetFilesResponse",
     "ListFileSetsResponse",
+    "ListTransformJobsResponse",
     "LLMModelUsageSummary",
+    "Message",
+    "MessageResponse",
+    "MessageResponseCurrentConfigType0",
+    "MessageRole",
     "MetadataFieldDefinition",
     "MetadataFieldDefinitionInput",
     "MetadataFieldType",
     "MockTransformConfig",
     "MockTransformConfigMetadataAdditions",
     "ModelConfig",
+    "ModelListResponse",
+    "ModelObject",
+    "ModelObjectPricing",
     "ModelSourceType",
     "MultipleChoiceAnswerType",
     "NewsContext",
@@ -143,9 +181,14 @@ __all__ = (
     "NewsSeedGenerator",
     "PaginatedSamplesResponse",
     "PipelineMetricsResponse",
+    "PipelineStepSummary",
+    "PipelineStepSummaryRejectionReasons",
+    "PreviewResults",
+    "PreviewSample",
     "Question",
     "QuestionAndLabelGenerator",
     "QuestionGenerator",
+    "QuestionOption",
     "QuestionPipeline",
     "QuestionRenderer",
     "RAGContext",
@@ -161,7 +204,12 @@ __all__ = (
     "Sample",
     "SampleMeta",
     "Seed",
+    "SendMessageRequest",
+    "SessionResponse",
+    "SessionResponseAutonomyLevel",
+    "SessionResponseCurrentConfigType0",
     "StepCostBreakdown",
+    "StructuredQuestion",
     "TemplateQuestionGenerator",
     "TransformJob",
     "TransformJobStatus",

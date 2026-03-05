@@ -1,49 +1,33 @@
 from __future__ import annotations
 
-import datetime
 from collections.abc import Mapping
 from typing import Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
-from dateutil.parser import isoparse
 
-T = TypeVar("T", bound="DatasetMetadata")
+T = TypeVar("T", bound="SendMessageRequest")
 
 
 @_attrs_define
-class DatasetMetadata:
-    """
+class SendMessageRequest:
+    """Request to send a message to an assistant session.
+
     Attributes:
-        id (str):
-        num_rows (int):
-        created_at (datetime.datetime):
-        updated_at (datetime.datetime):
+        content (str): The user's message
     """
 
-    id: str
-    num_rows: int
-    created_at: datetime.datetime
-    updated_at: datetime.datetime
+    content: str
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        id = self.id
-
-        num_rows = self.num_rows
-
-        created_at = self.created_at.isoformat()
-
-        updated_at = self.updated_at.isoformat()
+        content = self.content
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "id": id,
-                "num_rows": num_rows,
-                "created_at": created_at,
-                "updated_at": updated_at,
+                "content": content,
             }
         )
 
@@ -52,23 +36,14 @@ class DatasetMetadata:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        id = d.pop("id")
+        content = d.pop("content")
 
-        num_rows = d.pop("num_rows")
-
-        created_at = isoparse(d.pop("created_at"))
-
-        updated_at = isoparse(d.pop("updated_at"))
-
-        dataset_metadata = cls(
-            id=id,
-            num_rows=num_rows,
-            created_at=created_at,
-            updated_at=updated_at,
+        send_message_request = cls(
+            content=content,
         )
 
-        dataset_metadata.additional_properties = d
-        return dataset_metadata
+        send_message_request.additional_properties = d
+        return send_message_request
 
     @property
     def additional_keys(self) -> list[str]:
