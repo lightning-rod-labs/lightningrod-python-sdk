@@ -47,7 +47,7 @@ from lightningrod._generated.models import (
     FileSetFile,
 )
 
-__version__ = "0.1.15"
+__version__ = "0.1.16"
 __all__ = [
     "preprocessing",
     "training",
