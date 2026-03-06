@@ -426,11 +426,12 @@ def to_record(
 def to_training_record(
     sample: Sample,
     answer_type: AnswerType,
+    prompt_template: str | None = None,
     include_assistant: bool = False,
 ) -> TrainingSample:
     row: TrainingSample = {
         "sample_id": sample.id,
-        "prompt": to_messages(sample, answer_type=answer_type, include_assistant=include_assistant),
+        "prompt": to_messages(sample, answer_type=answer_type, include_assistant=include_assistant, template=prompt_template),
         "correct_answer": sample_label(sample, answer_type),
     }
 
@@ -600,6 +601,7 @@ def prepare_for_training(
     random_state: int = 196,
     filter_leaky_train: bool = True,
     include_assistant: bool = False,
+    prompt_template: str | None = None,
     deduplicate_key_fn: Callable[[Sample], tuple[Any, ...]] | None = None,
     verbose: bool = False,
 ) -> tuple[list[TrainingSample], list[TrainingSample]]:
@@ -634,6 +636,8 @@ def prepare_for_training(
             to avoid temporal leakage.
         include_assistant: When True, prompt includes assistant message with the
             correct answer (for SFT). Set False for GRPO or when label is used separately.
+        prompt_template: Optional format string with placeholders (question_text, context,
+            answer_instructions, date_close, etc.). If None, uses the default template.
         deduplicate_key_fn: Optional function to customize deduplication key.
             By default, uses (question_text, resolution_date).
         verbose: When True, print step-by-step stats for filter, dedup, and split.
@@ -667,8 +671,8 @@ def prepare_for_training(
         _print_stats(stats)
 
     return (
-        _to_training_records(train, answer_type, include_assistant),
-        _to_training_records(test, answer_type, include_assistant),
+        _to_training_records(train, answer_type, include_assistant, prompt_template),
+        _to_training_records(test, answer_type, include_assistant, prompt_template),
     )
 
 
@@ -676,6 +680,7 @@ def _to_training_records(
     samples: list[Sample],
     answer_type: AnswerType,
     include_assistant: bool = True,
+    prompt_template: str | None = None,
 ) -> list[TrainingSample]:
     """Convert samples to training records with prompt messages."""
-    return [to_training_record(s, answer_type, include_assistant=include_assistant) for s in samples]
+    return [to_training_record(s, answer_type, include_assistant=include_assistant, prompt_template=prompt_template) for s in samples]

@@ -89,5 +89,4 @@ class EvalsClient:
             return job
 
         run_eval_live_display(poll, poll_interval=poll_interval, initial_job=job)
-
         return job

@@ -235,6 +235,65 @@ def build_eval_live_display(job: EvalJob) -> RenderableType:
     )
 
 
+def print_eval(job: EvalJob) -> None:
+    """Print a prettified eval job summary. Use with evals.run() or evals.get()."""
+    console = Console()
+    renderables: list[RenderableType] = []
+    status = str(job.status) if job is not None else ""
+    header_style = {
+        "COMPLETED": "bright_green",
+        "FAILED": "bright_red",
+        "RUNNING": "bright_blue",
+        "STARTING": "bright_blue",
+    }.get(status, "bright_blue") if status else "bright_blue"
+    header = f">> Eval {status}" if status else ">> Eval"
+    renderables.append(_safe_markup(f"[bold {header_style}]{header}[/bold {header_style}]"))
+    renderables.append(Text(""))
+    if job is not None:
+        renderables.append(_safe_markup(f"  [bold]ID:[/bold] {job.id}"))
+        renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.model_id}"))
+        dataset = None
+        if _is_set(job.dataset_hf_repo):
+            dataset = str(job.dataset_hf_repo)
+        elif _is_set(job.test_dataset_id):
+            dataset = str(job.test_dataset_id)
+        if dataset:
+            renderables.append(_safe_markup(f"  [bold]Dataset:[/bold] {dataset}"))
+        renderables.append(Text(""))
+        if _is_set(job.metrics) and job.metrics and job.metrics.additional_properties:
+            props = job.metrics.additional_properties
+            if all(isinstance(v, dict) for v in props.values()):
+                # Compute all unique metric keys
+                metric_keys = set()
+                for data in props.values():
+                    metric_keys.update(data.keys())
+                metric_keys = sorted(metric_keys)
+                table = Table(show_header=True, header_style="bold cyan")
+                table.add_column("Metric", style="dim")
+                for name in props:
+                    table.add_column(name, justify="right")
+                for key in metric_keys:
+                    row = [key]
+                    for name, data in props.items():
+                        val = data.get(key)
+                        if val is None:
+                            row.append("—")
+                        elif isinstance(val, float):
+                            row.append(f"{val:.4f}")
+                        else:
+                            row.append(str(val))
+                    table.add_row(*row)
+                renderables.append(table)
+            else:
+                for k, v in props.items():
+                    renderables.append(_safe_markup(f"  [bold]{k}:[/bold] {v}"))
+            renderables.append(Text(""))
+        if job.status == TrainingJobStatus.FAILED and _is_set(job.error_message):
+            renderables.append(_safe_markup(f"  [bold]Error:[/bold] {job.error_message}"))
+            renderables.append(Text(""))
+    console.print(Panel(Group(*renderables), border_style="bright_blue", padding=(1, 2)))
+
+
 def run_eval_live_display(
     poll_callback: Callable[[], Any],
     poll_interval: float = 15,
@@ -252,7 +311,7 @@ def run_eval_live_display(
             time.sleep(poll_interval)
             job = poll_callback()
         clear_output(wait=True)
-        console.print(build_eval_live_display(job))
+        print_eval(job)
     else:
         from rich.live import Live
         with Live(
@@ -266,7 +325,8 @@ def run_eval_live_display(
                 live.update(build_eval_live_display(job))
                 time.sleep(poll_interval)
                 job = poll_callback()
-            live.update(build_eval_live_display(job))
+            live.stop()
+            print_eval(job)
 
 
 def _is_notebook() -> bool:
