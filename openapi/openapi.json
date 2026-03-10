@@ -132,6 +132,150 @@
         ]
       }
     },
+    "/transform-jobs": {
+      "get": {
+        "tags": [
+          "Transform Jobs"
+        ],
+        "summary": "List Transform Jobs",
+        "description": "List transform jobs for the authenticated organization",
+        "operationId": "list_transform_jobs_transform_jobs_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 10,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/TransformJobStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "configuration_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Configuration Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListTransformJobsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Transform Jobs"
+        ],
+        "summary": "Create Transform Job",
+        "description": "Create a new transform job",
+        "operationId": "create_transform_job_transform_jobs_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTransformJobRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformJob"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/transform-jobs/cost-estimation": {
       "post": {
         "tags": [
@@ -157,53 +301,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/EstimateCostResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/transform-jobs": {
-      "post": {
-        "tags": [
-          "Transform Jobs"
-        ],
-        "summary": "Create Transform Job",
-        "description": "Create a new transform job",
-        "operationId": "create_transform_job_transform_jobs_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateTransformJobRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransformJob"
                 }
               }
             }
@@ -368,6 +465,98 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/datasets": {
+      "get": {
+        "tags": [
+          "Datasets"
+        ],
+        "summary": "List Datasets",
+        "description": "List datasets for the authenticated organization",
+        "operationId": "list_datasets_datasets_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 10,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListDatasetsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Datasets"
+        ],
+        "summary": "Create Dataset",
+        "description": "Create a new empty dataset",
+        "operationId": "create_dataset_datasets_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateDatasetResponse"
                 }
               }
             }
@@ -553,33 +742,6 @@
             }
           }
         }
-      }
-    },
-    "/datasets": {
-      "post": {
-        "tags": [
-          "Datasets"
-        ],
-        "summary": "Create Dataset",
-        "description": "Create a new empty dataset",
-        "operationId": "create_dataset_datasets_post",
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CreateDatasetResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
       }
     },
     "/samples/validate": {
@@ -1716,12 +1878,6 @@
             "title": "Max Rows",
             "description": "Total rows to fetch across all batches",
             "default": 10000
-          },
-          "batch_size": {
-            "type": "integer",
-            "title": "Batch Size",
-            "description": "Rows per batch; each batch becomes one seed interval",
-            "default": 250
           }
         },
         "type": "object",
@@ -2695,12 +2851,24 @@
           "num_rows": {
             "type": "integer",
             "title": "Num Rows"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
           }
         },
         "type": "object",
         "required": [
           "id",
-          "num_rows"
+          "num_rows",
+          "created_at",
+          "updated_at"
         ],
         "title": "DatasetMetadata"
       },
@@ -2852,17 +3020,6 @@
             "type": "string",
             "title": "Model Id"
           },
-          "test_dataset_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Test Dataset Id"
-          },
           "dataset_hf_repo": {
             "anyOf": [
               {
@@ -2884,6 +3041,39 @@
               }
             ],
             "title": "Benchmark Model Id"
+          },
+          "cost_dollars": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Dollars"
+          },
+          "current_step": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Step"
+          },
+          "total_steps": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Steps"
           },
           "status": {
             "$ref": "#/components/schemas/EvalJobStatus"
@@ -3712,6 +3902,20 @@
               }
             ],
             "title": "Estimated Cost Dollars"
+          },
+          "pipeline_summary": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PipelineStepSummary"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pipeline Summary"
           }
         },
         "type": "object",
@@ -3813,6 +4017,43 @@
         ],
         "title": "Label"
       },
+      "ListDatasetsResponse": {
+        "properties": {
+          "datasets": {
+            "items": {
+              "$ref": "#/components/schemas/DatasetMetadata"
+            },
+            "type": "array",
+            "title": "Datasets"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          },
+          "has_more": {
+            "type": "boolean",
+            "title": "Has More"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "datasets",
+          "has_more",
+          "total"
+        ],
+        "title": "ListDatasetsResponse"
+      },
       "ListFileSetFilesResponse": {
         "properties": {
           "files": {
@@ -3865,6 +4106,43 @@
           "file_sets"
         ],
         "title": "ListFileSetsResponse"
+      },
+      "ListTransformJobsResponse": {
+        "properties": {
+          "jobs": {
+            "items": {
+              "$ref": "#/components/schemas/TransformJob"
+            },
+            "type": "array",
+            "title": "Jobs"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          },
+          "has_more": {
+            "type": "boolean",
+            "title": "Has More"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "jobs",
+          "has_more",
+          "total"
+        ],
+        "title": "ListTransformJobsResponse"
       },
       "Message": {
         "properties": {
@@ -4720,6 +4998,53 @@
           "steps"
         ],
         "title": "PipelineMetricsResponse"
+      },
+      "PipelineStepSummary": {
+        "properties": {
+          "step_index": {
+            "type": "integer",
+            "title": "Step Index"
+          },
+          "transform_name": {
+            "type": "string",
+            "title": "Transform Name"
+          },
+          "input_count": {
+            "type": "integer",
+            "title": "Input Count",
+            "default": 0
+          },
+          "output_count": {
+            "type": "integer",
+            "title": "Output Count",
+            "default": 0
+          },
+          "rejected_count": {
+            "type": "integer",
+            "title": "Rejected Count",
+            "default": 0
+          },
+          "error_count": {
+            "type": "integer",
+            "title": "Error Count",
+            "default": 0
+          },
+          "rejection_reasons": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Rejection Reasons",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "required": [
+          "step_index",
+          "transform_name"
+        ],
+        "title": "PipelineStepSummary",
+        "description": "Summary of a single pipeline step including rejection reasons."
       },
       "PreviewResults": {
         "properties": {
@@ -6119,28 +6444,16 @@
             ],
             "title": "Total Steps"
           },
-          "usage": {
+          "cost_dollars": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "type": "number"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Usage"
-          },
-          "input_dataset_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Input Dataset Id"
+            "title": "Cost Dollars"
           },
           "dataset_hf_repo": {
             "anyOf": [

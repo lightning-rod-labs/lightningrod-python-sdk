@@ -21,7 +21,6 @@ class BigQuerySeedGenerator:
         seed_text_column (str | Unset): Column name for Seed.seed_text Default: 'text'.
         date_column (None | str | Unset): Column name for Seed.seed_creation_date
         max_rows (int | Unset): Total rows to fetch across all batches Default: 10000.
-        batch_size (int | Unset): Rows per batch; each batch becomes one seed interval Default: 250.
     """
 
     query: str
@@ -29,7 +28,6 @@ class BigQuerySeedGenerator:
     seed_text_column: str | Unset = "text"
     date_column: None | str | Unset = UNSET
     max_rows: int | Unset = 10000
-    batch_size: int | Unset = 250
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -47,8 +45,6 @@ class BigQuerySeedGenerator:
 
         max_rows = self.max_rows
 
-        batch_size = self.batch_size
-
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -64,8 +60,6 @@ class BigQuerySeedGenerator:
             field_dict["date_column"] = date_column
         if max_rows is not UNSET:
             field_dict["max_rows"] = max_rows
-        if batch_size is not UNSET:
-            field_dict["batch_size"] = batch_size
 
         return field_dict
 
@@ -91,15 +85,12 @@ class BigQuerySeedGenerator:
 
         max_rows = d.pop("max_rows", UNSET)
 
-        batch_size = d.pop("batch_size", UNSET)
-
         big_query_seed_generator = cls(
             query=query,
             config_type=config_type,
             seed_text_column=seed_text_column,
             date_column=date_column,
             max_rows=max_rows,
-            batch_size=batch_size,
         )
 
         big_query_seed_generator.additional_properties = d

@@ -8,6 +8,7 @@ from rich.table import Table
 from rich.text import Text
 
 from lightningrod._generated.models import EvalJob
+from lightningrod._generated.models.eval_job_status import EvalJobStatus
 from lightningrod._generated.models.training_job import TrainingJob
 from lightningrod._generated.models.training_job_status import TrainingJobStatus
 from lightningrod._generated.types import Unset
@@ -35,23 +36,13 @@ def _format_duration(seconds: float) -> str:
     return f"{minutes}m {secs}s"
 
 
-def _build_cost_lines(job: Any) -> list[RenderableType]:
+def _build_cost_lines(job: TrainingJob | EvalJob) -> list[RenderableType]:
     """Build cost info lines from job.usage. Returns empty list if no data."""
-    if not _is_set(job.usage):
-        return []
-    usage = job.usage
     lines: list[RenderableType] = []
 
-    # Total cost
-    if _is_set(usage.current_cost_dollars):
-        lines.append(_safe_markup(f"  [bold]Total cost:[/bold] [bright_green]${usage.current_cost_dollars:.2f}[/bright_green]"))
-    if _is_set(usage.max_cost_dollars):
-        lines.append(_safe_markup(f"  [bold]Budget:[/bold]     ${usage.max_cost_dollars:.2f}"))
-    if _is_set(usage.estimated_cost_dollars):
-        lines.append(_safe_markup(f"  [bold]Estimated:[/bold]  ${usage.estimated_cost_dollars:.2f}"))
-
+    if job.cost_dollars is not None:
+        lines.append(_safe_markup(f"  [bold]Cost:[/bold]  ${job.cost_dollars:.2f}"))
     return lines
-
 
 def build_live_display(
     metrics: Any = None,
@@ -163,7 +154,12 @@ def build_training_live_display(job: Any) -> RenderableType:
         if job.status == TrainingJobStatus.FAILED:
             renderables.append(_safe_markup(f"  [bold]Error:[/bold] {job.error_message}"))
             renderables.append(Text(""))
-        
+        if job.status == TrainingJobStatus.COMPLETED:
+            cost_lines = _build_cost_lines(job)
+            if cost_lines:
+                renderables.extend(cost_lines)
+                renderables.append(Text(""))
+
     return Panel(
         Group(*renderables),
         border_style="bright_blue",
@@ -221,11 +217,22 @@ def build_eval_live_display(job: EvalJob) -> RenderableType:
         renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.model_id}"))
         renderables.append(_safe_markup(f"  [bold]Dataset:[/bold] {job.dataset_hf_repo}"))
         renderables.append(Text(""))
+        if job.status in (EvalJobStatus.RUNNING, EvalJobStatus.STARTING):
+            current = job.current_step or 0
+            total = job.total_steps or None
+            if total is not None:
+                pct = min(100, int(100 * current / total))
+            else:
+                pct = 0
+            step_progress = f"{current}/{total} ({pct}%)" if total is not None else "(0%)"
+            bar = _make_progress_bar(pct)
+            renderables.append(_safe_markup(f"  [bold]Progress:[/bold] [{bar}] {step_progress}"))
+            renderables.append(Text(""))
         if _is_set(job.metrics) and job.metrics and job.metrics.additional_properties:
             for k, v in job.metrics.additional_properties.items():
                 renderables.append(_safe_markup(f"  [bold]{k}:[/bold] {v}"))
             renderables.append(Text(""))
-        if job.status == TrainingJobStatus.FAILED and _is_set(job.error_message):
+        if job.status == EvalJobStatus.FAILED and _is_set(job.error_message):
             renderables.append(_safe_markup(f"  [bold]Error:[/bold] {job.error_message}"))
             renderables.append(Text(""))
     return Panel(
@@ -288,8 +295,12 @@ def print_eval(job: EvalJob) -> None:
                 for k, v in props.items():
                     renderables.append(_safe_markup(f"  [bold]{k}:[/bold] {v}"))
             renderables.append(Text(""))
-        if job.status == TrainingJobStatus.FAILED and _is_set(job.error_message):
+        if job.status == EvalJobStatus.FAILED and _is_set(job.error_message):
             renderables.append(_safe_markup(f"  [bold]Error:[/bold] {job.error_message}"))
+            renderables.append(Text(""))
+        cost_lines = _build_cost_lines(job)
+        if cost_lines:
+            renderables.extend(cost_lines)
             renderables.append(Text(""))
     console.print(Panel(Group(*renderables), border_style="bright_blue", padding=(1, 2)))
 
@@ -305,7 +316,7 @@ def run_eval_live_display(
         from IPython.display import clear_output
         console.print(build_eval_live_display(initial_job))
         job = poll_callback()
-        while job.status in (TrainingJobStatus.RUNNING, TrainingJobStatus.STARTING):
+        while job.status in (EvalJobStatus.RUNNING, EvalJobStatus.STARTING):
             clear_output(wait=True)
             console.print(build_eval_live_display(job))
             time.sleep(poll_interval)
@@ -321,7 +332,7 @@ def run_eval_live_display(
             transient=True,
         ) as live:
             job = poll_callback()
-            while job.status in (TrainingJobStatus.RUNNING, TrainingJobStatus.STARTING):
+            while job.status in (EvalJobStatus.RUNNING, EvalJobStatus.STARTING):
                 live.update(build_eval_live_display(job))
                 time.sleep(poll_interval)
                 job = poll_callback()

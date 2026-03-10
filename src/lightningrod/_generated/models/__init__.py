@@ -51,8 +51,10 @@ from .http_validation_error import HTTPValidationError
 from .job_usage import JobUsage
 from .job_usage_by_step_type_0 import JobUsageByStepType0
 from .label import Label
+from .list_datasets_response import ListDatasetsResponse
 from .list_file_set_files_response import ListFileSetFilesResponse
 from .list_file_sets_response import ListFileSetsResponse
+from .list_transform_jobs_response import ListTransformJobsResponse
 from .llm_model_usage_summary import LLMModelUsageSummary
 from .message import Message
 from .message_response import MessageResponse
@@ -74,6 +76,8 @@ from .news_context_generator import NewsContextGenerator
 from .news_seed_generator import NewsSeedGenerator
 from .paginated_samples_response import PaginatedSamplesResponse
 from .pipeline_metrics_response import PipelineMetricsResponse
+from .pipeline_step_summary import PipelineStepSummary
+from .pipeline_step_summary_rejection_reasons import PipelineStepSummaryRejectionReasons
 from .preview_results import PreviewResults
 from .preview_sample import PreviewSample
 from .question import Question
@@ -106,7 +110,6 @@ from .training_config import TrainingConfig
 from .training_job import TrainingJob
 from .training_job_list_response import TrainingJobListResponse
 from .training_job_status import TrainingJobStatus
-from .training_job_usage_type_0 import TrainingJobUsageType0
 from .transform_job import TransformJob
 from .transform_job_status import TransformJobStatus
 from .transform_step_metrics_response import TransformStepMetricsResponse
@@ -173,8 +176,10 @@ __all__ = (
     "JobUsage",
     "JobUsageByStepType0",
     "Label",
+    "ListDatasetsResponse",
     "ListFileSetFilesResponse",
     "ListFileSetsResponse",
+    "ListTransformJobsResponse",
     "LLMModelUsageSummary",
     "Message",
     "MessageResponse",
@@ -196,6 +201,8 @@ __all__ = (
     "NewsSeedGenerator",
     "PaginatedSamplesResponse",
     "PipelineMetricsResponse",
+    "PipelineStepSummary",
+    "PipelineStepSummaryRejectionReasons",
     "PreviewResults",
     "PreviewSample",
     "Question",
@@ -228,7 +235,6 @@ __all__ = (
     "TrainingJob",
     "TrainingJobListResponse",
     "TrainingJobStatus",
-    "TrainingJobUsageType0",
     "TransformJob",
     "TransformJobStatus",
     "TransformStepMetricsResponse",

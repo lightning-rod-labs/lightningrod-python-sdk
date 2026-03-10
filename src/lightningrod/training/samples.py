@@ -35,6 +35,8 @@ class PrepareStats:
     filter_invalid: int = 0
     filter_horizon: int = 0
     filter_context: int = 0
+    filter_missing_resolution_date: int = 0
+    filter_missing_prediction_date: int = 0
     filter_kept: int = 0
 
     dedup_removed: int = 0
@@ -89,7 +91,7 @@ def filter_samples(
     min_horizon = days_to_resolution_range[0] if days_to_resolution_range else None
     max_horizon = days_to_resolution_range[1] if days_to_resolution_range else None
 
-    n_invalid = n_horizon = n_context = 0
+    n_invalid = n_horizon = n_context = n_missing_resolution_date = n_missing_prediction_date = 0
     filtered: list[Sample] = []
     for sample in samples:
         if sample.is_valid is not True:
@@ -115,6 +117,10 @@ def filter_samples(
         res_d = _parse_date(res_raw)
         if min_horizon is not None or max_horizon is not None:
             if pred_d is None or res_d is None:
+                if pred_d is None:
+                    n_missing_prediction_date += 1
+                if res_d is None:
+                    n_missing_resolution_date += 1
                 n_horizon += 1
                 continue
             horizon_days: int = (res_d - pred_d).days
@@ -142,6 +148,8 @@ def filter_samples(
         stats.filter_invalid = n_invalid
         stats.filter_horizon = n_horizon
         stats.filter_context = n_context
+        stats.filter_missing_resolution_date = n_missing_resolution_date
+        stats.filter_missing_prediction_date = n_missing_prediction_date
         stats.filter_kept = len(filtered)
 
     return filtered
@@ -493,14 +501,17 @@ def to_messages(
     resolution_criteria: Optional[str] = None
     if question and isinstance(question, ForwardLookingQuestion):
         date_close = question.date_close.strftime("%Y-%m-%d")
-        template_values["date_close"] = date_close
         todays_date = question.event_date.strftime("%Y-%m-%d")
-        template_values["question_date"] = todays_date
         resolution_criteria = question.resolution_criteria
-        template_values["resolution_criteria"] = resolution_criteria
+    template_values["date_close"] = date_close or ""
+    template_values["question_date"] = todays_date or ""
+    template_values["resolution_criteria"] = resolution_criteria or ""
 
     if not isinstance(sample.seed, Unset):
         template_values["seed"] = sample.seed
+        template_values["seed_text"] = sample.seed.seed_text
+    else:
+        template_values["seed_text"] = ""
     if not isinstance(sample.question, Unset):
         template_values["question"] = sample.question
     if not isinstance(sample.label, Unset):
@@ -563,7 +574,15 @@ def _print_stats(stats: PrepareStats) -> None:
     if stats.filter_invalid:
         parts.append(f"{stats.filter_invalid} invalid")
     if stats.filter_horizon:
-        parts.append(f"{stats.filter_horizon} horizon")
+        part = f"{stats.filter_horizon} horizon"
+        if stats.filter_missing_resolution_date or stats.filter_missing_prediction_date:
+            sub = []
+            if stats.filter_missing_resolution_date:
+                sub.append(f"{stats.filter_missing_resolution_date} missing resolution date")
+            if stats.filter_missing_prediction_date:
+                sub.append(f"{stats.filter_missing_prediction_date} missing prediction date")
+            part += f" ({', '.join(sub)})"
+        parts.append(part)
     if stats.filter_context:
         parts.append(f"{stats.filter_context} missing context")
     if parts:

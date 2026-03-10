@@ -28,9 +28,11 @@ class EvalJob:
         status (EvalJobStatus):
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
-        test_dataset_id (None | str | Unset):
         dataset_hf_repo (None | str | Unset):
         benchmark_model_id (None | str | Unset):
+        cost_dollars (float | None | Unset):
+        current_step (int | None | Unset):
+        total_steps (int | None | Unset):
         metrics (EvalJobMetricsType0 | None | Unset):
         error_message (None | str | Unset):
     """
@@ -41,9 +43,11 @@ class EvalJob:
     status: EvalJobStatus
     created_at: datetime.datetime
     updated_at: datetime.datetime
-    test_dataset_id: None | str | Unset = UNSET
     dataset_hf_repo: None | str | Unset = UNSET
     benchmark_model_id: None | str | Unset = UNSET
+    cost_dollars: float | None | Unset = UNSET
+    current_step: int | None | Unset = UNSET
+    total_steps: int | None | Unset = UNSET
     metrics: EvalJobMetricsType0 | None | Unset = UNSET
     error_message: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -63,12 +67,6 @@ class EvalJob:
 
         updated_at = self.updated_at.isoformat()
 
-        test_dataset_id: None | str | Unset
-        if isinstance(self.test_dataset_id, Unset):
-            test_dataset_id = UNSET
-        else:
-            test_dataset_id = self.test_dataset_id
-
         dataset_hf_repo: None | str | Unset
         if isinstance(self.dataset_hf_repo, Unset):
             dataset_hf_repo = UNSET
@@ -80,6 +78,24 @@ class EvalJob:
             benchmark_model_id = UNSET
         else:
             benchmark_model_id = self.benchmark_model_id
+
+        cost_dollars: float | None | Unset
+        if isinstance(self.cost_dollars, Unset):
+            cost_dollars = UNSET
+        else:
+            cost_dollars = self.cost_dollars
+
+        current_step: int | None | Unset
+        if isinstance(self.current_step, Unset):
+            current_step = UNSET
+        else:
+            current_step = self.current_step
+
+        total_steps: int | None | Unset
+        if isinstance(self.total_steps, Unset):
+            total_steps = UNSET
+        else:
+            total_steps = self.total_steps
 
         metrics: dict[str, Any] | None | Unset
         if isinstance(self.metrics, Unset):
@@ -107,12 +123,16 @@ class EvalJob:
                 "updated_at": updated_at,
             }
         )
-        if test_dataset_id is not UNSET:
-            field_dict["test_dataset_id"] = test_dataset_id
         if dataset_hf_repo is not UNSET:
             field_dict["dataset_hf_repo"] = dataset_hf_repo
         if benchmark_model_id is not UNSET:
             field_dict["benchmark_model_id"] = benchmark_model_id
+        if cost_dollars is not UNSET:
+            field_dict["cost_dollars"] = cost_dollars
+        if current_step is not UNSET:
+            field_dict["current_step"] = current_step
+        if total_steps is not UNSET:
+            field_dict["total_steps"] = total_steps
         if metrics is not UNSET:
             field_dict["metrics"] = metrics
         if error_message is not UNSET:
@@ -137,15 +157,6 @@ class EvalJob:
 
         updated_at = isoparse(d.pop("updated_at"))
 
-        def _parse_test_dataset_id(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        test_dataset_id = _parse_test_dataset_id(d.pop("test_dataset_id", UNSET))
-
         def _parse_dataset_hf_repo(data: object) -> None | str | Unset:
             if data is None:
                 return data
@@ -163,6 +174,33 @@ class EvalJob:
             return cast(None | str | Unset, data)
 
         benchmark_model_id = _parse_benchmark_model_id(d.pop("benchmark_model_id", UNSET))
+
+        def _parse_cost_dollars(data: object) -> float | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(float | None | Unset, data)
+
+        cost_dollars = _parse_cost_dollars(d.pop("cost_dollars", UNSET))
+
+        def _parse_current_step(data: object) -> int | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(int | None | Unset, data)
+
+        current_step = _parse_current_step(d.pop("current_step", UNSET))
+
+        def _parse_total_steps(data: object) -> int | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(int | None | Unset, data)
+
+        total_steps = _parse_total_steps(d.pop("total_steps", UNSET))
 
         def _parse_metrics(data: object) -> EvalJobMetricsType0 | None | Unset:
             if data is None:
@@ -197,9 +235,11 @@ class EvalJob:
             status=status,
             created_at=created_at,
             updated_at=updated_at,
-            test_dataset_id=test_dataset_id,
             dataset_hf_repo=dataset_hf_repo,
             benchmark_model_id=benchmark_model_id,
+            cost_dollars=cost_dollars,
+            current_step=current_step,
+            total_steps=total_steps,
             metrics=metrics,
             error_message=error_message,
         )
