@@ -1,0 +1,35 @@
+---
+icon: rectangle-history
+---
+
+# Examples
+
+Run our example notebooks in Google Colab to explore the SDK. Quick Start gets you running; Getting Started covers core concepts; Custom Filesets, Evaluation, and Fine Tuning show workflows for specific use cases.
+
+## Quick Start
+
+<table data-view="cards"><thead><tr><th>Example</th><th data-hidden data-card-target data-type="content-ref">Open in Colab</th></tr></thead><tbody><tr><td>Quick Start</td><td><a href="https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/00_quickstart.ipynb">https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/00_quickstart.ipynb</a></td></tr></tbody></table>
+
+## Getting Started
+
+Step-by-step guides for datasources, answer types, and fine tuning.
+
+<table data-view="cards"><thead><tr><th>Example</th><th data-hidden data-card-target data-type="content-ref">Open in Colab</th></tr></thead><tbody><tr><td>News Datasource</td><td><a href="https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/01_news_datasource.ipynb">https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/01_news_datasource.ipynb</a></td></tr><tr><td>Custom Documents</td><td><a href="https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/02_custom_documents_datasource.ipynb">https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/02_custom_documents_datasource.ipynb</a></td></tr><tr><td>BigQuery Datasource</td><td><a href="https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/03_bigquery_datasource.ipynb">https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/03_bigquery_datasource.ipynb</a></td></tr><tr><td>Answer Types</td><td><a href="https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/04_answer_types.ipynb">https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/04_answer_types.ipynb</a></td></tr><tr><td>Fine Tuning</td><td><a href="https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/05_fine_tuning.ipynb">https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/05_fine_tuning.ipynb</a></td></tr></tbody></table>
+
+## Custom Filesets
+
+Create custom filesets and generate QA pairs from your own documents.
+
+<table data-view="cards"><thead><tr><th>Example</th><th data-hidden data-card-target data-type="content-ref">Open in Colab</th></tr></thead><tbody><tr><td>Create Fileset</td><td><a href="https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/custom_filesets/01_create_fileset.ipynb">https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/custom_filesets/01_create_fileset.ipynb</a></td></tr><tr><td>Basic QA Generation</td><td><a href="https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/custom_filesets/02_basic_qa_generation.ipynb">https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/custom_filesets/02_basic_qa_generation.ipynb</a></td></tr><tr><td>Advanced Features</td><td><a href="https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/custom_filesets/03_advanced_features.ipynb">https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/custom_filesets/03_advanced_features.ipynb</a></td></tr></tbody></table>
+
+## Evaluation
+
+Evaluate models, run consensus analysis, and backtest on prediction markets.
+
+<table data-view="cards"><thead><tr><th>Example</th><th data-hidden data-card-target data-type="content-ref">Open in Colab</th></tr></thead><tbody><tr><td>Foresight Model</td><td><a href="https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/01_foresight_model.ipynb">https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/01_foresight_model.ipynb</a></td></tr><tr><td>Model Consensus</td><td><a href="https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/02_model_consensus.ipynb">https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/02_model_consensus.ipynb</a></td></tr><tr><td>Polymarket Backtesting</td><td><a href="https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/03_polymarket_backtesting.ipynb">https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/03_polymarket_backtesting.ipynb</a></td></tr><tr><td>Document Classification</td><td><a href="https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/04_document_classification.ipynb">https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/04_document_classification.ipynb</a></td></tr></tbody></table>
+
+## Fine Tuning
+
+Full workflows from seeds to labeled datasets and fine-tuned models.
+
+<table data-view="cards"><thead><tr><th>Example</th><th data-hidden data-card-target data-type="content-ref">Open in Colab</th></tr></thead><tbody><tr><td>Golf Forecasting</td><td><a href="https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/fine_tuning/01_golf_forecasting.ipynb">https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/fine_tuning/01_golf_forecasting.ipynb</a></td></tr><tr><td>Trump Forecasting</td><td><a href="https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/fine_tuning/02_trump_forecasting.ipynb">https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/fine_tuning/02_trump_forecasting.ipynb</a></td></tr><tr><td>Survival LLM</td><td><a href="https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/fine_tuning/03_survival_llm.ipynb">https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/fine_tuning/03_survival_llm.ipynb</a></td></tr></tbody></table>
