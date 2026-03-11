@@ -40,7 +40,7 @@ def _build_cost_lines(job: TrainingJob | EvalJob) -> list[RenderableType]:
     """Build cost info lines from job.usage. Returns empty list if no data."""
     lines: list[RenderableType] = []
 
-    if job.cost_dollars is not None:
+    if _is_set(job.cost_dollars) and job.cost_dollars is not None:
         lines.append(_safe_markup(f"  [bold]Cost:[/bold]  ${job.cost_dollars:.2f}"))
     return lines
 
