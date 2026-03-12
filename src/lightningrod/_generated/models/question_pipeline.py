@@ -9,6 +9,7 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
+    from ..models.big_query_seed_generator import BigQuerySeedGenerator
     from ..models.file_set_query_seed_generator import FileSetQuerySeedGenerator
     from ..models.file_set_seed_generator import FileSetSeedGenerator
     from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
@@ -34,8 +35,8 @@ class QuestionPipeline:
     Attributes:
         config_type (Literal['QUESTION_PIPELINE'] | Unset): Type of transform configuration Default:
             'QUESTION_PIPELINE'.
-        seed_generator (FileSetQuerySeedGenerator | FileSetSeedGenerator | GdeltSeedGenerator | MockTransformConfig |
-            NewsSeedGenerator | None | Unset): Configuration for seed generation
+        seed_generator (BigQuerySeedGenerator | FileSetQuerySeedGenerator | FileSetSeedGenerator | GdeltSeedGenerator |
+            MockTransformConfig | NewsSeedGenerator | None | Unset): Configuration for seed generation
         question_generator (ForwardLookingQuestionGenerator | MockTransformConfig | None | QuestionAndLabelGenerator |
             QuestionGenerator | TemplateQuestionGenerator | Unset): Configuration for question generation
         labeler (MockTransformConfig | None | Unset | WebSearchLabeler): Configuration for labeling. Not needed when
@@ -52,7 +53,8 @@ class QuestionPipeline:
 
     config_type: Literal["QUESTION_PIPELINE"] | Unset = "QUESTION_PIPELINE"
     seed_generator: (
-        FileSetQuerySeedGenerator
+        BigQuerySeedGenerator
+        | FileSetQuerySeedGenerator
         | FileSetSeedGenerator
         | GdeltSeedGenerator
         | MockTransformConfig
@@ -77,6 +79,7 @@ class QuestionPipeline:
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.big_query_seed_generator import BigQuerySeedGenerator
         from ..models.file_set_query_seed_generator import FileSetQuerySeedGenerator
         from ..models.file_set_seed_generator import FileSetSeedGenerator
         from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
@@ -97,6 +100,8 @@ class QuestionPipeline:
         seed_generator: dict[str, Any] | None | Unset
         if isinstance(self.seed_generator, Unset):
             seed_generator = UNSET
+        elif isinstance(self.seed_generator, BigQuerySeedGenerator):
+            seed_generator = self.seed_generator.to_dict()
         elif isinstance(self.seed_generator, NewsSeedGenerator):
             seed_generator = self.seed_generator.to_dict()
         elif isinstance(self.seed_generator, GdeltSeedGenerator):
@@ -207,6 +212,7 @@ class QuestionPipeline:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.big_query_seed_generator import BigQuerySeedGenerator
         from ..models.file_set_query_seed_generator import FileSetQuerySeedGenerator
         from ..models.file_set_seed_generator import FileSetSeedGenerator
         from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
@@ -230,7 +236,8 @@ class QuestionPipeline:
         def _parse_seed_generator(
             data: object,
         ) -> (
-            FileSetQuerySeedGenerator
+            BigQuerySeedGenerator
+            | FileSetQuerySeedGenerator
             | FileSetSeedGenerator
             | GdeltSeedGenerator
             | MockTransformConfig
@@ -245,7 +252,7 @@ class QuestionPipeline:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                seed_generator_type_0_type_0 = NewsSeedGenerator.from_dict(data)
+                seed_generator_type_0_type_0 = BigQuerySeedGenerator.from_dict(data)
 
                 return seed_generator_type_0_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -253,7 +260,7 @@ class QuestionPipeline:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                seed_generator_type_0_type_1 = GdeltSeedGenerator.from_dict(data)
+                seed_generator_type_0_type_1 = NewsSeedGenerator.from_dict(data)
 
                 return seed_generator_type_0_type_1
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -261,7 +268,7 @@ class QuestionPipeline:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                seed_generator_type_0_type_2 = FileSetSeedGenerator.from_dict(data)
+                seed_generator_type_0_type_2 = GdeltSeedGenerator.from_dict(data)
 
                 return seed_generator_type_0_type_2
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -269,7 +276,7 @@ class QuestionPipeline:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                seed_generator_type_0_type_3 = FileSetQuerySeedGenerator.from_dict(data)
+                seed_generator_type_0_type_3 = FileSetSeedGenerator.from_dict(data)
 
                 return seed_generator_type_0_type_3
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -277,13 +284,22 @@ class QuestionPipeline:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                seed_generator_type_0_type_4 = MockTransformConfig.from_dict(data)
+                seed_generator_type_0_type_4 = FileSetQuerySeedGenerator.from_dict(data)
 
                 return seed_generator_type_0_type_4
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                seed_generator_type_0_type_5 = MockTransformConfig.from_dict(data)
+
+                return seed_generator_type_0_type_5
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
             return cast(
-                FileSetQuerySeedGenerator
+                BigQuerySeedGenerator
+                | FileSetQuerySeedGenerator
                 | FileSetSeedGenerator
                 | GdeltSeedGenerator
                 | MockTransformConfig

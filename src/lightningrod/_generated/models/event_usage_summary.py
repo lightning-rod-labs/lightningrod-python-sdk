@@ -17,17 +17,21 @@ class EventUsageSummary:
 
     Attributes:
         count (int | Unset):  Default: 0.
+        amount (float | Unset):  Default: 0.0.
         cost (float | Unset):  Default: 0.0.
         cached_count (int | Unset):  Default: 0.
     """
 
     count: int | Unset = 0
+    amount: float | Unset = 0.0
     cost: float | Unset = 0.0
     cached_count: int | Unset = 0
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         count = self.count
+
+        amount = self.amount
 
         cost = self.cost
 
@@ -38,6 +42,8 @@ class EventUsageSummary:
         field_dict.update({})
         if count is not UNSET:
             field_dict["count"] = count
+        if amount is not UNSET:
+            field_dict["amount"] = amount
         if cost is not UNSET:
             field_dict["cost"] = cost
         if cached_count is not UNSET:
@@ -50,12 +56,15 @@ class EventUsageSummary:
         d = dict(src_dict)
         count = d.pop("count", UNSET)
 
+        amount = d.pop("amount", UNSET)
+
         cost = d.pop("cost", UNSET)
 
         cached_count = d.pop("cached_count", UNSET)
 
         event_usage_summary = cls(
             count=count,
+            amount=amount,
             cost=cost,
             cached_count=cached_count,
         )

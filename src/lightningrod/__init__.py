@@ -14,6 +14,7 @@ from lightningrod.training import to_messages
 from lightningrod._generated.models import (
     TransformJob,
     TransformJobStatus,
+    BigQuerySeedGenerator,
     NewsSeedGenerator,
     GdeltSeedGenerator,
     NewsContextGenerator,
@@ -46,12 +47,13 @@ from lightningrod._generated.models import (
     FileSetFile,
 )
 
-__version__ = "0.1.14"
+__version__ = "0.1.16"
 __all__ = [
     "preprocessing",
     "training",
     "utils",
     "AnswerType",
+    "BigQuerySeedGenerator",
     "BinaryAnswerType",
     "ContinuousAnswerType",
     "MultipleChoiceAnswerType",
