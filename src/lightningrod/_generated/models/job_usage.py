@@ -10,6 +10,7 @@ from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.job_usage_by_step_type_0 import JobUsageByStepType0
+    from ..models.pipeline_step_summary import PipelineStepSummary
     from ..models.usage_summary import UsageSummary
 
 
@@ -26,6 +27,7 @@ class JobUsage:
         max_cost_dollars (float | None | Unset):
         current_cost_dollars (float | None | Unset):
         estimated_cost_dollars (float | None | Unset):
+        pipeline_summary (list[PipelineStepSummary] | None | Unset):
     """
 
     total: None | Unset | UsageSummary = UNSET
@@ -33,6 +35,7 @@ class JobUsage:
     max_cost_dollars: float | None | Unset = UNSET
     current_cost_dollars: float | None | Unset = UNSET
     estimated_cost_dollars: float | None | Unset = UNSET
+    pipeline_summary: list[PipelineStepSummary] | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -73,6 +76,18 @@ class JobUsage:
         else:
             estimated_cost_dollars = self.estimated_cost_dollars
 
+        pipeline_summary: list[dict[str, Any]] | None | Unset
+        if isinstance(self.pipeline_summary, Unset):
+            pipeline_summary = UNSET
+        elif isinstance(self.pipeline_summary, list):
+            pipeline_summary = []
+            for pipeline_summary_type_0_item_data in self.pipeline_summary:
+                pipeline_summary_type_0_item = pipeline_summary_type_0_item_data.to_dict()
+                pipeline_summary.append(pipeline_summary_type_0_item)
+
+        else:
+            pipeline_summary = self.pipeline_summary
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
@@ -86,12 +101,15 @@ class JobUsage:
             field_dict["current_cost_dollars"] = current_cost_dollars
         if estimated_cost_dollars is not UNSET:
             field_dict["estimated_cost_dollars"] = estimated_cost_dollars
+        if pipeline_summary is not UNSET:
+            field_dict["pipeline_summary"] = pipeline_summary
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.job_usage_by_step_type_0 import JobUsageByStepType0
+        from ..models.pipeline_step_summary import PipelineStepSummary
         from ..models.usage_summary import UsageSummary
 
         d = dict(src_dict)
@@ -157,12 +175,35 @@ class JobUsage:
 
         estimated_cost_dollars = _parse_estimated_cost_dollars(d.pop("estimated_cost_dollars", UNSET))
 
+        def _parse_pipeline_summary(data: object) -> list[PipelineStepSummary] | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                pipeline_summary_type_0 = []
+                _pipeline_summary_type_0 = data
+                for pipeline_summary_type_0_item_data in _pipeline_summary_type_0:
+                    pipeline_summary_type_0_item = PipelineStepSummary.from_dict(pipeline_summary_type_0_item_data)
+
+                    pipeline_summary_type_0.append(pipeline_summary_type_0_item)
+
+                return pipeline_summary_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(list[PipelineStepSummary] | None | Unset, data)
+
+        pipeline_summary = _parse_pipeline_summary(d.pop("pipeline_summary", UNSET))
+
         job_usage = cls(
             total=total,
             by_step=by_step,
             max_cost_dollars=max_cost_dollars,
             current_cost_dollars=current_cost_dollars,
             estimated_cost_dollars=estimated_cost_dollars,
+            pipeline_summary=pipeline_summary,
         )
 
         job_usage.additional_properties = d

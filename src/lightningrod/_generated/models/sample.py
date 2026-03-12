@@ -26,6 +26,7 @@ T = TypeVar("T", bound="Sample")
 class Sample:
     """
     Attributes:
+        id (None | str | Unset):
         seed (None | Seed | Unset):
         question (ForwardLookingQuestion | None | Question | Unset):
         label (Label | None | Unset):
@@ -36,6 +37,7 @@ class Sample:
         is_valid (bool | Unset):  Default: True.
     """
 
+    id: None | str | Unset = UNSET
     seed: None | Seed | Unset = UNSET
     question: ForwardLookingQuestion | None | Question | Unset = UNSET
     label: Label | None | Unset = UNSET
@@ -52,6 +54,12 @@ class Sample:
         from ..models.news_context import NewsContext
         from ..models.question import Question
         from ..models.seed import Seed
+
+        id: None | str | Unset
+        if isinstance(self.id, Unset):
+            id = UNSET
+        else:
+            id = self.id
 
         seed: dict[str, Any] | None | Unset
         if isinstance(self.seed, Unset):
@@ -123,6 +131,8 @@ class Sample:
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
+        if id is not UNSET:
+            field_dict["id"] = id
         if seed is not UNSET:
             field_dict["seed"] = seed
         if question is not UNSET:
@@ -154,6 +164,15 @@ class Sample:
         from ..models.seed import Seed
 
         d = dict(src_dict)
+
+        def _parse_id(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        id = _parse_id(d.pop("id", UNSET))
 
         def _parse_seed(data: object) -> None | Seed | Unset:
             if data is None:
@@ -293,6 +312,7 @@ class Sample:
         is_valid = d.pop("is_valid", UNSET)
 
         sample = cls(
+            id=id,
             seed=seed,
             question=question,
             label=label,

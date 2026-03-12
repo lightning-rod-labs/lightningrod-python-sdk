@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..types import UNSET, Unset
+
 if TYPE_CHECKING:
     from ..models.step_cost_breakdown import StepCostBreakdown
     from ..models.usage_summary import UsageSummary
@@ -24,6 +26,8 @@ class EstimateCostResponse:
         url_download_cost_dollars (float):
         usage (UsageSummary): Flexible usage statistics by event type and LLM model.
         steps (list[StepCostBreakdown]):
+        gemini_grounding_cost_dollars (float | Unset):  Default: 0.0.
+        bigquery_cost_dollars (float | Unset):  Default: 0.0.
     """
 
     total_cost_dollars: float
@@ -32,6 +36,8 @@ class EstimateCostResponse:
     url_download_cost_dollars: float
     usage: UsageSummary
     steps: list[StepCostBreakdown]
+    gemini_grounding_cost_dollars: float | Unset = 0.0
+    bigquery_cost_dollars: float | Unset = 0.0
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -50,6 +56,10 @@ class EstimateCostResponse:
             steps_item = steps_item_data.to_dict()
             steps.append(steps_item)
 
+        gemini_grounding_cost_dollars = self.gemini_grounding_cost_dollars
+
+        bigquery_cost_dollars = self.bigquery_cost_dollars
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -62,6 +72,10 @@ class EstimateCostResponse:
                 "steps": steps,
             }
         )
+        if gemini_grounding_cost_dollars is not UNSET:
+            field_dict["gemini_grounding_cost_dollars"] = gemini_grounding_cost_dollars
+        if bigquery_cost_dollars is not UNSET:
+            field_dict["bigquery_cost_dollars"] = bigquery_cost_dollars
 
         return field_dict
 
@@ -88,6 +102,10 @@ class EstimateCostResponse:
 
             steps.append(steps_item)
 
+        gemini_grounding_cost_dollars = d.pop("gemini_grounding_cost_dollars", UNSET)
+
+        bigquery_cost_dollars = d.pop("bigquery_cost_dollars", UNSET)
+
         estimate_cost_response = cls(
             total_cost_dollars=total_cost_dollars,
             llm_cost_dollars=llm_cost_dollars,
@@ -95,6 +113,8 @@ class EstimateCostResponse:
             url_download_cost_dollars=url_download_cost_dollars,
             usage=usage,
             steps=steps,
+            gemini_grounding_cost_dollars=gemini_grounding_cost_dollars,
+            bigquery_cost_dollars=bigquery_cost_dollars,
         )
 
         estimate_cost_response.additional_properties = d

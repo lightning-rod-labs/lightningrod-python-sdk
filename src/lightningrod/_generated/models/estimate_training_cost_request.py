@@ -1,49 +1,36 @@
 from __future__ import annotations
 
-import datetime
 from collections.abc import Mapping
-from typing import Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
-from dateutil.parser import isoparse
 
-T = TypeVar("T", bound="DatasetMetadata")
+if TYPE_CHECKING:
+    from ..models.training_config import TrainingConfig
+
+
+T = TypeVar("T", bound="EstimateTrainingCostRequest")
 
 
 @_attrs_define
-class DatasetMetadata:
+class EstimateTrainingCostRequest:
     """
     Attributes:
-        id (str):
-        num_rows (int):
-        created_at (datetime.datetime):
-        updated_at (datetime.datetime):
+        config (TrainingConfig):
     """
 
-    id: str
-    num_rows: int
-    created_at: datetime.datetime
-    updated_at: datetime.datetime
+    config: TrainingConfig
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        id = self.id
-
-        num_rows = self.num_rows
-
-        created_at = self.created_at.isoformat()
-
-        updated_at = self.updated_at.isoformat()
+        config = self.config.to_dict()
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "id": id,
-                "num_rows": num_rows,
-                "created_at": created_at,
-                "updated_at": updated_at,
+                "config": config,
             }
         )
 
@@ -51,24 +38,17 @@ class DatasetMetadata:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.training_config import TrainingConfig
+
         d = dict(src_dict)
-        id = d.pop("id")
+        config = TrainingConfig.from_dict(d.pop("config"))
 
-        num_rows = d.pop("num_rows")
-
-        created_at = isoparse(d.pop("created_at"))
-
-        updated_at = isoparse(d.pop("updated_at"))
-
-        dataset_metadata = cls(
-            id=id,
-            num_rows=num_rows,
-            created_at=created_at,
-            updated_at=updated_at,
+        estimate_training_cost_request = cls(
+            config=config,
         )
 
-        dataset_metadata.additional_properties = d
-        return dataset_metadata
+        estimate_training_cost_request.additional_properties = d
+        return estimate_training_cost_request
 
     @property
     def additional_keys(self) -> list[str]:

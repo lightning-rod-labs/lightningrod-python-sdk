@@ -1,49 +1,44 @@
 from __future__ import annotations
 
-import datetime
 from collections.abc import Mapping
-from typing import Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
-from dateutil.parser import isoparse
 
-T = TypeVar("T", bound="DatasetMetadata")
+if TYPE_CHECKING:
+    from ..models.eval_job import EvalJob
+
+
+T = TypeVar("T", bound="EvalJobListResponse")
 
 
 @_attrs_define
-class DatasetMetadata:
+class EvalJobListResponse:
     """
     Attributes:
-        id (str):
-        num_rows (int):
-        created_at (datetime.datetime):
-        updated_at (datetime.datetime):
+        jobs (list[EvalJob]):
+        total_count (int):
     """
 
-    id: str
-    num_rows: int
-    created_at: datetime.datetime
-    updated_at: datetime.datetime
+    jobs: list[EvalJob]
+    total_count: int
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        id = self.id
+        jobs = []
+        for jobs_item_data in self.jobs:
+            jobs_item = jobs_item_data.to_dict()
+            jobs.append(jobs_item)
 
-        num_rows = self.num_rows
-
-        created_at = self.created_at.isoformat()
-
-        updated_at = self.updated_at.isoformat()
+        total_count = self.total_count
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "id": id,
-                "num_rows": num_rows,
-                "created_at": created_at,
-                "updated_at": updated_at,
+                "jobs": jobs,
+                "total_count": total_count,
             }
         )
 
@@ -51,24 +46,25 @@ class DatasetMetadata:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.eval_job import EvalJob
+
         d = dict(src_dict)
-        id = d.pop("id")
+        jobs = []
+        _jobs = d.pop("jobs")
+        for jobs_item_data in _jobs:
+            jobs_item = EvalJob.from_dict(jobs_item_data)
 
-        num_rows = d.pop("num_rows")
+            jobs.append(jobs_item)
 
-        created_at = isoparse(d.pop("created_at"))
+        total_count = d.pop("total_count")
 
-        updated_at = isoparse(d.pop("updated_at"))
-
-        dataset_metadata = cls(
-            id=id,
-            num_rows=num_rows,
-            created_at=created_at,
-            updated_at=updated_at,
+        eval_job_list_response = cls(
+            jobs=jobs,
+            total_count=total_count,
         )
 
-        dataset_metadata.additional_properties = d
-        return dataset_metadata
+        eval_job_list_response.additional_properties = d
+        return eval_job_list_response
 
     @property
     def additional_keys(self) -> list[str]:

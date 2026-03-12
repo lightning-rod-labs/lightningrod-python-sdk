@@ -17,7 +17,7 @@
           "OpenAI Compatible"
         ],
         "summary": "Chat Completions",
-        "description": "OpenAI Compatible API Endpoint for Foresight Models. Does not currently support streaming.",
+        "description": "OpenAI Compatible API Endpoint for Foresight Models.",
         "operationId": "chat_completions_openai_chat_completions_post",
         "requestBody": {
           "content": {
@@ -58,6 +58,224 @@
         ]
       }
     },
+    "/openai/models": {
+      "get": {
+        "tags": [
+          "OpenAI Compatible"
+        ],
+        "summary": "List Models",
+        "description": "List available models.",
+        "operationId": "list_models_openai_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelListResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/openai/completions": {
+      "post": {
+        "tags": [
+          "OpenAI Compatible"
+        ],
+        "summary": "Completions",
+        "description": "OpenAI-compatible text completion endpoint.",
+        "operationId": "completions_openai_completions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompletionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/transform-jobs": {
+      "get": {
+        "tags": [
+          "Transform Jobs"
+        ],
+        "summary": "List Transform Jobs",
+        "description": "List transform jobs for the authenticated organization",
+        "operationId": "list_transform_jobs_transform_jobs_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 10,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/TransformJobStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "configuration_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Configuration Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListTransformJobsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Transform Jobs"
+        ],
+        "summary": "Create Transform Job",
+        "description": "Create a new transform job",
+        "operationId": "create_transform_job_transform_jobs_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTransformJobRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformJob"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/transform-jobs/cost-estimation": {
       "post": {
         "tags": [
@@ -83,53 +301,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/EstimateCostResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/transform-jobs": {
-      "post": {
-        "tags": [
-          "Transform Jobs"
-        ],
-        "summary": "Create Transform Job",
-        "description": "Create a new transform job",
-        "operationId": "create_transform_job_transform_jobs_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateTransformJobRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransformJob"
                 }
               }
             }
@@ -294,6 +465,98 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/datasets": {
+      "get": {
+        "tags": [
+          "Datasets"
+        ],
+        "summary": "List Datasets",
+        "description": "List datasets for the authenticated organization",
+        "operationId": "list_datasets_datasets_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 10,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListDatasetsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Datasets"
+        ],
+        "summary": "Create Dataset",
+        "description": "Create a new empty dataset",
+        "operationId": "create_dataset_datasets_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateDatasetResponse"
                 }
               }
             }
@@ -481,33 +744,6 @@
         }
       }
     },
-    "/datasets": {
-      "post": {
-        "tags": [
-          "Datasets"
-        ],
-        "summary": "Create Dataset",
-        "description": "Create a new empty dataset",
-        "operationId": "create_dataset_datasets_post",
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CreateDatasetResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
     "/samples/validate": {
       "post": {
         "tags": [
@@ -622,6 +858,705 @@
             "HTTPBearer": []
           }
         ]
+      }
+    },
+    "/pipeline-assistant/sessions": {
+      "post": {
+        "tags": [
+          "Pipeline Assistant"
+        ],
+        "summary": "Create Session",
+        "description": "Create a new pipeline assistant session",
+        "operationId": "create_session_pipeline_assistant_sessions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSessionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/lightningrod_api__api__public__v1__pipeline_assistant__models__SessionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/pipeline-assistant/sessions/{session_id}/messages": {
+      "post": {
+        "tags": [
+          "Pipeline Assistant"
+        ],
+        "summary": "Send Message",
+        "description": "Send a message to the assistant",
+        "operationId": "send_message_pipeline_assistant_sessions__session_id__messages_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/lightningrod_api__api__public__v1__pipeline_assistant__models__SendMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/lightningrod_api__api__public__v1__pipeline_assistant__models__MessageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pipeline-assistant/sessions/{session_id}": {
+      "get": {
+        "tags": [
+          "Pipeline Assistant"
+        ],
+        "summary": "Get Session",
+        "description": "Get the current state of a session",
+        "operationId": "get_session_pipeline_assistant_sessions__session_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/lightningrod_api__api__public__v1__pipeline_assistant__models__SessionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Pipeline Assistant"
+        ],
+        "summary": "Delete Session",
+        "description": "Delete a session",
+        "operationId": "delete_session_pipeline_assistant_sessions__session_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/onboarding-assistant/sessions": {
+      "post": {
+        "tags": [
+          "Onboarding Assistant"
+        ],
+        "summary": "Create Session",
+        "description": "Create an onboarding session",
+        "operationId": "create_session_onboarding_assistant_sessions_post",
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/lightningrod_api__api__public__v1__onboarding_assistant__models__SessionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/onboarding-assistant/sessions/{session_id}/messages": {
+      "post": {
+        "tags": [
+          "Onboarding Assistant"
+        ],
+        "summary": "Send Message",
+        "description": "Send a message to the onboarding assistant",
+        "operationId": "send_message_onboarding_assistant_sessions__session_id__messages_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/lightningrod_api__api__public__v1__onboarding_assistant__models__SendMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/lightningrod_api__api__public__v1__onboarding_assistant__models__MessageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/onboarding-assistant/sessions/{session_id}/claim": {
+      "post": {
+        "tags": [
+          "Onboarding Assistant"
+        ],
+        "summary": "Claim Session",
+        "description": "Claim an onboarding session after authentication",
+        "operationId": "claim_session_onboarding_assistant_sessions__session_id__claim_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/lightningrod_api__api__public__v1__onboarding_assistant__models__SessionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/training-jobs": {
+      "post": {
+        "tags": [
+          "Training Jobs"
+        ],
+        "summary": "Create Training Job",
+        "description": "Create a new training job",
+        "operationId": "create_training_job_training_jobs_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTrainingJobRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrainingJob"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Training Jobs"
+        ],
+        "summary": "List Training Jobs",
+        "description": "List training jobs",
+        "operationId": "list_training_jobs_training_jobs_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 10,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrainingJobListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/training-jobs/cost-estimation": {
+      "post": {
+        "tags": [
+          "Training Jobs"
+        ],
+        "summary": "Estimate Training Cost",
+        "description": "Estimate training cost before execution",
+        "operationId": "estimate_training_cost_training_jobs_cost_estimation_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EstimateTrainingCostRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EstimateTrainingCostResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/training-jobs/{job_id}": {
+      "get": {
+        "tags": [
+          "Training Jobs"
+        ],
+        "summary": "Get Training Job",
+        "description": "Get a training job by ID",
+        "operationId": "get_training_job_training_jobs__job_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrainingJob"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/evaluations": {
+      "post": {
+        "tags": [
+          "Evaluations"
+        ],
+        "summary": "Create Eval Job",
+        "description": "Create a new evaluation job",
+        "operationId": "create_eval_job_evaluations_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEvalJobRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvalJob"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Evaluations"
+        ],
+        "summary": "List Eval Jobs",
+        "description": "List evaluation jobs",
+        "operationId": "list_eval_jobs_evaluations_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "model_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Model Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 10,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvalJobListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/evaluations/{eval_id}": {
+      "get": {
+        "tags": [
+          "Evaluations"
+        ],
+        "summary": "Get Eval Job",
+        "description": "Get an evaluation job by ID",
+        "operationId": "get_eval_job_evaluations__eval_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "eval_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Eval Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvalJob"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/filesets/": {
@@ -1024,6 +1959,51 @@
         ],
         "title": "BalanceResponse"
       },
+      "BigQuerySeedGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "BIGQUERY_SEED_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "BIGQUERY_SEED_GENERATOR"
+          },
+          "query": {
+            "type": "string",
+            "title": "Query",
+            "description": "BigQuery SQL query to execute"
+          },
+          "seed_text_column": {
+            "type": "string",
+            "title": "Seed Text Column",
+            "description": "Column name for Seed.seed_text",
+            "default": "text"
+          },
+          "date_column": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Column",
+            "description": "Column name for Seed.seed_creation_date"
+          },
+          "max_rows": {
+            "type": "integer",
+            "title": "Max Rows",
+            "description": "Total rows to fetch across all batches",
+            "default": 10000
+          }
+        },
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "BigQuerySeedGenerator"
+      },
       "BinaryAnswerType": {
         "properties": {
           "answer_type": {
@@ -1159,6 +2139,18 @@
             ],
             "title": "Stop",
             "description": "Up to 4 sequences where the API will stop generating"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed",
+            "description": "Deterministic sampling seed"
           }
         },
         "type": "object",
@@ -1175,7 +2167,7 @@
                 "role": "user"
               }
             ],
-            "model": "LightningRodLabs/foresight-v1"
+            "model": "LightningRodLabs/foresight-v3"
           }
         ]
       },
@@ -1289,6 +2281,213 @@
         ],
         "title": "Choice"
       },
+      "CompletionChoice": {
+        "properties": {
+          "index": {
+            "type": "integer",
+            "title": "Index",
+            "description": "The index of this choice"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "The generated text"
+          },
+          "finish_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finish Reason",
+            "description": "The reason the model stopped generating tokens"
+          }
+        },
+        "type": "object",
+        "required": [
+          "index",
+          "text"
+        ],
+        "title": "CompletionChoice"
+      },
+      "CompletionRequest": {
+        "properties": {
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "ID of the model to use"
+          },
+          "prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "Prompt",
+            "description": "The prompt(s) to generate completions for"
+          },
+          "temperature": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temperature",
+            "description": "Sampling temperature between 0 and 2"
+          },
+          "max_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Tokens",
+            "description": "Maximum number of tokens to generate"
+          },
+          "top_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top P",
+            "description": "Nucleus sampling parameter"
+          },
+          "stream": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stream",
+            "description": "Whether to stream back partial progress",
+            "default": false
+          },
+          "n": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "N",
+            "description": "Number of completions to generate",
+            "default": 1
+          },
+          "stop": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop",
+            "description": "Up to 4 sequences where the API will stop generating"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed",
+            "description": "Deterministic sampling seed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model",
+          "prompt"
+        ],
+        "title": "CompletionRequest"
+      },
+      "CompletionResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "A unique identifier for the completion"
+          },
+          "object": {
+            "type": "string",
+            "const": "text_completion",
+            "title": "Object",
+            "description": "The object type",
+            "default": "text_completion"
+          },
+          "created": {
+            "type": "integer",
+            "title": "Created",
+            "description": "Unix timestamp of when the completion was created"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "The model used for the completion"
+          },
+          "choices": {
+            "items": {
+              "$ref": "#/components/schemas/CompletionChoice"
+            },
+            "type": "array",
+            "title": "Choices",
+            "description": "A list of completion choices"
+          },
+          "usage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Usage"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Usage statistics for the completion request"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "created",
+          "model",
+          "choices"
+        ],
+        "title": "CompletionResponse"
+      },
       "ContinuousAnswerType": {
         "properties": {
           "answer_type": {
@@ -1342,6 +2541,40 @@
           "id"
         ],
         "title": "CreateDatasetResponse"
+      },
+      "CreateEvalJobRequest": {
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "dataset_hf_repo": {
+            "type": "string",
+            "title": "Dataset Hf Repo"
+          },
+          "benchmark_model_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Benchmark Model Id"
+          },
+          "temperature": {
+            "type": "number",
+            "title": "Temperature",
+            "default": 0.0
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_id",
+          "dataset_hf_repo"
+        ],
+        "title": "CreateEvalJobRequest"
       },
       "CreateFileSetFileRequest": {
         "properties": {
@@ -1543,6 +2776,56 @@
         ],
         "title": "CreateFileUploadResponse"
       },
+      "CreateSessionRequest": {
+        "properties": {
+          "goal": {
+            "type": "string",
+            "title": "Goal",
+            "description": "What the user wants to accomplish"
+          },
+          "model_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Name",
+            "description": "Model to use (e.g., 'anthropic/claude-sonnet-4'). Defaults to configured model."
+          }
+        },
+        "type": "object",
+        "required": [
+          "goal"
+        ],
+        "title": "CreateSessionRequest",
+        "description": "Request to create a new assistant session."
+      },
+      "CreateTrainingJobRequest": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "config": {
+            "$ref": "#/components/schemas/TrainingConfig"
+          }
+        },
+        "type": "object",
+        "required": [
+          "config"
+        ],
+        "title": "CreateTrainingJobRequest"
+      },
       "CreateTransformConfig": {
         "oneOf": [
           {
@@ -1668,12 +2951,24 @@
           "num_rows": {
             "type": "integer",
             "title": "Num Rows"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
           }
         },
         "type": "object",
         "required": [
           "id",
-          "num_rows"
+          "num_rows",
+          "created_at",
+          "updated_at"
         ],
         "title": "DatasetMetadata"
       },
@@ -1718,6 +3013,16 @@
             "type": "number",
             "title": "Url Download Cost Dollars"
           },
+          "gemini_grounding_cost_dollars": {
+            "type": "number",
+            "title": "Gemini Grounding Cost Dollars",
+            "default": 0.0
+          },
+          "bigquery_cost_dollars": {
+            "type": "number",
+            "title": "Bigquery Cost Dollars",
+            "default": 0.0
+          },
           "usage": {
             "$ref": "#/components/schemas/UsageSummary"
           },
@@ -1740,12 +3045,193 @@
         ],
         "title": "EstimateCostResponse"
       },
+      "EstimateTrainingCostRequest": {
+        "properties": {
+          "config": {
+            "$ref": "#/components/schemas/TrainingConfig"
+          }
+        },
+        "type": "object",
+        "required": [
+          "config"
+        ],
+        "title": "EstimateTrainingCostRequest"
+      },
+      "EstimateTrainingCostResponse": {
+        "properties": {
+          "total_cost_dollars": {
+            "type": "number",
+            "title": "Total Cost Dollars"
+          },
+          "prefill_tokens": {
+            "type": "integer",
+            "title": "Prefill Tokens"
+          },
+          "sample_tokens": {
+            "type": "integer",
+            "title": "Sample Tokens"
+          },
+          "train_tokens": {
+            "type": "integer",
+            "title": "Train Tokens"
+          },
+          "effective_steps": {
+            "type": "integer",
+            "title": "Effective Steps"
+          },
+          "notes": {
+            "type": "string",
+            "title": "Notes"
+          },
+          "warning_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warning Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_cost_dollars",
+          "prefill_tokens",
+          "sample_tokens",
+          "train_tokens",
+          "effective_steps",
+          "notes"
+        ],
+        "title": "EstimateTrainingCostResponse"
+      },
+      "EvalJob": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "organization_id": {
+            "type": "string",
+            "title": "Organization Id"
+          },
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "dataset_hf_repo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Hf Repo"
+          },
+          "benchmark_model_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Benchmark Model Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/EvalJobStatus"
+          },
+          "metrics": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metrics"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "organization_id",
+          "model_id",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "EvalJob"
+      },
+      "EvalJobListResponse": {
+        "properties": {
+          "jobs": {
+            "items": {
+              "$ref": "#/components/schemas/EvalJob"
+            },
+            "type": "array",
+            "title": "Jobs"
+          },
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "jobs",
+          "total_count"
+        ],
+        "title": "EvalJobListResponse"
+      },
+      "EvalJobStatus": {
+        "type": "string",
+        "enum": [
+          "STARTING",
+          "RUNNING",
+          "COMPLETED",
+          "FAILED"
+        ],
+        "title": "EvalJobStatus"
+      },
       "EventUsageSummary": {
         "properties": {
           "count": {
             "type": "integer",
             "title": "Count",
             "default": 0
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount",
+            "default": 0.0
           },
           "cost": {
             "type": "number",
@@ -1828,6 +3314,95 @@
           "updated_at"
         ],
         "title": "FileSet"
+      },
+      "FileSetContextGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "FILESET_CONTEXT_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "FILESET_CONTEXT_GENERATOR"
+          },
+          "file_set_id": {
+            "type": "string",
+            "title": "File Set Id",
+            "description": "FileSet ID to query for context"
+          },
+          "metadata_filter_keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Metadata Filter Keys",
+            "description": "Keys from seed's file_metadata for dynamic filtering (e.g., ['ticker'])"
+          },
+          "metadata_filter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata Filter",
+            "description": "Static AIP-160 metadata filter (combined with dynamic via AND)"
+          },
+          "system_instruction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Instruction",
+            "description": "Optional system instruction for the Gemini model"
+          },
+          "query_template": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Query Template",
+            "description": "Template with {question} placeholder; default: raw question text"
+          },
+          "temporal_constraint": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TemporalConstraint"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Filter documents by date relative to seed date. BEFORE (<=) for context without lookahead, AFTER (>) for future docs."
+          },
+          "date_metadata_key": {
+            "type": "string",
+            "title": "Date Metadata Key",
+            "description": "Gemini metadata key storing unix timestamp for temporal filtering",
+            "default": "file_date"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "Gemini model to use for file search",
+            "default": "gemini-2.5-flash"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_set_id"
+        ],
+        "title": "FileSetContextGenerator",
+        "description": "Configuration for FileSet Context Generator transform."
       },
       "FileSetFile": {
         "properties": {
@@ -2066,6 +3641,123 @@
         ],
         "title": "FileSetQuerySeedGenerator",
         "description": "Configuration for FileSet Query Seed Generator transform."
+      },
+      "FileSetRAGLabeler": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "FILESET_RAG_LABELER",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "FILESET_RAG_LABELER"
+          },
+          "file_set_id": {
+            "type": "string",
+            "title": "File Set Id",
+            "description": "FileSet ID to query for labeling"
+          },
+          "metadata_filter_keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Metadata Filter Keys",
+            "description": "Keys from seed's file_metadata for dynamic filtering (e.g., ['ticker'])"
+          },
+          "metadata_filter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata Filter",
+            "description": "Static AIP-160 metadata filter (combined with dynamic via AND)"
+          },
+          "system_instruction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Instruction",
+            "description": "Optional system instruction for the Gemini RAG query"
+          },
+          "confidence_threshold": {
+            "type": "number",
+            "title": "Confidence Threshold",
+            "description": "Minimum confidence threshold for including questions",
+            "default": 0.9
+          },
+          "answer_type": {
+            "anyOf": [
+              {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BinaryAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MultipleChoiceAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ContinuousAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FreeResponseAnswerType"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "answer_type",
+                  "mapping": {
+                    "BINARY": "#/components/schemas/BinaryAnswerType",
+                    "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
+                    "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer Type",
+            "description": "The type of answer expected, used to guide the labeler"
+          },
+          "temporal_constraint": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TemporalConstraint"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Filter documents by date relative to seed date. AFTER (>) for resolution docs, BEFORE (<=) for historical only."
+          },
+          "date_metadata_key": {
+            "type": "string",
+            "title": "Date Metadata Key",
+            "description": "Gemini metadata key storing unix timestamp for temporal filtering",
+            "default": "file_date"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "Gemini model for RAG query",
+            "default": "gemini-2.5-flash"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_set_id"
+        ],
+        "title": "FileSetRAGLabeler",
+        "description": "Configuration for FileSet RAG Labeler transform."
       },
       "FileSetSeedGenerator": {
         "properties": {
@@ -2483,6 +4175,20 @@
               }
             ],
             "title": "Estimated Cost Dollars"
+          },
+          "pipeline_summary": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PipelineStepSummary"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pipeline Summary"
           }
         },
         "type": "object",
@@ -2584,6 +4290,43 @@
         ],
         "title": "Label"
       },
+      "ListDatasetsResponse": {
+        "properties": {
+          "datasets": {
+            "items": {
+              "$ref": "#/components/schemas/DatasetMetadata"
+            },
+            "type": "array",
+            "title": "Datasets"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          },
+          "has_more": {
+            "type": "boolean",
+            "title": "Has More"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "datasets",
+          "has_more",
+          "total"
+        ],
+        "title": "ListDatasetsResponse"
+      },
       "ListFileSetFilesResponse": {
         "properties": {
           "files": {
@@ -2636,6 +4379,110 @@
           "file_sets"
         ],
         "title": "ListFileSetsResponse"
+      },
+      "ListTransformJobsResponse": {
+        "properties": {
+          "jobs": {
+            "items": {
+              "$ref": "#/components/schemas/TransformJob"
+            },
+            "type": "array",
+            "title": "Jobs"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          },
+          "has_more": {
+            "type": "boolean",
+            "title": "Has More"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "jobs",
+          "has_more",
+          "total"
+        ],
+        "title": "ListTransformJobsResponse"
+      },
+      "Message": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant",
+              "tool"
+            ],
+            "title": "Role",
+            "description": "Who sent the message"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "The message content"
+          },
+          "tool_call_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool Call Id",
+            "description": "ID of the tool call if this is a tool message"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp",
+            "description": "When the message was sent"
+          },
+          "structured_question": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/lightningrod_api__api__public__v1__pipeline_assistant__models__StructuredQuestion"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "If present, render as clickable options instead of plain text"
+          },
+          "dataset_plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/lightningrod_api__api__public__v1__pipeline_assistant__models__DatasetPlan"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "If present, render a dataset generation plan card"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "content",
+          "timestamp"
+        ],
+        "title": "Message",
+        "description": "A message in the conversation."
       },
       "MetadataFieldDefinition": {
         "properties": {
@@ -3013,18 +4860,107 @@
         "type": "object",
         "title": "ModelConfig"
       },
+      "ModelListResponse": {
+        "properties": {
+          "object": {
+            "type": "string",
+            "const": "list",
+            "title": "Object",
+            "description": "The object type",
+            "default": "list"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ModelObject"
+            },
+            "type": "array",
+            "title": "Data",
+            "description": "A list of model objects"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ModelListResponse"
+      },
+      "ModelObject": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "The model identifier"
+          },
+          "object": {
+            "type": "string",
+            "const": "model",
+            "title": "Object",
+            "description": "The object type",
+            "default": "model"
+          },
+          "created": {
+            "type": "integer",
+            "title": "Created",
+            "description": "Unix timestamp of when the model was created",
+            "default": 0
+          },
+          "owned_by": {
+            "type": "string",
+            "title": "Owned By",
+            "description": "The organization that owns the model",
+            "default": "lightningrodlabs"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Display name of the model",
+            "default": ""
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Description of the model",
+            "default": ""
+          },
+          "context_length": {
+            "type": "integer",
+            "title": "Context Length",
+            "description": "Maximum context length in tokens",
+            "default": 0
+          },
+          "max_completion_tokens": {
+            "type": "integer",
+            "title": "Max Completion Tokens",
+            "description": "Maximum number of tokens to generate",
+            "default": 0
+          },
+          "pricing": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Pricing",
+            "description": "Per-token pricing"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "ModelObject"
+      },
       "ModelSourceType": {
         "type": "string",
         "enum": [
           "OPENAI",
           "VLLM",
+          "DIRECT_COMPLETIONS",
           "OPEN_ROUTER",
           "HUGGINGFACE_ENDPOINTS",
           "DEEPSEEK",
           "DEEPINFRA",
           "RUNPOD",
           "SGLANG",
-          "TINKER"
+          "TINKER",
+          "MODAL_LORA_VLLM"
         ],
         "title": "ModelSourceType"
       },
@@ -3143,12 +5079,6 @@
             "title": "Enable Relevance Ranking",
             "description": "Whether to perform LLM-based relevance ranking",
             "default": true
-          },
-          "enable_stage_cache": {
-            "type": "boolean",
-            "title": "Enable Stage Cache",
-            "description": "Cache entire transform output to skip all sub-operations on repeated questions",
-            "default": true
           }
         },
         "type": "object",
@@ -3247,6 +5177,56 @@
         ],
         "title": "NewsSeedGenerator"
       },
+      "OnboardingMessage": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role",
+            "description": "Who sent the message"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "structured_question": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/lightningrod_api__api__public__v1__onboarding_assistant__models__StructuredQuestion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dataset_plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/lightningrod_api__api__public__v1__onboarding_assistant__models__DatasetPlan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "content",
+          "timestamp"
+        ],
+        "title": "OnboardingMessage",
+        "description": "A message in the onboarding conversation."
+      },
       "PaginatedSamplesResponse": {
         "properties": {
           "samples": {
@@ -3314,6 +5294,199 @@
           "steps"
         ],
         "title": "PipelineMetricsResponse"
+      },
+      "PipelineStepResponse": {
+        "properties": {
+          "step_id": {
+            "type": "string",
+            "title": "Step Id",
+            "description": "Unique step identifier"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Display name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "'partial' or 'configured'"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "parameters": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parameters",
+            "description": "Key-value pairs"
+          },
+          "config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Config",
+            "description": "Actual transform config dict"
+          },
+          "instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instructions",
+            "description": "Full config text"
+          },
+          "example_input": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Example Input"
+          },
+          "example_output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Example Output"
+          }
+        },
+        "type": "object",
+        "required": [
+          "step_id",
+          "name",
+          "status"
+        ],
+        "title": "PipelineStepResponse",
+        "description": "A single step in the progressive plan outline."
+      },
+      "PipelineStepSummary": {
+        "properties": {
+          "step_index": {
+            "type": "integer",
+            "title": "Step Index"
+          },
+          "transform_name": {
+            "type": "string",
+            "title": "Transform Name"
+          },
+          "input_count": {
+            "type": "integer",
+            "title": "Input Count",
+            "default": 0
+          },
+          "output_count": {
+            "type": "integer",
+            "title": "Output Count",
+            "default": 0
+          },
+          "rejected_count": {
+            "type": "integer",
+            "title": "Rejected Count",
+            "default": 0
+          },
+          "error_count": {
+            "type": "integer",
+            "title": "Error Count",
+            "default": 0
+          },
+          "rejection_reasons": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Rejection Reasons",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "required": [
+          "step_index",
+          "transform_name"
+        ],
+        "title": "PipelineStepSummary",
+        "description": "Summary of a single pipeline step including rejection reasons."
+      },
+      "PlanStatus": {
+        "properties": {
+          "finalized": {
+            "type": "boolean",
+            "title": "Finalized",
+            "description": "Whether the plan has been finalized",
+            "default": false
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary",
+            "description": "Plan summary (set after finalization)"
+          },
+          "estimated_samples": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Samples"
+          },
+          "fulfillment_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fulfillment Type",
+            "description": "'auto' or 'manual' (set after finalization)"
+          }
+        },
+        "type": "object",
+        "title": "PlanStatus",
+        "description": "Status of the progressive plan."
       },
       "Question": {
         "properties": {
@@ -3558,6 +5731,9 @@
               {
                 "oneOf": [
                   {
+                    "$ref": "#/components/schemas/BigQuerySeedGenerator"
+                  },
+                  {
                     "$ref": "#/components/schemas/NewsSeedGenerator"
                   },
                   {
@@ -3576,6 +5752,7 @@
                 "discriminator": {
                   "propertyName": "config_type",
                   "mapping": {
+                    "BIGQUERY_SEED_GENERATOR": "#/components/schemas/BigQuerySeedGenerator",
                     "FILESET_QUERY_SEED_GENERATOR": "#/components/schemas/FileSetQuerySeedGenerator",
                     "FILESET_SEED_GENERATOR": "#/components/schemas/FileSetSeedGenerator",
                     "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
@@ -3637,12 +5814,16 @@
                     "$ref": "#/components/schemas/WebSearchLabeler"
                   },
                   {
+                    "$ref": "#/components/schemas/FileSetRAGLabeler"
+                  },
+                  {
                     "$ref": "#/components/schemas/MockTransformConfig"
                   }
                 ],
                 "discriminator": {
                   "propertyName": "config_type",
                   "mapping": {
+                    "FILESET_RAG_LABELER": "#/components/schemas/FileSetRAGLabeler",
                     "MOCK": "#/components/schemas/MockTransformConfig",
                     "WEB_SEARCH_LABELER": "#/components/schemas/WebSearchLabeler"
                   }
@@ -3662,6 +5843,9 @@
                   "anyOf": [
                     {
                       "$ref": "#/components/schemas/NewsContextGenerator"
+                    },
+                    {
+                      "$ref": "#/components/schemas/FileSetContextGenerator"
                     },
                     {
                       "$ref": "#/components/schemas/MockTransformConfig"
@@ -4072,6 +6256,17 @@
       },
       "Sample": {
         "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
           "seed": {
             "anyOf": [
               {
@@ -4268,6 +6463,45 @@
         ],
         "title": "StepCostBreakdown"
       },
+      "SyntheticExample": {
+        "properties": {
+          "seed_text": {
+            "type": "string",
+            "title": "Seed Text",
+            "description": "Example source data"
+          },
+          "generated_question": {
+            "type": "string",
+            "title": "Generated Question",
+            "description": "Example question"
+          },
+          "answer_type": {
+            "type": "string",
+            "title": "Answer Type",
+            "description": "Question type"
+          },
+          "expected_answer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Answer",
+            "description": "Example answer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seed_text",
+          "generated_question",
+          "answer_type"
+        ],
+        "title": "SyntheticExample",
+        "description": "A fabricated example of what the pipeline would produce."
+      },
       "TemplateQuestionGenerator": {
         "properties": {
           "config_type": {
@@ -4288,6 +6522,221 @@
           "question_template"
         ],
         "title": "TemplateQuestionGenerator"
+      },
+      "TemporalConstraint": {
+        "type": "string",
+        "enum": [
+          "BEFORE",
+          "AFTER"
+        ],
+        "title": "TemporalConstraint",
+        "description": "Temporal filtering direction relative to the seed document's date.\n\nUses the `file_date` metadata key (unix timestamp int) stored on each\nGemini document by fileset_file_processor.\n\nBEFORE: file_date <= seed_timestamp  (context: no lookahead bias)\nAFTER:  file_date >  seed_timestamp  (labels: find resolutions)"
+      },
+      "TrainingConfig": {
+        "properties": {
+          "dataset_hf_repo": {
+            "type": "string",
+            "title": "Dataset Hf Repo"
+          },
+          "base_model": {
+            "type": "string",
+            "title": "Base Model"
+          },
+          "training_steps": {
+            "type": "integer",
+            "title": "Training Steps"
+          },
+          "batch_size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Batch Size"
+          },
+          "lora_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lora Rank"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dataset_hf_repo",
+          "base_model",
+          "training_steps"
+        ],
+        "title": "TrainingConfig"
+      },
+      "TrainingJob": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "organization_id": {
+            "type": "string",
+            "title": "Organization Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TrainingJobStatus"
+          },
+          "config": {
+            "$ref": "#/components/schemas/TrainingConfig"
+          },
+          "model_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Id"
+          },
+          "reward_history": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reward History"
+          },
+          "current_step": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Step"
+          },
+          "total_steps": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Steps"
+          },
+          "usage": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usage"
+          },
+          "dataset_hf_repo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Hf Repo"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "organization_id",
+          "status",
+          "config",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "TrainingJob"
+      },
+      "TrainingJobListResponse": {
+        "properties": {
+          "jobs": {
+            "items": {
+              "$ref": "#/components/schemas/TrainingJob"
+            },
+            "type": "array",
+            "title": "Jobs"
+          },
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "jobs",
+          "total_count"
+        ],
+        "title": "TrainingJobListResponse"
+      },
+      "TrainingJobStatus": {
+        "type": "string",
+        "enum": [
+          "STARTING",
+          "RUNNING",
+          "COMPLETED",
+          "FAILED"
+        ],
+        "title": "TrainingJobStatus"
       },
       "TransformJob": {
         "properties": {
@@ -4515,10 +6964,13 @@
           "QUESTION_PIPELINE",
           "QUESTION_RENDERER",
           "ROLLOUT_GENERATOR",
+          "BIGQUERY_SEED_GENERATOR",
           "FILESET_SEED_GENERATOR",
           "FILESET_QUERY_SEED_GENERATOR",
           "TEMPLATE_QUESTION_GENERATOR",
           "ROLLOUT_SCORER",
+          "FILESET_CONTEXT_GENERATOR",
+          "FILESET_RAG_LABELER",
           "MOCK"
         ],
         "title": "TransformType"
@@ -4720,6 +7172,511 @@
         },
         "type": "object",
         "title": "WebSearchLabeler"
+      },
+      "lightningrod_api__api__public__v1__onboarding_assistant__models__DatasetPlan": {
+        "properties": {
+          "domain": {
+            "type": "string",
+            "title": "Domain"
+          },
+          "data_sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Data Sources"
+          },
+          "goal": {
+            "type": "string",
+            "title": "Goal"
+          },
+          "plan_title": {
+            "type": "string",
+            "title": "Plan Title"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/lightningrod_api__api__public__v1__onboarding_assistant__models__PlanStep"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "estimated_total_samples": {
+            "type": "integer",
+            "title": "Estimated Total Samples"
+          },
+          "estimated_time": {
+            "type": "string",
+            "title": "Estimated Time"
+          }
+        },
+        "type": "object",
+        "required": [
+          "domain",
+          "data_sources",
+          "goal",
+          "plan_title",
+          "steps",
+          "estimated_total_samples",
+          "estimated_time"
+        ],
+        "title": "DatasetPlan",
+        "description": "A generated dataset generation plan."
+      },
+      "lightningrod_api__api__public__v1__onboarding_assistant__models__MessageResponse": {
+        "properties": {
+          "message": {
+            "$ref": "#/components/schemas/OnboardingMessage"
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/lightningrod_api__api__public__v1__onboarding_assistant__models__DatasetPlan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "MessageResponse",
+        "description": "Response from sending a message."
+      },
+      "lightningrod_api__api__public__v1__onboarding_assistant__models__PlanStep": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "estimated_output": {
+            "type": "string",
+            "title": "Estimated Output"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "description",
+          "estimated_output"
+        ],
+        "title": "PlanStep",
+        "description": "A step in the dataset generation plan."
+      },
+      "lightningrod_api__api__public__v1__onboarding_assistant__models__QuestionOption": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "value"
+        ],
+        "title": "QuestionOption",
+        "description": "A selectable option for a structured question."
+      },
+      "lightningrod_api__api__public__v1__onboarding_assistant__models__SendMessageRequest": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "The user's message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "title": "SendMessageRequest",
+        "description": "Request to send a message to an onboarding session."
+      },
+      "lightningrod_api__api__public__v1__onboarding_assistant__models__SessionResponse": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/OnboardingMessage"
+            },
+            "type": "array",
+            "title": "Messages"
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/lightningrod_api__api__public__v1__onboarding_assistant__models__DatasetPlan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fulfillment_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fulfillment Type"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "session_id",
+          "created_at"
+        ],
+        "title": "SessionResponse",
+        "description": "Response containing onboarding session state."
+      },
+      "lightningrod_api__api__public__v1__onboarding_assistant__models__StructuredQuestion": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/lightningrod_api__api__public__v1__onboarding_assistant__models__QuestionOption"
+            },
+            "type": "array",
+            "title": "Options"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "options"
+        ],
+        "title": "StructuredQuestion",
+        "description": "A structured question with selectable options."
+      },
+      "lightningrod_api__api__public__v1__pipeline_assistant__models__DatasetPlan": {
+        "properties": {
+          "confirmed_goal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmed Goal"
+          },
+          "domain": {
+            "type": "string",
+            "title": "Domain"
+          },
+          "data_sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Data Sources"
+          },
+          "goal": {
+            "type": "string",
+            "title": "Goal"
+          },
+          "plan_title": {
+            "type": "string",
+            "title": "Plan Title"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/lightningrod_api__api__public__v1__pipeline_assistant__models__PlanStep"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "estimated_total_samples": {
+            "type": "integer",
+            "title": "Estimated Total Samples"
+          },
+          "estimated_time": {
+            "type": "string",
+            "title": "Estimated Time"
+          },
+          "estimated_cost": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Cost"
+          },
+          "synthetic_examples": {
+            "items": {
+              "$ref": "#/components/schemas/SyntheticExample"
+            },
+            "type": "array",
+            "title": "Synthetic Examples"
+          }
+        },
+        "type": "object",
+        "required": [
+          "domain",
+          "data_sources",
+          "goal",
+          "plan_title",
+          "steps",
+          "estimated_total_samples",
+          "estimated_time"
+        ],
+        "title": "DatasetPlan",
+        "description": "A generated dataset generation plan."
+      },
+      "lightningrod_api__api__public__v1__pipeline_assistant__models__MessageResponse": {
+        "properties": {
+          "message": {
+            "$ref": "#/components/schemas/Message",
+            "description": "The assistant's response"
+          },
+          "pipeline_steps": {
+            "items": {
+              "$ref": "#/components/schemas/PipelineStepResponse"
+            },
+            "type": "array",
+            "title": "Pipeline Steps",
+            "description": "Current plan steps"
+          },
+          "plan_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlanStatus"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Plan finalization status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "MessageResponse",
+        "description": "Response from sending a message."
+      },
+      "lightningrod_api__api__public__v1__pipeline_assistant__models__PlanStep": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "estimated_output": {
+            "type": "string",
+            "title": "Estimated Output"
+          },
+          "transform_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transform Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "description",
+          "estimated_output"
+        ],
+        "title": "PlanStep",
+        "description": "A step in the dataset generation plan."
+      },
+      "lightningrod_api__api__public__v1__pipeline_assistant__models__QuestionOption": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique identifier for this option"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "Display text shown on the button"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value",
+            "description": "Value sent when this option is selected"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Optional description/subtitle"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "value"
+        ],
+        "title": "QuestionOption",
+        "description": "A selectable option for a structured question."
+      },
+      "lightningrod_api__api__public__v1__pipeline_assistant__models__SendMessageRequest": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "The user's message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "title": "SendMessageRequest",
+        "description": "Request to send a message to an assistant session."
+      },
+      "lightningrod_api__api__public__v1__pipeline_assistant__models__SessionResponse": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "title": "Session Id",
+            "description": "Unique session identifier"
+          },
+          "goal": {
+            "type": "string",
+            "title": "Goal",
+            "description": "The user's stated goal"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            },
+            "type": "array",
+            "title": "Messages",
+            "description": "Conversation history"
+          },
+          "dataset_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Dataset Ids",
+            "description": "Dataset IDs generated during this session"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "When the session was created"
+          },
+          "pipeline_steps": {
+            "items": {
+              "$ref": "#/components/schemas/PipelineStepResponse"
+            },
+            "type": "array",
+            "title": "Pipeline Steps",
+            "description": "Current plan steps"
+          },
+          "plan_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlanStatus"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Plan finalization status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "session_id",
+          "goal",
+          "created_at"
+        ],
+        "title": "SessionResponse",
+        "description": "Response containing session state."
+      },
+      "lightningrod_api__api__public__v1__pipeline_assistant__models__StructuredQuestion": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question",
+            "description": "The question text"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/lightningrod_api__api__public__v1__pipeline_assistant__models__QuestionOption"
+            },
+            "type": "array",
+            "title": "Options",
+            "description": "Available options"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "options"
+        ],
+        "title": "StructuredQuestion",
+        "description": "A structured question with selectable options."
       }
     },
     "securitySchemes": {

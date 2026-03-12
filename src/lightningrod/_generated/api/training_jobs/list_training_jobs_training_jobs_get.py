@@ -5,36 +5,46 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.chat_completion_request import ChatCompletionRequest
-from ...models.chat_completion_response import ChatCompletionResponse
 from ...models.http_validation_error import HTTPValidationError
-from ...types import Response
+from ...models.training_job_list_response import TrainingJobListResponse
+from ...types import UNSET, Response, Unset
 
 
 def _get_kwargs(
     *,
-    body: ChatCompletionRequest,
+    page: int | Unset = 1,
+    limit: int | Unset = 10,
+    status: None | str | Unset = UNSET,
 ) -> dict[str, Any]:
-    headers: dict[str, Any] = {}
+    params: dict[str, Any] = {}
+
+    params["page"] = page
+
+    params["limit"] = limit
+
+    json_status: None | str | Unset
+    if isinstance(status, Unset):
+        json_status = UNSET
+    else:
+        json_status = status
+    params["status"] = json_status
+
+    params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
 
     _kwargs: dict[str, Any] = {
-        "method": "post",
-        "url": "/openai/chat/completions",
+        "method": "get",
+        "url": "/training-jobs",
+        "params": params,
     }
 
-    _kwargs["json"] = body.to_dict()
-
-    headers["Content-Type"] = "application/json"
-
-    _kwargs["headers"] = headers
     return _kwargs
 
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> ChatCompletionResponse | HTTPValidationError | None:
+) -> HTTPValidationError | TrainingJobListResponse | None:
     if response.status_code == 200:
-        response_200 = ChatCompletionResponse.from_dict(response.json())
+        response_200 = TrainingJobListResponse.from_dict(response.json())
 
         return response_200
 
@@ -51,7 +61,7 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[ChatCompletionResponse | HTTPValidationError]:
+) -> Response[HTTPValidationError | TrainingJobListResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -63,25 +73,31 @@ def _build_response(
 def sync_detailed(
     *,
     client: AuthenticatedClient,
-    body: ChatCompletionRequest,
-) -> Response[ChatCompletionResponse | HTTPValidationError]:
-    """Chat Completions
+    page: int | Unset = 1,
+    limit: int | Unset = 10,
+    status: None | str | Unset = UNSET,
+) -> Response[HTTPValidationError | TrainingJobListResponse]:
+    """List Training Jobs
 
-     OpenAI Compatible API Endpoint for Foresight Models.
+     List training jobs
 
     Args:
-        body (ChatCompletionRequest):
+        page (int | Unset):  Default: 1.
+        limit (int | Unset):  Default: 10.
+        status (None | str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ChatCompletionResponse | HTTPValidationError]
+        Response[HTTPValidationError | TrainingJobListResponse]
     """
 
     kwargs = _get_kwargs(
-        body=body,
+        page=page,
+        limit=limit,
+        status=status,
     )
 
     response = client.get_httpx_client().request(
@@ -94,51 +110,63 @@ def sync_detailed(
 def sync(
     *,
     client: AuthenticatedClient,
-    body: ChatCompletionRequest,
-) -> ChatCompletionResponse | HTTPValidationError | None:
-    """Chat Completions
+    page: int | Unset = 1,
+    limit: int | Unset = 10,
+    status: None | str | Unset = UNSET,
+) -> HTTPValidationError | TrainingJobListResponse | None:
+    """List Training Jobs
 
-     OpenAI Compatible API Endpoint for Foresight Models.
+     List training jobs
 
     Args:
-        body (ChatCompletionRequest):
+        page (int | Unset):  Default: 1.
+        limit (int | Unset):  Default: 10.
+        status (None | str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ChatCompletionResponse | HTTPValidationError
+        HTTPValidationError | TrainingJobListResponse
     """
 
     return sync_detailed(
         client=client,
-        body=body,
+        page=page,
+        limit=limit,
+        status=status,
     ).parsed
 
 
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
-    body: ChatCompletionRequest,
-) -> Response[ChatCompletionResponse | HTTPValidationError]:
-    """Chat Completions
+    page: int | Unset = 1,
+    limit: int | Unset = 10,
+    status: None | str | Unset = UNSET,
+) -> Response[HTTPValidationError | TrainingJobListResponse]:
+    """List Training Jobs
 
-     OpenAI Compatible API Endpoint for Foresight Models.
+     List training jobs
 
     Args:
-        body (ChatCompletionRequest):
+        page (int | Unset):  Default: 1.
+        limit (int | Unset):  Default: 10.
+        status (None | str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ChatCompletionResponse | HTTPValidationError]
+        Response[HTTPValidationError | TrainingJobListResponse]
     """
 
     kwargs = _get_kwargs(
-        body=body,
+        page=page,
+        limit=limit,
+        status=status,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -149,26 +177,32 @@ async def asyncio_detailed(
 async def asyncio(
     *,
     client: AuthenticatedClient,
-    body: ChatCompletionRequest,
-) -> ChatCompletionResponse | HTTPValidationError | None:
-    """Chat Completions
+    page: int | Unset = 1,
+    limit: int | Unset = 10,
+    status: None | str | Unset = UNSET,
+) -> HTTPValidationError | TrainingJobListResponse | None:
+    """List Training Jobs
 
-     OpenAI Compatible API Endpoint for Foresight Models.
+     List training jobs
 
     Args:
-        body (ChatCompletionRequest):
+        page (int | Unset):  Default: 1.
+        limit (int | Unset):  Default: 10.
+        status (None | str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ChatCompletionResponse | HTTPValidationError
+        HTTPValidationError | TrainingJobListResponse
     """
 
     return (
         await asyncio_detailed(
             client=client,
-            body=body,
+            page=page,
+            limit=limit,
+            status=status,
         )
     ).parsed

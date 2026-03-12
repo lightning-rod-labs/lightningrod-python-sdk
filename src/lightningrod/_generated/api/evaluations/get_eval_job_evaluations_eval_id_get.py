@@ -1,40 +1,34 @@
 from http import HTTPStatus
 from typing import Any
+from urllib.parse import quote
 
 import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.chat_completion_request import ChatCompletionRequest
-from ...models.chat_completion_response import ChatCompletionResponse
+from ...models.eval_job import EvalJob
 from ...models.http_validation_error import HTTPValidationError
 from ...types import Response
 
 
 def _get_kwargs(
-    *,
-    body: ChatCompletionRequest,
+    eval_id: str,
 ) -> dict[str, Any]:
-    headers: dict[str, Any] = {}
-
     _kwargs: dict[str, Any] = {
-        "method": "post",
-        "url": "/openai/chat/completions",
+        "method": "get",
+        "url": "/evaluations/{eval_id}".format(
+            eval_id=quote(str(eval_id), safe=""),
+        ),
     }
 
-    _kwargs["json"] = body.to_dict()
-
-    headers["Content-Type"] = "application/json"
-
-    _kwargs["headers"] = headers
     return _kwargs
 
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> ChatCompletionResponse | HTTPValidationError | None:
+) -> EvalJob | HTTPValidationError | None:
     if response.status_code == 200:
-        response_200 = ChatCompletionResponse.from_dict(response.json())
+        response_200 = EvalJob.from_dict(response.json())
 
         return response_200
 
@@ -51,7 +45,7 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[ChatCompletionResponse | HTTPValidationError]:
+) -> Response[EvalJob | HTTPValidationError]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -61,27 +55,27 @@ def _build_response(
 
 
 def sync_detailed(
+    eval_id: str,
     *,
     client: AuthenticatedClient,
-    body: ChatCompletionRequest,
-) -> Response[ChatCompletionResponse | HTTPValidationError]:
-    """Chat Completions
+) -> Response[EvalJob | HTTPValidationError]:
+    """Get Eval Job
 
-     OpenAI Compatible API Endpoint for Foresight Models.
+     Get an evaluation job by ID
 
     Args:
-        body (ChatCompletionRequest):
+        eval_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ChatCompletionResponse | HTTPValidationError]
+        Response[EvalJob | HTTPValidationError]
     """
 
     kwargs = _get_kwargs(
-        body=body,
+        eval_id=eval_id,
     )
 
     response = client.get_httpx_client().request(
@@ -92,53 +86,53 @@ def sync_detailed(
 
 
 def sync(
+    eval_id: str,
     *,
     client: AuthenticatedClient,
-    body: ChatCompletionRequest,
-) -> ChatCompletionResponse | HTTPValidationError | None:
-    """Chat Completions
+) -> EvalJob | HTTPValidationError | None:
+    """Get Eval Job
 
-     OpenAI Compatible API Endpoint for Foresight Models.
+     Get an evaluation job by ID
 
     Args:
-        body (ChatCompletionRequest):
+        eval_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ChatCompletionResponse | HTTPValidationError
+        EvalJob | HTTPValidationError
     """
 
     return sync_detailed(
+        eval_id=eval_id,
         client=client,
-        body=body,
     ).parsed
 
 
 async def asyncio_detailed(
+    eval_id: str,
     *,
     client: AuthenticatedClient,
-    body: ChatCompletionRequest,
-) -> Response[ChatCompletionResponse | HTTPValidationError]:
-    """Chat Completions
+) -> Response[EvalJob | HTTPValidationError]:
+    """Get Eval Job
 
-     OpenAI Compatible API Endpoint for Foresight Models.
+     Get an evaluation job by ID
 
     Args:
-        body (ChatCompletionRequest):
+        eval_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ChatCompletionResponse | HTTPValidationError]
+        Response[EvalJob | HTTPValidationError]
     """
 
     kwargs = _get_kwargs(
-        body=body,
+        eval_id=eval_id,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -147,28 +141,28 @@ async def asyncio_detailed(
 
 
 async def asyncio(
+    eval_id: str,
     *,
     client: AuthenticatedClient,
-    body: ChatCompletionRequest,
-) -> ChatCompletionResponse | HTTPValidationError | None:
-    """Chat Completions
+) -> EvalJob | HTTPValidationError | None:
+    """Get Eval Job
 
-     OpenAI Compatible API Endpoint for Foresight Models.
+     Get an evaluation job by ID
 
     Args:
-        body (ChatCompletionRequest):
+        eval_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ChatCompletionResponse | HTTPValidationError
+        EvalJob | HTTPValidationError
     """
 
     return (
         await asyncio_detailed(
+            eval_id=eval_id,
             client=client,
-            body=body,
         )
     ).parsed
