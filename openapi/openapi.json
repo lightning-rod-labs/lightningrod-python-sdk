@@ -4493,7 +4493,7 @@
           },
           "field_type": {
             "$ref": "#/components/schemas/MetadataFieldType",
-            "description": "The data type of the field"
+            "description": "The data type of the field. Boolean-like values should use \"string\" with canonical \"true\"/\"false\" values."
           },
           "required": {
             "type": "boolean",
@@ -4543,7 +4543,7 @@
           },
           "field_type": {
             "$ref": "#/components/schemas/MetadataFieldType",
-            "description": "The data type of the field"
+            "description": "The data type of the field. Boolean-like values should use \"string\" with canonical \"true\"/\"false\" values."
           },
           "required": {
             "type": "boolean",
