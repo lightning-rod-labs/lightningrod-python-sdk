@@ -8,7 +8,7 @@ from lightningrod.client import LightningRod
 from lightningrod.datasets.dataset import Dataset
 from lightningrod import preprocessing, utils
 from lightningrod.utils.sample import create_sample
-from lightningrod.utils.models import open_router_model
+from lightningrod.utils.models import open_router_model, lightningrod_model
 from lightningrod import preprocessing, training, utils
 from lightningrod.training import to_messages
 from lightningrod._generated.models import (
@@ -81,6 +81,7 @@ __all__ = [
     "QuestionRenderer",
     "create_sample",
     "open_router_model",
+    "lightningrod_model",
     "render_sample",
     "Rollout",
     "RolloutScorer",

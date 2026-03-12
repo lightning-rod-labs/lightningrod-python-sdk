@@ -11,3 +11,12 @@ def open_router_model(model_name: str) -> ModelConfig:
         model_source=ModelSourceType.OPEN_ROUTER,
         use_pipeline_key=True,
     )
+
+def lightningrod_model(model_name = "foresight-v3") -> ModelConfig:
+    """Create a ModelConfig for a Lightning Rod-hosted model."""
+    return ModelConfig(
+        model_name=f"LightningRodLabs/{model_name}",
+        model_source=ModelSourceType.VLLM,
+        reasoning_effort="high",
+        is_lightningrod_model=True,
+    )
