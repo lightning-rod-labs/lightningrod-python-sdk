@@ -1,6 +1,9 @@
+<div align="center">
+<!-- Note: only an absolute image URL works on PyPi: https://pypi.org/project/lightningrod-ai -->
+  <img src="https://github.com/lightning-rod-labs/lightningrod-python-sdk/blob/main/banner.png?raw=true" alt="Lightning Rod Labs" />
+</div>
 
-
-# Lightning Rod Python SDK [Beta](https://pypi.org/project/lightningrod-ai/0.1.16/)
+# Lightning Rod Python SDK [![Beta](https://img.shields.io/badge/beta-0.1.16-orange)](https://pypi.org/project/lightningrod-ai/0.1.16/)
 
 The Lightning Rod SDK provides a simple Python API for generating custom forecasting datasets to train your LLMs. Transform news articles, documents, and other real-world data into high-quality training samples automatically.
 
@@ -88,8 +91,8 @@ We have some example notebooks to help you get started! If you have trouble usin
 | Continuous Answer Type      | `notebooks/05_continuous_answer_type.ipynb`      | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/05_continuous_answer_type.ipynb)      |
 | Multiple Choice Answer Type | `notebooks/06_multiple_choice_answer_type.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/06_multiple_choice_answer_type.ipynb) |
 | Free Response Answer Type   | `notebooks/07_free_response_answer_type.ipynb`   | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/07_free_response_answer_type.ipynb)   |
-| Foresight-v3 Model          | `notebooks/08_foresight_model.ipynb`             | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/08_foresight_model.ipynb)             |
-
+| BigQuery Datasource         | `notebooks/08_bigquery_datasource.ipynb`         | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/08_bigquery_datasource.ipynb)         |
+| Foresight-v3 Model          | `notebooks/09_foresight_model.ipynb`             | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/09_foresight_model.ipynb)             |
 
 ### End-to-end
 
@@ -101,6 +104,8 @@ We have some example notebooks to help you get started! If you have trouble usin
 | Document Classification | `notebooks/e2e/document_classification.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/document_classification.ipynb) |
 | Polymarket Backtesting  | `notebooks/e2e/polymarket_backtesting.ipynb`  | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/polymarket_backtesting.ipynb)  |
 | Model Consensus         | `notebooks/e2e/model_consensus.ipynb`         | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/model_consensus.ipynb)         |
+| Startup Forecasting     | `notebooks/e2e/startup_forecasting.ipynb`     | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/startup_forecasting.ipynb)     |
+| SurvivalLLM             | `notebooks/e2e/survival_llm.ipynb`            | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/survival_llm.ipynb)            |
 
 
 For complete API reference documentation, see [API.md](API.md). This includes overview of the core system concepts, methods and types.
