@@ -3,11 +3,13 @@
   <img src="https://github.com/lightning-rod-labs/lightningrod-python-sdk/blob/main/banner.png?raw=true" alt="Lightning Rod Labs" />
 </div>
 
-# Lightning Rod Python SDK [![Beta](https://img.shields.io/badge/beta-0.1.16-orange)](https://pypi.org/project/lightningrod-ai/0.1.16/)
+# Lightning Rod Python SDK [![Beta](https://img.shields.io/badge/beta-0.1.17-orange)](https://pypi.org/project/lightningrod-ai/0.1.17/)
 
 The Lightning Rod SDK provides a simple Python API for generating custom forecasting datasets to train your LLMs. Transform news articles, documents, and other real-world data into high-quality training samples automatically.
 
 Based on our research: [Future-as-Label: Scalable Supervision from Real-World Outcomes](https://arxiv.org/abs/2601.06336)
+
+Documentation: [docs.lightningrod.ai](https://docs.lightningrod.ai/)
 
 ## 👋 Quick Start
 
@@ -19,7 +21,7 @@ pip install lightningrod-ai
 
 ### 2. Get your API key
 
-Sign up at [dashboard.lightningrod.ai](https://dashboard.lightningrod.ai/?redirect=/api) to get your API key and **$50 of free credits**.
+Sign up at [dashboard.lightningrod.ai](https://dashboard.lightningrod.ai/sign-up?redirect=/api) to get your API key and **$50 of free credits**.
 
 ### 3. Generate your first dataset
 
@@ -73,7 +75,7 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
-See the [API docs](https://dashboard.lightningrod.ai/public/docs#tag/openai-compatible/post/openai/chat/completions) for full details, or try the [Foresight-v3 notebook](notebooks/08_foresight_model.ipynb).
+See the [API docs](https://docs.lightningrod.ai/rest-api#post-openai-chat-completions) for full details, or try the [Foresight-v3 notebook](notebooks/08_foresight_model.ipynb).
 
 ## ✨ Examples
 
@@ -104,8 +106,7 @@ We have some example notebooks to help you get started! If you have trouble usin
 | Document Classification | `notebooks/e2e/document_classification.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/document_classification.ipynb) |
 | Polymarket Backtesting  | `notebooks/e2e/polymarket_backtesting.ipynb`  | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/polymarket_backtesting.ipynb)  |
 | Model Consensus         | `notebooks/e2e/model_consensus.ipynb`         | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/model_consensus.ipynb)         |
-| Startup Forecasting     | `notebooks/e2e/startup_forecasting.ipynb`     | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/startup_forecasting.ipynb)     |
-| SurvivalLLM             | `notebooks/e2e/survival_llm.ipynb`            | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/survival_llm.ipynb)            |
+| Survival LLM             | `notebooks/e2e/survival_llm.ipynb`            | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/survival_llm.ipynb)            |
 
 
-For complete API reference documentation, see [API.md](API.md). This includes overview of the core system concepts, methods and types.
+For full documentation, see [docs.lightningrod.ai](https://docs.lightningrod.ai/). For the SDK API reference in this repo, see [API.md](API.md).
