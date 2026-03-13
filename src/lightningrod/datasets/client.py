@@ -13,7 +13,7 @@ from lightningrod._generated.api.datasets import (
 )
 from lightningrod._generated.types import Unset
 from lightningrod._generated.client import AuthenticatedClient
-from lightningrod.datasets.dataset import Dataset
+from lightningrod.datasets.dataset import SampleDataset
 from lightningrod._errors import handle_response_error
 
 
@@ -78,7 +78,7 @@ class DatasetsClient:
         self._client: AuthenticatedClient = client
         self._dataset_samples_client: DatasetSamplesClient = dataset_samples_client
     
-    def create(self) -> Dataset:
+    def create(self) -> SampleDataset:
         """
         Create a new empty dataset.
         
@@ -102,7 +102,7 @@ class DatasetsClient:
         )
         dataset_result = handle_response_error(dataset_response, "get dataset")
         
-        return Dataset(
+        return SampleDataset(
             id=dataset_result.id,
             num_rows=dataset_result.num_rows,
             datasets_client=self._dataset_samples_client
@@ -112,7 +112,7 @@ class DatasetsClient:
         self,
         samples: List[Sample],
         batch_size: int = 1000,
-    ) -> Dataset:
+    ) -> SampleDataset:
         """
         Create a new dataset and upload samples to it.
         
@@ -147,7 +147,7 @@ class DatasetsClient:
         dataset.num_rows = dataset_result.num_rows
         return dataset
     
-    def get(self, dataset_id: str) -> Dataset:
+    def get(self, dataset_id: str) -> SampleDataset:
         """
         Get a dataset by ID.
         
@@ -167,7 +167,7 @@ class DatasetsClient:
         )
         dataset_result = handle_response_error(dataset_response, "get dataset")
         
-        return Dataset(
+        return SampleDataset(
             id=dataset_result.id,
             num_rows=dataset_result.num_rows,
             datasets_client=self._dataset_samples_client

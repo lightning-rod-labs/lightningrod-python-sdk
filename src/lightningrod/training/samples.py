@@ -1,13 +1,16 @@
 """Sample preparation and conversion for training.
 
 Main entry point: :func:`prepare_for_training` — filters, deduplicates, splits,
-and converts samples to training-ready records.
+and returns train/test SampleDatasets.
 """
 
 import random
 from dataclasses import dataclass, field
 from datetime import date, datetime
-from typing import Any, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Optional, Union
+
+if TYPE_CHECKING:
+    from lightningrod.datasets.dataset import SampleDataset
 
 from lightningrod._generated.models.binary_answer_type import BinaryAnswerType
 from lightningrod._generated.models.continuous_answer_type import ContinuousAnswerType
@@ -231,8 +234,9 @@ def train_test_split(
     leakage_keys: list[Callable[[Sample], str | None]] | None = None,
     filter_leaky_train: bool = True,
     stats: PrepareStats | None = None,
-) -> tuple[list[Sample], list[Sample]]:
-    """Split samples into train/test by temporal order or random shuffle, with optional leakage filtering."""
+) -> tuple[list[str], list[str]]:
+    """Split samples into train/test by temporal order or random shuffle, with optional leakage filtering.
+    Returns (train_ids, test_ids) for memory efficiency."""
     temporal_split = split_strategy == "temporal"
     if temporal_split:
         if (test_start is None) == (test_size is None):
@@ -294,7 +298,7 @@ def train_test_split(
             stats.split_train = len(train)
             stats.split_test = len(test)
 
-        return train, test
+        return [s.id for s in train], [s.id for s in test]
 
     shuffled = list(samples)
     rng = random.Random(random_state) if random_state is not None else random
@@ -311,7 +315,7 @@ def train_test_split(
         stats.split_train = len(train)
         stats.split_test = len(test)
 
-    return train, test
+    return [s.id for s in train], [s.id for s in test]
 
 
 def _default_dedup_key(sample: Sample) -> tuple[Any, ...]:
@@ -609,7 +613,7 @@ def _print_stats(stats: PrepareStats) -> None:
 
 
 def prepare_for_training(
-    samples: list[Sample],
+    dataset: "SampleDataset",
     answer_type: AnswerType,
     *,
     test_size: float = 0.2,
@@ -619,53 +623,33 @@ def prepare_for_training(
     days_to_resolution_range: DaysToResolutionRange = None,
     random_state: int = 196,
     filter_leaky_train: bool = True,
-    include_assistant: bool = False,
-    prompt_template: str | None = None,
     deduplicate_key_fn: Callable[[Sample], tuple[Any, ...]] | None = None,
     verbose: bool = False,
-) -> tuple[list[TrainingSample], list[TrainingSample]]:
-    """Prepare samples for model training: filter, deduplicate, split, and convert to training records.
+) -> tuple["SampleDataset", "SampleDataset"]:
+    """Prepare a dataset for model training: filter, deduplicate, split into train/test.
 
-    This is the main entry point for consumers. It runs samples through validation,
-    optional filtering by resolution horizon and context, deduplication, train/test
-    splitting (temporal or random), and conversion to flat dicts with prompt messages.
+    Returns train and test SampleDatasets that can be passed to lr.training.run() or
+    EvalsClient. Use dataset.preview_prompts() or to_messages() to iterate on
+    prompt templates before training.
 
     Args:
-        samples: Raw LightningRod samples to prepare.
-        answer_type: The answer type (BinaryAnswerType, ContinuousAnswerType,
-            MultipleChoiceAnswerType, or FreeResponseAnswerType) used to format
-            labels and answer instructions in the prompt.
+        dataset: SampleDataset to prepare (samples are fetched via dataset.samples()).
+        answer_type: The answer type used for filtering and validation.
         test_size: Fraction of samples for the test set (0.0–1.0). Default 0.2.
-            Required when split_strategy='random'; optional when 'temporal'.
-        split_strategy: How to split train/test. 'temporal' (default) orders by
-            prediction_date and splits chronologically. 'random' shuffles with
-            random_state and splits by test_size.
-        test_start: ISO date string (e.g. "2024-01-01"). When split_strategy='temporal',
-            samples with prediction_date >= test_start go to test. Provide exactly
-            one of test_start or test_size for temporal splits.
-        drop_missing_context: If True, exclude samples with no context or empty
-            rendered_context. Default False.
-        days_to_resolution_range: Optional (min_days, max_days) tuple to restrict
-            samples by horizon from prediction_date to resolution_date. E.g.
-            (7, None) keeps only samples with >= 7 days to resolution;
-            (14, 60) keeps 14–60 days. None disables filtering.
-        random_state: Seed for reproducible random splits when split_strategy='random'.
-        filter_leaky_train: When True and split_strategy='temporal', remove train
-            samples whose date_close or resolution_date is >= the test set cutoff,
-            to avoid temporal leakage.
-        include_assistant: When True, prompt includes assistant message with the
-            correct answer (for SFT). Set False for GRPO or when label is used separately.
-        prompt_template: Optional format string with placeholders (question_text, context,
-            answer_instructions, date_close, etc.). If None, uses the default template.
+        split_strategy: 'temporal' (default) or 'random'.
+        test_start: ISO date string for temporal splits. Provide exactly one of
+            test_start or test_size for temporal splits.
+        drop_missing_context: If True, exclude samples with no context.
+        days_to_resolution_range: Optional (min_days, max_days) tuple.
+        random_state: Seed for reproducible random splits.
+        filter_leaky_train: When True and temporal, remove temporal leakage.
         deduplicate_key_fn: Optional function to customize deduplication key.
-            By default, uses (question_text, resolution_date).
-        verbose: When True, print step-by-step stats for filter, dedup, and split.
+        verbose: When True, print step-by-step stats.
 
     Returns:
-        (train_records, test_records): Two lists of dicts. Each dict has keys like
-        question_text, label, prompt (chat messages), context, etc., ready for
-        DataFrame construction or direct use in training pipelines.
+        (train_dataset, test_dataset): SampleDatasets ready for training/eval.
     """
+    samples = dataset.samples()
     stats = PrepareStats(total=len(samples))
 
     filtered = filter_samples(
@@ -676,7 +660,7 @@ def prepare_for_training(
     )
     deduped = deduplicate_samples(filtered, key_fn=deduplicate_key_fn, stats=stats)
 
-    train, test = train_test_split(
+    train_ids, test_ids = train_test_split(
         deduped,
         split_strategy=split_strategy,
         test_start=test_start,
@@ -689,17 +673,4 @@ def prepare_for_training(
     if verbose:
         _print_stats(stats)
 
-    return (
-        _to_training_records(train, answer_type, include_assistant, prompt_template),
-        _to_training_records(test, answer_type, include_assistant, prompt_template),
-    )
-
-
-def _to_training_records(
-    samples: list[Sample],
-    answer_type: AnswerType,
-    include_assistant: bool = True,
-    prompt_template: str | None = None,
-) -> list[TrainingSample]:
-    """Convert samples to training records with prompt messages."""
-    return [to_training_record(s, answer_type, include_assistant=include_assistant, prompt_template=prompt_template) for s in samples]
+    return dataset.subset(train_ids), dataset.subset(test_ids)

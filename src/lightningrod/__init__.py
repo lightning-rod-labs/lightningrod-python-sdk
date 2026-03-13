@@ -5,7 +5,7 @@ AI-powered forecasting dataset generation platform.
 """
 
 from lightningrod.client import LightningRod
-from lightningrod.datasets.dataset import Dataset
+from lightningrod.datasets.dataset import SampleDataset
 from lightningrod import preprocessing, utils
 from lightningrod.utils.sample import create_sample
 from lightningrod.utils.models import open_router_model
@@ -57,7 +57,7 @@ __all__ = [
     "MultipleChoiceAnswerType",
     "FreeResponseAnswerType",
     "AsyncDataset",
-    "Dataset",
+    "SampleDataset",
     "FileSetSeedGenerator",
     "FileSetQuerySeedGenerator",
     "CreateFileSetRequest",

@@ -1,4 +1,4 @@
-from lightningrod.training.client import TrainingClient
+from lightningrod.training.client import TrainingClient, TrainingConfigParams
 from lightningrod.training.evals import EvalsClient
 from lightningrod._display import print_eval
 from lightningrod._generated.models.training_config import TrainingConfig
@@ -17,6 +17,7 @@ __all__ = [
     "print_eval",
     "TrainingClient",
     "TrainingConfig",
+    "TrainingConfigParams",
     "SampleDatasetConfig",
     "prepare_for_training",
     "train_test_split",

@@ -7,9 +7,9 @@ from lightningrod.training.samples import to_record, AnswerType
 if TYPE_CHECKING:
     from lightningrod.datasets.client import DatasetSamplesClient
 
-class Dataset:
+class SampleDataset:
     """
-    Represents a dataset in Lightning Rod.
+    Represents a dataset of samples in Lightning Rod.
     
     A dataset contains rows of sample data. Use this class to access 
     dataset metadata and download the actual samples.
@@ -28,18 +28,55 @@ class Dataset:
         >>> samples = dataset.to_samples()
         >>> print(f"Dataset has {len(samples)} samples")
     """
+    id: str
+    # Optional filter to define a dataset subset by sample IDs.
+    sample_ids: Optional[List[str]]
+    num_rows: int
     
     def __init__(
         self,
         id: str,
         num_rows: int,
-        datasets_client: "DatasetSamplesClient"
+        datasets_client: "DatasetSamplesClient",
+        sample_ids: Optional[List[str]] = None,
+        samples: Optional[List[Sample]] = None,
     ):
         self.id: str = id
         self.num_rows: int = num_rows
         self._datasets_client: "DatasetSamplesClient" = datasets_client
-        self._samples: Optional[List[Sample]] = None
-    
+        if samples is not None:
+            self._samples: Optional[List[Sample]] = samples
+            self.sample_ids: Optional[List[str]] = [s.id for s in samples]
+            self.num_rows = len(samples)
+        else:
+            self._samples: Optional[List[Sample]] = None
+            self.sample_ids: Optional[List[str]] = sample_ids
+
+    def subset(self, sample_ids: List[str]) -> "SampleDataset":
+        by_id = {s.id: s for s in self.samples()}
+        samples = [by_id[i] for i in sample_ids if i in by_id]
+        return SampleDataset(
+            id=self.id,
+            num_rows=len(samples),
+            datasets_client=self._datasets_client,
+            samples=samples,
+        )
+
+    def preview_prompts(
+        self,
+        answer_type: AnswerType,
+        template: Optional[str] = None,
+        include_assistant: bool = False,
+        n: int = 3,
+    ) -> List[Dict[str, Any]]:
+        from lightningrod.training.samples import to_messages
+
+        samples_list = self.samples()[:n]
+        return [
+            to_messages(s, template=template, answer_type=answer_type, include_assistant=include_assistant)
+            for s in samples_list
+        ]
+
     def download(self) -> List[Sample]:
         """
         Download all samples from the dataset via the paginated API.
@@ -54,6 +91,8 @@ class Dataset:
             >>> for sample in samples:
             ...     print(sample.seed.seed_text)
         """
+        if self._samples is not None:
+            return self._samples
         self._samples = self._datasets_client.list(self.id)
         return self._samples
 
@@ -65,8 +104,12 @@ class Dataset:
         Returns:
             List of Sample objects
         """
-        if not self._samples:
-            self.download()
+        if self._samples is not None:
+            return self._samples
+        self.download()
+        if self.sample_ids is not None:
+            id_set = set(self.sample_ids)
+            self._samples = [s for s in self._samples if s.id in id_set]
         return self._samples
 
     def to_samples(self) -> List[Sample]:
@@ -158,8 +201,8 @@ class AsyncDataset:
         >>> print(f"Dataset has {len(samples)} samples")
     """
     
-    def __init__(self, sync_dataset: Dataset):
-        self._sync_dataset: Dataset = sync_dataset
+    def __init__(self, sync_dataset: SampleDataset):
+        self._sync_dataset: SampleDataset = sync_dataset
     
     @property
     def id(self) -> str:
@@ -233,3 +276,6 @@ class AsyncDataset:
             >>> print(f"Dataset has {valid} valid samples")
         """
         return await asyncio.to_thread(self._sync_dataset.valid_count)
+
+    def subset(self, sample_ids: List[str]) -> "AsyncDataset":
+        return AsyncDataset(self._sync_dataset.subset(sample_ids))
