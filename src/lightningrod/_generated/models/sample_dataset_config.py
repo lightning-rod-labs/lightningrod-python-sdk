@@ -8,50 +8,44 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="QuestionOption")
+T = TypeVar("T", bound="SampleDatasetConfig")
 
 
 @_attrs_define
-class QuestionOption:
-    """A selectable option for a structured question.
-
+class SampleDatasetConfig:
+    """
     Attributes:
         id (str):
-        label (str):
-        value (str):
-        description (None | str | Unset):
+        sample_ids (list[str]):
+        prompt_template (None | str | Unset):
     """
 
     id: str
-    label: str
-    value: str
-    description: None | str | Unset = UNSET
+    sample_ids: list[str]
+    prompt_template: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         id = self.id
 
-        label = self.label
+        sample_ids = self.sample_ids
 
-        value = self.value
-
-        description: None | str | Unset
-        if isinstance(self.description, Unset):
-            description = UNSET
+        prompt_template: None | str | Unset
+        if isinstance(self.prompt_template, Unset):
+            prompt_template = UNSET
         else:
-            description = self.description
+            prompt_template = self.prompt_template
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
                 "id": id,
-                "label": label,
-                "value": value,
+                "sample_ids": sample_ids,
             }
         )
-        if description is not UNSET:
-            field_dict["description"] = description
+        if prompt_template is not UNSET:
+            field_dict["prompt_template"] = prompt_template
 
         return field_dict
 
@@ -60,28 +54,25 @@ class QuestionOption:
         d = dict(src_dict)
         id = d.pop("id")
 
-        label = d.pop("label")
+        sample_ids = cast(list[str], d.pop("sample_ids"))
 
-        value = d.pop("value")
-
-        def _parse_description(data: object) -> None | str | Unset:
+        def _parse_prompt_template(data: object) -> None | str | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
             return cast(None | str | Unset, data)
 
-        description = _parse_description(d.pop("description", UNSET))
+        prompt_template = _parse_prompt_template(d.pop("prompt_template", UNSET))
 
-        question_option = cls(
+        sample_dataset_config = cls(
             id=id,
-            label=label,
-            value=value,
-            description=description,
+            sample_ids=sample_ids,
+            prompt_template=prompt_template,
         )
 
-        question_option.additional_properties = d
-        return question_option
+        sample_dataset_config.additional_properties = d
+        return sample_dataset_config
 
     @property
     def additional_keys(self) -> list[str]:

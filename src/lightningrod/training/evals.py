@@ -5,6 +5,7 @@ from lightningrod._generated.api.evaluations import (
     list_eval_jobs_evaluations_get,
 )
 from lightningrod._generated.client import AuthenticatedClient
+from lightningrod._generated.models import SampleDatasetConfig
 from lightningrod._generated.models.create_eval_job_request import CreateEvalJobRequest
 from lightningrod._generated.models.eval_job import EvalJob
 from lightningrod._generated.models.eval_job_list_response import EvalJobListResponse
@@ -20,13 +21,13 @@ class EvalsClient:
     def create(
         self,
         model_id: str,
-        dataset_hf_repo: str,
+        dataset: SampleDatasetConfig,
         benchmark_model_id: str | None = None,
         temperature: float = 0.0,
     ) -> EvalJob:
         body = CreateEvalJobRequest(
             model_id=model_id,
-            dataset_hf_repo=dataset_hf_repo,
+            dataset=dataset,
             benchmark_model_id=benchmark_model_id if benchmark_model_id is not None else UNSET,
             temperature=temperature,
         )
@@ -46,13 +47,11 @@ class EvalsClient:
     def list(
         self,
         *,
-        model_id: str | None = None,
         page: int = 1,
         limit: int = 10,
     ) -> EvalJobListResponse:
         response = list_eval_jobs_evaluations_get.sync_detailed(
             client=self._client,
-            model_id=model_id if model_id is not None else UNSET,
             page=page,
             limit=limit,
         )
@@ -61,14 +60,14 @@ class EvalsClient:
     def run(
         self,
         model_id: str,
-        dataset_hf_repo: str,
+        dataset: SampleDatasetConfig,
         benchmark_model_id: str | None = None,
         temperature: float = 0.0,
         poll_interval: float = 15,
     ) -> EvalJob:
         job = self.create(
             model_id=model_id,
-            dataset_hf_repo=dataset_hf_repo,
+            dataset=dataset,
             benchmark_model_id=benchmark_model_id,
             temperature=temperature,
         )

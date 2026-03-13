@@ -18,8 +18,8 @@ class StructuredQuestion:
     """A structured question with selectable options.
 
     Attributes:
-        question (str): The question text
-        options (list[QuestionOption]): Available options
+        question (str):
+        options (list[QuestionOption]):
     """
 
     question: str

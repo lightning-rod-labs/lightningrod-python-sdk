@@ -11,7 +11,7 @@ T = TypeVar("T", bound="SendMessageRequest")
 
 @_attrs_define
 class SendMessageRequest:
-    """Request to send a message to an assistant session.
+    """Request to send a message to an onboarding session.
 
     Attributes:
         content (str): The user's message

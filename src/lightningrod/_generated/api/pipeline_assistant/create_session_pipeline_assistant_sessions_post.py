@@ -7,7 +7,6 @@ from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.create_session_request import CreateSessionRequest
 from ...models.http_validation_error import HTTPValidationError
-from ...models.session_response import SessionResponse
 from ...types import Response
 
 
@@ -30,14 +29,7 @@ def _get_kwargs(
     return _kwargs
 
 
-def _parse_response(
-    *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> HTTPValidationError | SessionResponse | None:
-    if response.status_code == 201:
-        response_201 = SessionResponse.from_dict(response.json())
-
-        return response_201
-
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> HTTPValidationError | None:
     if response.status_code == 422:
         response_422 = HTTPValidationError.from_dict(response.json())
 
@@ -49,9 +41,7 @@ def _parse_response(
         return None
 
 
-def _build_response(
-    *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[HTTPValidationError | SessionResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[HTTPValidationError]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -64,7 +54,7 @@ def sync_detailed(
     *,
     client: AuthenticatedClient,
     body: CreateSessionRequest,
-) -> Response[HTTPValidationError | SessionResponse]:
+) -> Response[HTTPValidationError]:
     """Create Session
 
      Create a new pipeline assistant session
@@ -77,7 +67,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | SessionResponse]
+        Response[HTTPValidationError]
     """
 
     kwargs = _get_kwargs(
@@ -95,7 +85,7 @@ def sync(
     *,
     client: AuthenticatedClient,
     body: CreateSessionRequest,
-) -> HTTPValidationError | SessionResponse | None:
+) -> HTTPValidationError | None:
     """Create Session
 
      Create a new pipeline assistant session
@@ -108,7 +98,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | SessionResponse
+        HTTPValidationError
     """
 
     return sync_detailed(
@@ -121,7 +111,7 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
     body: CreateSessionRequest,
-) -> Response[HTTPValidationError | SessionResponse]:
+) -> Response[HTTPValidationError]:
     """Create Session
 
      Create a new pipeline assistant session
@@ -134,7 +124,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | SessionResponse]
+        Response[HTTPValidationError]
     """
 
     kwargs = _get_kwargs(
@@ -150,7 +140,7 @@ async def asyncio(
     *,
     client: AuthenticatedClient,
     body: CreateSessionRequest,
-) -> HTTPValidationError | SessionResponse | None:
+) -> HTTPValidationError | None:
     """Create Session
 
      Create a new pipeline assistant session
@@ -163,7 +153,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | SessionResponse
+        HTTPValidationError
     """
 
     return (

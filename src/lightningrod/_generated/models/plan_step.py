@@ -6,28 +6,60 @@ from typing import Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="SessionResponseCurrentConfigType0")
+T = TypeVar("T", bound="PlanStep")
 
 
 @_attrs_define
-class SessionResponseCurrentConfigType0:
-    """ """
+class PlanStep:
+    """A step in the dataset generation plan.
 
+    Attributes:
+        title (str):
+        description (str):
+        estimated_output (str):
+    """
+
+    title: str
+    description: str
+    estimated_output: str
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        title = self.title
+
+        description = self.description
+
+        estimated_output = self.estimated_output
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
+        field_dict.update(
+            {
+                "title": title,
+                "description": description,
+                "estimated_output": estimated_output,
+            }
+        )
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        session_response_current_config_type_0 = cls()
+        title = d.pop("title")
 
-        session_response_current_config_type_0.additional_properties = d
-        return session_response_current_config_type_0
+        description = d.pop("description")
+
+        estimated_output = d.pop("estimated_output")
+
+        plan_step = cls(
+            title=title,
+            description=description,
+            estimated_output=estimated_output,
+        )
+
+        plan_step.additional_properties = d
+        return plan_step
 
     @property
     def additional_keys(self) -> list[str]:

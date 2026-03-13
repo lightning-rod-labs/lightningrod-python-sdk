@@ -12,6 +12,7 @@ from ..models.eval_job_status import EvalJobStatus
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
+    from ..models.eval_config import EvalConfig
     from ..models.eval_job_metrics_type_0 import EvalJobMetricsType0
 
 
@@ -24,12 +25,10 @@ class EvalJob:
     Attributes:
         id (str):
         organization_id (str):
-        model_id (str):
+        config (EvalConfig):
         status (EvalJobStatus):
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
-        dataset_hf_repo (None | str | Unset):
-        benchmark_model_id (None | str | Unset):
         cost_dollars (float | None | Unset):
         current_step (int | None | Unset):
         total_steps (int | None | Unset):
@@ -39,12 +38,10 @@ class EvalJob:
 
     id: str
     organization_id: str
-    model_id: str
+    config: EvalConfig
     status: EvalJobStatus
     created_at: datetime.datetime
     updated_at: datetime.datetime
-    dataset_hf_repo: None | str | Unset = UNSET
-    benchmark_model_id: None | str | Unset = UNSET
     cost_dollars: float | None | Unset = UNSET
     current_step: int | None | Unset = UNSET
     total_steps: int | None | Unset = UNSET
@@ -59,25 +56,13 @@ class EvalJob:
 
         organization_id = self.organization_id
 
-        model_id = self.model_id
+        config = self.config.to_dict()
 
         status = self.status.value
 
         created_at = self.created_at.isoformat()
 
         updated_at = self.updated_at.isoformat()
-
-        dataset_hf_repo: None | str | Unset
-        if isinstance(self.dataset_hf_repo, Unset):
-            dataset_hf_repo = UNSET
-        else:
-            dataset_hf_repo = self.dataset_hf_repo
-
-        benchmark_model_id: None | str | Unset
-        if isinstance(self.benchmark_model_id, Unset):
-            benchmark_model_id = UNSET
-        else:
-            benchmark_model_id = self.benchmark_model_id
 
         cost_dollars: float | None | Unset
         if isinstance(self.cost_dollars, Unset):
@@ -117,16 +102,12 @@ class EvalJob:
             {
                 "id": id,
                 "organization_id": organization_id,
-                "model_id": model_id,
+                "config": config,
                 "status": status,
                 "created_at": created_at,
                 "updated_at": updated_at,
             }
         )
-        if dataset_hf_repo is not UNSET:
-            field_dict["dataset_hf_repo"] = dataset_hf_repo
-        if benchmark_model_id is not UNSET:
-            field_dict["benchmark_model_id"] = benchmark_model_id
         if cost_dollars is not UNSET:
             field_dict["cost_dollars"] = cost_dollars
         if current_step is not UNSET:
@@ -142,6 +123,7 @@ class EvalJob:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.eval_config import EvalConfig
         from ..models.eval_job_metrics_type_0 import EvalJobMetricsType0
 
         d = dict(src_dict)
@@ -149,31 +131,13 @@ class EvalJob:
 
         organization_id = d.pop("organization_id")
 
-        model_id = d.pop("model_id")
+        config = EvalConfig.from_dict(d.pop("config"))
 
         status = EvalJobStatus(d.pop("status"))
 
         created_at = isoparse(d.pop("created_at"))
 
         updated_at = isoparse(d.pop("updated_at"))
-
-        def _parse_dataset_hf_repo(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        dataset_hf_repo = _parse_dataset_hf_repo(d.pop("dataset_hf_repo", UNSET))
-
-        def _parse_benchmark_model_id(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        benchmark_model_id = _parse_benchmark_model_id(d.pop("benchmark_model_id", UNSET))
 
         def _parse_cost_dollars(data: object) -> float | None | Unset:
             if data is None:
@@ -231,12 +195,10 @@ class EvalJob:
         eval_job = cls(
             id=id,
             organization_id=organization_id,
-            model_id=model_id,
+            config=config,
             status=status,
             created_at=created_at,
             updated_at=updated_at,
-            dataset_hf_repo=dataset_hf_repo,
-            benchmark_model_id=benchmark_model_id,
             cost_dollars=cost_dollars,
             current_step=current_step,
             total_steps=total_steps,

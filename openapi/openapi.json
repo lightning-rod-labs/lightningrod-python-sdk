@@ -5,11 +5,6 @@
     "description": "Generate verified, grounded datasets at scale for LLM fine-tuning and evaluation",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "/api/public/v1"
-    }
-  ],
   "paths": {
     "/openai/chat/completions": {
       "post": {
@@ -884,7 +879,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SessionResponse"
+                  "$ref": "#/components/schemas/lightningrod_api__api__public__v1__pipeline_assistant__models__SessionResponse"
                 }
               }
             }
@@ -936,7 +931,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SendMessageRequest"
+                "$ref": "#/components/schemas/lightningrod_api__api__public__v1__pipeline_assistant__models__SendMessageRequest"
               }
             }
           }
@@ -947,7 +942,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
+                  "$ref": "#/components/schemas/lightningrod_api__api__public__v1__pipeline_assistant__models__MessageResponse"
                 }
               }
             }
@@ -995,7 +990,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SessionResponse"
+                  "$ref": "#/components/schemas/lightningrod_api__api__public__v1__pipeline_assistant__models__SessionResponse"
                 }
               }
             }
@@ -1038,6 +1033,124 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/onboarding-assistant/sessions": {
+      "post": {
+        "tags": [
+          "Onboarding Assistant"
+        ],
+        "summary": "Create Session",
+        "description": "Create an onboarding session",
+        "operationId": "create_session_onboarding_assistant_sessions_post",
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/lightningrod_api__api__public__v1__onboarding_assistant__models__SessionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/onboarding-assistant/sessions/{session_id}/messages": {
+      "post": {
+        "tags": [
+          "Onboarding Assistant"
+        ],
+        "summary": "Send Message",
+        "description": "Send a message to the onboarding assistant",
+        "operationId": "send_message_onboarding_assistant_sessions__session_id__messages_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/lightningrod_api__api__public__v1__onboarding_assistant__models__SendMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/lightningrod_api__api__public__v1__onboarding_assistant__models__MessageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/onboarding-assistant/sessions/{session_id}/claim": {
+      "post": {
+        "tags": [
+          "Onboarding Assistant"
+        ],
+        "summary": "Claim Session",
+        "description": "Claim an onboarding session after authentication",
+        "operationId": "claim_session_onboarding_assistant_sessions__session_id__claim_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/lightningrod_api__api__public__v1__onboarding_assistant__models__SessionResponse"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -1329,22 +1442,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "model_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Model Id"
-            }
-          },
           {
             "name": "page",
             "in": "query",
@@ -2426,13 +2523,12 @@
       },
       "CreateEvalJobRequest": {
         "properties": {
+          "dataset": {
+            "$ref": "#/components/schemas/SampleDatasetConfig"
+          },
           "model_id": {
             "type": "string",
             "title": "Model Id"
-          },
-          "dataset_hf_repo": {
-            "type": "string",
-            "title": "Dataset Hf Repo"
           },
           "benchmark_model_id": {
             "anyOf": [
@@ -2453,8 +2549,8 @@
         },
         "type": "object",
         "required": [
-          "model_id",
-          "dataset_hf_repo"
+          "dataset",
+          "model_id"
         ],
         "title": "CreateEvalJobRequest"
       },
@@ -2872,6 +2968,56 @@
         ],
         "title": "DatasetMetadata"
       },
+      "DatasetPlan": {
+        "properties": {
+          "domain": {
+            "type": "string",
+            "title": "Domain"
+          },
+          "data_sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Data Sources"
+          },
+          "goal": {
+            "type": "string",
+            "title": "Goal"
+          },
+          "plan_title": {
+            "type": "string",
+            "title": "Plan Title"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/PlanStep"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "estimated_total_samples": {
+            "type": "integer",
+            "title": "Estimated Total Samples"
+          },
+          "estimated_time": {
+            "type": "string",
+            "title": "Estimated Time"
+          }
+        },
+        "type": "object",
+        "required": [
+          "domain",
+          "data_sources",
+          "goal",
+          "plan_title",
+          "steps",
+          "estimated_total_samples",
+          "estimated_time"
+        ],
+        "title": "DatasetPlan",
+        "description": "A generated dataset generation plan."
+      },
       "EstimateCostRequest": {
         "properties": {
           "config": {
@@ -3006,12 +3152,8 @@
         ],
         "title": "EstimateTrainingCostResponse"
       },
-      "EvalJob": {
+      "EvalConfig": {
         "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
           "organization_id": {
             "type": "string",
             "title": "Organization Id"
@@ -3020,16 +3162,8 @@
             "type": "string",
             "title": "Model Id"
           },
-          "dataset_hf_repo": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Dataset Hf Repo"
+          "dataset": {
+            "$ref": "#/components/schemas/SampleDatasetConfig"
           },
           "benchmark_model_id": {
             "anyOf": [
@@ -3041,6 +3175,43 @@
               }
             ],
             "title": "Benchmark Model Id"
+          },
+          "temperature": {
+            "type": "number",
+            "title": "Temperature",
+            "default": 0.0
+          },
+          "max_tokens": {
+            "type": "integer",
+            "title": "Max Tokens",
+            "default": 8192
+          },
+          "max_concurrent": {
+            "type": "integer",
+            "title": "Max Concurrent",
+            "default": 50
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_id",
+          "model_id",
+          "dataset"
+        ],
+        "title": "EvalConfig"
+      },
+      "EvalJob": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "organization_id": {
+            "type": "string",
+            "title": "Organization Id"
+          },
+          "config": {
+            "$ref": "#/components/schemas/EvalConfig"
           },
           "cost_dollars": {
             "anyOf": [
@@ -3116,7 +3287,7 @@
         "required": [
           "id",
           "organization_id",
-          "model_id",
+          "config",
           "status",
           "created_at",
           "updated_at"
@@ -4182,7 +4353,7 @@
           "structured_question": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/StructuredQuestion"
+                "$ref": "#/components/schemas/lightningrod_api__api__public__v1__pipeline_assistant__models__StructuredQuestion"
               },
               {
                 "type": "null"
@@ -4210,33 +4381,6 @@
         ],
         "title": "Message",
         "description": "A message in the conversation."
-      },
-      "MessageResponse": {
-        "properties": {
-          "message": {
-            "$ref": "#/components/schemas/Message",
-            "description": "The assistant's response"
-          },
-          "current_config": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Current Config",
-            "description": "Updated pipeline configuration (if changed)"
-          }
-        },
-        "type": "object",
-        "required": [
-          "message"
-        ],
-        "title": "MessageResponse",
-        "description": "Response from sending a message."
       },
       "MetadataFieldDefinition": {
         "properties": {
@@ -4931,6 +5075,56 @@
         ],
         "title": "NewsSeedGenerator"
       },
+      "OnboardingMessage": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role",
+            "description": "Who sent the message"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "structured_question": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/lightningrod_api__api__public__v1__onboarding_assistant__models__StructuredQuestion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dataset_plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DatasetPlan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "content",
+          "timestamp"
+        ],
+        "title": "OnboardingMessage",
+        "description": "A message in the onboarding conversation."
+      },
       "PaginatedSamplesResponse": {
         "properties": {
           "samples": {
@@ -5045,6 +5239,30 @@
         ],
         "title": "PipelineStepSummary",
         "description": "Summary of a single pipeline step including rejection reasons."
+      },
+      "PlanStep": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "estimated_output": {
+            "type": "string",
+            "title": "Estimated Output"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "description",
+          "estimated_output"
+        ],
+        "title": "PlanStep",
+        "description": "A step in the dataset generation plan."
       },
       "PreviewResults": {
         "properties": {
@@ -5418,45 +5636,6 @@
         },
         "type": "object",
         "title": "QuestionGenerator"
-      },
-      "QuestionOption": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id",
-            "description": "Unique identifier for this option"
-          },
-          "label": {
-            "type": "string",
-            "title": "Label",
-            "description": "Display text shown on the button"
-          },
-          "value": {
-            "type": "string",
-            "title": "Value",
-            "description": "Value sent when this option is selected"
-          },
-          "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description",
-            "description": "Optional description/subtitle"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "label",
-          "value"
-        ],
-        "title": "QuestionOption",
-        "description": "A selectable option for a structured question."
       },
       "QuestionPipeline": {
         "properties": {
@@ -6114,6 +6293,38 @@
         "type": "object",
         "title": "Sample"
       },
+      "SampleDatasetConfig": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "sample_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sample Ids"
+          },
+          "prompt_template": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Template"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "sample_ids"
+        ],
+        "title": "SampleDatasetConfig"
+      },
       "Seed": {
         "properties": {
           "seed_text": {
@@ -6161,89 +6372,6 @@
         ],
         "title": "Seed"
       },
-      "SendMessageRequest": {
-        "properties": {
-          "content": {
-            "type": "string",
-            "title": "Content",
-            "description": "The user's message"
-          }
-        },
-        "type": "object",
-        "required": [
-          "content"
-        ],
-        "title": "SendMessageRequest",
-        "description": "Request to send a message to an assistant session."
-      },
-      "SessionResponse": {
-        "properties": {
-          "session_id": {
-            "type": "string",
-            "title": "Session Id",
-            "description": "Unique session identifier"
-          },
-          "goal": {
-            "type": "string",
-            "title": "Goal",
-            "description": "The user's stated goal"
-          },
-          "autonomy_level": {
-            "type": "string",
-            "enum": [
-              "guided",
-              "semi_auto",
-              "autonomous"
-            ],
-            "title": "Autonomy Level",
-            "description": "Current autonomy level"
-          },
-          "current_config": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Current Config",
-            "description": "The current pipeline configuration (if generated)"
-          },
-          "messages": {
-            "items": {
-              "$ref": "#/components/schemas/Message"
-            },
-            "type": "array",
-            "title": "Messages",
-            "description": "Conversation history"
-          },
-          "dataset_ids": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Dataset Ids",
-            "description": "Dataset IDs generated during this session"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Created At",
-            "description": "When the session was created"
-          }
-        },
-        "type": "object",
-        "required": [
-          "session_id",
-          "goal",
-          "autonomy_level",
-          "created_at"
-        ],
-        "title": "SessionResponse",
-        "description": "Response containing session state."
-      },
       "StepCostBreakdown": {
         "properties": {
           "step_name": {
@@ -6280,30 +6408,6 @@
         ],
         "title": "StepCostBreakdown"
       },
-      "StructuredQuestion": {
-        "properties": {
-          "question": {
-            "type": "string",
-            "title": "Question",
-            "description": "The question text"
-          },
-          "options": {
-            "items": {
-              "$ref": "#/components/schemas/QuestionOption"
-            },
-            "type": "array",
-            "title": "Options",
-            "description": "Available options"
-          }
-        },
-        "type": "object",
-        "required": [
-          "question",
-          "options"
-        ],
-        "title": "StructuredQuestion",
-        "description": "A structured question with selectable options."
-      },
       "TemplateQuestionGenerator": {
         "properties": {
           "config_type": {
@@ -6327,9 +6431,8 @@
       },
       "TrainingConfig": {
         "properties": {
-          "dataset_hf_repo": {
-            "type": "string",
-            "title": "Dataset Hf Repo"
+          "dataset": {
+            "$ref": "#/components/schemas/SampleDatasetConfig"
           },
           "base_model": {
             "type": "string",
@@ -6360,11 +6463,99 @@
               }
             ],
             "title": "Lora Rank"
+          },
+          "learning_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Learning Rate"
+          },
+          "adam_beta1": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adam Beta1"
+          },
+          "adam_beta2": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adam Beta2"
+          },
+          "save_every": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Save Every"
+          },
+          "resume_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resume From"
+          },
+          "num_rollouts": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Num Rollouts"
+          },
+          "max_response_length": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Response Length"
+          },
+          "start_idx": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Idx"
           }
         },
         "type": "object",
         "required": [
-          "dataset_hf_repo",
+          "dataset",
           "base_model",
           "training_steps"
         ],
@@ -6894,6 +7085,13 @@
           "type": {
             "type": "string",
             "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
           }
         },
         "type": "object",
@@ -6962,6 +7160,322 @@
         },
         "type": "object",
         "title": "WebSearchLabeler"
+      },
+      "lightningrod_api__api__public__v1__onboarding_assistant__models__MessageResponse": {
+        "properties": {
+          "message": {
+            "$ref": "#/components/schemas/OnboardingMessage"
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DatasetPlan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "MessageResponse",
+        "description": "Response from sending a message."
+      },
+      "lightningrod_api__api__public__v1__onboarding_assistant__models__QuestionOption": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "value"
+        ],
+        "title": "QuestionOption",
+        "description": "A selectable option for a structured question."
+      },
+      "lightningrod_api__api__public__v1__onboarding_assistant__models__SendMessageRequest": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "The user's message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "title": "SendMessageRequest",
+        "description": "Request to send a message to an onboarding session."
+      },
+      "lightningrod_api__api__public__v1__onboarding_assistant__models__SessionResponse": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/OnboardingMessage"
+            },
+            "type": "array",
+            "title": "Messages"
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DatasetPlan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fulfillment_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fulfillment Type"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "session_id",
+          "created_at"
+        ],
+        "title": "SessionResponse",
+        "description": "Response containing onboarding session state."
+      },
+      "lightningrod_api__api__public__v1__onboarding_assistant__models__StructuredQuestion": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/lightningrod_api__api__public__v1__onboarding_assistant__models__QuestionOption"
+            },
+            "type": "array",
+            "title": "Options"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "options"
+        ],
+        "title": "StructuredQuestion",
+        "description": "A structured question with selectable options."
+      },
+      "lightningrod_api__api__public__v1__pipeline_assistant__models__MessageResponse": {
+        "properties": {
+          "message": {
+            "$ref": "#/components/schemas/Message",
+            "description": "The assistant's response"
+          },
+          "current_config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Config",
+            "description": "Updated pipeline configuration (if changed)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "MessageResponse",
+        "description": "Response from sending a message."
+      },
+      "lightningrod_api__api__public__v1__pipeline_assistant__models__QuestionOption": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique identifier for this option"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "Display text shown on the button"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value",
+            "description": "Value sent when this option is selected"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Optional description/subtitle"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "value"
+        ],
+        "title": "QuestionOption",
+        "description": "A selectable option for a structured question."
+      },
+      "lightningrod_api__api__public__v1__pipeline_assistant__models__SendMessageRequest": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "The user's message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "title": "SendMessageRequest",
+        "description": "Request to send a message to an assistant session."
+      },
+      "lightningrod_api__api__public__v1__pipeline_assistant__models__SessionResponse": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "title": "Session Id",
+            "description": "Unique session identifier"
+          },
+          "goal": {
+            "type": "string",
+            "title": "Goal",
+            "description": "The user's stated goal"
+          },
+          "autonomy_level": {
+            "type": "string",
+            "enum": [
+              "guided",
+              "semi_auto",
+              "autonomous"
+            ],
+            "title": "Autonomy Level",
+            "description": "Current autonomy level"
+          },
+          "current_config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Config",
+            "description": "The current pipeline configuration (if generated)"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            },
+            "type": "array",
+            "title": "Messages",
+            "description": "Conversation history"
+          },
+          "dataset_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Dataset Ids",
+            "description": "Dataset IDs generated during this session"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "When the session was created"
+          }
+        },
+        "type": "object",
+        "required": [
+          "session_id",
+          "goal",
+          "autonomy_level",
+          "created_at"
+        ],
+        "title": "SessionResponse",
+        "description": "Response containing session state."
+      },
+      "lightningrod_api__api__public__v1__pipeline_assistant__models__StructuredQuestion": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question",
+            "description": "The question text"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/lightningrod_api__api__public__v1__pipeline_assistant__models__QuestionOption"
+            },
+            "type": "array",
+            "title": "Options",
+            "description": "Available options"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "options"
+        ],
+        "title": "StructuredQuestion",
+        "description": "A structured question with selectable options."
       }
     },
     "securitySchemes": {
@@ -6970,5 +7484,10 @@
         "scheme": "bearer"
       }
     }
-  }
+  },
+  "servers": [
+    {
+      "url": "/api/public/v1"
+    }
+  ]
 }

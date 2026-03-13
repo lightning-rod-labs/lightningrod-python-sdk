@@ -21,7 +21,7 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/pipeline-assistant/sessions/{session_id}/messages".format(
+        "url": "/onboarding-assistant/sessions/{session_id}/messages".format(
             session_id=quote(str(session_id), safe=""),
         ),
     }
@@ -67,16 +67,16 @@ def _build_response(
 def sync_detailed(
     session_id: str,
     *,
-    client: AuthenticatedClient,
+    client: AuthenticatedClient | Client,
     body: SendMessageRequest,
 ) -> Response[HTTPValidationError | MessageResponse]:
     """Send Message
 
-     Send a message to the assistant
+     Send a message to the onboarding assistant
 
     Args:
         session_id (str):
-        body (SendMessageRequest): Request to send a message to an assistant session.
+        body (SendMessageRequest): Request to send a message to an onboarding session.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -101,16 +101,16 @@ def sync_detailed(
 def sync(
     session_id: str,
     *,
-    client: AuthenticatedClient,
+    client: AuthenticatedClient | Client,
     body: SendMessageRequest,
 ) -> HTTPValidationError | MessageResponse | None:
     """Send Message
 
-     Send a message to the assistant
+     Send a message to the onboarding assistant
 
     Args:
         session_id (str):
-        body (SendMessageRequest): Request to send a message to an assistant session.
+        body (SendMessageRequest): Request to send a message to an onboarding session.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -130,16 +130,16 @@ def sync(
 async def asyncio_detailed(
     session_id: str,
     *,
-    client: AuthenticatedClient,
+    client: AuthenticatedClient | Client,
     body: SendMessageRequest,
 ) -> Response[HTTPValidationError | MessageResponse]:
     """Send Message
 
-     Send a message to the assistant
+     Send a message to the onboarding assistant
 
     Args:
         session_id (str):
-        body (SendMessageRequest): Request to send a message to an assistant session.
+        body (SendMessageRequest): Request to send a message to an onboarding session.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -162,16 +162,16 @@ async def asyncio_detailed(
 async def asyncio(
     session_id: str,
     *,
-    client: AuthenticatedClient,
+    client: AuthenticatedClient | Client,
     body: SendMessageRequest,
 ) -> HTTPValidationError | MessageResponse | None:
     """Send Message
 
-     Send a message to the assistant
+     Send a message to the onboarding assistant
 
     Args:
         session_id (str):
-        body (SendMessageRequest): Request to send a message to an assistant session.
+        body (SendMessageRequest): Request to send a message to an onboarding session.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.

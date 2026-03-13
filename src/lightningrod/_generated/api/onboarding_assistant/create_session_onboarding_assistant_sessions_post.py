@@ -1,33 +1,28 @@
 from http import HTTPStatus
 from typing import Any
-from urllib.parse import quote
 
 import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.http_validation_error import HTTPValidationError
+from ...models.session_response import SessionResponse
 from ...types import Response
 
 
-def _get_kwargs(
-    session_id: str,
-) -> dict[str, Any]:
+def _get_kwargs() -> dict[str, Any]:
     _kwargs: dict[str, Any] = {
-        "method": "get",
-        "url": "/pipeline-assistant/sessions/{session_id}".format(
-            session_id=quote(str(session_id), safe=""),
-        ),
+        "method": "post",
+        "url": "/onboarding-assistant/sessions",
     }
 
     return _kwargs
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> HTTPValidationError | None:
-    if response.status_code == 422:
-        response_422 = HTTPValidationError.from_dict(response.json())
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> SessionResponse | None:
+    if response.status_code == 201:
+        response_201 = SessionResponse.from_dict(response.json())
 
-        return response_422
+        return response_201
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -35,7 +30,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[HTTPValidationError]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[SessionResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -45,28 +40,22 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 def sync_detailed(
-    session_id: str,
     *,
-    client: AuthenticatedClient,
-) -> Response[HTTPValidationError]:
-    """Get Session
+    client: AuthenticatedClient | Client,
+) -> Response[SessionResponse]:
+    """Create Session
 
-     Get the current state of a session
-
-    Args:
-        session_id (str):
+     Create an onboarding session
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError]
+        Response[SessionResponse]
     """
 
-    kwargs = _get_kwargs(
-        session_id=session_id,
-    )
+    kwargs = _get_kwargs()
 
     response = client.get_httpx_client().request(
         **kwargs,
@@ -76,54 +65,43 @@ def sync_detailed(
 
 
 def sync(
-    session_id: str,
     *,
-    client: AuthenticatedClient,
-) -> HTTPValidationError | None:
-    """Get Session
+    client: AuthenticatedClient | Client,
+) -> SessionResponse | None:
+    """Create Session
 
-     Get the current state of a session
-
-    Args:
-        session_id (str):
+     Create an onboarding session
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError
+        SessionResponse
     """
 
     return sync_detailed(
-        session_id=session_id,
         client=client,
     ).parsed
 
 
 async def asyncio_detailed(
-    session_id: str,
     *,
-    client: AuthenticatedClient,
-) -> Response[HTTPValidationError]:
-    """Get Session
+    client: AuthenticatedClient | Client,
+) -> Response[SessionResponse]:
+    """Create Session
 
-     Get the current state of a session
-
-    Args:
-        session_id (str):
+     Create an onboarding session
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError]
+        Response[SessionResponse]
     """
 
-    kwargs = _get_kwargs(
-        session_id=session_id,
-    )
+    kwargs = _get_kwargs()
 
     response = await client.get_async_httpx_client().request(**kwargs)
 
@@ -131,28 +109,23 @@ async def asyncio_detailed(
 
 
 async def asyncio(
-    session_id: str,
     *,
-    client: AuthenticatedClient,
-) -> HTTPValidationError | None:
-    """Get Session
+    client: AuthenticatedClient | Client,
+) -> SessionResponse | None:
+    """Create Session
 
-     Get the current state of a session
-
-    Args:
-        session_id (str):
+     Create an onboarding session
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError
+        SessionResponse
     """
 
     return (
         await asyncio_detailed(
-            session_id=session_id,
             client=client,
         )
     ).parsed

@@ -12,29 +12,37 @@ if TYPE_CHECKING:
     from ..models.sample_dataset_config import SampleDatasetConfig
 
 
-T = TypeVar("T", bound="CreateEvalJobRequest")
+T = TypeVar("T", bound="EvalConfig")
 
 
 @_attrs_define
-class CreateEvalJobRequest:
+class EvalConfig:
     """
     Attributes:
-        dataset (SampleDatasetConfig):
+        organization_id (str):
         model_id (str):
+        dataset (SampleDatasetConfig):
         benchmark_model_id (None | str | Unset):
         temperature (float | Unset):  Default: 0.0.
+        max_tokens (int | Unset):  Default: 8192.
+        max_concurrent (int | Unset):  Default: 50.
     """
 
-    dataset: SampleDatasetConfig
+    organization_id: str
     model_id: str
+    dataset: SampleDatasetConfig
     benchmark_model_id: None | str | Unset = UNSET
     temperature: float | Unset = 0.0
+    max_tokens: int | Unset = 8192
+    max_concurrent: int | Unset = 50
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        dataset = self.dataset.to_dict()
+        organization_id = self.organization_id
 
         model_id = self.model_id
+
+        dataset = self.dataset.to_dict()
 
         benchmark_model_id: None | str | Unset
         if isinstance(self.benchmark_model_id, Unset):
@@ -44,18 +52,27 @@ class CreateEvalJobRequest:
 
         temperature = self.temperature
 
+        max_tokens = self.max_tokens
+
+        max_concurrent = self.max_concurrent
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "dataset": dataset,
+                "organization_id": organization_id,
                 "model_id": model_id,
+                "dataset": dataset,
             }
         )
         if benchmark_model_id is not UNSET:
             field_dict["benchmark_model_id"] = benchmark_model_id
         if temperature is not UNSET:
             field_dict["temperature"] = temperature
+        if max_tokens is not UNSET:
+            field_dict["max_tokens"] = max_tokens
+        if max_concurrent is not UNSET:
+            field_dict["max_concurrent"] = max_concurrent
 
         return field_dict
 
@@ -64,9 +81,11 @@ class CreateEvalJobRequest:
         from ..models.sample_dataset_config import SampleDatasetConfig
 
         d = dict(src_dict)
-        dataset = SampleDatasetConfig.from_dict(d.pop("dataset"))
+        organization_id = d.pop("organization_id")
 
         model_id = d.pop("model_id")
+
+        dataset = SampleDatasetConfig.from_dict(d.pop("dataset"))
 
         def _parse_benchmark_model_id(data: object) -> None | str | Unset:
             if data is None:
@@ -79,15 +98,22 @@ class CreateEvalJobRequest:
 
         temperature = d.pop("temperature", UNSET)
 
-        create_eval_job_request = cls(
-            dataset=dataset,
+        max_tokens = d.pop("max_tokens", UNSET)
+
+        max_concurrent = d.pop("max_concurrent", UNSET)
+
+        eval_config = cls(
+            organization_id=organization_id,
             model_id=model_id,
+            dataset=dataset,
             benchmark_model_id=benchmark_model_id,
             temperature=temperature,
+            max_tokens=max_tokens,
+            max_concurrent=max_concurrent,
         )
 
-        create_eval_job_request.additional_properties = d
-        return create_eval_job_request
+        eval_config.additional_properties = d
+        return eval_config
 
     @property
     def additional_keys(self) -> list[str]:

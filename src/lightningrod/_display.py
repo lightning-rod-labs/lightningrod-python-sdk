@@ -214,8 +214,8 @@ def build_eval_live_display(job: EvalJob) -> RenderableType:
     renderables.append(_safe_markup(f"[bold {header_style}]{header}[/bold {header_style}]"))
     renderables.append(Text(""))
     if job is not None:
-        renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.model_id}"))
-        renderables.append(_safe_markup(f"  [bold]Dataset:[/bold] {job.dataset_hf_repo}"))
+        renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.config.model_id}"))
+        renderables.append(_safe_markup(f"  [bold]Dataset:[/bold] {job.config.dataset.id}"))
         renderables.append(Text(""))
         if job.status in (EvalJobStatus.RUNNING, EvalJobStatus.STARTING):
             current = job.current_step or 0
@@ -258,14 +258,8 @@ def print_eval(job: EvalJob) -> None:
     renderables.append(Text(""))
     if job is not None:
         renderables.append(_safe_markup(f"  [bold]ID:[/bold] {job.id}"))
-        renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.model_id}"))
-        dataset = None
-        if _is_set(job.dataset_hf_repo):
-            dataset = str(job.dataset_hf_repo)
-        elif _is_set(job.test_dataset_id):
-            dataset = str(job.test_dataset_id)
-        if dataset:
-            renderables.append(_safe_markup(f"  [bold]Dataset:[/bold] {dataset}"))
+        renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.config.model_id}"))
+        renderables.append(_safe_markup(f"  [bold]Dataset:[/bold] {job.config.dataset.id}"))
         renderables.append(Text(""))
         if _is_set(job.metrics) and job.metrics and job.metrics.additional_properties:
             props = job.metrics.additional_properties

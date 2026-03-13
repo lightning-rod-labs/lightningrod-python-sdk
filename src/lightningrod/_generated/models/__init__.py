@@ -24,10 +24,12 @@ from .create_session_request_autonomy_level_type_0 import CreateSessionRequestAu
 from .create_training_job_request import CreateTrainingJobRequest
 from .create_transform_job_request import CreateTransformJobRequest
 from .dataset_metadata import DatasetMetadata
+from .dataset_plan import DatasetPlan
 from .estimate_cost_request import EstimateCostRequest
 from .estimate_cost_response import EstimateCostResponse
 from .estimate_training_cost_request import EstimateTrainingCostRequest
 from .estimate_training_cost_response import EstimateTrainingCostResponse
+from .eval_config import EvalConfig
 from .eval_job import EvalJob
 from .eval_job_list_response import EvalJobListResponse
 from .eval_job_metrics_type_0 import EvalJobMetricsType0
@@ -56,10 +58,7 @@ from .list_file_set_files_response import ListFileSetFilesResponse
 from .list_file_sets_response import ListFileSetsResponse
 from .list_transform_jobs_response import ListTransformJobsResponse
 from .llm_model_usage_summary import LLMModelUsageSummary
-from .message import Message
 from .message_response import MessageResponse
-from .message_response_current_config_type_0 import MessageResponseCurrentConfigType0
-from .message_role import MessageRole
 from .metadata_field_definition import MetadataFieldDefinition
 from .metadata_field_definition_input import MetadataFieldDefinitionInput
 from .metadata_field_type import MetadataFieldType
@@ -74,10 +73,13 @@ from .multiple_choice_answer_type import MultipleChoiceAnswerType
 from .news_context import NewsContext
 from .news_context_generator import NewsContextGenerator
 from .news_seed_generator import NewsSeedGenerator
+from .onboarding_message import OnboardingMessage
+from .onboarding_message_role import OnboardingMessageRole
 from .paginated_samples_response import PaginatedSamplesResponse
 from .pipeline_metrics_response import PipelineMetricsResponse
 from .pipeline_step_summary import PipelineStepSummary
 from .pipeline_step_summary_rejection_reasons import PipelineStepSummaryRejectionReasons
+from .plan_step import PlanStep
 from .preview_results import PreviewResults
 from .preview_sample import PreviewSample
 from .question import Question
@@ -97,12 +99,11 @@ from .rollout_parsed_output_type_0 import RolloutParsedOutputType0
 from .rollout_scorer import RolloutScorer
 from .rollout_scorer_multiple_choice_options_type_0 import RolloutScorerMultipleChoiceOptionsType0
 from .sample import Sample
+from .sample_dataset_config import SampleDatasetConfig
 from .sample_meta import SampleMeta
 from .seed import Seed
 from .send_message_request import SendMessageRequest
 from .session_response import SessionResponse
-from .session_response_autonomy_level import SessionResponseAutonomyLevel
-from .session_response_current_config_type_0 import SessionResponseCurrentConfigType0
 from .step_cost_breakdown import StepCostBreakdown
 from .structured_question import StructuredQuestion
 from .template_question_generator import TemplateQuestionGenerator
@@ -122,6 +123,7 @@ from .usage_summary_events import UsageSummaryEvents
 from .usage_summary_llm_by_model import UsageSummaryLlmByModel
 from .validate_sample_response import ValidateSampleResponse
 from .validation_error import ValidationError
+from .validation_error_context import ValidationErrorContext
 from .web_search_labeler import WebSearchLabeler
 
 __all__ = (
@@ -149,10 +151,12 @@ __all__ = (
     "CreateTrainingJobRequest",
     "CreateTransformJobRequest",
     "DatasetMetadata",
+    "DatasetPlan",
     "EstimateCostRequest",
     "EstimateCostResponse",
     "EstimateTrainingCostRequest",
     "EstimateTrainingCostResponse",
+    "EvalConfig",
     "EvalJob",
     "EvalJobListResponse",
     "EvalJobMetricsType0",
@@ -181,10 +185,7 @@ __all__ = (
     "ListFileSetsResponse",
     "ListTransformJobsResponse",
     "LLMModelUsageSummary",
-    "Message",
     "MessageResponse",
-    "MessageResponseCurrentConfigType0",
-    "MessageRole",
     "MetadataFieldDefinition",
     "MetadataFieldDefinitionInput",
     "MetadataFieldType",
@@ -199,10 +200,13 @@ __all__ = (
     "NewsContext",
     "NewsContextGenerator",
     "NewsSeedGenerator",
+    "OnboardingMessage",
+    "OnboardingMessageRole",
     "PaginatedSamplesResponse",
     "PipelineMetricsResponse",
     "PipelineStepSummary",
     "PipelineStepSummaryRejectionReasons",
+    "PlanStep",
     "PreviewResults",
     "PreviewSample",
     "Question",
@@ -222,12 +226,11 @@ __all__ = (
     "RolloutScorer",
     "RolloutScorerMultipleChoiceOptionsType0",
     "Sample",
+    "SampleDatasetConfig",
     "SampleMeta",
     "Seed",
     "SendMessageRequest",
     "SessionResponse",
-    "SessionResponseAutonomyLevel",
-    "SessionResponseCurrentConfigType0",
     "StepCostBreakdown",
     "StructuredQuestion",
     "TemplateQuestionGenerator",
@@ -247,5 +250,6 @@ __all__ = (
     "UsageSummaryLlmByModel",
     "ValidateSampleResponse",
     "ValidationError",
+    "ValidationErrorContext",
     "WebSearchLabeler",
 )

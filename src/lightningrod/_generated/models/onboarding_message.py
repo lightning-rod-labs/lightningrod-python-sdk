@@ -8,41 +8,38 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 from dateutil.parser import isoparse
 
-from ..models.message_role import MessageRole
+from ..models.onboarding_message_role import OnboardingMessageRole
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.preview_results import PreviewResults
+    from ..models.dataset_plan import DatasetPlan
     from ..models.structured_question import StructuredQuestion
 
 
-T = TypeVar("T", bound="Message")
+T = TypeVar("T", bound="OnboardingMessage")
 
 
 @_attrs_define
-class Message:
-    """A message in the conversation.
+class OnboardingMessage:
+    """A message in the onboarding conversation.
 
     Attributes:
-        role (MessageRole): Who sent the message
-        content (str): The message content
-        timestamp (datetime.datetime): When the message was sent
-        tool_call_id (None | str | Unset): ID of the tool call if this is a tool message
-        structured_question (None | StructuredQuestion | Unset): If present, render as clickable options instead of
-            plain text
-        preview_results (None | PreviewResults | Unset): If present, render preview results in a special UI component
+        role (OnboardingMessageRole): Who sent the message
+        content (str):
+        timestamp (datetime.datetime):
+        structured_question (None | StructuredQuestion | Unset):
+        dataset_plan (DatasetPlan | None | Unset):
     """
 
-    role: MessageRole
+    role: OnboardingMessageRole
     content: str
     timestamp: datetime.datetime
-    tool_call_id: None | str | Unset = UNSET
     structured_question: None | StructuredQuestion | Unset = UNSET
-    preview_results: None | PreviewResults | Unset = UNSET
+    dataset_plan: DatasetPlan | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.preview_results import PreviewResults
+        from ..models.dataset_plan import DatasetPlan
         from ..models.structured_question import StructuredQuestion
 
         role = self.role.value
@@ -50,12 +47,6 @@ class Message:
         content = self.content
 
         timestamp = self.timestamp.isoformat()
-
-        tool_call_id: None | str | Unset
-        if isinstance(self.tool_call_id, Unset):
-            tool_call_id = UNSET
-        else:
-            tool_call_id = self.tool_call_id
 
         structured_question: dict[str, Any] | None | Unset
         if isinstance(self.structured_question, Unset):
@@ -65,13 +56,13 @@ class Message:
         else:
             structured_question = self.structured_question
 
-        preview_results: dict[str, Any] | None | Unset
-        if isinstance(self.preview_results, Unset):
-            preview_results = UNSET
-        elif isinstance(self.preview_results, PreviewResults):
-            preview_results = self.preview_results.to_dict()
+        dataset_plan: dict[str, Any] | None | Unset
+        if isinstance(self.dataset_plan, Unset):
+            dataset_plan = UNSET
+        elif isinstance(self.dataset_plan, DatasetPlan):
+            dataset_plan = self.dataset_plan.to_dict()
         else:
-            preview_results = self.preview_results
+            dataset_plan = self.dataset_plan
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -82,35 +73,24 @@ class Message:
                 "timestamp": timestamp,
             }
         )
-        if tool_call_id is not UNSET:
-            field_dict["tool_call_id"] = tool_call_id
         if structured_question is not UNSET:
             field_dict["structured_question"] = structured_question
-        if preview_results is not UNSET:
-            field_dict["preview_results"] = preview_results
+        if dataset_plan is not UNSET:
+            field_dict["dataset_plan"] = dataset_plan
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.preview_results import PreviewResults
+        from ..models.dataset_plan import DatasetPlan
         from ..models.structured_question import StructuredQuestion
 
         d = dict(src_dict)
-        role = MessageRole(d.pop("role"))
+        role = OnboardingMessageRole(d.pop("role"))
 
         content = d.pop("content")
 
         timestamp = isoparse(d.pop("timestamp"))
-
-        def _parse_tool_call_id(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        tool_call_id = _parse_tool_call_id(d.pop("tool_call_id", UNSET))
 
         def _parse_structured_question(data: object) -> None | StructuredQuestion | Unset:
             if data is None:
@@ -129,7 +109,7 @@ class Message:
 
         structured_question = _parse_structured_question(d.pop("structured_question", UNSET))
 
-        def _parse_preview_results(data: object) -> None | PreviewResults | Unset:
+        def _parse_dataset_plan(data: object) -> DatasetPlan | None | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -137,26 +117,25 @@ class Message:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                preview_results_type_0 = PreviewResults.from_dict(data)
+                dataset_plan_type_0 = DatasetPlan.from_dict(data)
 
-                return preview_results_type_0
+                return dataset_plan_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(None | PreviewResults | Unset, data)
+            return cast(DatasetPlan | None | Unset, data)
 
-        preview_results = _parse_preview_results(d.pop("preview_results", UNSET))
+        dataset_plan = _parse_dataset_plan(d.pop("dataset_plan", UNSET))
 
-        message = cls(
+        onboarding_message = cls(
             role=role,
             content=content,
             timestamp=timestamp,
-            tool_call_id=tool_call_id,
             structured_question=structured_question,
-            preview_results=preview_results,
+            dataset_plan=dataset_plan,
         )
 
-        message.additional_properties = d
-        return message
+        onboarding_message.additional_properties = d
+        return onboarding_message
 
     @property
     def additional_keys(self) -> list[str]:
