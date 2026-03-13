@@ -75,7 +75,7 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
-See the [API docs](https://docs.lightningrod.ai/rest-api#post-openai-chat-completions) for full details, or try the [Foresight-v3 notebook](notebooks/08_foresight_model.ipynb).
+See the [API docs](https://docs.lightningrod.ai/rest-api#post-openai-chat-completions) for full details, or try the [Foresight-v3 notebook](notebooks/09_foresight_model.ipynb).
 
 ## ✨ Examples
 
