@@ -106,8 +106,7 @@ We have some example notebooks to help you get started! If you have trouble usin
 | Document Classification | `notebooks/e2e/document_classification.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/document_classification.ipynb) |
 | Polymarket Backtesting  | `notebooks/e2e/polymarket_backtesting.ipynb`  | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/polymarket_backtesting.ipynb)  |
 | Model Consensus         | `notebooks/e2e/model_consensus.ipynb`         | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/model_consensus.ipynb)         |
-| Startup Forecasting     | `notebooks/e2e/startup_forecasting.ipynb`     | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/startup_forecasting.ipynb)     |
-| SurvivalLLM             | `notebooks/e2e/survival_llm.ipynb`            | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/survival_llm.ipynb)            |
+| Survival LLM             | `notebooks/e2e/survival_llm.ipynb`            | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/e2e/survival_llm.ipynb)            |
 
 
 For full documentation, see [docs.lightningrod.ai](https://docs.lightningrod.ai/). For the SDK API reference in this repo, see [API.md](API.md).
