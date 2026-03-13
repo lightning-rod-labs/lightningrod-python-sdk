@@ -78,7 +78,7 @@ Transform pipelines generate datasets from raw data. The main method is `transfo
 - `TransformJob` - Job status, IDs, timestamps, error messages
 - `TransformJobStatus` - Enum: `RUNNING`, `COMPLETED`, `FAILED`
 
-See examples in the `examples/` directory for detailed usage of the pipeline types.
+See the `notebooks/` directory for detailed usage of the pipeline types.
 
 ## Datasets
 
