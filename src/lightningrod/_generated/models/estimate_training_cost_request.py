@@ -7,39 +7,30 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 if TYPE_CHECKING:
-    from ..models.question_option import QuestionOption
+    from ..models.training_config import TrainingConfig
 
 
-T = TypeVar("T", bound="StructuredQuestion")
+T = TypeVar("T", bound="EstimateTrainingCostRequest")
 
 
 @_attrs_define
-class StructuredQuestion:
-    """A structured question with selectable options.
-
+class EstimateTrainingCostRequest:
+    """
     Attributes:
-        question (str): The question text
-        options (list[QuestionOption]): Available options
+        config (TrainingConfig):
     """
 
-    question: str
-    options: list[QuestionOption]
+    config: TrainingConfig
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        question = self.question
-
-        options = []
-        for options_item_data in self.options:
-            options_item = options_item_data.to_dict()
-            options.append(options_item)
+        config = self.config.to_dict()
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "question": question,
-                "options": options,
+                "config": config,
             }
         )
 
@@ -47,25 +38,17 @@ class StructuredQuestion:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.question_option import QuestionOption
+        from ..models.training_config import TrainingConfig
 
         d = dict(src_dict)
-        question = d.pop("question")
+        config = TrainingConfig.from_dict(d.pop("config"))
 
-        options = []
-        _options = d.pop("options")
-        for options_item_data in _options:
-            options_item = QuestionOption.from_dict(options_item_data)
-
-            options.append(options_item)
-
-        structured_question = cls(
-            question=question,
-            options=options,
+        estimate_training_cost_request = cls(
+            config=config,
         )
 
-        structured_question.additional_properties = d
-        return structured_question
+        estimate_training_cost_request.additional_properties = d
+        return estimate_training_cost_request
 
     @property
     def additional_keys(self) -> list[str]:

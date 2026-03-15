@@ -6,11 +6,11 @@ from typing import Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="MessageResponseCurrentConfigType0")
+T = TypeVar("T", bound="EvalJobMetricsType0")
 
 
 @_attrs_define
-class MessageResponseCurrentConfigType0:
+class EvalJobMetricsType0:
     """ """
 
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -24,10 +24,10 @@ class MessageResponseCurrentConfigType0:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        message_response_current_config_type_0 = cls()
+        eval_job_metrics_type_0 = cls()
 
-        message_response_current_config_type_0.additional_properties = d
-        return message_response_current_config_type_0
+        eval_job_metrics_type_0.additional_properties = d
+        return eval_job_metrics_type_0
 
     @property
     def additional_keys(self) -> list[str]:

@@ -1,34 +1,42 @@
 from http import HTTPStatus
-from typing import Any, cast
-from urllib.parse import quote
+from typing import Any
 
 import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
+from ...models.estimate_training_cost_request import EstimateTrainingCostRequest
+from ...models.estimate_training_cost_response import EstimateTrainingCostResponse
 from ...models.http_validation_error import HTTPValidationError
 from ...types import Response
 
 
 def _get_kwargs(
-    session_id: str,
+    *,
+    body: EstimateTrainingCostRequest,
 ) -> dict[str, Any]:
+    headers: dict[str, Any] = {}
+
     _kwargs: dict[str, Any] = {
-        "method": "delete",
-        "url": "/pipeline-assistant/sessions/{session_id}".format(
-            session_id=quote(str(session_id), safe=""),
-        ),
+        "method": "post",
+        "url": "/training-jobs/cost-estimation",
     }
 
+    _kwargs["json"] = body.to_dict()
+
+    headers["Content-Type"] = "application/json"
+
+    _kwargs["headers"] = headers
     return _kwargs
 
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Any | HTTPValidationError | None:
-    if response.status_code == 204:
-        response_204 = cast(Any, None)
-        return response_204
+) -> EstimateTrainingCostResponse | HTTPValidationError | None:
+    if response.status_code == 200:
+        response_200 = EstimateTrainingCostResponse.from_dict(response.json())
+
+        return response_200
 
     if response.status_code == 422:
         response_422 = HTTPValidationError.from_dict(response.json())
@@ -43,7 +51,7 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[Any | HTTPValidationError]:
+) -> Response[EstimateTrainingCostResponse | HTTPValidationError]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -53,27 +61,27 @@ def _build_response(
 
 
 def sync_detailed(
-    session_id: str,
     *,
     client: AuthenticatedClient,
-) -> Response[Any | HTTPValidationError]:
-    """Delete Session
+    body: EstimateTrainingCostRequest,
+) -> Response[EstimateTrainingCostResponse | HTTPValidationError]:
+    """Estimate Training Cost
 
-     Delete a session
+     Estimate training cost before execution
 
     Args:
-        session_id (str):
+        body (EstimateTrainingCostRequest):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | HTTPValidationError]
+        Response[EstimateTrainingCostResponse | HTTPValidationError]
     """
 
     kwargs = _get_kwargs(
-        session_id=session_id,
+        body=body,
     )
 
     response = client.get_httpx_client().request(
@@ -84,53 +92,53 @@ def sync_detailed(
 
 
 def sync(
-    session_id: str,
     *,
     client: AuthenticatedClient,
-) -> Any | HTTPValidationError | None:
-    """Delete Session
+    body: EstimateTrainingCostRequest,
+) -> EstimateTrainingCostResponse | HTTPValidationError | None:
+    """Estimate Training Cost
 
-     Delete a session
+     Estimate training cost before execution
 
     Args:
-        session_id (str):
+        body (EstimateTrainingCostRequest):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | HTTPValidationError
+        EstimateTrainingCostResponse | HTTPValidationError
     """
 
     return sync_detailed(
-        session_id=session_id,
         client=client,
+        body=body,
     ).parsed
 
 
 async def asyncio_detailed(
-    session_id: str,
     *,
     client: AuthenticatedClient,
-) -> Response[Any | HTTPValidationError]:
-    """Delete Session
+    body: EstimateTrainingCostRequest,
+) -> Response[EstimateTrainingCostResponse | HTTPValidationError]:
+    """Estimate Training Cost
 
-     Delete a session
+     Estimate training cost before execution
 
     Args:
-        session_id (str):
+        body (EstimateTrainingCostRequest):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | HTTPValidationError]
+        Response[EstimateTrainingCostResponse | HTTPValidationError]
     """
 
     kwargs = _get_kwargs(
-        session_id=session_id,
+        body=body,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -139,28 +147,28 @@ async def asyncio_detailed(
 
 
 async def asyncio(
-    session_id: str,
     *,
     client: AuthenticatedClient,
-) -> Any | HTTPValidationError | None:
-    """Delete Session
+    body: EstimateTrainingCostRequest,
+) -> EstimateTrainingCostResponse | HTTPValidationError | None:
+    """Estimate Training Cost
 
-     Delete a session
+     Estimate training cost before execution
 
     Args:
-        session_id (str):
+        body (EstimateTrainingCostRequest):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | HTTPValidationError
+        EstimateTrainingCostResponse | HTTPValidationError
     """
 
     return (
         await asyncio_detailed(
-            session_id=session_id,
             client=client,
+            body=body,
         )
     ).parsed

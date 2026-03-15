@@ -1,28 +1,41 @@
 from http import HTTPStatus
 from typing import Any
+from urllib.parse import quote
 
 import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.model_list_response import ModelListResponse
+from ...models.eval_job import EvalJob
+from ...models.http_validation_error import HTTPValidationError
 from ...types import Response
 
 
-def _get_kwargs() -> dict[str, Any]:
+def _get_kwargs(
+    eval_id: str,
+) -> dict[str, Any]:
     _kwargs: dict[str, Any] = {
         "method": "get",
-        "url": "/openai/models",
+        "url": "/evaluations/{eval_id}".format(
+            eval_id=quote(str(eval_id), safe=""),
+        ),
     }
 
     return _kwargs
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ModelListResponse | None:
+def _parse_response(
+    *, client: AuthenticatedClient | Client, response: httpx.Response
+) -> EvalJob | HTTPValidationError | None:
     if response.status_code == 200:
-        response_200 = ModelListResponse.from_dict(response.json())
+        response_200 = EvalJob.from_dict(response.json())
 
         return response_200
+
+    if response.status_code == 422:
+        response_422 = HTTPValidationError.from_dict(response.json())
+
+        return response_422
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -30,7 +43,9 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ModelListResponse]:
+def _build_response(
+    *, client: AuthenticatedClient | Client, response: httpx.Response
+) -> Response[EvalJob | HTTPValidationError]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -40,22 +55,28 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 def sync_detailed(
+    eval_id: str,
     *,
     client: AuthenticatedClient,
-) -> Response[ModelListResponse]:
-    """List Models
+) -> Response[EvalJob | HTTPValidationError]:
+    """Get Eval Job
 
-     List available models.
+     Get an evaluation job by ID
+
+    Args:
+        eval_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ModelListResponse]
+        Response[EvalJob | HTTPValidationError]
     """
 
-    kwargs = _get_kwargs()
+    kwargs = _get_kwargs(
+        eval_id=eval_id,
+    )
 
     response = client.get_httpx_client().request(
         **kwargs,
@@ -65,43 +86,54 @@ def sync_detailed(
 
 
 def sync(
+    eval_id: str,
     *,
     client: AuthenticatedClient,
-) -> ModelListResponse | None:
-    """List Models
+) -> EvalJob | HTTPValidationError | None:
+    """Get Eval Job
 
-     List available models.
+     Get an evaluation job by ID
+
+    Args:
+        eval_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ModelListResponse
+        EvalJob | HTTPValidationError
     """
 
     return sync_detailed(
+        eval_id=eval_id,
         client=client,
     ).parsed
 
 
 async def asyncio_detailed(
+    eval_id: str,
     *,
     client: AuthenticatedClient,
-) -> Response[ModelListResponse]:
-    """List Models
+) -> Response[EvalJob | HTTPValidationError]:
+    """Get Eval Job
 
-     List available models.
+     Get an evaluation job by ID
+
+    Args:
+        eval_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ModelListResponse]
+        Response[EvalJob | HTTPValidationError]
     """
 
-    kwargs = _get_kwargs()
+    kwargs = _get_kwargs(
+        eval_id=eval_id,
+    )
 
     response = await client.get_async_httpx_client().request(**kwargs)
 
@@ -109,23 +141,28 @@ async def asyncio_detailed(
 
 
 async def asyncio(
+    eval_id: str,
     *,
     client: AuthenticatedClient,
-) -> ModelListResponse | None:
-    """List Models
+) -> EvalJob | HTTPValidationError | None:
+    """Get Eval Job
 
-     List available models.
+     Get an evaluation job by ID
+
+    Args:
+        eval_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ModelListResponse
+        EvalJob | HTTPValidationError
     """
 
     return (
         await asyncio_detailed(
+            eval_id=eval_id,
             client=client,
         )
     ).parsed

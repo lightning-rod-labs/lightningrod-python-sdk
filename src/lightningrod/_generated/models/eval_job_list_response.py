@@ -1,33 +1,44 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="SendMessageRequest")
+if TYPE_CHECKING:
+    from ..models.eval_job import EvalJob
+
+
+T = TypeVar("T", bound="EvalJobListResponse")
 
 
 @_attrs_define
-class SendMessageRequest:
-    """Request to send a message to an assistant session.
-
+class EvalJobListResponse:
+    """
     Attributes:
-        content (str): The user's message
+        jobs (list[EvalJob]):
+        total_count (int):
     """
 
-    content: str
+    jobs: list[EvalJob]
+    total_count: int
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        content = self.content
+        jobs = []
+        for jobs_item_data in self.jobs:
+            jobs_item = jobs_item_data.to_dict()
+            jobs.append(jobs_item)
+
+        total_count = self.total_count
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "content": content,
+                "jobs": jobs,
+                "total_count": total_count,
             }
         )
 
@@ -35,15 +46,25 @@ class SendMessageRequest:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        d = dict(src_dict)
-        content = d.pop("content")
+        from ..models.eval_job import EvalJob
 
-        send_message_request = cls(
-            content=content,
+        d = dict(src_dict)
+        jobs = []
+        _jobs = d.pop("jobs")
+        for jobs_item_data in _jobs:
+            jobs_item = EvalJob.from_dict(jobs_item_data)
+
+            jobs.append(jobs_item)
+
+        total_count = d.pop("total_count")
+
+        eval_job_list_response = cls(
+            jobs=jobs,
+            total_count=total_count,
         )
 
-        send_message_request.additional_properties = d
-        return send_message_request
+        eval_job_list_response.additional_properties = d
+        return eval_job_list_response
 
     @property
     def additional_keys(self) -> list[str]:

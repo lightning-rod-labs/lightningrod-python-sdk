@@ -7,17 +7,17 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.http_validation_error import HTTPValidationError
-from ...models.session_response import SessionResponse
+from ...models.training_job import TrainingJob
 from ...types import Response
 
 
 def _get_kwargs(
-    session_id: str,
+    job_id: str,
 ) -> dict[str, Any]:
     _kwargs: dict[str, Any] = {
         "method": "get",
-        "url": "/pipeline-assistant/sessions/{session_id}".format(
-            session_id=quote(str(session_id), safe=""),
+        "url": "/training-jobs/{job_id}".format(
+            job_id=quote(str(job_id), safe=""),
         ),
     }
 
@@ -26,9 +26,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> HTTPValidationError | SessionResponse | None:
+) -> HTTPValidationError | TrainingJob | None:
     if response.status_code == 200:
-        response_200 = SessionResponse.from_dict(response.json())
+        response_200 = TrainingJob.from_dict(response.json())
 
         return response_200
 
@@ -45,7 +45,7 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[HTTPValidationError | SessionResponse]:
+) -> Response[HTTPValidationError | TrainingJob]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -55,27 +55,27 @@ def _build_response(
 
 
 def sync_detailed(
-    session_id: str,
+    job_id: str,
     *,
     client: AuthenticatedClient,
-) -> Response[HTTPValidationError | SessionResponse]:
-    """Get Session
+) -> Response[HTTPValidationError | TrainingJob]:
+    """Get Training Job
 
-     Get the current state of a session
+     Get a training job by ID
 
     Args:
-        session_id (str):
+        job_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | SessionResponse]
+        Response[HTTPValidationError | TrainingJob]
     """
 
     kwargs = _get_kwargs(
-        session_id=session_id,
+        job_id=job_id,
     )
 
     response = client.get_httpx_client().request(
@@ -86,53 +86,53 @@ def sync_detailed(
 
 
 def sync(
-    session_id: str,
+    job_id: str,
     *,
     client: AuthenticatedClient,
-) -> HTTPValidationError | SessionResponse | None:
-    """Get Session
+) -> HTTPValidationError | TrainingJob | None:
+    """Get Training Job
 
-     Get the current state of a session
+     Get a training job by ID
 
     Args:
-        session_id (str):
+        job_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | SessionResponse
+        HTTPValidationError | TrainingJob
     """
 
     return sync_detailed(
-        session_id=session_id,
+        job_id=job_id,
         client=client,
     ).parsed
 
 
 async def asyncio_detailed(
-    session_id: str,
+    job_id: str,
     *,
     client: AuthenticatedClient,
-) -> Response[HTTPValidationError | SessionResponse]:
-    """Get Session
+) -> Response[HTTPValidationError | TrainingJob]:
+    """Get Training Job
 
-     Get the current state of a session
+     Get a training job by ID
 
     Args:
-        session_id (str):
+        job_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | SessionResponse]
+        Response[HTTPValidationError | TrainingJob]
     """
 
     kwargs = _get_kwargs(
-        session_id=session_id,
+        job_id=job_id,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -141,28 +141,28 @@ async def asyncio_detailed(
 
 
 async def asyncio(
-    session_id: str,
+    job_id: str,
     *,
     client: AuthenticatedClient,
-) -> HTTPValidationError | SessionResponse | None:
-    """Get Session
+) -> HTTPValidationError | TrainingJob | None:
+    """Get Training Job
 
-     Get the current state of a session
+     Get a training job by ID
 
     Args:
-        session_id (str):
+        job_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | SessionResponse
+        HTTPValidationError | TrainingJob
     """
 
     return (
         await asyncio_detailed(
-            session_id=session_id,
+            job_id=job_id,
             client=client,
         )
     ).parsed

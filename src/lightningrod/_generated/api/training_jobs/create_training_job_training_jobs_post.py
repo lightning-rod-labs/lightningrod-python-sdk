@@ -5,21 +5,21 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.create_session_request import CreateSessionRequest
+from ...models.create_training_job_request import CreateTrainingJobRequest
 from ...models.http_validation_error import HTTPValidationError
-from ...models.session_response import SessionResponse
+from ...models.training_job import TrainingJob
 from ...types import Response
 
 
 def _get_kwargs(
     *,
-    body: CreateSessionRequest,
+    body: CreateTrainingJobRequest,
 ) -> dict[str, Any]:
     headers: dict[str, Any] = {}
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/pipeline-assistant/sessions",
+        "url": "/training-jobs",
     }
 
     _kwargs["json"] = body.to_dict()
@@ -32,9 +32,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> HTTPValidationError | SessionResponse | None:
+) -> HTTPValidationError | TrainingJob | None:
     if response.status_code == 201:
-        response_201 = SessionResponse.from_dict(response.json())
+        response_201 = TrainingJob.from_dict(response.json())
 
         return response_201
 
@@ -51,7 +51,7 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[HTTPValidationError | SessionResponse]:
+) -> Response[HTTPValidationError | TrainingJob]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -63,21 +63,21 @@ def _build_response(
 def sync_detailed(
     *,
     client: AuthenticatedClient,
-    body: CreateSessionRequest,
-) -> Response[HTTPValidationError | SessionResponse]:
-    """Create Session
+    body: CreateTrainingJobRequest,
+) -> Response[HTTPValidationError | TrainingJob]:
+    """Create Training Job
 
-     Create a new pipeline assistant session
+     Create a new training job
 
     Args:
-        body (CreateSessionRequest): Request to create a new assistant session.
+        body (CreateTrainingJobRequest):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | SessionResponse]
+        Response[HTTPValidationError | TrainingJob]
     """
 
     kwargs = _get_kwargs(
@@ -94,21 +94,21 @@ def sync_detailed(
 def sync(
     *,
     client: AuthenticatedClient,
-    body: CreateSessionRequest,
-) -> HTTPValidationError | SessionResponse | None:
-    """Create Session
+    body: CreateTrainingJobRequest,
+) -> HTTPValidationError | TrainingJob | None:
+    """Create Training Job
 
-     Create a new pipeline assistant session
+     Create a new training job
 
     Args:
-        body (CreateSessionRequest): Request to create a new assistant session.
+        body (CreateTrainingJobRequest):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | SessionResponse
+        HTTPValidationError | TrainingJob
     """
 
     return sync_detailed(
@@ -120,21 +120,21 @@ def sync(
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
-    body: CreateSessionRequest,
-) -> Response[HTTPValidationError | SessionResponse]:
-    """Create Session
+    body: CreateTrainingJobRequest,
+) -> Response[HTTPValidationError | TrainingJob]:
+    """Create Training Job
 
-     Create a new pipeline assistant session
+     Create a new training job
 
     Args:
-        body (CreateSessionRequest): Request to create a new assistant session.
+        body (CreateTrainingJobRequest):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | SessionResponse]
+        Response[HTTPValidationError | TrainingJob]
     """
 
     kwargs = _get_kwargs(
@@ -149,21 +149,21 @@ async def asyncio_detailed(
 async def asyncio(
     *,
     client: AuthenticatedClient,
-    body: CreateSessionRequest,
-) -> HTTPValidationError | SessionResponse | None:
-    """Create Session
+    body: CreateTrainingJobRequest,
+) -> HTTPValidationError | TrainingJob | None:
+    """Create Training Job
 
-     Create a new pipeline assistant session
+     Create a new training job
 
     Args:
-        body (CreateSessionRequest): Request to create a new assistant session.
+        body (CreateTrainingJobRequest):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | SessionResponse
+        HTTPValidationError | TrainingJob
     """
 
     return (

@@ -1,44 +1,50 @@
 from http import HTTPStatus
 from typing import Any
-from urllib.parse import quote
 
 import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.http_validation_error import HTTPValidationError
-from ...models.message_response import MessageResponse
-from ...models.send_message_request import SendMessageRequest
-from ...types import Response
+from ...models.training_job_list_response import TrainingJobListResponse
+from ...types import UNSET, Response, Unset
 
 
 def _get_kwargs(
-    session_id: str,
     *,
-    body: SendMessageRequest,
+    page: int | Unset = 1,
+    limit: int | Unset = 10,
+    status: None | str | Unset = UNSET,
 ) -> dict[str, Any]:
-    headers: dict[str, Any] = {}
+    params: dict[str, Any] = {}
+
+    params["page"] = page
+
+    params["limit"] = limit
+
+    json_status: None | str | Unset
+    if isinstance(status, Unset):
+        json_status = UNSET
+    else:
+        json_status = status
+    params["status"] = json_status
+
+    params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
 
     _kwargs: dict[str, Any] = {
-        "method": "post",
-        "url": "/pipeline-assistant/sessions/{session_id}/messages".format(
-            session_id=quote(str(session_id), safe=""),
-        ),
+        "method": "get",
+        "url": "/training-jobs",
+        "params": params,
     }
 
-    _kwargs["json"] = body.to_dict()
-
-    headers["Content-Type"] = "application/json"
-
-    _kwargs["headers"] = headers
     return _kwargs
 
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> HTTPValidationError | MessageResponse | None:
+) -> HTTPValidationError | TrainingJobListResponse | None:
     if response.status_code == 200:
-        response_200 = MessageResponse.from_dict(response.json())
+        response_200 = TrainingJobListResponse.from_dict(response.json())
 
         return response_200
 
@@ -55,7 +61,7 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[HTTPValidationError | MessageResponse]:
+) -> Response[HTTPValidationError | TrainingJobListResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -65,30 +71,33 @@ def _build_response(
 
 
 def sync_detailed(
-    session_id: str,
     *,
     client: AuthenticatedClient,
-    body: SendMessageRequest,
-) -> Response[HTTPValidationError | MessageResponse]:
-    """Send Message
+    page: int | Unset = 1,
+    limit: int | Unset = 10,
+    status: None | str | Unset = UNSET,
+) -> Response[HTTPValidationError | TrainingJobListResponse]:
+    """List Training Jobs
 
-     Send a message to the assistant
+     List training jobs
 
     Args:
-        session_id (str):
-        body (SendMessageRequest): Request to send a message to an assistant session.
+        page (int | Unset):  Default: 1.
+        limit (int | Unset):  Default: 10.
+        status (None | str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | MessageResponse]
+        Response[HTTPValidationError | TrainingJobListResponse]
     """
 
     kwargs = _get_kwargs(
-        session_id=session_id,
-        body=body,
+        page=page,
+        limit=limit,
+        status=status,
     )
 
     response = client.get_httpx_client().request(
@@ -99,59 +108,65 @@ def sync_detailed(
 
 
 def sync(
-    session_id: str,
     *,
     client: AuthenticatedClient,
-    body: SendMessageRequest,
-) -> HTTPValidationError | MessageResponse | None:
-    """Send Message
+    page: int | Unset = 1,
+    limit: int | Unset = 10,
+    status: None | str | Unset = UNSET,
+) -> HTTPValidationError | TrainingJobListResponse | None:
+    """List Training Jobs
 
-     Send a message to the assistant
+     List training jobs
 
     Args:
-        session_id (str):
-        body (SendMessageRequest): Request to send a message to an assistant session.
+        page (int | Unset):  Default: 1.
+        limit (int | Unset):  Default: 10.
+        status (None | str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | MessageResponse
+        HTTPValidationError | TrainingJobListResponse
     """
 
     return sync_detailed(
-        session_id=session_id,
         client=client,
-        body=body,
+        page=page,
+        limit=limit,
+        status=status,
     ).parsed
 
 
 async def asyncio_detailed(
-    session_id: str,
     *,
     client: AuthenticatedClient,
-    body: SendMessageRequest,
-) -> Response[HTTPValidationError | MessageResponse]:
-    """Send Message
+    page: int | Unset = 1,
+    limit: int | Unset = 10,
+    status: None | str | Unset = UNSET,
+) -> Response[HTTPValidationError | TrainingJobListResponse]:
+    """List Training Jobs
 
-     Send a message to the assistant
+     List training jobs
 
     Args:
-        session_id (str):
-        body (SendMessageRequest): Request to send a message to an assistant session.
+        page (int | Unset):  Default: 1.
+        limit (int | Unset):  Default: 10.
+        status (None | str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | MessageResponse]
+        Response[HTTPValidationError | TrainingJobListResponse]
     """
 
     kwargs = _get_kwargs(
-        session_id=session_id,
-        body=body,
+        page=page,
+        limit=limit,
+        status=status,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -160,31 +175,34 @@ async def asyncio_detailed(
 
 
 async def asyncio(
-    session_id: str,
     *,
     client: AuthenticatedClient,
-    body: SendMessageRequest,
-) -> HTTPValidationError | MessageResponse | None:
-    """Send Message
+    page: int | Unset = 1,
+    limit: int | Unset = 10,
+    status: None | str | Unset = UNSET,
+) -> HTTPValidationError | TrainingJobListResponse | None:
+    """List Training Jobs
 
-     Send a message to the assistant
+     List training jobs
 
     Args:
-        session_id (str):
-        body (SendMessageRequest): Request to send a message to an assistant session.
+        page (int | Unset):  Default: 1.
+        limit (int | Unset):  Default: 10.
+        status (None | str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | MessageResponse
+        HTTPValidationError | TrainingJobListResponse
     """
 
     return (
         await asyncio_detailed(
-            session_id=session_id,
             client=client,
-            body=body,
+            page=page,
+            limit=limit,
+            status=status,
         )
     ).parsed
