@@ -10,7 +10,7 @@ from lightningrod import preprocessing, utils
 from lightningrod.utils.sample import create_sample
 from lightningrod.utils.models import open_router_model
 from lightningrod import preprocessing, training, utils
-from lightningrod.training import to_messages
+from lightningrod.training import filter_and_split
 from lightningrod._generated.models import (
     TransformJob,
     TransformJobStatus,
@@ -92,7 +92,7 @@ __all__ = [
     "Rollout",
     "RolloutScorer",
     "RolloutGenerator",
-    "to_messages",
+    "filter_and_split",
     "Sample",
     "SampleMeta",
     "Seed",
