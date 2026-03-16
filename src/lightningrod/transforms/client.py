@@ -81,11 +81,11 @@ class TransformsClient:
         # Save the warning message before polling overwrites the job object
         warning_message = job.warning_message if (not isinstance(job.warning_message, Unset) and job.warning_message is not None) else None
 
-        def poll():
+        def poll() -> tuple[PipelineMetricsResponse, TransformJob]:
             nonlocal job
             job = self.jobs.get(job.id)
             metrics = self.jobs.get_metrics(job.id)
-            return metrics, job, job.status == TransformJobStatus.RUNNING
+            return metrics, job
 
         try:
             run_live_display(poll, poll_interval=15, warning_message=warning_message)

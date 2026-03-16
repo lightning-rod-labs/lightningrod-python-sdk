@@ -7,7 +7,8 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from lightningrod._generated.models import EvalJob, TransformJob
+from lightningrod._generated.models import EvalJob, PipelineMetricsResponse, TransformJob
+from lightningrod._generated.models.transform_job_status import TransformJobStatus
 from lightningrod._generated.models.eval_job_status import EvalJobStatus
 from lightningrod._generated.models.training_job import TrainingJob
 from lightningrod._generated.models.training_job_status import TrainingJobStatus
@@ -61,13 +62,21 @@ def _build_transform_cost_lines(job: TransformJob) -> list[RenderableType]:
     return lines
 
 def build_live_display(
-    metrics: Any = None,
-    job: Any = None,
+    metrics: Optional[PipelineMetricsResponse] = None,
+    job: Optional[TransformJob] = None,
 ) -> RenderableType:
     """Build the live display renderable for the polling loop."""
     renderables: list[RenderableType] = []
 
-    renderables.append(_safe_markup("[bold bright_blue]>> Pipeline Running[/bold bright_blue]"))
+    status_label = {
+        TransformJobStatus.RUNNING: ("[bold bright_blue]>> Pipeline Running[/bold bright_blue]", "bright_blue"),
+        TransformJobStatus.COMPLETED: ("[bold bright_green]>> Pipeline Completed[/bold bright_green]", "bright_green"),
+        TransformJobStatus.FAILED: ("[bold bright_red]>> Pipeline Failed[/bold bright_red]", "bright_red"),
+        TransformJobStatus.CANCELLED: ("[bold yellow]>> Pipeline Cancelled[/bold yellow]", "yellow"),
+    }
+    status = job.status if job is not None else TransformJobStatus.RUNNING
+    label, border = status_label.get(status, ("[bold bright_blue]>> Pipeline[/bold bright_blue]", "bright_blue"))
+    renderables.append(_safe_markup(label))
     renderables.append(Text(""))
 
     # Cost summary from job.usage
@@ -81,46 +90,65 @@ def build_live_display(
         renderables.append(Text("Waiting for metrics...", style="dim italic"))
         return Panel(
             Group(*renderables),
-            border_style="bright_blue",
+            border_style=border,
             padding=(1, 2),
         )
 
-    # Per-step table
+    pipeline_summary_by_index: dict[int, Any] = {}
+    has_rejection_reasons = False
+    if job is not None and not isinstance(job.usage, Unset) and job.usage is not None:
+        summary = job.usage.pipeline_summary
+        if not isinstance(summary, Unset) and summary is not None:
+            for ps in summary:
+                pipeline_summary_by_index[ps.step_index] = ps
+                if not isinstance(ps.rejection_reasons, Unset) and ps.rejection_reasons is not None and ps.rejection_reasons.additional_properties:
+                    has_rejection_reasons = True
+
     table = Table(show_header=True, header_style="bold cyan", expand=True)
-    table.add_column("Step", style="bold", no_wrap=True)
+    table.add_column("Step", style="bold")
     table.add_column("Progress", width=20)
     table.add_column("In", justify="right")
     table.add_column("Out", justify="right")
     table.add_column("Rejected", justify="right")
     table.add_column("Errors", justify="right")
+    if has_rejection_reasons:
+        table.add_column("Rejection Reasons")
     table.add_column("Duration", justify="right")
 
     for step in sorted(metrics.steps, key=lambda s: s.step_index):
         if step.progress >= 1.0:
-            status = Text("Complete", style="bold bright_green")
+            step_status = Text("Complete", style="bold bright_green")
         elif step.progress > 0:
-            status = Text("In progress", style="bold bright_yellow")
+            step_status = Text("In progress", style="bold bright_yellow")
         else:
-            status = Text("Pending", style="dim")
+            step_status = Text("Pending", style="dim")
 
         rejected_style = "bright_red" if step.rejected_count > 0 else "dim"
         error_style = "bold bright_red" if step.error_count > 0 else "dim"
 
-        table.add_row(
+        row_cells: list[Any] = [
             step.transform_name,
-            status,
+            step_status,
             str(step.input_rows),
             str(step.output_rows),
             Text(str(step.rejected_count), style=rejected_style),
             Text(str(step.error_count), style=error_style),
-            _format_duration(step.duration_seconds),
-        )
+        ]
+        if has_rejection_reasons:
+            ps = pipeline_summary_by_index.get(step.step_index)
+            if ps and not isinstance(ps.rejection_reasons, Unset) and ps.rejection_reasons is not None and ps.rejection_reasons.additional_properties:
+                reasons_str = ", ".join(f"{k} ({v})" for k, v in sorted(ps.rejection_reasons.additional_properties.items(), key=lambda x: -x[1]))
+                row_cells.append(Text(reasons_str, style="dim"))
+            else:
+                row_cells.append(Text("-", style="dim"))
+        row_cells.append(_format_duration(step.duration_seconds))
+        table.add_row(*row_cells)
 
     renderables.append(table)
 
     return Panel(
         Group(*renderables),
-        border_style="bright_blue",
+        border_style=border,
         padding=(1, 2),
     )
 
@@ -376,7 +404,7 @@ def _is_colab_notebook() -> bool:
 
 
 def run_live_display(
-    poll_callback: Any,
+    poll_callback: Callable[[], tuple[PipelineMetricsResponse, TransformJob]],
     poll_interval: float = 15,
     warning_message: Optional[str] = None,
 ) -> None:
@@ -395,28 +423,31 @@ def run_live_display(
 
     if _is_notebook():
         from IPython.display import clear_output
-        metrics, job, is_running = poll_callback()
-        while is_running:
+        metrics, job = poll_callback()
+        while job.status == TransformJobStatus.RUNNING:
             clear_output(wait=True)
             if warning_message:
                 display_warning(warning_message)
             console.print(build_live_display(metrics=metrics, job=job))
             time.sleep(poll_interval)
-            metrics, job, is_running = poll_callback()
+            metrics, job = poll_callback()
+        clear_output(wait=True)
+        if warning_message:
+            display_warning(warning_message)
+        console.print(build_live_display(metrics=metrics, job=job))
     else:
         from rich.live import Live
         with Live(
             build_live_display(metrics=None, job=None),
             console=console,
             refresh_per_second=1,
-            transient=True,
+            transient=False,
         ) as live:
-            metrics, job, is_running = poll_callback()
-            while is_running:
+            metrics, job = poll_callback()
+            while job.status == TransformJobStatus.RUNNING:
                 live.update(build_live_display(metrics=metrics, job=job))
                 time.sleep(poll_interval)
-                metrics, job, is_running = poll_callback()
-            # Final update
+                metrics, job = poll_callback()
             live.update(build_live_display(metrics=metrics, job=job))
 
 

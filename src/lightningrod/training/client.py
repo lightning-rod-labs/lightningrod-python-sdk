@@ -7,6 +7,7 @@ from lightningrod._generated.api.training_jobs import (
     list_training_jobs_training_jobs_get,
 )
 from lightningrod._generated.client import AuthenticatedClient
+from lightningrod._generated.models import TrainingConfig
 from lightningrod._generated.models.create_training_job_request import CreateTrainingJobRequest
 from lightningrod._generated.models.estimate_training_cost_request import (
     EstimateTrainingCostRequest,
@@ -36,8 +37,6 @@ class TrainingConfig:
     learning_rate: float | None = None
     adam_beta1: float | None = None
     adam_beta2: float | None = None
-    save_every: int | None = None
-    resume_from: str | None = None
     num_rollouts: int | None = None
     max_response_length: int | None = None
     start_idx: int | None = None
@@ -67,8 +66,6 @@ def _build_config(
         learning_rate=config.learning_rate if config.learning_rate is not None else UNSET,
         adam_beta1=config.adam_beta1 if config.adam_beta1 is not None else UNSET,
         adam_beta2=config.adam_beta2 if config.adam_beta2 is not None else UNSET,
-        save_every=config.save_every if config.save_every is not None else UNSET,
-        resume_from=config.resume_from if config.resume_from is not None else UNSET,
         num_rollouts=config.num_rollouts if config.num_rollouts is not None else UNSET,
         max_response_length=config.max_response_length if config.max_response_length is not None else UNSET,
         start_idx=config.start_idx if config.start_idx is not None else UNSET,
