@@ -52,3 +52,25 @@ class LightningRod:
         self.evals: EvalsClient = EvalsClient(self._generated_client)
         self.files: FilesClient = FilesClient(self._generated_client)
         self.filesets: FileSetsClient = FileSetsClient(self._generated_client, self.files)
+
+    def predict(
+        self,
+        model_id: str,
+        prompt: str,
+        system_prompt: str = "Answer as a probability between 0 and 1 between <answer></answer> tags.",
+        **kwargs,
+    ) -> str:
+        try:
+            from openai import OpenAI
+        except ImportError:
+            raise ImportError("Run `pip install openai` to use lr.predict().")
+        client = OpenAI(api_key=self.api_key, base_url=f"{self.base_url}/openai")
+        response = client.chat.completions.create(
+            model=model_id,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt},
+            ],
+            **kwargs,
+        )
+        return response.choices[0].message.content
