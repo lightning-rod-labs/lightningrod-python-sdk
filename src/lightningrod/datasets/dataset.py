@@ -2,10 +2,10 @@ from typing import List, Optional, Dict, Any, TYPE_CHECKING
 import asyncio
 
 from lightningrod._generated.models.sample import Sample
-from lightningrod.training.samples import to_record, AnswerType
 
 if TYPE_CHECKING:
     from lightningrod.datasets.client import DatasetSamplesClient
+    from lightningrod.training.samples import AnswerType
 
 class SampleDataset:
     """
@@ -69,17 +69,14 @@ class SampleDataset:
 
     def preview_prompts(
         self,
-        answer_type: AnswerType,
-        template: Optional[str] = None,
         include_assistant: bool = False,
         n: int = 3,
     ) -> List[Dict[str, Any]]:
         from lightningrod.training.samples import to_messages
 
-        t = template if template is not None else self.prompt_template
         samples_list = self.samples()[:n]
         return [
-            to_messages(s, template=t, answer_type=answer_type, include_assistant=include_assistant)
+            to_messages(s, template=self.prompt_template, include_assistant=include_assistant)
             for s in samples_list
         ]
 
@@ -135,7 +132,7 @@ class SampleDataset:
         """
         return self.samples()
 
-    def flattened(self, answer_type: AnswerType) -> List[Dict[str, Any]]:
+    def flattened(self) -> List[Dict[str, Any]]:
         """
         Convert all samples to a list of dictionaries.
         Automatically downloads the samples if they haven't been downloaded yet.
@@ -150,11 +147,13 @@ class SampleDataset:
             >>> lr = LightningRod(api_key="your-api-key")
             >>> config = QuestionPipeline(...)
             >>> dataset = lr.transforms.run(config)
-            >>> rows = dataset.flattened(answer_type)
+            >>> rows = dataset.flattened()
             >>> import pandas as pd
             >>> df = pd.DataFrame(rows)
         """
-        return [to_record(s, answer_type) for s in self.samples()]
+        from lightningrod.training.samples import to_record
+
+        return [to_record(s) for s in self.samples()]
 
     def valid_count(self) -> int:
         """
@@ -245,7 +244,7 @@ class AsyncDataset:
         """
         return await asyncio.to_thread(self._sync_dataset.to_samples)
 
-    async def flattened(self, answer_type: AnswerType) -> List[Dict[str, Any]]:
+    async def flattened(self, answer_type: "AnswerType") -> List[Dict[str, Any]]:
         """
         Convert all samples to a list of dictionaries.
         Automatically downloads the samples if they haven't been downloaded yet.

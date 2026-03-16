@@ -203,6 +203,17 @@ def sample_label(sample: Sample, answer_type: AnswerType) -> str:
         return _label_to_text(sample)
     raise ValueError(f"Unsupported answer type: {type(answer_type).__name__}")
 
+def _answer_type_from_str(answer_type: str) -> AnswerType:
+    if answer_type == "binary":
+        return BinaryAnswerType()
+    elif answer_type == "continuous":
+        return ContinuousAnswerType()
+    elif answer_type == "multiple_choice":
+        return MultipleChoiceAnswerType()
+    elif answer_type == "free_response":
+        return FreeResponseAnswerType()
+    raise ValueError(f"Unsupported answer type: {answer_type}")
+
 def _default_leakage_keys() -> list[Callable[[Sample], str | None]]:
     def get_date_close(sample: Sample) -> str | None:
         if not sample.question:
@@ -358,10 +369,7 @@ def deduplicate_samples(
 
     return result
 
-def to_record(
-    sample: Sample,
-    answer_type: AnswerType,
-) -> dict[str, Any]:
+def to_record(sample: Sample) -> dict[str, Any]:
     """Convert a sample to a flat dict for DataFrame inspection or training.
 
     Uses short, stable field names (question_text, label, prompt, context, etc.).
@@ -369,13 +377,10 @@ def to_record(
 
     Args:
         sample: A LightningRod sample.
-        answer_type: Answer type for label formatting and answer instructions.
         training: If True, add prompt as chat messages; if False, include raw prompt.
-        include_assistant: When training=True, if True append assistant message with
-            the correct answer (for SFT). Set False for GRPO or when label is used separately.
 
     Returns:
-        Flat dict suitable for pd.DataFrame([to_record(s, ...) for s in samples]).
+        Flat dict suitable for pd.DataFrame([to_record(s) for s in samples]).
     """
     row: TrainingSample = {
         "sample_id": sample.id,
@@ -396,8 +401,9 @@ def to_record(
                 row["question_text"] = question_text
 
     if sample.label and not isinstance(sample.label, Unset):
+        answer_type = _answer_type_from_str(sample.label.answer_type)
         row["label"] = sample_label(sample, answer_type)
-        row["answer_type"] = answer_type.answer_type.lower()
+        row["answer_type"] = sample.label.answer_type.lower()
         row["label_confidence"] = sample.label.label_confidence
         if sample.label.resolution_date is not None and not isinstance(sample.label.resolution_date, Unset):
             row["resolution_date"] = sample.label.resolution_date.isoformat()

@@ -23,7 +23,6 @@ class EvalsClient:
         self,
         model_id: str,
         dataset: "SampleDataset",
-        *,
         benchmark_model_id: str | None = None,
         temperature: float = 0.0,
     ) -> EvalJob:
@@ -63,9 +62,7 @@ class EvalsClient:
     def run(
         self,
         model_id: str,
-        dataset: "SampleDataset | SampleDatasetConfig",
-        *,
-        prompt_template: str | None = None,
+        dataset: "SampleDataset",
         benchmark_model_id: str | None = None,
         temperature: float = 0.0,
         poll_interval: float = 15,
@@ -73,7 +70,6 @@ class EvalsClient:
         job = self.create(
             model_id=model_id,
             dataset=dataset,
-            prompt_template=prompt_template,
             benchmark_model_id=benchmark_model_id,
             temperature=temperature,
         )

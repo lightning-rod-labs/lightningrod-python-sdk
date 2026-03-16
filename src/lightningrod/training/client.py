@@ -82,12 +82,10 @@ class TrainingClient:
     def create(
         self,
         config: TrainingConfig,
-        *,
         dataset: "SampleDataset",
-        prompt_template: str | None = None,
         name: str | None = None,
     ) -> TrainingJob:
-        full_config = _build_config(config, dataset, prompt_template)
+        full_config = _build_config(config, dataset)
         body = CreateTrainingJobRequest(
             config=full_config,
             name=name,
@@ -101,11 +99,9 @@ class TrainingClient:
     def estimate_cost(
         self,
         config: TrainingConfig,
-        *,
         dataset: "SampleDataset",
-        prompt_template: str | None = None,
     ) -> EstimateTrainingCostResponse:
-        full_config = _build_config(config, dataset, prompt_template)
+        full_config = _build_config(config, dataset)
         body = EstimateTrainingCostRequest(config=full_config)
         response = estimate_training_cost_training_jobs_cost_estimation_post.sync_detailed(
             client=self._client,
@@ -138,16 +134,13 @@ class TrainingClient:
     def run(
         self,
         config: TrainingConfig,
-        *,
         dataset: "SampleDataset",
-        prompt_template: str | None = None,
         name: str | None = None,
         poll_interval: float = 15,
     ) -> TrainingJob:
         job = self.create(
             config=config,
             dataset=dataset,
-            prompt_template=prompt_template,
             name=name,
         )
 
