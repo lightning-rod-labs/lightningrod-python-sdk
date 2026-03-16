@@ -7,7 +7,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from lightningrod._generated.models import EvalJob
+from lightningrod._generated.models import EvalJob, TransformJob
 from lightningrod._generated.models.eval_job_status import EvalJobStatus
 from lightningrod._generated.models.training_job import TrainingJob
 from lightningrod._generated.models.training_job_status import TrainingJobStatus
@@ -44,6 +44,22 @@ def _build_cost_lines(job: TrainingJob | EvalJob) -> list[RenderableType]:
         lines.append(_safe_markup(f"  [bold]Cost:[/bold]  ${job.cost_dollars:.2f}"))
     return lines
 
+def _build_transform_cost_lines(job: TransformJob) -> list[RenderableType]:
+    if not _is_set(job.usage):
+        return []
+    usage = job.usage
+    lines: list[RenderableType] = []
+
+    # Total cost
+    if _is_set(usage.current_cost_dollars):
+        lines.append(_safe_markup(f"  [bold]Total cost:[/bold] [bright_green]${usage.current_cost_dollars:.2f}[/bright_green]"))
+    if _is_set(usage.max_cost_dollars):
+        lines.append(_safe_markup(f"  [bold]Budget:[/bold]     ${usage.max_cost_dollars:.2f}"))
+    if _is_set(usage.estimated_cost_dollars):
+        lines.append(_safe_markup(f"  [bold]Estimated:[/bold]  ${usage.estimated_cost_dollars:.2f}"))
+
+    return lines
+
 def build_live_display(
     metrics: Any = None,
     job: Any = None,
@@ -56,7 +72,7 @@ def build_live_display(
 
     # Cost summary from job.usage
     if job is not None:
-        cost_lines = _build_cost_lines(job)
+        cost_lines = _build_transform_cost_lines(job)
         if cost_lines:
             renderables.extend(cost_lines)
             renderables.append(Text(""))
@@ -438,7 +454,7 @@ def display_error(message: str, title: str = "Error", job: Any = None) -> None:
         renderables.append(_safe_markup(f"[bold]{message}[/bold]"))
 
     if job is not None:
-        cost_lines = _build_cost_lines(job)
+        cost_lines = _build_transform_cost_lines(job) if isinstance(job, TransformJob) else _build_cost_lines(job)
         if cost_lines:
             renderables.append(Text(""))
             renderables.extend(cost_lines)
@@ -455,7 +471,7 @@ def display_warning(message: str, title: str = "Warning", job: Any = None) -> No
     renderables.append(_safe_markup(message))
 
     if job is not None:
-        cost_lines = _build_cost_lines(job)
+        cost_lines = _build_transform_cost_lines(job) if isinstance(job, TransformJob) else _build_cost_lines(job)
         if cost_lines:
             renderables.append(Text(""))
             renderables.extend(cost_lines)
