@@ -12,7 +12,6 @@ from ..models.eval_job_status import EvalJobStatus
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.eval_config import EvalConfig
     from ..models.eval_job_metrics_type_0 import EvalJobMetricsType0
 
 
@@ -25,26 +24,24 @@ class EvalJob:
     Attributes:
         id (str):
         organization_id (str):
-        config (EvalConfig):
+        model_id (str):
         status (EvalJobStatus):
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
-        cost_dollars (float | None | Unset):
-        current_step (int | None | Unset):
-        total_steps (int | None | Unset):
+        dataset_hf_repo (None | str | Unset):
+        benchmark_model_id (None | str | Unset):
         metrics (EvalJobMetricsType0 | None | Unset):
         error_message (None | str | Unset):
     """
 
     id: str
     organization_id: str
-    config: EvalConfig
+    model_id: str
     status: EvalJobStatus
     created_at: datetime.datetime
     updated_at: datetime.datetime
-    cost_dollars: float | None | Unset = UNSET
-    current_step: int | None | Unset = UNSET
-    total_steps: int | None | Unset = UNSET
+    dataset_hf_repo: None | str | Unset = UNSET
+    benchmark_model_id: None | str | Unset = UNSET
     metrics: EvalJobMetricsType0 | None | Unset = UNSET
     error_message: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -56,7 +53,7 @@ class EvalJob:
 
         organization_id = self.organization_id
 
-        config = self.config.to_dict()
+        model_id = self.model_id
 
         status = self.status.value
 
@@ -64,23 +61,17 @@ class EvalJob:
 
         updated_at = self.updated_at.isoformat()
 
-        cost_dollars: float | None | Unset
-        if isinstance(self.cost_dollars, Unset):
-            cost_dollars = UNSET
+        dataset_hf_repo: None | str | Unset
+        if isinstance(self.dataset_hf_repo, Unset):
+            dataset_hf_repo = UNSET
         else:
-            cost_dollars = self.cost_dollars
+            dataset_hf_repo = self.dataset_hf_repo
 
-        current_step: int | None | Unset
-        if isinstance(self.current_step, Unset):
-            current_step = UNSET
+        benchmark_model_id: None | str | Unset
+        if isinstance(self.benchmark_model_id, Unset):
+            benchmark_model_id = UNSET
         else:
-            current_step = self.current_step
-
-        total_steps: int | None | Unset
-        if isinstance(self.total_steps, Unset):
-            total_steps = UNSET
-        else:
-            total_steps = self.total_steps
+            benchmark_model_id = self.benchmark_model_id
 
         metrics: dict[str, Any] | None | Unset
         if isinstance(self.metrics, Unset):
@@ -102,18 +93,16 @@ class EvalJob:
             {
                 "id": id,
                 "organization_id": organization_id,
-                "config": config,
+                "model_id": model_id,
                 "status": status,
                 "created_at": created_at,
                 "updated_at": updated_at,
             }
         )
-        if cost_dollars is not UNSET:
-            field_dict["cost_dollars"] = cost_dollars
-        if current_step is not UNSET:
-            field_dict["current_step"] = current_step
-        if total_steps is not UNSET:
-            field_dict["total_steps"] = total_steps
+        if dataset_hf_repo is not UNSET:
+            field_dict["dataset_hf_repo"] = dataset_hf_repo
+        if benchmark_model_id is not UNSET:
+            field_dict["benchmark_model_id"] = benchmark_model_id
         if metrics is not UNSET:
             field_dict["metrics"] = metrics
         if error_message is not UNSET:
@@ -123,7 +112,6 @@ class EvalJob:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.eval_config import EvalConfig
         from ..models.eval_job_metrics_type_0 import EvalJobMetricsType0
 
         d = dict(src_dict)
@@ -131,7 +119,7 @@ class EvalJob:
 
         organization_id = d.pop("organization_id")
 
-        config = EvalConfig.from_dict(d.pop("config"))
+        model_id = d.pop("model_id")
 
         status = EvalJobStatus(d.pop("status"))
 
@@ -139,32 +127,23 @@ class EvalJob:
 
         updated_at = isoparse(d.pop("updated_at"))
 
-        def _parse_cost_dollars(data: object) -> float | None | Unset:
+        def _parse_dataset_hf_repo(data: object) -> None | str | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
-            return cast(float | None | Unset, data)
+            return cast(None | str | Unset, data)
 
-        cost_dollars = _parse_cost_dollars(d.pop("cost_dollars", UNSET))
+        dataset_hf_repo = _parse_dataset_hf_repo(d.pop("dataset_hf_repo", UNSET))
 
-        def _parse_current_step(data: object) -> int | None | Unset:
+        def _parse_benchmark_model_id(data: object) -> None | str | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
-            return cast(int | None | Unset, data)
+            return cast(None | str | Unset, data)
 
-        current_step = _parse_current_step(d.pop("current_step", UNSET))
-
-        def _parse_total_steps(data: object) -> int | None | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(int | None | Unset, data)
-
-        total_steps = _parse_total_steps(d.pop("total_steps", UNSET))
+        benchmark_model_id = _parse_benchmark_model_id(d.pop("benchmark_model_id", UNSET))
 
         def _parse_metrics(data: object) -> EvalJobMetricsType0 | None | Unset:
             if data is None:
@@ -195,13 +174,12 @@ class EvalJob:
         eval_job = cls(
             id=id,
             organization_id=organization_id,
-            config=config,
+            model_id=model_id,
             status=status,
             created_at=created_at,
             updated_at=updated_at,
-            cost_dollars=cost_dollars,
-            current_step=current_step,
-            total_steps=total_steps,
+            dataset_hf_repo=dataset_hf_repo,
+            benchmark_model_id=benchmark_model_id,
             metrics=metrics,
             error_message=error_message,
         )

@@ -855,316 +855,6 @@
         ]
       }
     },
-    "/pipeline-assistant/sessions": {
-      "post": {
-        "tags": [
-          "Pipeline Assistant"
-        ],
-        "summary": "Create Session",
-        "description": "Create a new pipeline assistant session",
-        "operationId": "create_session_pipeline_assistant_sessions_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateSessionRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/lightningrod_api__api__public__v1__pipeline_assistant__models__SessionResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/pipeline-assistant/sessions/{session_id}/messages": {
-      "post": {
-        "tags": [
-          "Pipeline Assistant"
-        ],
-        "summary": "Send Message",
-        "description": "Send a message to the assistant",
-        "operationId": "send_message_pipeline_assistant_sessions__session_id__messages_post",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "session_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Session Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/lightningrod_api__api__public__v1__pipeline_assistant__models__SendMessageRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/lightningrod_api__api__public__v1__pipeline_assistant__models__MessageResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/pipeline-assistant/sessions/{session_id}": {
-      "get": {
-        "tags": [
-          "Pipeline Assistant"
-        ],
-        "summary": "Get Session",
-        "description": "Get the current state of a session",
-        "operationId": "get_session_pipeline_assistant_sessions__session_id__get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "session_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Session Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/lightningrod_api__api__public__v1__pipeline_assistant__models__SessionResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Pipeline Assistant"
-        ],
-        "summary": "Delete Session",
-        "description": "Delete a session",
-        "operationId": "delete_session_pipeline_assistant_sessions__session_id__delete",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "session_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Session Id"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/onboarding-assistant/sessions": {
-      "post": {
-        "tags": [
-          "Onboarding Assistant"
-        ],
-        "summary": "Create Session",
-        "description": "Create an onboarding session",
-        "operationId": "create_session_onboarding_assistant_sessions_post",
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/lightningrod_api__api__public__v1__onboarding_assistant__models__SessionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/onboarding-assistant/sessions/{session_id}/messages": {
-      "post": {
-        "tags": [
-          "Onboarding Assistant"
-        ],
-        "summary": "Send Message",
-        "description": "Send a message to the onboarding assistant",
-        "operationId": "send_message_onboarding_assistant_sessions__session_id__messages_post",
-        "parameters": [
-          {
-            "name": "session_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Session Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/lightningrod_api__api__public__v1__onboarding_assistant__models__SendMessageRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/lightningrod_api__api__public__v1__onboarding_assistant__models__MessageResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/onboarding-assistant/sessions/{session_id}/claim": {
-      "post": {
-        "tags": [
-          "Onboarding Assistant"
-        ],
-        "summary": "Claim Session",
-        "description": "Claim an onboarding session after authentication",
-        "operationId": "claim_session_onboarding_assistant_sessions__session_id__claim_post",
-        "parameters": [
-          {
-            "name": "session_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Session Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/lightningrod_api__api__public__v1__onboarding_assistant__models__SessionResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/training-jobs": {
       "post": {
         "tags": [
@@ -1442,6 +1132,22 @@
           }
         ],
         "parameters": [
+          {
+            "name": "model_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Model Id"
+            }
+          },
           {
             "name": "page",
             "in": "query",
@@ -2523,12 +2229,13 @@
       },
       "CreateEvalJobRequest": {
         "properties": {
-          "dataset": {
-            "$ref": "#/components/schemas/SampleDatasetConfig"
-          },
           "model_id": {
             "type": "string",
             "title": "Model Id"
+          },
+          "dataset_hf_repo": {
+            "type": "string",
+            "title": "Dataset Hf Repo"
           },
           "benchmark_model_id": {
             "anyOf": [
@@ -2549,8 +2256,8 @@
         },
         "type": "object",
         "required": [
-          "dataset",
-          "model_id"
+          "model_id",
+          "dataset_hf_repo"
         ],
         "title": "CreateEvalJobRequest"
       },
@@ -2753,51 +2460,6 @@
           "expires_at"
         ],
         "title": "CreateFileUploadResponse"
-      },
-      "CreateSessionRequest": {
-        "properties": {
-          "goal": {
-            "type": "string",
-            "title": "Goal",
-            "description": "What the user wants to accomplish"
-          },
-          "autonomy_level": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "guided",
-                  "semi_auto",
-                  "autonomous"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Autonomy Level",
-            "description": "Deprecated. Kept for backward compatibility.",
-            "default": "semi_auto"
-          },
-          "model_name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Model Name",
-            "description": "Model to use (e.g., 'anthropic/claude-sonnet-4'). Defaults to configured model."
-          }
-        },
-        "type": "object",
-        "required": [
-          "goal"
-        ],
-        "title": "CreateSessionRequest",
-        "description": "Request to create a new assistant session."
       },
       "CreateTrainingJobRequest": {
         "properties": {
@@ -3152,8 +2814,12 @@
         ],
         "title": "EstimateTrainingCostResponse"
       },
-      "EvalConfig": {
+      "EvalJob": {
         "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
           "organization_id": {
             "type": "string",
             "title": "Organization Id"
@@ -3162,8 +2828,16 @@
             "type": "string",
             "title": "Model Id"
           },
-          "dataset": {
-            "$ref": "#/components/schemas/SampleDatasetConfig"
+          "dataset_hf_repo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Hf Repo"
           },
           "benchmark_model_id": {
             "anyOf": [
@@ -3175,76 +2849,6 @@
               }
             ],
             "title": "Benchmark Model Id"
-          },
-          "temperature": {
-            "type": "number",
-            "title": "Temperature",
-            "default": 0.0
-          },
-          "max_tokens": {
-            "type": "integer",
-            "title": "Max Tokens",
-            "default": 8192
-          },
-          "max_concurrent": {
-            "type": "integer",
-            "title": "Max Concurrent",
-            "default": 50
-          }
-        },
-        "type": "object",
-        "required": [
-          "organization_id",
-          "model_id",
-          "dataset"
-        ],
-        "title": "EvalConfig"
-      },
-      "EvalJob": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "organization_id": {
-            "type": "string",
-            "title": "Organization Id"
-          },
-          "config": {
-            "$ref": "#/components/schemas/EvalConfig"
-          },
-          "cost_dollars": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cost Dollars"
-          },
-          "current_step": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Current Step"
-          },
-          "total_steps": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Total Steps"
           },
           "status": {
             "$ref": "#/components/schemas/EvalJobStatus"
@@ -3287,7 +2891,7 @@
         "required": [
           "id",
           "organization_id",
-          "config",
+          "model_id",
           "status",
           "created_at",
           "updated_at"
@@ -3418,6 +3022,95 @@
           "updated_at"
         ],
         "title": "FileSet"
+      },
+      "FileSetContextGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "FILESET_CONTEXT_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "FILESET_CONTEXT_GENERATOR"
+          },
+          "file_set_id": {
+            "type": "string",
+            "title": "File Set Id",
+            "description": "FileSet ID to query for context"
+          },
+          "metadata_filter_keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Metadata Filter Keys",
+            "description": "Keys from seed's file_metadata for dynamic filtering (e.g., ['ticker'])"
+          },
+          "metadata_filter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata Filter",
+            "description": "Static AIP-160 metadata filter (combined with dynamic via AND)"
+          },
+          "system_instruction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Instruction",
+            "description": "Optional system instruction for the Gemini model"
+          },
+          "query_template": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Query Template",
+            "description": "Template with {question} placeholder; default: raw question text"
+          },
+          "temporal_constraint": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TemporalConstraint"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Filter documents by date relative to seed date. BEFORE (<=) for context without lookahead, AFTER (>) for future docs."
+          },
+          "date_metadata_key": {
+            "type": "string",
+            "title": "Date Metadata Key",
+            "description": "Gemini metadata key storing unix timestamp for temporal filtering",
+            "default": "file_date"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "Gemini model to use for file search",
+            "default": "gemini-3-flash-preview"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_set_id"
+        ],
+        "title": "FileSetContextGenerator",
+        "description": "Configuration for FileSet Context Generator transform."
       },
       "FileSetFile": {
         "properties": {
@@ -3656,6 +3349,123 @@
         ],
         "title": "FileSetQuerySeedGenerator",
         "description": "Configuration for FileSet Query Seed Generator transform."
+      },
+      "FileSetRAGLabeler": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "FILESET_RAG_LABELER",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "FILESET_RAG_LABELER"
+          },
+          "file_set_id": {
+            "type": "string",
+            "title": "File Set Id",
+            "description": "FileSet ID to query for labeling"
+          },
+          "metadata_filter_keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Metadata Filter Keys",
+            "description": "Keys from seed's file_metadata for dynamic filtering (e.g., ['ticker'])"
+          },
+          "metadata_filter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata Filter",
+            "description": "Static AIP-160 metadata filter (combined with dynamic via AND)"
+          },
+          "system_instruction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Instruction",
+            "description": "Optional system instruction for the Gemini RAG query"
+          },
+          "confidence_threshold": {
+            "type": "number",
+            "title": "Confidence Threshold",
+            "description": "Minimum confidence threshold for including questions",
+            "default": 0.9
+          },
+          "answer_type": {
+            "anyOf": [
+              {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BinaryAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MultipleChoiceAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ContinuousAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FreeResponseAnswerType"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "answer_type",
+                  "mapping": {
+                    "BINARY": "#/components/schemas/BinaryAnswerType",
+                    "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
+                    "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer Type",
+            "description": "The type of answer expected, used to guide the labeler"
+          },
+          "temporal_constraint": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TemporalConstraint"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Filter documents by date relative to seed date. AFTER (>) for resolution docs, BEFORE (<=) for historical only."
+          },
+          "date_metadata_key": {
+            "type": "string",
+            "title": "Date Metadata Key",
+            "description": "Gemini metadata key storing unix timestamp for temporal filtering",
+            "default": "file_date"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "Gemini model for RAG query",
+            "default": "gemini-3-flash-preview"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_set_id"
+        ],
+        "title": "FileSetRAGLabeler",
+        "description": "Configuration for FileSet RAG Labeler transform."
       },
       "FileSetSeedGenerator": {
         "properties": {
@@ -4315,73 +4125,6 @@
         ],
         "title": "ListTransformJobsResponse"
       },
-      "Message": {
-        "properties": {
-          "role": {
-            "type": "string",
-            "enum": [
-              "user",
-              "assistant",
-              "tool"
-            ],
-            "title": "Role",
-            "description": "Who sent the message"
-          },
-          "content": {
-            "type": "string",
-            "title": "Content",
-            "description": "The message content"
-          },
-          "tool_call_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Tool Call Id",
-            "description": "ID of the tool call if this is a tool message"
-          },
-          "timestamp": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Timestamp",
-            "description": "When the message was sent"
-          },
-          "structured_question": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/lightningrod_api__api__public__v1__pipeline_assistant__models__StructuredQuestion"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "If present, render as clickable options instead of plain text"
-          },
-          "preview_results": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PreviewResults"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "If present, render preview results in a special UI component"
-          }
-        },
-        "type": "object",
-        "required": [
-          "role",
-          "content",
-          "timestamp"
-        ],
-        "title": "Message",
-        "description": "A message in the conversation."
-      },
       "MetadataFieldDefinition": {
         "properties": {
           "name": {
@@ -4391,7 +4134,7 @@
           },
           "field_type": {
             "$ref": "#/components/schemas/MetadataFieldType",
-            "description": "The data type of the field"
+            "description": "The data type of the field. Boolean-like values should use \"string\" with canonical \"true\"/\"false\" values."
           },
           "required": {
             "type": "boolean",
@@ -4441,7 +4184,7 @@
           },
           "field_type": {
             "$ref": "#/components/schemas/MetadataFieldType",
-            "description": "The data type of the field"
+            "description": "The data type of the field. Boolean-like values should use \"string\" with canonical \"true\"/\"false\" values."
           },
           "required": {
             "type": "boolean",
@@ -5240,174 +4983,6 @@
         "title": "PipelineStepSummary",
         "description": "Summary of a single pipeline step including rejection reasons."
       },
-      "PlanStep": {
-        "properties": {
-          "title": {
-            "type": "string",
-            "title": "Title"
-          },
-          "description": {
-            "type": "string",
-            "title": "Description"
-          },
-          "estimated_output": {
-            "type": "string",
-            "title": "Estimated Output"
-          }
-        },
-        "type": "object",
-        "required": [
-          "title",
-          "description",
-          "estimated_output"
-        ],
-        "title": "PlanStep",
-        "description": "A step in the dataset generation plan."
-      },
-      "PreviewResults": {
-        "properties": {
-          "job_id": {
-            "type": "string",
-            "title": "Job Id",
-            "description": "ID of the preview job"
-          },
-          "status": {
-            "type": "string",
-            "title": "Status",
-            "description": "Status of the preview (completed, failed, etc.)"
-          },
-          "output_dataset_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Output Dataset Id",
-            "description": "ID of output dataset"
-          },
-          "total_samples": {
-            "type": "integer",
-            "title": "Total Samples",
-            "description": "Total number of samples generated",
-            "default": 0
-          },
-          "samples": {
-            "items": {
-              "$ref": "#/components/schemas/PreviewSample"
-            },
-            "type": "array",
-            "title": "Samples",
-            "description": "Sample results"
-          },
-          "notes": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Notes",
-            "description": "Notes or warnings about the preview"
-          }
-        },
-        "type": "object",
-        "required": [
-          "job_id",
-          "status"
-        ],
-        "title": "PreviewResults",
-        "description": "Results from a preview run."
-      },
-      "PreviewSample": {
-        "properties": {
-          "question": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Question",
-            "description": "The generated question text"
-          },
-          "question_type": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Question Type",
-            "description": "Type of question (e.g., binary)"
-          },
-          "label": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Label",
-            "description": "The label/answer if available"
-          },
-          "label_confidence": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Label Confidence",
-            "description": "Confidence in the label"
-          },
-          "prompt_preview": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Prompt Preview",
-            "description": "Preview of the full prompt"
-          },
-          "metadata_keys": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Metadata Keys",
-            "description": "Keys in sample metadata"
-          }
-        },
-        "type": "object",
-        "title": "PreviewSample",
-        "description": "A single sample from a preview run."
-      },
       "Question": {
         "properties": {
           "question_type": {
@@ -5734,12 +5309,16 @@
                     "$ref": "#/components/schemas/WebSearchLabeler"
                   },
                   {
+                    "$ref": "#/components/schemas/FileSetRAGLabeler"
+                  },
+                  {
                     "$ref": "#/components/schemas/MockTransformConfig"
                   }
                 ],
                 "discriminator": {
                   "propertyName": "config_type",
                   "mapping": {
+                    "FILESET_RAG_LABELER": "#/components/schemas/FileSetRAGLabeler",
                     "MOCK": "#/components/schemas/MockTransformConfig",
                     "WEB_SEARCH_LABELER": "#/components/schemas/WebSearchLabeler"
                   }
@@ -5759,6 +5338,9 @@
                   "anyOf": [
                     {
                       "$ref": "#/components/schemas/NewsContextGenerator"
+                    },
+                    {
+                      "$ref": "#/components/schemas/FileSetContextGenerator"
                     },
                     {
                       "$ref": "#/components/schemas/MockTransformConfig"
@@ -6429,10 +6011,20 @@
         ],
         "title": "TemplateQuestionGenerator"
       },
+      "TemporalConstraint": {
+        "type": "string",
+        "enum": [
+          "BEFORE",
+          "AFTER"
+        ],
+        "title": "TemporalConstraint",
+        "description": "Temporal filtering direction relative to the seed document's date.\n\nUses the `file_date` metadata key (unix timestamp int) stored on each\nGemini document by fileset_file_processor.\n\nBEFORE: file_date <= seed_timestamp  (context: no lookahead bias)\nAFTER:  file_date >  seed_timestamp  (labels: find resolutions)"
+      },
       "TrainingConfig": {
         "properties": {
-          "dataset": {
-            "$ref": "#/components/schemas/SampleDatasetConfig"
+          "dataset_hf_repo": {
+            "type": "string",
+            "title": "Dataset Hf Repo"
           },
           "base_model": {
             "type": "string",
@@ -6463,99 +6055,11 @@
               }
             ],
             "title": "Lora Rank"
-          },
-          "learning_rate": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Learning Rate"
-          },
-          "adam_beta1": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Adam Beta1"
-          },
-          "adam_beta2": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Adam Beta2"
-          },
-          "save_every": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Save Every"
-          },
-          "resume_from": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Resume From"
-          },
-          "num_rollouts": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Num Rollouts"
-          },
-          "max_response_length": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Max Response Length"
-          },
-          "start_idx": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Start Idx"
           }
         },
         "type": "object",
         "required": [
-          "dataset",
+          "dataset_hf_repo",
           "base_model",
           "training_steps"
         ],
@@ -6635,16 +6139,17 @@
             ],
             "title": "Total Steps"
           },
-          "cost_dollars": {
+          "usage": {
             "anyOf": [
               {
-                "type": "number"
+                "additionalProperties": true,
+                "type": "object"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Cost Dollars"
+            "title": "Usage"
           },
           "dataset_hf_repo": {
             "anyOf": [
@@ -6952,6 +6457,8 @@
           "FILESET_QUERY_SEED_GENERATOR",
           "TEMPLATE_QUESTION_GENERATOR",
           "ROLLOUT_SCORER",
+          "FILESET_CONTEXT_GENERATOR",
+          "FILESET_RAG_LABELER",
           "MOCK"
         ],
         "title": "TransformType"

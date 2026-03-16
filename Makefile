@@ -18,7 +18,9 @@ help:
 	@echo ""
 
 setup:
-	@bash setup.sh
+	@echo "Creating virtual environment and installing package..."
+	@python3 -m venv venv
+	@. venv/bin/activate && pip install -e .
 
 install:
 	@echo "Installing lightningrod-ai in editable mode..."

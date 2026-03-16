@@ -12,10 +12,18 @@ from ...types import UNSET, Response, Unset
 
 def _get_kwargs(
     *,
+    model_id: None | str | Unset = UNSET,
     page: int | Unset = 1,
     limit: int | Unset = 10,
 ) -> dict[str, Any]:
     params: dict[str, Any] = {}
+
+    json_model_id: None | str | Unset
+    if isinstance(model_id, Unset):
+        json_model_id = UNSET
+    else:
+        json_model_id = model_id
+    params["model_id"] = json_model_id
 
     params["page"] = page
 
@@ -65,6 +73,7 @@ def _build_response(
 def sync_detailed(
     *,
     client: AuthenticatedClient,
+    model_id: None | str | Unset = UNSET,
     page: int | Unset = 1,
     limit: int | Unset = 10,
 ) -> Response[EvalJobListResponse | HTTPValidationError]:
@@ -73,6 +82,7 @@ def sync_detailed(
      List evaluation jobs
 
     Args:
+        model_id (None | str | Unset):
         page (int | Unset):  Default: 1.
         limit (int | Unset):  Default: 10.
 
@@ -85,6 +95,7 @@ def sync_detailed(
     """
 
     kwargs = _get_kwargs(
+        model_id=model_id,
         page=page,
         limit=limit,
     )
@@ -99,6 +110,7 @@ def sync_detailed(
 def sync(
     *,
     client: AuthenticatedClient,
+    model_id: None | str | Unset = UNSET,
     page: int | Unset = 1,
     limit: int | Unset = 10,
 ) -> EvalJobListResponse | HTTPValidationError | None:
@@ -107,6 +119,7 @@ def sync(
      List evaluation jobs
 
     Args:
+        model_id (None | str | Unset):
         page (int | Unset):  Default: 1.
         limit (int | Unset):  Default: 10.
 
@@ -120,6 +133,7 @@ def sync(
 
     return sync_detailed(
         client=client,
+        model_id=model_id,
         page=page,
         limit=limit,
     ).parsed
@@ -128,6 +142,7 @@ def sync(
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
+    model_id: None | str | Unset = UNSET,
     page: int | Unset = 1,
     limit: int | Unset = 10,
 ) -> Response[EvalJobListResponse | HTTPValidationError]:
@@ -136,6 +151,7 @@ async def asyncio_detailed(
      List evaluation jobs
 
     Args:
+        model_id (None | str | Unset):
         page (int | Unset):  Default: 1.
         limit (int | Unset):  Default: 10.
 
@@ -148,6 +164,7 @@ async def asyncio_detailed(
     """
 
     kwargs = _get_kwargs(
+        model_id=model_id,
         page=page,
         limit=limit,
     )
@@ -160,6 +177,7 @@ async def asyncio_detailed(
 async def asyncio(
     *,
     client: AuthenticatedClient,
+    model_id: None | str | Unset = UNSET,
     page: int | Unset = 1,
     limit: int | Unset = 10,
 ) -> EvalJobListResponse | HTTPValidationError | None:
@@ -168,6 +186,7 @@ async def asyncio(
      List evaluation jobs
 
     Args:
+        model_id (None | str | Unset):
         page (int | Unset):  Default: 1.
         limit (int | Unset):  Default: 10.
 
@@ -182,6 +201,7 @@ async def asyncio(
     return (
         await asyncio_detailed(
             client=client,
+            model_id=model_id,
             page=page,
             limit=limit,
         )

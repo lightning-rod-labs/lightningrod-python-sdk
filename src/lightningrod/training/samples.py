@@ -405,6 +405,10 @@ def to_record(
             row["reasoning"] = sample.label.reasoning
         if sample.label.answer_sources is not None and not isinstance(sample.label.answer_sources, Unset):
             row["answer_sources"] = sample.label.answer_sources
+        else:
+            row["answer_sources"] = None
+    elif sample.label is None or isinstance(sample.label, Unset):
+        row["answer_sources"] = None
 
     if sample.prompt and not isinstance(sample.prompt, Unset):
         row["prompt"] = sample.prompt

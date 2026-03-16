@@ -2,7 +2,7 @@ import os
 import getpass
 from lightningrod._display import _is_colab_notebook
 
-def get_config_value(key, default=None):
+def get_config_value(key, default=None, optional=False):
     """
     Portable function to get a value from the environment variables or Google Colab userdata.
     """
@@ -19,6 +19,9 @@ def get_config_value(key, default=None):
     
     if default is not None:
         return default
+
+    if optional:
+        return None
 
     # Ask the user for the value if not found
     return getpass.getpass(f"Enter the value for {key}: ")

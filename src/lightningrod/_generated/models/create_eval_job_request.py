@@ -1,16 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, TypeVar, cast
+from typing import Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
-
-if TYPE_CHECKING:
-    from ..models.sample_dataset_config import SampleDatasetConfig
-
 
 T = TypeVar("T", bound="CreateEvalJobRequest")
 
@@ -19,22 +15,22 @@ T = TypeVar("T", bound="CreateEvalJobRequest")
 class CreateEvalJobRequest:
     """
     Attributes:
-        dataset (SampleDatasetConfig):
         model_id (str):
+        dataset_hf_repo (str):
         benchmark_model_id (None | str | Unset):
         temperature (float | Unset):  Default: 0.0.
     """
 
-    dataset: SampleDatasetConfig
     model_id: str
+    dataset_hf_repo: str
     benchmark_model_id: None | str | Unset = UNSET
     temperature: float | Unset = 0.0
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        dataset = self.dataset.to_dict()
-
         model_id = self.model_id
+
+        dataset_hf_repo = self.dataset_hf_repo
 
         benchmark_model_id: None | str | Unset
         if isinstance(self.benchmark_model_id, Unset):
@@ -48,8 +44,8 @@ class CreateEvalJobRequest:
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "dataset": dataset,
                 "model_id": model_id,
+                "dataset_hf_repo": dataset_hf_repo,
             }
         )
         if benchmark_model_id is not UNSET:
@@ -61,12 +57,10 @@ class CreateEvalJobRequest:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.sample_dataset_config import SampleDatasetConfig
-
         d = dict(src_dict)
-        dataset = SampleDatasetConfig.from_dict(d.pop("dataset"))
-
         model_id = d.pop("model_id")
+
+        dataset_hf_repo = d.pop("dataset_hf_repo")
 
         def _parse_benchmark_model_id(data: object) -> None | str | Unset:
             if data is None:
@@ -80,8 +74,8 @@ class CreateEvalJobRequest:
         temperature = d.pop("temperature", UNSET)
 
         create_eval_job_request = cls(
-            dataset=dataset,
             model_id=model_id,
+            dataset_hf_repo=dataset_hf_repo,
             benchmark_model_id=benchmark_model_id,
             temperature=temperature,
         )

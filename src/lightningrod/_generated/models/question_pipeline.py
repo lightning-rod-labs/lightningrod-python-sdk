@@ -10,7 +10,9 @@ from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.big_query_seed_generator import BigQuerySeedGenerator
+    from ..models.file_set_context_generator import FileSetContextGenerator
     from ..models.file_set_query_seed_generator import FileSetQuerySeedGenerator
+    from ..models.file_set_rag_labeler import FileSetRAGLabeler
     from ..models.file_set_seed_generator import FileSetSeedGenerator
     from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
     from ..models.gdelt_seed_generator import GdeltSeedGenerator
@@ -39,10 +41,10 @@ class QuestionPipeline:
             MockTransformConfig | NewsSeedGenerator | None | Unset): Configuration for seed generation
         question_generator (ForwardLookingQuestionGenerator | MockTransformConfig | None | QuestionAndLabelGenerator |
             QuestionGenerator | TemplateQuestionGenerator | Unset): Configuration for question generation
-        labeler (MockTransformConfig | None | Unset | WebSearchLabeler): Configuration for labeling. Not needed when
-            using QuestionAndLabelGenerator.
-        context_generators (list[MockTransformConfig | NewsContextGenerator] | None | Unset): Optional list of context
-            generators to run before rendering
+        labeler (FileSetRAGLabeler | MockTransformConfig | None | Unset | WebSearchLabeler): Configuration for labeling.
+            Not needed when using QuestionAndLabelGenerator.
+        context_generators (list[FileSetContextGenerator | MockTransformConfig | NewsContextGenerator] | None | Unset):
+            Optional list of context generators to run before rendering
         renderer (MockTransformConfig | None | QuestionRenderer | Unset): Optional configuration for rendering the final
             prompt
         rollout_generator (MockTransformConfig | None | RolloutGenerator | Unset): Optional configuration for generating
@@ -71,8 +73,10 @@ class QuestionPipeline:
         | TemplateQuestionGenerator
         | Unset
     ) = UNSET
-    labeler: MockTransformConfig | None | Unset | WebSearchLabeler = UNSET
-    context_generators: list[MockTransformConfig | NewsContextGenerator] | None | Unset = UNSET
+    labeler: FileSetRAGLabeler | MockTransformConfig | None | Unset | WebSearchLabeler = UNSET
+    context_generators: list[FileSetContextGenerator | MockTransformConfig | NewsContextGenerator] | None | Unset = (
+        UNSET
+    )
     renderer: MockTransformConfig | None | QuestionRenderer | Unset = UNSET
     rollout_generator: MockTransformConfig | None | RolloutGenerator | Unset = UNSET
     scorer: MockTransformConfig | None | RolloutScorer | Unset = UNSET
@@ -80,7 +84,9 @@ class QuestionPipeline:
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.big_query_seed_generator import BigQuerySeedGenerator
+        from ..models.file_set_context_generator import FileSetContextGenerator
         from ..models.file_set_query_seed_generator import FileSetQuerySeedGenerator
+        from ..models.file_set_rag_labeler import FileSetRAGLabeler
         from ..models.file_set_seed_generator import FileSetSeedGenerator
         from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
         from ..models.gdelt_seed_generator import GdeltSeedGenerator
@@ -136,6 +142,8 @@ class QuestionPipeline:
             labeler = UNSET
         elif isinstance(self.labeler, WebSearchLabeler):
             labeler = self.labeler.to_dict()
+        elif isinstance(self.labeler, FileSetRAGLabeler):
+            labeler = self.labeler.to_dict()
         elif isinstance(self.labeler, MockTransformConfig):
             labeler = self.labeler.to_dict()
         else:
@@ -149,6 +157,8 @@ class QuestionPipeline:
             for context_generators_type_0_item_data in self.context_generators:
                 context_generators_type_0_item: dict[str, Any]
                 if isinstance(context_generators_type_0_item_data, NewsContextGenerator):
+                    context_generators_type_0_item = context_generators_type_0_item_data.to_dict()
+                elif isinstance(context_generators_type_0_item_data, FileSetContextGenerator):
                     context_generators_type_0_item = context_generators_type_0_item_data.to_dict()
                 else:
                     context_generators_type_0_item = context_generators_type_0_item_data.to_dict()
@@ -213,7 +223,9 @@ class QuestionPipeline:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.big_query_seed_generator import BigQuerySeedGenerator
+        from ..models.file_set_context_generator import FileSetContextGenerator
         from ..models.file_set_query_seed_generator import FileSetQuerySeedGenerator
+        from ..models.file_set_rag_labeler import FileSetRAGLabeler
         from ..models.file_set_seed_generator import FileSetSeedGenerator
         from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
         from ..models.gdelt_seed_generator import GdeltSeedGenerator
@@ -379,7 +391,7 @@ class QuestionPipeline:
 
         question_generator = _parse_question_generator(d.pop("question_generator", UNSET))
 
-        def _parse_labeler(data: object) -> MockTransformConfig | None | Unset | WebSearchLabeler:
+        def _parse_labeler(data: object) -> FileSetRAGLabeler | MockTransformConfig | None | Unset | WebSearchLabeler:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -395,16 +407,26 @@ class QuestionPipeline:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                labeler_type_0_type_1 = MockTransformConfig.from_dict(data)
+                labeler_type_0_type_1 = FileSetRAGLabeler.from_dict(data)
 
                 return labeler_type_0_type_1
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(MockTransformConfig | None | Unset | WebSearchLabeler, data)
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                labeler_type_0_type_2 = MockTransformConfig.from_dict(data)
+
+                return labeler_type_0_type_2
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(FileSetRAGLabeler | MockTransformConfig | None | Unset | WebSearchLabeler, data)
 
         labeler = _parse_labeler(d.pop("labeler", UNSET))
 
-        def _parse_context_generators(data: object) -> list[MockTransformConfig | NewsContextGenerator] | None | Unset:
+        def _parse_context_generators(
+            data: object,
+        ) -> list[FileSetContextGenerator | MockTransformConfig | NewsContextGenerator] | None | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -418,7 +440,7 @@ class QuestionPipeline:
 
                     def _parse_context_generators_type_0_item(
                         data: object,
-                    ) -> MockTransformConfig | NewsContextGenerator:
+                    ) -> FileSetContextGenerator | MockTransformConfig | NewsContextGenerator:
                         try:
                             if not isinstance(data, dict):
                                 raise TypeError()
@@ -427,11 +449,19 @@ class QuestionPipeline:
                             return context_generators_type_0_item_type_0
                         except (TypeError, ValueError, AttributeError, KeyError):
                             pass
+                        try:
+                            if not isinstance(data, dict):
+                                raise TypeError()
+                            context_generators_type_0_item_type_1 = FileSetContextGenerator.from_dict(data)
+
+                            return context_generators_type_0_item_type_1
+                        except (TypeError, ValueError, AttributeError, KeyError):
+                            pass
                         if not isinstance(data, dict):
                             raise TypeError()
-                        context_generators_type_0_item_type_1 = MockTransformConfig.from_dict(data)
+                        context_generators_type_0_item_type_2 = MockTransformConfig.from_dict(data)
 
-                        return context_generators_type_0_item_type_1
+                        return context_generators_type_0_item_type_2
 
                     context_generators_type_0_item = _parse_context_generators_type_0_item(
                         context_generators_type_0_item_data
@@ -442,7 +472,7 @@ class QuestionPipeline:
                 return context_generators_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(list[MockTransformConfig | NewsContextGenerator] | None | Unset, data)
+            return cast(list[FileSetContextGenerator | MockTransformConfig | NewsContextGenerator] | None | Unset, data)
 
         context_generators = _parse_context_generators(d.pop("context_generators", UNSET))
 

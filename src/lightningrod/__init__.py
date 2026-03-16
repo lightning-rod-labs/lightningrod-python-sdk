@@ -14,6 +14,7 @@ from lightningrod.training import to_messages
 from lightningrod._generated.models import (
     TransformJob,
     TransformJobStatus,
+    BigQuerySeedGenerator,
     NewsSeedGenerator,
     GdeltSeedGenerator,
     NewsContextGenerator,
@@ -40,26 +41,34 @@ from lightningrod._generated.models import (
     FreeResponseAnswerType,
     FileSetSeedGenerator,
     FileSetQuerySeedGenerator,
+    FileSetContextGenerator,
+    FileSetRAGLabeler,
+    TemporalConstraint,
     CreateFileSetRequest,
     CreateFileSetFileRequest,
     CreateFileUploadResponse,
     FileSetFile,
 )
 
-__version__ = "0.1.16"
+__version__ = "0.1.17"
 __all__ = [
     "preprocessing",
     "training",
     "utils",
     "AnswerType",
+    "BigQuerySeedGenerator",
     "BinaryAnswerType",
     "ContinuousAnswerType",
     "MultipleChoiceAnswerType",
     "FreeResponseAnswerType",
     "AsyncDataset",
     "SampleDataset",
+    "Dataset",
+    "FileSetContextGenerator",
+    "FileSetRAGLabeler",
     "FileSetSeedGenerator",
     "FileSetQuerySeedGenerator",
+    "TemporalConstraint",
     "CreateFileSetRequest",
     "CreateFileSetFileRequest",
     "CreateFileUploadResponse",

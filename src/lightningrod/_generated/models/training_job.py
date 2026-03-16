@@ -13,6 +13,7 @@ from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.training_config import TrainingConfig
+    from ..models.training_job_usage_type_0 import TrainingJobUsageType0
 
 
 T = TypeVar("T", bound="TrainingJob")
@@ -33,7 +34,7 @@ class TrainingJob:
         reward_history (list[float] | None | Unset):
         current_step (int | None | Unset):
         total_steps (int | None | Unset):
-        cost_dollars (float | None | Unset):
+        usage (None | TrainingJobUsageType0 | Unset):
         dataset_hf_repo (None | str | Unset):
         error_message (None | str | Unset):
     """
@@ -49,12 +50,14 @@ class TrainingJob:
     reward_history: list[float] | None | Unset = UNSET
     current_step: int | None | Unset = UNSET
     total_steps: int | None | Unset = UNSET
-    cost_dollars: float | None | Unset = UNSET
+    usage: None | TrainingJobUsageType0 | Unset = UNSET
     dataset_hf_repo: None | str | Unset = UNSET
     error_message: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.training_job_usage_type_0 import TrainingJobUsageType0
+
         id = self.id
 
         organization_id = self.organization_id
@@ -100,11 +103,13 @@ class TrainingJob:
         else:
             total_steps = self.total_steps
 
-        cost_dollars: float | None | Unset
-        if isinstance(self.cost_dollars, Unset):
-            cost_dollars = UNSET
+        usage: dict[str, Any] | None | Unset
+        if isinstance(self.usage, Unset):
+            usage = UNSET
+        elif isinstance(self.usage, TrainingJobUsageType0):
+            usage = self.usage.to_dict()
         else:
-            cost_dollars = self.cost_dollars
+            usage = self.usage
 
         dataset_hf_repo: None | str | Unset
         if isinstance(self.dataset_hf_repo, Unset):
@@ -140,8 +145,8 @@ class TrainingJob:
             field_dict["current_step"] = current_step
         if total_steps is not UNSET:
             field_dict["total_steps"] = total_steps
-        if cost_dollars is not UNSET:
-            field_dict["cost_dollars"] = cost_dollars
+        if usage is not UNSET:
+            field_dict["usage"] = usage
         if dataset_hf_repo is not UNSET:
             field_dict["dataset_hf_repo"] = dataset_hf_repo
         if error_message is not UNSET:
@@ -152,6 +157,7 @@ class TrainingJob:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.training_config import TrainingConfig
+        from ..models.training_job_usage_type_0 import TrainingJobUsageType0
 
         d = dict(src_dict)
         id = d.pop("id")
@@ -219,14 +225,22 @@ class TrainingJob:
 
         total_steps = _parse_total_steps(d.pop("total_steps", UNSET))
 
-        def _parse_cost_dollars(data: object) -> float | None | Unset:
+        def _parse_usage(data: object) -> None | TrainingJobUsageType0 | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
-            return cast(float | None | Unset, data)
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                usage_type_0 = TrainingJobUsageType0.from_dict(data)
 
-        cost_dollars = _parse_cost_dollars(d.pop("cost_dollars", UNSET))
+                return usage_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | TrainingJobUsageType0 | Unset, data)
+
+        usage = _parse_usage(d.pop("usage", UNSET))
 
         def _parse_dataset_hf_repo(data: object) -> None | str | Unset:
             if data is None:
@@ -258,7 +272,7 @@ class TrainingJob:
             reward_history=reward_history,
             current_step=current_step,
             total_steps=total_steps,
-            cost_dollars=cost_dollars,
+            usage=usage,
             dataset_hf_repo=dataset_hf_repo,
             error_message=error_message,
         )
