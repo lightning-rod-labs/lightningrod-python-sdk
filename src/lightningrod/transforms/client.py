@@ -30,7 +30,7 @@ from lightningrod._generated.api.transform_jobs import (
     cancel_transform_job_transform_jobs_job_id_delete,
 )
 from lightningrod._generated.models.pipeline_metrics_response import PipelineMetricsResponse
-from lightningrod.datasets.dataset import Dataset
+from lightningrod.datasets.dataset import SampleDataset
 from lightningrod._generated.client import AuthenticatedClient
 from lightningrod.datasets.client import DatasetSamplesClient
 from lightningrod._generated.types import Unset
@@ -69,13 +69,13 @@ class TransformsClient:
     def run(
         self,
         config: TransformConfig,
-        input_dataset: Optional[Union[Dataset, str]] = None,
+        input_dataset: Optional[Union[SampleDataset, str]] = None,
         max_questions: Optional[int] = None,
         max_cost_dollars: Optional[float] = None,
         name: Optional[str] = None,
         # If True, will not stop the app if the local process dies or disconnects
         detach: bool = False,
-    ) -> Dataset:
+    ) -> SampleDataset:
         job: TransformJob = self.submit(config, input_dataset, max_questions, max_cost_dollars, name)
 
         # Save the warning message before polling overwrites the job object
@@ -121,7 +121,7 @@ class TransformsClient:
             )
             dataset_result = handle_response_error(dataset_response, "get dataset")
             
-            return Dataset(
+            return SampleDataset(
                 id=dataset_result.id,
                 num_rows=dataset_result.num_rows,
                 datasets_client=self._dataset_samples_client
@@ -132,13 +132,13 @@ class TransformsClient:
     def submit(
         self,
         config: TransformConfig,
-        input_dataset: Optional[Union[Dataset, str]] = None,
+        input_dataset: Optional[Union[SampleDataset, str]] = None,
         max_questions: Optional[int] = None,
         max_cost_dollars: Optional[float] = None,
         name: Optional[str] = None,
     ) -> TransformJob:
         dataset_id: Optional[str] = None
-        if isinstance(input_dataset, Dataset):
+        if isinstance(input_dataset, SampleDataset):
             dataset_id = input_dataset.id
         elif isinstance(input_dataset, str):
             dataset_id = input_dataset

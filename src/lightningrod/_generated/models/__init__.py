@@ -26,6 +26,7 @@ from .estimate_cost_request import EstimateCostRequest
 from .estimate_cost_response import EstimateCostResponse
 from .estimate_training_cost_request import EstimateTrainingCostRequest
 from .estimate_training_cost_response import EstimateTrainingCostResponse
+from .eval_config import EvalConfig
 from .eval_job import EvalJob
 from .eval_job_list_response import EvalJobListResponse
 from .eval_job_metrics_type_0 import EvalJobMetricsType0
@@ -90,6 +91,7 @@ from .rollout_parsed_output_type_0 import RolloutParsedOutputType0
 from .rollout_scorer import RolloutScorer
 from .rollout_scorer_multiple_choice_options_type_0 import RolloutScorerMultipleChoiceOptionsType0
 from .sample import Sample
+from .sample_dataset_config import SampleDatasetConfig
 from .sample_meta import SampleMeta
 from .seed import Seed
 from .step_cost_breakdown import StepCostBreakdown
@@ -99,7 +101,6 @@ from .training_config import TrainingConfig
 from .training_job import TrainingJob
 from .training_job_list_response import TrainingJobListResponse
 from .training_job_status import TrainingJobStatus
-from .training_job_usage_type_0 import TrainingJobUsageType0
 from .transform_job import TransformJob
 from .transform_job_status import TransformJobStatus
 from .transform_step_metrics_response import TransformStepMetricsResponse
@@ -112,6 +113,7 @@ from .usage_summary_events import UsageSummaryEvents
 from .usage_summary_llm_by_model import UsageSummaryLlmByModel
 from .validate_sample_response import ValidateSampleResponse
 from .validation_error import ValidationError
+from .validation_error_context import ValidationErrorContext
 from .web_search_labeler import WebSearchLabeler
 
 __all__ = (
@@ -141,6 +143,7 @@ __all__ = (
     "EstimateCostResponse",
     "EstimateTrainingCostRequest",
     "EstimateTrainingCostResponse",
+    "EvalConfig",
     "EvalJob",
     "EvalJobListResponse",
     "EvalJobMetricsType0",
@@ -205,6 +208,7 @@ __all__ = (
     "RolloutScorer",
     "RolloutScorerMultipleChoiceOptionsType0",
     "Sample",
+    "SampleDatasetConfig",
     "SampleMeta",
     "Seed",
     "StepCostBreakdown",
@@ -214,7 +218,6 @@ __all__ = (
     "TrainingJob",
     "TrainingJobListResponse",
     "TrainingJobStatus",
-    "TrainingJobUsageType0",
     "TransformJob",
     "TransformJobStatus",
     "TransformStepMetricsResponse",
@@ -227,5 +230,6 @@ __all__ = (
     "UsageSummaryLlmByModel",
     "ValidateSampleResponse",
     "ValidationError",
+    "ValidationErrorContext",
     "WebSearchLabeler",
 )

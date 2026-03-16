@@ -1,6 +1,6 @@
 import os
 import getpass
-from lightningrod._display import _is_notebook
+from lightningrod._display import _is_colab_notebook
 
 def get_config_value(key, default=None, optional=False):
     """
@@ -9,7 +9,7 @@ def get_config_value(key, default=None, optional=False):
     if key in os.environ:
         return os.environ[key]
     
-    if _is_notebook():
+    if _is_colab_notebook():
         from google.colab import userdata
         from google.colab.userdata import SecretNotFoundError
         try:

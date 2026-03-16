@@ -1,12 +1,16 @@
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 from rich.console import Console, Group, RenderableType
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from lightningrod._generated.models import EvalJob, TransformJob
+from lightningrod._generated.models.eval_job_status import EvalJobStatus
+from lightningrod._generated.models.training_job import TrainingJob
+from lightningrod._generated.models.training_job_status import TrainingJobStatus
 from lightningrod._generated.types import Unset
 
 
@@ -32,8 +36,15 @@ def _format_duration(seconds: float) -> str:
     return f"{minutes}m {secs}s"
 
 
-def _build_cost_lines(job: Any) -> list[RenderableType]:
+def _build_cost_lines(job: TrainingJob | EvalJob) -> list[RenderableType]:
     """Build cost info lines from job.usage. Returns empty list if no data."""
+    lines: list[RenderableType] = []
+
+    if _is_set(job.cost_dollars) and job.cost_dollars is not None:
+        lines.append(_safe_markup(f"  [bold]Cost:[/bold]  ${job.cost_dollars:.2f}"))
+    return lines
+
+def _build_transform_cost_lines(job: TransformJob) -> list[RenderableType]:
     if not _is_set(job.usage):
         return []
     usage = job.usage
@@ -49,7 +60,6 @@ def _build_cost_lines(job: Any) -> list[RenderableType]:
 
     return lines
 
-
 def build_live_display(
     metrics: Any = None,
     job: Any = None,
@@ -62,7 +72,7 @@ def build_live_display(
 
     # Cost summary from job.usage
     if job is not None:
-        cost_lines = _build_cost_lines(job)
+        cost_lines = _build_transform_cost_lines(job)
         if cost_lines:
             renderables.extend(cost_lines)
             renderables.append(Text(""))
@@ -115,8 +125,248 @@ def build_live_display(
     )
 
 
+def _make_progress_bar(pct: float, width: int = 24) -> str:
+    filled = int(width * (pct / 100))
+    return "█" * filled + "░" * (width - filled)
+
+
+def build_training_live_display(job: Any) -> RenderableType:
+    renderables: list[RenderableType] = []
+    status = str(job.status) if job is not None else ""
+    header_style = {
+        "COMPLETED": "bright_green",
+        "FAILED": "bright_red",
+        "RUNNING": "bright_blue",
+        "STARTING": "bright_blue",
+    }.get(status, "bright_blue") if status else "bright_blue"
+    header = f">> Training {status}" if status else ">> Training"
+    renderables.append(_safe_markup(f"[bold {header_style}]{header}[/bold {header_style}]"))
+    renderables.append(Text(""))
+    if job is not None:
+        if _is_set(job.name) and job.name:
+            renderables.append(_safe_markup(f"  [bold]Job:[/bold] {job.name}"))
+            renderables.append(Text(""))
+
+        if job.status == TrainingJobStatus.RUNNING:
+            current = job.current_step or 0
+            total = job.total_steps or None
+            if total is not None:
+                pct = min(100, int(100 * current / total))
+            else:
+                pct = 0
+            step_progress = f"{current}/{total} ({pct}%)" if total is not None else "(0%)"
+            bar = _make_progress_bar(pct)
+            renderables.append(_safe_markup(f"  [bold]Progress:[/bold] [{bar}] {step_progress}"))
+            renderables.append(Text(""))
+
+        if _is_set(job.reward_history) and job.reward_history:
+            latest = job.reward_history[-1]
+            count = len(job.reward_history)
+            avg = sum(job.reward_history) / count
+            reward_line = f"  [bold]Reward:[/bold] latest {latest:.4f}  avg {avg:.4f}  ({count} steps)  [dim](higher is better)[/dim]"
+            renderables.append(_safe_markup(reward_line))
+            renderables.append(Text(""))
+
+        if job.status == TrainingJobStatus.FAILED:
+            renderables.append(_safe_markup(f"  [bold]Error:[/bold] {job.error_message}"))
+            renderables.append(Text(""))
+        if job.status == TrainingJobStatus.COMPLETED:
+            cost_lines = _build_cost_lines(job)
+            if cost_lines:
+                renderables.extend(cost_lines)
+                renderables.append(Text(""))
+
+    return Panel(
+        Group(*renderables),
+        border_style="bright_blue",
+        padding=(1, 2),
+    )
+
+
+def run_training_live_display(
+    poll_callback: Callable[[], TrainingJob],
+    poll_interval: float = 15,
+    initial_job: Any = None,
+) -> None:
+    import time
+    console = Console()
+    if _is_notebook():
+        from IPython.display import clear_output
+        console.print(build_training_live_display(initial_job))
+        job = poll_callback()
+        while job.status in (TrainingJobStatus.RUNNING, TrainingJobStatus.STARTING):
+            clear_output(wait=True)
+            console.print(build_training_live_display(job))
+            time.sleep(poll_interval)
+            job = poll_callback()
+        clear_output(wait=True)
+        console.print(build_training_live_display(job))
+    else:
+        from rich.live import Live
+        with Live(
+            build_training_live_display(initial_job),
+            console=console,
+            refresh_per_second=1,
+            transient=True,
+        ) as live:
+            job = poll_callback()
+            while job.status in (TrainingJobStatus.RUNNING, TrainingJobStatus.STARTING):
+                live.update(build_training_live_display(job))
+                time.sleep(poll_interval)
+                job = poll_callback()
+            live.update(build_training_live_display(job))
+
+
+def build_eval_live_display(job: EvalJob) -> RenderableType:
+    renderables: list[RenderableType] = []
+    status = str(job.status) if job is not None else ""
+    header_style = {
+        "COMPLETED": "bright_green",
+        "FAILED": "bright_red",
+        "RUNNING": "bright_blue",
+        "STARTING": "bright_blue",
+    }.get(status, "bright_blue") if status else "bright_blue"
+    header = f">> Eval {status}" if status else ">> Eval"
+    renderables.append(_safe_markup(f"[bold {header_style}]{header}[/bold {header_style}]"))
+    renderables.append(Text(""))
+    if job is not None:
+        renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.config.model_id}"))
+        renderables.append(_safe_markup(f"  [bold]Dataset:[/bold] {job.config.dataset.id}"))
+        renderables.append(Text(""))
+        if job.status in (EvalJobStatus.RUNNING, EvalJobStatus.STARTING):
+            current = job.current_step or 0
+            total = job.total_steps or None
+            if total is not None:
+                pct = min(100, int(100 * current / total))
+            else:
+                pct = 0
+            step_progress = f"{current}/{total} ({pct}%)" if total is not None else "(0%)"
+            bar = _make_progress_bar(pct)
+            renderables.append(_safe_markup(f"  [bold]Progress:[/bold] [{bar}] {step_progress}"))
+            renderables.append(Text(""))
+        if _is_set(job.metrics) and job.metrics and job.metrics.additional_properties:
+            for k, v in job.metrics.additional_properties.items():
+                renderables.append(_safe_markup(f"  [bold]{k}:[/bold] {v}"))
+            renderables.append(Text(""))
+        if job.status == EvalJobStatus.FAILED and _is_set(job.error_message):
+            renderables.append(_safe_markup(f"  [bold]Error:[/bold] {job.error_message}"))
+            renderables.append(Text(""))
+    return Panel(
+        Group(*renderables),
+        border_style="bright_blue",
+        padding=(1, 2),
+    )
+
+
+def print_eval(job: EvalJob) -> None:
+    """Print a prettified eval job summary. Use with evals.run() or evals.get()."""
+    console = Console()
+    renderables: list[RenderableType] = []
+    status = str(job.status) if job is not None else ""
+    header_style = {
+        "COMPLETED": "bright_green",
+        "FAILED": "bright_red",
+        "RUNNING": "bright_blue",
+        "STARTING": "bright_blue",
+    }.get(status, "bright_blue") if status else "bright_blue"
+    header = f">> Eval {status}" if status else ">> Eval"
+    renderables.append(_safe_markup(f"[bold {header_style}]{header}[/bold {header_style}]"))
+    renderables.append(Text(""))
+    if job is not None:
+        renderables.append(_safe_markup(f"  [bold]ID:[/bold] {job.id}"))
+        renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.config.model_id}"))
+        renderables.append(_safe_markup(f"  [bold]Dataset:[/bold] {job.config.dataset.id}"))
+        renderables.append(Text(""))
+        if _is_set(job.metrics) and job.metrics and job.metrics.additional_properties:
+            props = job.metrics.additional_properties
+            if all(isinstance(v, dict) for v in props.values()):
+                # Compute all unique metric keys
+                metric_keys = set()
+                for data in props.values():
+                    metric_keys.update(data.keys())
+                metric_keys = sorted(metric_keys)
+                table = Table(show_header=True, header_style="bold cyan")
+                table.add_column("Metric", style="dim")
+                for name in props:
+                    table.add_column(name, justify="right")
+                for key in metric_keys:
+                    row = [key]
+                    for name, data in props.items():
+                        val = data.get(key)
+                        if val is None:
+                            row.append("—")
+                        elif isinstance(val, float):
+                            row.append(f"{val:.4f}")
+                        else:
+                            row.append(str(val))
+                    table.add_row(*row)
+                renderables.append(table)
+            else:
+                for k, v in props.items():
+                    renderables.append(_safe_markup(f"  [bold]{k}:[/bold] {v}"))
+            renderables.append(Text(""))
+        if job.status == EvalJobStatus.FAILED and _is_set(job.error_message):
+            renderables.append(_safe_markup(f"  [bold]Error:[/bold] {job.error_message}"))
+            renderables.append(Text(""))
+        cost_lines = _build_cost_lines(job)
+        if cost_lines:
+            renderables.extend(cost_lines)
+            renderables.append(Text(""))
+    console.print(Panel(Group(*renderables), border_style="bright_blue", padding=(1, 2)))
+
+
+def run_eval_live_display(
+    poll_callback: Callable[[], Any],
+    poll_interval: float = 15,
+    initial_job: Any = None,
+) -> None:
+    import time
+    console = Console()
+    if _is_notebook():
+        from IPython.display import clear_output
+        console.print(build_eval_live_display(initial_job))
+        job = poll_callback()
+        while job.status in (EvalJobStatus.RUNNING, EvalJobStatus.STARTING):
+            clear_output(wait=True)
+            console.print(build_eval_live_display(job))
+            time.sleep(poll_interval)
+            job = poll_callback()
+        clear_output(wait=True)
+        print_eval(job)
+    else:
+        from rich.live import Live
+        with Live(
+            build_eval_live_display(initial_job),
+            console=console,
+            refresh_per_second=1,
+            transient=True,
+        ) as live:
+            job = poll_callback()
+            while job.status in (EvalJobStatus.RUNNING, EvalJobStatus.STARTING):
+                live.update(build_eval_live_display(job))
+                time.sleep(poll_interval)
+                job = poll_callback()
+            live.stop()
+            print_eval(job)
+
+
 def _is_notebook() -> bool:
-    """Check if we're running inside a Jupyter notebook."""
+    """Check if we're running inside a Jupyter or Colab notebook."""
+    try:
+        from IPython import get_ipython
+        shell = get_ipython()
+        if shell is None:
+            return False  # Not running in IPython at all
+        # Jupyter notebook or qtconsole
+        if "IPKernelApp" in shell.config:
+            return True
+        else:
+            return False
+    except Exception:
+        return False
+
+def _is_colab_notebook() -> bool:
+    """Check if we're running inside a Jupyter or Colab notebook."""
     try:
         import google.colab.userdata
     except ImportError as e:
@@ -204,7 +454,7 @@ def display_error(message: str, title: str = "Error", job: Any = None) -> None:
         renderables.append(_safe_markup(f"[bold]{message}[/bold]"))
 
     if job is not None:
-        cost_lines = _build_cost_lines(job)
+        cost_lines = _build_transform_cost_lines(job) if isinstance(job, TransformJob) else _build_cost_lines(job)
         if cost_lines:
             renderables.append(Text(""))
             renderables.extend(cost_lines)
@@ -221,7 +471,7 @@ def display_warning(message: str, title: str = "Warning", job: Any = None) -> No
     renderables.append(_safe_markup(message))
 
     if job is not None:
-        cost_lines = _build_cost_lines(job)
+        cost_lines = _build_transform_cost_lines(job) if isinstance(job, TransformJob) else _build_cost_lines(job)
         if cost_lines:
             renderables.append(Text(""))
             renderables.extend(cost_lines)

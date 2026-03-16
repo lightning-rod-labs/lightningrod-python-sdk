@@ -5,12 +5,12 @@ AI-powered forecasting dataset generation platform.
 """
 
 from lightningrod.client import LightningRod
-from lightningrod.datasets.dataset import Dataset
-from lightningrod import preprocessing, utils
+from lightningrod.datasets.dataset import SampleDataset, AsyncDataset
+from lightningrod import preprocessing, training, utils
 from lightningrod.utils.sample import create_sample
 from lightningrod.utils.models import open_router_model
-from lightningrod import preprocessing, training, utils
-from lightningrod.training import to_messages
+from lightningrod.training import filter_and_split
+from lightningrod.training.client import TrainingConfig
 from lightningrod._generated.models import (
     TransformJob,
     TransformJobStatus,
@@ -48,6 +48,9 @@ from lightningrod._generated.models import (
     CreateFileSetFileRequest,
     CreateFileUploadResponse,
     FileSetFile,
+    FileSetMetadataSchemaInput,
+    MetadataFieldDefinitionInput,
+    MetadataFieldType,
 )
 
 __version__ = "0.1.17"
@@ -55,14 +58,13 @@ __all__ = [
     "preprocessing",
     "training",
     "utils",
-    "AnswerType",
+    "AsyncDataset",
     "BigQuerySeedGenerator",
     "BinaryAnswerType",
     "ContinuousAnswerType",
     "MultipleChoiceAnswerType",
     "FreeResponseAnswerType",
-    "AsyncDataset",
-    "Dataset",
+    "SampleDataset",
     "FileSetContextGenerator",
     "FileSetRAGLabeler",
     "FileSetSeedGenerator",
@@ -86,12 +88,15 @@ __all__ = [
     "QuestionPipeline",
     "QuestionRenderer",
     "create_sample",
+    "FileSetMetadataSchemaInput",
+    "MetadataFieldDefinitionInput",
+    "MetadataFieldType",
     "open_router_model",
-    "render_sample",
     "Rollout",
     "RolloutScorer",
     "RolloutGenerator",
-    "to_messages",
+    "filter_and_split",
+    "TrainingConfig",
     "Sample",
     "SampleMeta",
     "Seed",

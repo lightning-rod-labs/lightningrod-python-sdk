@@ -5,11 +5,6 @@
     "description": "Generate verified, grounded datasets at scale for LLM fine-tuning and evaluation",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "/api/public/v1"
-    }
-  ],
   "paths": {
     "/openai/chat/completions": {
       "post": {
@@ -1138,22 +1133,6 @@
         ],
         "parameters": [
           {
-            "name": "model_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Model Id"
-            }
-          },
-          {
             "name": "page",
             "in": "query",
             "required": false,
@@ -2234,13 +2213,12 @@
       },
       "CreateEvalJobRequest": {
         "properties": {
+          "dataset": {
+            "$ref": "#/components/schemas/SampleDatasetConfig"
+          },
           "model_id": {
             "type": "string",
             "title": "Model Id"
-          },
-          "dataset_hf_repo": {
-            "type": "string",
-            "title": "Dataset Hf Repo"
           },
           "benchmark_model_id": {
             "anyOf": [
@@ -2261,8 +2239,8 @@
         },
         "type": "object",
         "required": [
-          "model_id",
-          "dataset_hf_repo"
+          "dataset",
+          "model_id"
         ],
         "title": "CreateEvalJobRequest"
       },
@@ -2769,12 +2747,8 @@
         ],
         "title": "EstimateTrainingCostResponse"
       },
-      "EvalJob": {
+      "EvalConfig": {
         "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
           "organization_id": {
             "type": "string",
             "title": "Organization Id"
@@ -2783,16 +2757,8 @@
             "type": "string",
             "title": "Model Id"
           },
-          "dataset_hf_repo": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Dataset Hf Repo"
+          "dataset": {
+            "$ref": "#/components/schemas/SampleDatasetConfig"
           },
           "benchmark_model_id": {
             "anyOf": [
@@ -2804,6 +2770,76 @@
               }
             ],
             "title": "Benchmark Model Id"
+          },
+          "temperature": {
+            "type": "number",
+            "title": "Temperature",
+            "default": 0.0
+          },
+          "max_tokens": {
+            "type": "integer",
+            "title": "Max Tokens",
+            "default": 8192
+          },
+          "max_concurrent": {
+            "type": "integer",
+            "title": "Max Concurrent",
+            "default": 50
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_id",
+          "model_id",
+          "dataset"
+        ],
+        "title": "EvalConfig"
+      },
+      "EvalJob": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "organization_id": {
+            "type": "string",
+            "title": "Organization Id"
+          },
+          "config": {
+            "$ref": "#/components/schemas/EvalConfig"
+          },
+          "cost_dollars": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Dollars"
+          },
+          "current_step": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Step"
+          },
+          "total_steps": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Steps"
           },
           "status": {
             "$ref": "#/components/schemas/EvalJobStatus"
@@ -2846,7 +2882,7 @@
         "required": [
           "id",
           "organization_id",
-          "model_id",
+          "config",
           "status",
           "created_at",
           "updated_at"
@@ -5780,6 +5816,38 @@
         "type": "object",
         "title": "Sample"
       },
+      "SampleDatasetConfig": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "sample_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sample Ids"
+          },
+          "prompt_template": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Template"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "sample_ids"
+        ],
+        "title": "SampleDatasetConfig"
+      },
       "Seed": {
         "properties": {
           "seed_text": {
@@ -5895,17 +5963,19 @@
       },
       "TrainingConfig": {
         "properties": {
-          "dataset_hf_repo": {
-            "type": "string",
-            "title": "Dataset Hf Repo"
+          "dataset": {
+            "$ref": "#/components/schemas/SampleDatasetConfig",
+            "description": "Dataset config for loading training samples"
           },
           "base_model": {
             "type": "string",
-            "title": "Base Model"
+            "title": "Base Model",
+            "description": "HuggingFace model ID for LoRA base (e.g. Qwen/Qwen3-8B)"
           },
           "training_steps": {
             "type": "integer",
-            "title": "Training Steps"
+            "title": "Training Steps",
+            "description": "Number of training loop iterations"
           },
           "batch_size": {
             "anyOf": [
@@ -5916,7 +5986,8 @@
                 "type": "null"
               }
             ],
-            "title": "Batch Size"
+            "title": "Batch Size",
+            "description": "Rows per batch; used to slice train_rows each step"
           },
           "lora_rank": {
             "anyOf": [
@@ -5927,12 +5998,85 @@
                 "type": "null"
               }
             ],
-            "title": "Lora Rank"
+            "title": "Lora Rank",
+            "description": "LoRA adapter rank passed to create_lora_training_client_async"
+          },
+          "learning_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Learning Rate",
+            "description": "Step size for weight updates; higher values learn faster but may overshoot"
+          },
+          "adam_beta1": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adam Beta1",
+            "description": "Exponential decay rate for first-moment estimates (moving average of gradients)"
+          },
+          "adam_beta2": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adam Beta2",
+            "description": "Exponential decay rate for second-moment estimates (moving average of squared gradients)"
+          },
+          "num_rollouts": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Num Rollouts",
+            "description": "Samples per prompt for GRPO"
+          },
+          "max_response_length": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Response Length",
+            "description": "Max tokens for sampling"
+          },
+          "start_idx": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Idx",
+            "description": "Row index to skip at start; train_rows = train_rows[start_idx:]"
           }
         },
         "type": "object",
         "required": [
-          "dataset_hf_repo",
+          "dataset",
           "base_model",
           "training_steps"
         ],
@@ -6012,17 +6156,16 @@
             ],
             "title": "Total Steps"
           },
-          "usage": {
+          "cost_dollars": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "type": "number"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Usage"
+            "title": "Cost Dollars"
           },
           "dataset_hf_repo": {
             "anyOf": [
@@ -6465,6 +6608,13 @@
           "type": {
             "type": "string",
             "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
           }
         },
         "type": "object",
@@ -6541,5 +6691,10 @@
         "scheme": "bearer"
       }
     }
-  }
+  },
+  "servers": [
+    {
+      "url": "/api/public/v1"
+    }
+  ]
 }
