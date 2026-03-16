@@ -616,9 +616,8 @@ def _print_stats(stats: PrepareStats) -> None:
         print(f"[split] Random split (test_size={stats.split_test_size}): {stats.split_train} train, {stats.split_test} test")
 
 
-def prepare_for_training(
+def filter_and_split(
     dataset: "SampleDataset",
-    answer_type: AnswerType,
     *,
     test_size: float = 0.2,
     split_strategy: str = "temporal",
@@ -638,7 +637,6 @@ def prepare_for_training(
 
     Args:
         dataset: SampleDataset to prepare (samples are fetched via dataset.samples()).
-        answer_type: The answer type used for filtering and validation.
         test_size: Fraction of samples for the test set (0.0–1.0). Default 0.2.
         split_strategy: 'temporal' (default) or 'random'.
         test_start: ISO date string for temporal splits. Provide exactly one of

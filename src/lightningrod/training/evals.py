@@ -12,27 +12,8 @@ from lightningrod._generated.models.eval_job_list_response import EvalJobListRes
 from lightningrod._generated.models.training_job_status import TrainingJobStatus
 from lightningrod._generated.types import UNSET, Unset
 from lightningrod._errors import handle_response_error
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from lightningrod.datasets.dataset import SampleDataset
-
-
-def _dataset_for_api(
-    dataset: "SampleDataset | SampleDatasetConfig",
-    prompt_template: str | None = None,
-) -> SampleDatasetConfig:
-    from lightningrod.datasets.dataset import SampleDataset
-
-    if not isinstance(dataset, SampleDataset):
-        return dataset
-    ids = dataset.sample_ids if dataset.sample_ids is not None else [s.id for s in dataset.samples()]
-    return SampleDatasetConfig(
-        id=dataset.id,
-        sample_ids=ids,
-        prompt_template=prompt_template if prompt_template is not None else UNSET,
-    )
-
+from lightningrod.training.client import sample_dataset_to_config
+from lightningrod.datasets.dataset import SampleDataset
 
 class EvalsClient:
     def __init__(self, client: AuthenticatedClient):
@@ -41,16 +22,15 @@ class EvalsClient:
     def create(
         self,
         model_id: str,
-        dataset: "SampleDataset | SampleDatasetConfig",
+        dataset: "SampleDataset",
         *,
-        prompt_template: str | None = None,
         benchmark_model_id: str | None = None,
         temperature: float = 0.0,
     ) -> EvalJob:
-        dataset = _dataset_for_api(dataset, prompt_template=prompt_template)
+        dataset_config = sample_dataset_to_config(dataset)
         body = CreateEvalJobRequest(
             model_id=model_id,
-            dataset=dataset,
+            dataset=dataset_config,
             benchmark_model_id=benchmark_model_id if benchmark_model_id is not None else UNSET,
             temperature=temperature,
         )

@@ -14,7 +14,7 @@ from lightningrod._generated.models.estimate_training_cost_request import (
 from lightningrod._generated.models.estimate_training_cost_response import (
     EstimateTrainingCostResponse,
 )
-from lightningrod._generated.models.training_config import TrainingConfig
+from lightningrod._generated.models.training_config import TrainingConfig as ApiTrainingConfig
 from lightningrod._generated.models.training_job import TrainingJob
 from lightningrod._generated.models.training_job_list_response import TrainingJobListResponse
 from lightningrod._generated.models.training_job_status import TrainingJobStatus
@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 
 
 @define
-class TrainingConfigParams:
+class TrainingConfig:
     base_model: str
     training_steps: int
     batch_size: int | None = None
@@ -43,26 +43,22 @@ class TrainingConfigParams:
     start_idx: int | None = None
 
 
-def _dataset_to_config(dataset: "SampleDataset", prompt_template: str | None = None) -> SampleDatasetConfig:
-    from lightningrod.datasets.dataset import SampleDataset
-
-    if not isinstance(dataset, SampleDataset):
-        return dataset
+def sample_dataset_to_config(
+    dataset: "SampleDataset",
+) -> SampleDatasetConfig:
     ids = dataset.sample_ids if dataset.sample_ids is not None else [s.id for s in dataset.samples()]
     return SampleDatasetConfig(
         id=dataset.id,
         sample_ids=ids,
-        prompt_template=prompt_template if prompt_template is not None else UNSET,
+        prompt_template=dataset.prompt_template if dataset.prompt_template is not None else UNSET,
     )
 
-
 def _build_config(
-    config: TrainingConfigParams,
+    config: TrainingConfig,
     dataset: "SampleDataset",
-    prompt_template: str | None,
-) -> TrainingConfig:
-    dataset_config = _dataset_to_config(dataset, prompt_template)
-    return TrainingConfig(
+) -> ApiTrainingConfig:
+    dataset_config = sample_dataset_to_config(dataset)
+    return ApiTrainingConfig(
         dataset=dataset_config,
         base_model=config.base_model,
         training_steps=config.training_steps,
@@ -85,7 +81,7 @@ class TrainingClient:
 
     def create(
         self,
-        config: TrainingConfigParams,
+        config: TrainingConfig,
         *,
         dataset: "SampleDataset",
         prompt_template: str | None = None,
@@ -104,7 +100,7 @@ class TrainingClient:
 
     def estimate_cost(
         self,
-        config: TrainingConfigParams,
+        config: TrainingConfig,
         *,
         dataset: "SampleDataset",
         prompt_template: str | None = None,
@@ -141,7 +137,7 @@ class TrainingClient:
 
     def run(
         self,
-        config: TrainingConfigParams,
+        config: TrainingConfig,
         *,
         dataset: "SampleDataset",
         prompt_template: str | None = None,

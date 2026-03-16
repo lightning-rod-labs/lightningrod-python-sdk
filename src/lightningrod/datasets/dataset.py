@@ -20,6 +20,8 @@ class SampleDataset:
     Attributes:
         id: Unique identifier for the dataset
         num_rows: Number of rows in the dataset
+        prompt_template: Optional template string for formatting prompts. When set,
+            used by preview_prompts() and passed to training/eval API calls.
     
     Example:
         >>> lr = LightningRod(api_key="your-api-key")
@@ -29,10 +31,10 @@ class SampleDataset:
         >>> print(f"Dataset has {len(samples)} samples")
     """
     id: str
-    # Optional filter to define a dataset subset by sample IDs.
     sample_ids: Optional[List[str]]
     num_rows: int
-    
+    prompt_template: Optional[str]
+
     def __init__(
         self,
         id: str,
@@ -40,10 +42,12 @@ class SampleDataset:
         datasets_client: "DatasetSamplesClient",
         sample_ids: Optional[List[str]] = None,
         samples: Optional[List[Sample]] = None,
+        prompt_template: Optional[str] = None,
     ):
         self.id: str = id
         self.num_rows: int = num_rows
         self._datasets_client: "DatasetSamplesClient" = datasets_client
+        self.prompt_template: Optional[str] = prompt_template
         if samples is not None:
             self._samples: Optional[List[Sample]] = samples
             self.sample_ids: Optional[List[str]] = [s.id for s in samples]
@@ -60,6 +64,7 @@ class SampleDataset:
             num_rows=len(samples),
             datasets_client=self._datasets_client,
             samples=samples,
+            prompt_template=self.prompt_template,
         )
 
     def preview_prompts(
@@ -71,9 +76,10 @@ class SampleDataset:
     ) -> List[Dict[str, Any]]:
         from lightningrod.training.samples import to_messages
 
+        t = template if template is not None else self.prompt_template
         samples_list = self.samples()[:n]
         return [
-            to_messages(s, template=template, answer_type=answer_type, include_assistant=include_assistant)
+            to_messages(s, template=t, answer_type=answer_type, include_assistant=include_assistant)
             for s in samples_list
         ]
 
@@ -211,7 +217,15 @@ class AsyncDataset:
     @property
     def num_rows(self) -> int:
         return self._sync_dataset.num_rows
-    
+
+    @property
+    def prompt_template(self) -> Optional[str]:
+        return self._sync_dataset.prompt_template
+
+    @prompt_template.setter
+    def prompt_template(self, value: Optional[str]) -> None:
+        self._sync_dataset.prompt_template = value
+
     async def to_samples(self) -> List[Sample]:
         """
         Download all samples from the dataset via the paginated API.
