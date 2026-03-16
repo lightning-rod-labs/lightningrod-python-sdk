@@ -5964,15 +5964,18 @@
       "TrainingConfig": {
         "properties": {
           "dataset": {
-            "$ref": "#/components/schemas/SampleDatasetConfig"
+            "$ref": "#/components/schemas/SampleDatasetConfig",
+            "description": "Dataset config for loading training samples"
           },
           "base_model": {
             "type": "string",
-            "title": "Base Model"
+            "title": "Base Model",
+            "description": "HuggingFace model ID for LoRA base (e.g. Qwen/Qwen3-8B)"
           },
           "training_steps": {
             "type": "integer",
-            "title": "Training Steps"
+            "title": "Training Steps",
+            "description": "Number of training loop iterations"
           },
           "batch_size": {
             "anyOf": [
@@ -5983,7 +5986,8 @@
                 "type": "null"
               }
             ],
-            "title": "Batch Size"
+            "title": "Batch Size",
+            "description": "Rows per batch; used to slice train_rows each step"
           },
           "lora_rank": {
             "anyOf": [
@@ -5994,7 +5998,8 @@
                 "type": "null"
               }
             ],
-            "title": "Lora Rank"
+            "title": "Lora Rank",
+            "description": "LoRA adapter rank passed to create_lora_training_client_async"
           },
           "learning_rate": {
             "anyOf": [
@@ -6005,7 +6010,8 @@
                 "type": "null"
               }
             ],
-            "title": "Learning Rate"
+            "title": "Learning Rate",
+            "description": "Step size for weight updates; higher values learn faster but may overshoot"
           },
           "adam_beta1": {
             "anyOf": [
@@ -6016,7 +6022,8 @@
                 "type": "null"
               }
             ],
-            "title": "Adam Beta1"
+            "title": "Adam Beta1",
+            "description": "Exponential decay rate for first-moment estimates (moving average of gradients)"
           },
           "adam_beta2": {
             "anyOf": [
@@ -6027,29 +6034,8 @@
                 "type": "null"
               }
             ],
-            "title": "Adam Beta2"
-          },
-          "save_every": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Save Every"
-          },
-          "resume_from": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Resume From"
+            "title": "Adam Beta2",
+            "description": "Exponential decay rate for second-moment estimates (moving average of squared gradients)"
           },
           "num_rollouts": {
             "anyOf": [
@@ -6060,7 +6046,8 @@
                 "type": "null"
               }
             ],
-            "title": "Num Rollouts"
+            "title": "Num Rollouts",
+            "description": "Samples per prompt for GRPO"
           },
           "max_response_length": {
             "anyOf": [
@@ -6071,7 +6058,8 @@
                 "type": "null"
               }
             ],
-            "title": "Max Response Length"
+            "title": "Max Response Length",
+            "description": "Max tokens for sampling"
           },
           "start_idx": {
             "anyOf": [
@@ -6082,7 +6070,8 @@
                 "type": "null"
               }
             ],
-            "title": "Start Idx"
+            "title": "Start Idx",
+            "description": "Row index to skip at start; train_rows = train_rows[start_idx:]"
           }
         },
         "type": "object",

@@ -20,18 +20,18 @@ class TrainingConfig:
     """
     Attributes:
         dataset (SampleDatasetConfig):
-        base_model (str):
-        training_steps (int):
-        batch_size (int | None | Unset):
-        lora_rank (int | None | Unset):
-        learning_rate (float | None | Unset):
-        adam_beta1 (float | None | Unset):
-        adam_beta2 (float | None | Unset):
-        save_every (int | None | Unset):
-        resume_from (None | str | Unset):
-        num_rollouts (int | None | Unset):
-        max_response_length (int | None | Unset):
-        start_idx (int | None | Unset):
+        base_model (str): HuggingFace model ID for LoRA base (e.g. Qwen/Qwen3-8B)
+        training_steps (int): Number of training loop iterations
+        batch_size (int | None | Unset): Rows per batch; used to slice train_rows each step
+        lora_rank (int | None | Unset): LoRA adapter rank passed to create_lora_training_client_async
+        learning_rate (float | None | Unset): Step size for weight updates; higher values learn faster but may overshoot
+        adam_beta1 (float | None | Unset): Exponential decay rate for first-moment estimates (moving average of
+            gradients)
+        adam_beta2 (float | None | Unset): Exponential decay rate for second-moment estimates (moving average of squared
+            gradients)
+        num_rollouts (int | None | Unset): Samples per prompt for GRPO
+        max_response_length (int | None | Unset): Max tokens for sampling
+        start_idx (int | None | Unset): Row index to skip at start; train_rows = train_rows[start_idx:]
     """
 
     dataset: SampleDatasetConfig
@@ -42,8 +42,6 @@ class TrainingConfig:
     learning_rate: float | None | Unset = UNSET
     adam_beta1: float | None | Unset = UNSET
     adam_beta2: float | None | Unset = UNSET
-    save_every: int | None | Unset = UNSET
-    resume_from: None | str | Unset = UNSET
     num_rollouts: int | None | Unset = UNSET
     max_response_length: int | None | Unset = UNSET
     start_idx: int | None | Unset = UNSET
@@ -86,18 +84,6 @@ class TrainingConfig:
         else:
             adam_beta2 = self.adam_beta2
 
-        save_every: int | None | Unset
-        if isinstance(self.save_every, Unset):
-            save_every = UNSET
-        else:
-            save_every = self.save_every
-
-        resume_from: None | str | Unset
-        if isinstance(self.resume_from, Unset):
-            resume_from = UNSET
-        else:
-            resume_from = self.resume_from
-
         num_rollouts: int | None | Unset
         if isinstance(self.num_rollouts, Unset):
             num_rollouts = UNSET
@@ -135,10 +121,6 @@ class TrainingConfig:
             field_dict["adam_beta1"] = adam_beta1
         if adam_beta2 is not UNSET:
             field_dict["adam_beta2"] = adam_beta2
-        if save_every is not UNSET:
-            field_dict["save_every"] = save_every
-        if resume_from is not UNSET:
-            field_dict["resume_from"] = resume_from
         if num_rollouts is not UNSET:
             field_dict["num_rollouts"] = num_rollouts
         if max_response_length is not UNSET:
@@ -204,24 +186,6 @@ class TrainingConfig:
 
         adam_beta2 = _parse_adam_beta2(d.pop("adam_beta2", UNSET))
 
-        def _parse_save_every(data: object) -> int | None | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(int | None | Unset, data)
-
-        save_every = _parse_save_every(d.pop("save_every", UNSET))
-
-        def _parse_resume_from(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        resume_from = _parse_resume_from(d.pop("resume_from", UNSET))
-
         def _parse_num_rollouts(data: object) -> int | None | Unset:
             if data is None:
                 return data
@@ -258,8 +222,6 @@ class TrainingConfig:
             learning_rate=learning_rate,
             adam_beta1=adam_beta1,
             adam_beta2=adam_beta2,
-            save_every=save_every,
-            resume_from=resume_from,
             num_rollouts=num_rollouts,
             max_response_length=max_response_length,
             start_idx=start_idx,
