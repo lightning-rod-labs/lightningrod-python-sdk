@@ -244,28 +244,28 @@ class AsyncDataset:
         """
         return await asyncio.to_thread(self._sync_dataset.to_samples)
 
-    async def flattened(self, answer_type: "AnswerType") -> List[Dict[str, Any]]:
+    async def flattened(self) -> List[Dict[str, Any]]:
         """
         Convert all samples to a list of dictionaries.
         Automatically downloads the samples if they haven't been downloaded yet.
-        
+
         All operations are run in a thread pool to avoid blocking the event loop.
-        
+
         Handles different question types (Question, ForwardLookingQuestion) and
         extracts relevant fields from labels, seeds, and prompts.
-        
+
         Returns:
             List of dictionaries, each representing a sample row
-        
+
         Example:
             >>> lr = AsyncLightningRod(api_key="your-api-key")
             >>> config = QuestionPipeline(...)
             >>> dataset = await lr.transforms.run(config)
-            >>> rows = await dataset.flattened(answer_type)
+            >>> rows = await dataset.flattened()
             >>> import pandas as pd
             >>> df = pd.DataFrame(rows)
         """
-        return await asyncio.to_thread(self._sync_dataset.flattened, answer_type)
+        return await asyncio.to_thread(self._sync_dataset.flattened)
 
     async def valid_count(self) -> int:
         """
