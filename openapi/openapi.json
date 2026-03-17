@@ -5,6 +5,11 @@
     "description": "Generate verified, grounded datasets at scale for LLM fine-tuning and evaluation",
     "version": "1.0.0"
   },
+  "servers": [
+    {
+      "url": "/api/public/v1"
+    }
+  ],
   "paths": {
     "/openai/chat/completions": {
       "post": {
@@ -4711,6 +4716,18 @@
             "title": "Enable Relevance Ranking",
             "description": "Whether to perform LLM-based relevance ranking",
             "default": true
+          },
+          "search_queries_column": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Search Queries Column",
+            "description": "Column name in sample.meta containing pre-generated search queries (list of strings). If provided, skips LLM query generation."
           }
         },
         "type": "object",
@@ -6608,13 +6625,6 @@
           "type": {
             "type": "string",
             "title": "Error Type"
-          },
-          "input": {
-            "title": "Input"
-          },
-          "ctx": {
-            "type": "object",
-            "title": "Context"
           }
         },
         "type": "object",
@@ -6691,10 +6701,5 @@
         "scheme": "bearer"
       }
     }
-  },
-  "servers": [
-    {
-      "url": "/api/public/v1"
-    }
-  ]
+  }
 }

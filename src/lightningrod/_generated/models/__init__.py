@@ -113,7 +113,6 @@ from .usage_summary_events import UsageSummaryEvents
 from .usage_summary_llm_by_model import UsageSummaryLlmByModel
 from .validate_sample_response import ValidateSampleResponse
 from .validation_error import ValidationError
-from .validation_error_context import ValidationErrorContext
 from .web_search_labeler import WebSearchLabeler
 
 __all__ = (
@@ -230,6 +229,5 @@ __all__ = (
     "UsageSummaryLlmByModel",
     "ValidateSampleResponse",
     "ValidationError",
-    "ValidationErrorContext",
     "WebSearchLabeler",
 )

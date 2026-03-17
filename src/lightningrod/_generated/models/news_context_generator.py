@@ -24,6 +24,8 @@ class NewsContextGenerator:
         min_articles (int | Unset): Minimum number of articles to ensure Default: 6.
         time_delta_days (int | Unset): Number of days to look back for news articles Default: 30.
         enable_relevance_ranking (bool | Unset): Whether to perform LLM-based relevance ranking Default: True.
+        search_queries_column (None | str | Unset): Column name in sample.meta containing pre-generated search queries
+            (list of strings). If provided, skips LLM query generation.
     """
 
     config_type: Literal["NEWS_CONTEXT_GENERATOR"] | Unset = "NEWS_CONTEXT_GENERATOR"
@@ -34,6 +36,7 @@ class NewsContextGenerator:
     min_articles: int | Unset = 6
     time_delta_days: int | Unset = 30
     enable_relevance_ranking: bool | Unset = True
+    search_queries_column: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -52,6 +55,12 @@ class NewsContextGenerator:
         time_delta_days = self.time_delta_days
 
         enable_relevance_ranking = self.enable_relevance_ranking
+
+        search_queries_column: None | str | Unset
+        if isinstance(self.search_queries_column, Unset):
+            search_queries_column = UNSET
+        else:
+            search_queries_column = self.search_queries_column
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -72,6 +81,8 @@ class NewsContextGenerator:
             field_dict["time_delta_days"] = time_delta_days
         if enable_relevance_ranking is not UNSET:
             field_dict["enable_relevance_ranking"] = enable_relevance_ranking
+        if search_queries_column is not UNSET:
+            field_dict["search_queries_column"] = search_queries_column
 
         return field_dict
 
@@ -96,6 +107,15 @@ class NewsContextGenerator:
 
         enable_relevance_ranking = d.pop("enable_relevance_ranking", UNSET)
 
+        def _parse_search_queries_column(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        search_queries_column = _parse_search_queries_column(d.pop("search_queries_column", UNSET))
+
         news_context_generator = cls(
             config_type=config_type,
             num_search_queries=num_search_queries,
@@ -105,6 +125,7 @@ class NewsContextGenerator:
             min_articles=min_articles,
             time_delta_days=time_delta_days,
             enable_relevance_ranking=enable_relevance_ranking,
+            search_queries_column=search_queries_column,
         )
 
         news_context_generator.additional_properties = d
