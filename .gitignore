@@ -41,7 +41,7 @@ htmlcov/
 # Developer files
 .env
 test_sdk.py
-notebooks/lightningrod-python-sdk/
+notebooks/**/lightningrod-python-sdk/
 
 # Misc
 .DS_Store

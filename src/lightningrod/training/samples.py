@@ -384,6 +384,7 @@ def to_record(sample: Sample) -> dict[str, Any]:
     """
     row: TrainingSample = {
         "sample_id": sample.id,
+        "is_valid": sample.is_valid,
     }
     question = sample.question if not isinstance(sample.question, Unset) else None
 
