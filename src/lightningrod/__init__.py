@@ -9,7 +9,7 @@ from lightningrod.datasets.dataset import SampleDataset, AsyncDataset
 from lightningrod import preprocessing, training, utils
 from lightningrod.utils.sample import create_sample
 from lightningrod.utils.models import open_router_model
-from lightningrod.training import filter_and_split
+from lightningrod.training import prepare_for_training, FilterParams, DedupParams, SplitParams
 from lightningrod.training.client import TrainingConfig
 from lightningrod._generated.models import (
     TransformJob,
@@ -95,7 +95,10 @@ __all__ = [
     "Rollout",
     "RolloutScorer",
     "RolloutGenerator",
-    "filter_and_split",
+    "prepare_for_training",
+    "FilterParams",
+    "DedupParams",
+    "SplitParams",
     "TrainingConfig",
     "Sample",
     "SampleMeta",
