@@ -548,27 +548,20 @@ def display_prepare_report(report: Any, verbose: bool = True) -> None:
         else:
             renderables.append(_safe_markup(f"  [bold]Dedup:[/bold]   {stats.dedup_kept} remain (0 duplicates)"))
 
-        if stats.split_strategy == "temporal":
-            split_detail = f"Temporal: {stats.split_train_after} train | {stats.split_test_after} test"
-            if stats.split_no_sort_key:
-                split_detail += f"  ({stats.split_no_sort_key} dropped, no prediction_date)"
-            renderables.append(_safe_markup(f"  [bold]Split:[/bold]   {split_detail}"))
-            if stats.split_train_excluded:
-                renderables.append(_safe_markup(
-                    f"           [yellow]{stats.split_train_excluded} train samples removed for leakage[/yellow]"
-                ))
-        else:
+        split_detail = f"Splits: {stats.split_train_after} train | {stats.split_test_after} test ({stats.split_no_sort_key} dropped, no prediction_date)"
+        renderables.append(_safe_markup(f"  [bold]Split:[/bold]   {split_detail}"))
+        n_leaked = stats.split_train_before - stats.split_train_after
+        if n_leaked:
             renderables.append(_safe_markup(
-                f"  [bold]Split:[/bold]   Random (test_size={stats.split_test_size}): "
-                f"{stats.split_train_after} train | {stats.split_test_after} test"
+                f"           [yellow]{n_leaked} train samples removed for leakage[/yellow]"
             ))
 
     if not report.is_healthy:
         renderables.append(Text(""))
-        renderables.append(_safe_markup("[bold yellow]⚠ Unhealthy split[/bold yellow]"))
+        renderables.append(_safe_markup("[bold yellow]⚠ Unhealthy dataset[/bold yellow]"))
         for issue in report.issues:
             renderables.append(Text(""))
-            renderables.append(Text(issue.message))
+            renderables.append(Text(issue.message, style="bold"))
             if issue.tips:
                 renderables.append(Text(""))
                 renderables.append(_safe_markup("  [dim]Tips:[/dim]"))

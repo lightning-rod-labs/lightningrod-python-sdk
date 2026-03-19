@@ -37,21 +37,19 @@ class PrepareStats:
     Fields are grouped by pipeline stage. Invariants:
       filter_kept  = total - filter_invalid - filter_horizon - filter_context
       dedup_kept   = filter_kept - dedup_removed
-      split_train_before + split_test_before + split_no_sort_key = dedup_kept
-      split_train_after  = split_train_before - split_train_excluded
-      split_test_after   = split_test_before  - split_test_excluded
+      split_train_before + split_test_after + split_no_sort_key = dedup_kept (temporal)
+      split_train_excluded = split_train_before - split_train_after (inferred; train leakage only)
     """
 
     # ── Input ────────────────────────────────────────────────────────────────
     total: int = 0
 
     # ── Stage 1: filter_samples ───────────────────────────────────────────────
-    # Counts of samples dropped at each validity check; filter_kept is what survives.
     filter_invalid: int = 0
-    filter_horizon: int = 0                    # outside days_to_resolution_range
-    filter_context: int = 0                    # missing / empty rendered_context
-    filter_missing_resolution_date: int = 0    # sub-count of filter_horizon
-    filter_missing_prediction_date: int = 0    # sub-count of filter_horizon
+    filter_horizon: int = 0
+    filter_context: int = 0
+    filter_missing_resolution_date: int = 0
+    filter_missing_prediction_date: int = 0
     filter_kept: int = 0
 
     # ── Stage 2: deduplicate_samples ─────────────────────────────────────────
@@ -60,21 +58,11 @@ class PrepareStats:
     dedup_top_collisions: list[tuple[tuple[Any, ...], int]] = field(default_factory=list)
 
     # ── Stage 3: train_test_split ─────────────────────────────────────────────
-    split_strategy: str = ""
-    split_test_size: float | None = None       # only set for random splits
+    split_no_sort_key: int = 0
 
-    # Samples dropped before the train/test buckets are formed (temporal only).
-    split_no_sort_key: int = 0                 # missing prediction_date; dropped entirely
-
-    # Train side: before → excluded → after
-    split_train_before: int = 0               # initial train bucket size before leakage removal
-    split_train_excluded: int = 0             # removed from train for temporal leakage (filter_leaky_train=True)
-    split_train_after: int = 0                # final train count = split_train_before - split_train_excluded
-
-    # Test side: before → excluded → after
-    split_test_before: int = 0                # initial test bucket size before any test-side filtering
-    split_test_excluded: int = 0              # removed from test (reserved for future test-side filtering)
-    split_test_after: int = 0                 # final test count = split_test_before - split_test_excluded
+    split_train_before: int = 0
+    split_train_after: int = 0
+    split_test_after: int = 0
 
 
 @dataclass
@@ -364,13 +352,9 @@ def train_test_split(
                 n_leaky = train_before - len(train)
 
         if stats is not None:
-            stats.split_strategy = params.strategy
             stats.split_no_sort_key = n_no_sort_key
             stats.split_train_before = len(train) + n_leaky
-            stats.split_train_excluded = n_leaky
             stats.split_train_after = len(train)
-            stats.split_test_before = len(test)
-            stats.split_test_excluded = 0
             stats.split_test_after = len(test)
 
         return [s.id for s in train], [s.id for s in test]
@@ -385,13 +369,8 @@ def train_test_split(
     test = shuffled[split_idx:]
 
     if stats is not None:
-        stats.split_strategy = params.strategy
-        stats.split_test_size = params.test_size
         stats.split_train_before = len(train)
-        stats.split_train_excluded = 0
         stats.split_train_after = len(train)
-        stats.split_test_before = len(test)
-        stats.split_test_excluded = 0
         stats.split_test_after = len(test)
 
     return [s.id for s in train], [s.id for s in test]
@@ -654,64 +633,134 @@ def _render_context(context: list[Union[NewsContext, RAGContext]]) -> str:
 def _build_report(stats: PrepareStats, split: SplitParams, filter: FilterParams) -> PrepareReport:
     """Build a structured PrepareReport from pipeline stats and params. Pure — no side effects."""
     issues: list[PrepareIssue] = []
+    split_train_excluded = stats.split_train_before - stats.split_train_after
 
+    # Issue: majority of train samples leaked into test period
     majority_train_leaked = (
         split.filter_leaky_train
         and split.strategy == "temporal"
         and stats.split_train_before > 0
-        and stats.split_train_excluded > stats.split_train_before // 2
+        and split_train_excluded > stats.split_train_before // 2
     )
     if majority_train_leaked:
-        pct = int(100 * stats.split_train_excluded / stats.split_train_before)
+        pct = int(100 * split_train_excluded / stats.split_train_before)
         tips: list[str] = []
-        if split.test_start is None:
-            max_horizon = filter.days_to_resolution_range[1] if filter.days_to_resolution_range else None
-            buffer = f"{max_horizon}" if max_horizon else "your max resolution horizon"
+        max_horizon = filter.days_to_resolution_range[1] if filter.days_to_resolution_range else None
+        if max_horizon is not None:
             tips.append(
-                f"Use test_start=\"YYYY-MM-DD\" instead of test_size to set an explicit cutoff at least "
-                f"{buffer} days before your last question date, giving train questions room to resolve before the test window."
+                f"Extend the seed generator date range to start earlier — the range should span at least "
+                f"{max_horizon * 2} days so questions generated near the start resolve well before the test window."
             )
-        if filter.days_to_resolution_range is not None and filter.days_to_resolution_range[1] is not None:
+        else:
             tips.append(
-                f"Tighten days_to_resolution_range — the current max of {filter.days_to_resolution_range[1]} days "
-                "means train resolution dates extend far into the test window. Reducing it shrinks the bleed-over zone."
+                "Extend the seed generator (date) filter range to start earlier — questions generated near the start "
+                "will resolve well before the test window. Aim for at least 2× your max resolution horizon."
             )
         tips.append(
-            "Generate more samples across a wider date range. With questions spread over a longer period, the "
-            "temporal split cutoff moves far enough back that earlier questions resolve well before the test window."
+            "Generate more samples by increasing max_questions in lr.transforms.run() or removing the limit, "
+            "or increase questions_per_seed in your question generator config. "
+            "A larger, temporally well-spread dataset naturally pushes the split cutoff far enough back."
         )
         tips.append(
-            "Set filter_leaky_train=False to disable leakage removal. Only do this if you are confident the "
-            "resolution dates do not reveal information that was unavailable at prediction time."
+            "If very few seeds were returned by the pipeline (check the run summary table), the search queries "
+            "may not surface results across the full date range. Try more diverse search queries, increase "
+            "articles_per_search, or shorten interval_duration_days."
         )
         issues.append(PrepareIssue(
             message=(
-                f"{stats.split_train_excluded}/{stats.split_train_before} train samples ({pct}%) were removed "
+                f"{split_train_excluded}/{stats.split_train_before} train samples ({pct}%) were removed "
                 "for temporal leakage — the date_close or resolution_date of train questions extends into the test period."
             ),
             tips=tips,
         ))
 
-    all_test_excluded = stats.split_test_after == 0 and stats.split_test_excluded == 0 and stats.dedup_kept > 0
-    if all_test_excluded:
-        test_tips: list[str] = []
-        if split.strategy == "temporal":
-            if split.test_start is not None:
-                test_tips.append(
-                    f"The test_start=\"{split.test_start}\" cutoff may be after all sample dates. "
-                    "Choose an earlier date or switch to test_size=0.2."
-                )
-            else:
-                test_tips.append("Increase the dataset size so there are enough samples to fill the test fraction.")
-                test_tips.append(
-                    f"Decrease test_size (currently {split.test_size}) if too few samples survive to the test window."
-                )
-        else:
-            test_tips.append(
-                f"Increase the dataset size — with test_size={split.test_size} and only {stats.dedup_kept} samples "
-                "after filtering, the test set may round to zero."
-            )
-        issues.append(PrepareIssue(message="The test set is empty after splitting.", tips=test_tips))
+    # Issue: too few train samples for effective training
+    MIN_TRAIN_SAMPLES = 200
+    if stats.split_train_after < MIN_TRAIN_SAMPLES and stats.split_train_after > 0:
+        issues.append(PrepareIssue(
+            message=(
+                f"Only {stats.split_train_after} train samples remain after preparation. "
+                f"This is below the recommended minimum of {MIN_TRAIN_SAMPLES} for effective training."
+            ),
+            tips=[
+                "Increase max_questions in lr.transforms.run() to generate more samples.",
+                "Increase questions_per_seed in your question generator (ForwardLookingQuestionGenerator or QuestionGenerator) to produce more questions from each seed article."
+                "Add more search queries to your seed generator to diversify seed sources.",
+                "Widen the seed generator date range (start_date to end_date) to capture more events.",
+            ],
+        ))
+
+    # Issue: too few test samples for reliable evaluation
+    MIN_TEST_SAMPLES = 50
+    if stats.split_test_after < MIN_TEST_SAMPLES and stats.split_test_after > 0:
+        issues.append(PrepareIssue(
+            message=(
+                f"Only {stats.split_test_after} test samples remain after preparation. "
+                f"This is below the recommended minimum of ~{MIN_TEST_SAMPLES} for reliable evaluation."
+            ),
+            tips=[
+                "Generate more samples overall — test samples come from the most recent portion of your date range.",
+                "Ensure your seed generator date range extends close to the present so recent events appear in the test set.",
+            ],
+        ))
+
+    # Issue: high invalid rate (>30% of samples were invalid)
+    HIGH_INVALID_THRESHOLD = 0.30
+    if stats.total > 0 and stats.filter_invalid / stats.total > HIGH_INVALID_THRESHOLD:
+        pct = int(100 * stats.filter_invalid / stats.total)
+        issues.append(PrepareIssue(
+            message=(
+                f"{stats.filter_invalid}/{stats.total} samples ({pct}%) were marked invalid. "
+                "This suggests issues with dataset generation configuration."
+            ),
+            tips=[
+                "Add more examples and bad_examples to guide the question generator toward more sensible questions.",
+                "Check the labeler configuration — if WebSearchLabeler can't find resolution info, samples are marked invalid.",
+                "Inspect a few invalid samples with dataset.flattened() to identify patterns.",
+            ],
+        ))
+
+    # Issue: high dedup rate (>40% removed as duplicates)
+    HIGH_DEDUP_THRESHOLD = 0.40
+    if stats.filter_kept > 0 and stats.dedup_removed / stats.filter_kept > HIGH_DEDUP_THRESHOLD:
+        pct = int(100 * stats.dedup_removed / stats.filter_kept)
+        issues.append(PrepareIssue(
+            message=(
+                f"{stats.dedup_removed}/{stats.filter_kept} samples ({pct}%) were duplicates. "
+                "The pipeline is generating repetitive or similar questions."
+            ),
+            tips=[
+                "Add more diverse search queries to your seed generator to surface different source articles.",
+                "Increase interval_duration_days to spread seeds across more time periods.",
+                "Add bad_examples to your question generator showing the repetitive patterns to avoid.",
+                "Use more specific instructions in your question generator to encourage variety.",
+            ],
+        ))
+
+    # Issue: high horizon filter rate (>50% filtered out by horizon)
+    HIGH_HORIZON_THRESHOLD = 0.50
+    if stats.total > 0 and stats.filter_horizon / stats.total > HIGH_HORIZON_THRESHOLD:
+        pct = int(100 * stats.filter_horizon / stats.total)
+        horizon_desc = ""
+        if filter.days_to_resolution_range:
+            min_h, max_h = filter.days_to_resolution_range
+            if min_h is not None and max_h is not None:
+                horizon_desc = f" (required: {min_h}-{max_h} days)"
+            elif min_h is not None:
+                horizon_desc = f" (required: ≥{min_h} days)"
+            elif max_h is not None:
+                horizon_desc = f" (required: ≤{max_h} days)"
+        issues.append(PrepareIssue(
+            message=(
+                f"{stats.filter_horizon}/{stats.total} samples ({pct}%) fell outside the resolution horizon{horizon_desc}. "
+            ),
+            tips=[
+                "Widen your days_to_resolution_range in FilterParams if your use case allows longer/shorter horizons.",
+                "Adjust your seed generator date range — questions from very recent seeds may not have resolved yet, "
+                "while questions from old seeds may exceed your max horizon.",
+                "Check that your question generator is producing questions with appropriate resolution timelines for your target horizon."
+            ],
+        ))
 
     return PrepareReport(stats=stats, issues=issues)
 
@@ -747,14 +796,12 @@ def _print_report(report: PrepareReport, verbose: bool) -> None:
         else:
             print(f"[dedup] {stats.dedup_kept} remain (0 duplicates)")
 
-        if stats.split_strategy == "temporal":
-            if stats.split_no_sort_key:
-                print(f"[split] {stats.split_no_sort_key} samples had no prediction_date (dropped)")
-            if stats.split_train_excluded:
-                print(f"[split] {stats.split_train_excluded} train samples removed for leakage")
-            print(f"[split] Temporal split: {stats.split_train_after} train, {stats.split_test_after} test")
-        else:
-            print(f"[split] Random split (test_size={stats.split_test_size}): {stats.split_train_after} train, {stats.split_test_after} test")
+        if stats.split_no_sort_key:
+            print(f"[split] {stats.split_no_sort_key} samples had no prediction_date (dropped)")
+        n_leaked = stats.split_train_before - stats.split_train_after
+        if n_leaked:
+            print(f"[split] {n_leaked} train samples removed for leakage")
+        print(f"[split] Temporal split: {stats.split_train_after} train, {stats.split_test_after} test")
 
     if not report.is_healthy:
         lines = ["[prepare_for_training] Unhealthy split detected."]
