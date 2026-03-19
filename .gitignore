@@ -42,10 +42,13 @@ htmlcov/
 .env
 test_sdk.py
 notebooks/**/lightningrod-python-sdk/
+agent-experiments/
+
+# Pipeline output cache
+.lr_cache/
+
+# Pipeline output cache
+.lr_cache/
 
 # Misc
 .DS_Store
-
-# Experiments
-military_strikes_middle_east/
-hn_github_stars/

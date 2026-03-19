@@ -465,28 +465,46 @@ def run_live_display(
             live.update(build_live_display(metrics=metrics, job=job))
 
 
-def _build_invalid_samples_error_message(original_message: str) -> Group:
+def _build_invalid_samples_error_message(
+    original_message: str,
+    error_details: Optional[list[str]] = None,
+) -> Group:
     """Build enhanced error message for invalid samples error using Rich formatting."""
     renderables: list[RenderableType] = []
-    
+
     renderables.append(_safe_markup(f"[bold]{original_message}[/bold]"))
     renderables.append(Text(""))
-    
+
+    if error_details:
+        renderables.append(_safe_markup("[bold]Error details:[/bold]"))
+        for detail in error_details[:5]:
+            truncated = detail[:500] + "..." if len(detail) > 500 else detail
+            renderables.append(Text(f"  • {truncated}", style="dim"))
+        if len(error_details) > 5:
+            renderables.append(Text(f"  • ... and {len(error_details) - 5} more", style="dim italic"))
+        renderables.append(Text(""))
+
     renderables.append(_safe_markup("[bold]This typically happens when:[/bold]"))
     renderables.append(_safe_markup("  • Filter criteria is too strict"))
     renderables.append(_safe_markup("  • Labeling failed (e.g., questions couldn't be answered or had low confidence)"))
     renderables.append(_safe_markup("  • Seed generation found no suitable content"))
     renderables.append(Text(""))
-    
+
     renderables.append(_safe_markup("[bold]Next steps:[/bold]"))
     renderables.append(_safe_markup("  • Check the dataset samples to see specific failure reasons in the 'meta.filter_reason' field"))
     renderables.append(_safe_markup("  • Adjust and retry the transform pipeline (e.g., try a wider date range)"))
     renderables.append(_safe_markup("  • If the problem persists, contact support or open a GitHub issue: [link=https://github.com/lightning-rod-labs/lightningrod-python-sdk/issues]https://github.com/lightning-rod-labs/lightningrod-python-sdk/issues[/link]"))
-    
+
     return Group(*renderables)
 
 
-def display_error(message: str, title: str = "Error", job: Any = None, response_body: str | None = None) -> None:
+def display_error(
+    message: str,
+    title: str = "Error",
+    job: Any = None,
+    response_body: str | None = None,
+    error_details: Optional[list[str]] = None,
+) -> None:
     console = Console()
     renderables: list[RenderableType] = []
 
@@ -494,7 +512,16 @@ def display_error(message: str, title: str = "Error", job: Any = None, response_
     renderables.append(Text(""))
 
     if "Job completed with 0 valid rows" in message:
-        renderables.append(_build_invalid_samples_error_message(message))
+        renderables.append(_build_invalid_samples_error_message(message, error_details=error_details))
+    elif error_details:
+        renderables.append(_safe_markup(f"[bold]{message}[/bold]"))
+        renderables.append(Text(""))
+        renderables.append(_safe_markup("[bold]Error details:[/bold]"))
+        for detail in error_details[:5]:
+            truncated = detail[:500] + "..." if len(detail) > 500 else detail
+            renderables.append(Text(f"  • {truncated}", style="dim"))
+        if len(error_details) > 5:
+            renderables.append(Text(f"  • ... and {len(error_details) - 5} more", style="dim italic"))
     else:
         renderables.append(_safe_markup(f"[bold]{message}[/bold]"))
 
