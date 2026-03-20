@@ -51,7 +51,7 @@ pipeline = QuestionPipeline(
 )
 
 dataset = lr.transforms.run(pipeline, max_questions=3000)
-dataset.flattened(binary_answer)  # Ready-to-use data for your training pipelines
+dataset.flattened()  # Ready-to-use data for your training pipelines
 ```
 
 **We use this to generate the [Future-as-Label training dataset](https://huggingface.co/datasets/LightningRodLabs/future-as-label-paper-training-dataset) for our research paper.**
@@ -91,6 +91,7 @@ We have some example notebooks to help you get started! If you have trouble usin
 | Custom Documents   | `notebooks/getting_started/02_custom_documents_datasource.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/02_custom_documents_datasource.ipynb) |
 | BigQuery Datasource | `notebooks/getting_started/03_bigquery_datasource.ipynb`   | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/03_bigquery_datasource.ipynb)    |
 | Answer Types       | `notebooks/getting_started/04_answer_types.ipynb`           | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/04_answer_types.ipynb)           |
+| Fine Tuning       | `notebooks/getting_started/05_fine_tuning.ipynb`           | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/05_fine_tuning.ipynb)           |
 
 ### Evaluation
 

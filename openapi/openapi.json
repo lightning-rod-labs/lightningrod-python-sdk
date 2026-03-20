@@ -744,48 +744,6 @@
         }
       }
     },
-    "/samples/validate": {
-      "post": {
-        "tags": [
-          "Samples"
-        ],
-        "summary": "Validate Sample",
-        "description": "Validate a Sample object structure",
-        "operationId": "validate_sample_samples_validate_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Sample"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidateSampleResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/files": {
       "post": {
         "tags": [
@@ -6583,24 +6541,6 @@
         "type": "object",
         "title": "UsageSummary",
         "description": "Flexible usage statistics by event type and LLM model."
-      },
-      "ValidateSampleResponse": {
-        "properties": {
-          "valid": {
-            "type": "boolean",
-            "title": "Valid"
-          },
-          "message": {
-            "type": "string",
-            "title": "Message"
-          }
-        },
-        "type": "object",
-        "required": [
-          "valid",
-          "message"
-        ],
-        "title": "ValidateSampleResponse"
       },
       "ValidationError": {
         "properties": {
