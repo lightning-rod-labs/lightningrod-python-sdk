@@ -14,7 +14,7 @@ Get probability estimates on binary forecasting questions with Lightning Rod's h
 
 ### Setup
 
-Sign up at [dashboard.lightningrod.ai](https://dashboard.lightningrod.ai/?redirect=/api) to get your API key and **$50 of free credits**.
+Sign up at [dashboard.lightningrod.ai](https://dashboard.lightningrod.ai/sign-up?redirect=/api) to get your API key and **$50 of free credits**.
 
 ```bash
 pip install openai lightningrod-ai
