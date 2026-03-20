@@ -34,6 +34,7 @@ class SampleDataset:
     sample_ids: Optional[List[str]]
     num_rows: int
     prompt_template: Optional[str]
+    multiple_choice_options: Optional[str]
 
     def __init__(
         self,
@@ -43,11 +44,13 @@ class SampleDataset:
         sample_ids: Optional[List[str]] = None,
         samples: Optional[List[Sample]] = None,
         prompt_template: Optional[str] = None,
+        multiple_choice_options: Optional[str] = None,
     ):
         self.id: str = id
         self.num_rows: int = num_rows
         self._datasets_client: "DatasetSamplesClient" = datasets_client
         self.prompt_template: Optional[str] = prompt_template
+        self.multiple_choice_options: Optional[str] = multiple_choice_options
         if samples is not None:
             self._samples: Optional[List[Sample]] = samples
             self.sample_ids: Optional[List[str]] = [s.id for s in samples]
@@ -65,6 +68,7 @@ class SampleDataset:
             datasets_client=self._datasets_client,
             samples=samples,
             prompt_template=self.prompt_template,
+            multiple_choice_options=self.multiple_choice_options,
         )
 
     def preview_prompts(
@@ -224,6 +228,14 @@ class AsyncDataset:
     @prompt_template.setter
     def prompt_template(self, value: Optional[str]) -> None:
         self._sync_dataset.prompt_template = value
+
+    @property
+    def multiple_choice_options(self) -> Optional[str]:
+        return self._sync_dataset.multiple_choice_options
+
+    @multiple_choice_options.setter
+    def multiple_choice_options(self, value: Optional[str]) -> None:
+        self._sync_dataset.multiple_choice_options = value
 
     async def to_samples(self) -> List[Sample]:
         """

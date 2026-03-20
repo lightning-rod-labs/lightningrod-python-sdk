@@ -18,11 +18,13 @@ class SampleDatasetConfig:
         id (str):
         sample_ids (list[str]):
         prompt_template (None | str | Unset):
+        multiple_choice_options (None | str | Unset):
     """
 
     id: str
     sample_ids: list[str]
     prompt_template: None | str | Unset = UNSET
+    multiple_choice_options: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -36,6 +38,12 @@ class SampleDatasetConfig:
         else:
             prompt_template = self.prompt_template
 
+        multiple_choice_options: None | str | Unset
+        if isinstance(self.multiple_choice_options, Unset):
+            multiple_choice_options = UNSET
+        else:
+            multiple_choice_options = self.multiple_choice_options
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -46,6 +54,8 @@ class SampleDatasetConfig:
         )
         if prompt_template is not UNSET:
             field_dict["prompt_template"] = prompt_template
+        if multiple_choice_options is not UNSET:
+            field_dict["multiple_choice_options"] = multiple_choice_options
 
         return field_dict
 
@@ -65,10 +75,20 @@ class SampleDatasetConfig:
 
         prompt_template = _parse_prompt_template(d.pop("prompt_template", UNSET))
 
+        def _parse_multiple_choice_options(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        multiple_choice_options = _parse_multiple_choice_options(d.pop("multiple_choice_options", UNSET))
+
         sample_dataset_config = cls(
             id=id,
             sample_ids=sample_ids,
             prompt_template=prompt_template,
+            multiple_choice_options=multiple_choice_options,
         )
 
         sample_dataset_config.additional_properties = d
