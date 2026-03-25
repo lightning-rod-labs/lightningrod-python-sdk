@@ -1,4 +1,4 @@
-.PHONY: help setup install install-dev test build clean generate filter-openapi publish upload bump-version bump-patch bump-minor bump-major
+.PHONY: help setup install install-dev test pytest build clean generate filter-openapi publish upload bump-version bump-patch bump-minor bump-major
 
 help:
 	@echo "Lightning Rod Python SDK - Development Commands"
@@ -6,7 +6,8 @@ help:
 	@echo "  make setup       - Create virtual environment and install package"
 	@echo "  make install     - Install package in editable mode"
 	@echo "  make install-dev - Install package with development dependencies"
-	@echo "  make test        - Run tests"
+	@echo "  make test        - Run tests (pytest)"
+	@echo "  make pytest      - Same as make test"
 	@echo "  make build       - Build distribution packages"
 	@echo "  make publish     - Build and upload to PyPI"
 	@echo "  make upload      - Upload distribution packages to PyPI (requires build first)"
@@ -31,7 +32,7 @@ install-dev:
 	@echo "Installing lightningrod-ai with development dependencies..."
 	@pip install -e ".[dev]"
 
-test:
+test pytest:
 	@echo "Running tests..."
 	@python -m pytest tests/ -v
 

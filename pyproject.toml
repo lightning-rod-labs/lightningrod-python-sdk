@@ -32,6 +32,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "openapi-python-client>=0.15.0",
+    "pytest>=7.0.0",
 ]
 
 [tool.setuptools]
