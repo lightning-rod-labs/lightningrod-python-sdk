@@ -2,17 +2,19 @@
 
 ---
 
-## Two Sub-Patterns
+## Two Starting Points
 
-**2A — Document Q&A**: Documents → chunk → `QuestionAndLabelGenerator` (extracts Q and A) → SFT.
+**From documents**: Documents → chunk → `QuestionAndLabelGenerator` (extracts Q and A) → SFT. Use `QuestionAndLabelGenerator`, not `WebSearchLabeler` — the answers are in the documents.
 
-**2B — Topic-Driven Knowledge**: Domain → `TopicTreeSeedGenerator` → questions → `WebSearchLabeler` (finds answers) → SFT.
+**From a topic/domain (no documents)**: Domain → `TopicTreeSeedGenerator` → questions → `WebSearchLabeler` (finds answers from the web) → SFT.
 
 ---
 
-## Example 1: Survival Field Guide (2B — Topic Tree + Web Q&A)
+## Example 1: Survival Field Guide (Topic Tree + Web Q&A)
 
-Train a model to give step-by-step survival instructions. `TopicTreeSeedGenerator` decomposes broad domains into specific leaf seeds for coverage, then `WebSearchLabeler` finds authoritative answers from the web.
+**Goal:** Train a model to give step-by-step survival instructions for grid-down emergencies.
+
+`TopicTreeSeedGenerator` decomposes broad domains into specific leaf seeds for coverage, then `WebSearchLabeler` finds authoritative answers from the web.
 
 > **Source**: `lightningrod-python-sdk/notebooks/fine_tuning/03_survival_llm.ipynb`
 
@@ -20,11 +22,14 @@ Train a model to give step-by-step survival instructions. `TopicTreeSeedGenerato
 
 ```python
 from lightningrod import (
-    LightningRod, QuestionPipeline, TopicTreeSeedGenerator,
+    LightningRod, QuestionPipeline,
     QuestionGenerator, FreeResponseAnswerType, WebSearchLabeler,
 )
+# TopicTreeSeedGenerator is coming soon — not yet available in the SDK.
+# When released, import it from lightningrod and use as shown below.
+from lightningrod import TopicTreeSeedGenerator  # available soon
 
-lr = LightningRod()
+lr = LightningRod(api_key=api_key)
 
 answer_type = FreeResponseAnswerType(
     labeler_instruction=(
@@ -96,7 +101,7 @@ dataset = lr.transforms.run(pipeline, name="SurvivalLLM")
 ### SFT Training
 
 ```python
-import json, tinker
+import tinker
 
 SYSTEM_PROMPT = (
     "You are SurvivalLLM. Direct, step-by-step survival instructions. "
@@ -114,8 +119,7 @@ for s in dataset.download():
         {"role": "assistant", "content": a},
     ]})
 
-# Small model appropriate for focused domain with ~100s of examples
-# For larger datasets (1000+), use openai/gpt-oss-120b
+# Small model appropriate for on-device usage (survival in emergency)
 BASE_MODEL = "Qwen/Qwen3-8B-Instruct"
 service = tinker.ServiceClient()
 trainer = service.create_lora_training_client(base_model=BASE_MODEL, train_unembed=False)
@@ -129,67 +133,112 @@ for epoch in range(3):
 
 ---
 
-## Example 2: Medical Textbooks (2A — Document Q&A)
+## Example 2: Medical Textbooks (Document Q&A)
 
-Generate free-response Q&A from 6 medical textbooks. `QuestionAndLabelGenerator` pulls Q and A from chunks — no labeler.
+**Goal:** Train a model to answer clinical nutrition questions using knowledge from medical textbooks.
+
+`QuestionAndLabelGenerator` extracts Q&A pairs directly from document chunks — no labeler needed since the answers are in the text.
 
 > **Source**: `llm_forecasting/notebooks/client_work/takeoff41/dataset_generation.ipynb`
 
+### Step 1: Upload Documents to FileSet
+
 ```python
-from lightningrod import QuestionAndLabelGenerator, AnswerTypes
+from lightningrod import (
+    LightningRod, FileSetMetadataSchemaInput,
+    MetadataFieldDefinitionInput, MetadataFieldType,
+)
 
-# 3,466 chunks from 6 textbooks (4000 tokens, 200 overlap, header-recursive splitting)
+lr = LightningRod(api_key=api_key)
 
-qa_config = QuestionAndLabelGenerator(
-    answer_type=AnswerTypes.free_response(),
-    questions_per_seed=3,
-    instructions=(
-        "Generate questions testing understanding of clinical nutrition concepts, "
-        "medical procedures, and evidence-based practices. Specific, proper terminology. "
-        "Answers should cite specific values/ranges when mentioned."
+schema = FileSetMetadataSchemaInput(fields=[
+    MetadataFieldDefinitionInput(
+        name="book_title", field_type=MetadataFieldType.STRING, required=True,
+        description="Title of the textbook"
+    ),
+])
+
+fileset = lr.filesets.create(
+    name="Medical Nutrition Textbooks",
+    description="Clinical nutrition textbooks for SFT training data",
+    metadata_schema=schema,
+)
+
+# Upload each PDF with metadata
+for pdf_path, title in textbooks:
+    lr.filesets.files.upload(
+        file_set_id=fileset.id,
+        file_path=pdf_path,
+        metadata={"book_title": title},
+    )
+
+# Wait for file processing (PENDING → PROCESSING → ACTIVE)
+# Poll lr.filesets.files.list(fileset.id) until all files are ACTIVE
+```
+
+### Step 2: Run Q&A Generation Pipeline
+
+```python
+from lightningrod import (
+    QuestionPipeline, FileSetSeedGenerator,
+    QuestionAndLabelGenerator, FreeResponseAnswerType,
+)
+
+pipeline = QuestionPipeline(
+    seed_generator=FileSetSeedGenerator(
+        file_set_id=fileset.id,
+        chunk_size=4000,        # larger chunks = more context per Q&A
+        chunk_overlap=200,
+    ),
+    question_generator=QuestionAndLabelGenerator(
+        answer_type=FreeResponseAnswerType(),
+        questions_per_seed=3,   # 3 Q&A pairs per chunk — dense medical text
+        instructions=(
+            "Generate questions testing understanding of clinical nutrition concepts, "
+            "medical procedures, and evidence-based practices. Specific, proper terminology. "
+            "Answers should cite specific values/ranges when mentioned."
+        ),
     ),
 )
+
+dataset = lr.transforms.run(pipeline, max_questions=12000, name="Medical nutrition Q&A")
 ```
 
-| Book | Q&A Pairs |
-|------|-----------|
-| ASPEN Parenteral Nutrition | 1,504 |
-| ASPEN Fluids & Electrolytes | 1,127 |
-| ASPEN Pediatric Nutrition | 3,787 |
-| Handbook | 1,347 |
-| NBNSC Book | 908 |
-| Pediatric Nutrition | 1,666 |
-| **Total** | **10,339** |
-
----
-
-## Example 3: Call Transcripts (Conversation SFT)
-
-Build SFT data from existing phone conversations. No Q&A generation — conversations ARE the data. Filter junk, score quality, convert to chat format.
-
-> **Source**: `llm_forecasting/notebooks/client_work/caremaze/sft_dataset.ipynb`
+### Step 3: Filter and Format for SFT
 
 ```python
-from lightningrodlabs.entities.model.model_config import ModelConfig
-
-# Score conversations 0-5 with a rubric via large model
-MODEL = ModelConfig.open_router("qwen/qwen3-235b-a22b-2507")
-# 0=unusable, 1=poor, 2=below average, 3=acceptable, 4=good, 5=excellent
-
-# 7,451 calls → 2,455 after junk filter → 1,268 at score >= 3
-def to_sft(call):
-    return {"messages": [
-        {"role": "assistant" if t["speaker"] == "Caller" else "user", "content": t["text"]}
-        for t in call.turns
-    ]}
+sft_data = []
+for s in dataset.download():
+    if not s.is_valid: continue
+    q, a = s.question.question_text, s.label.label
+    if not q or not a or a == "undetermined": continue
+    sft_data.append({"messages": [
+        {"role": "system", "content": "You are a clinical nutrition expert."},
+        {"role": "user", "content": q},
+        {"role": "assistant", "content": a},
+    ]})
 ```
+
+### Results
+
+| Book                        | Q&A Pairs  |
+| --------------------------- | ---------- |
+| ASPEN Parenteral Nutrition  | 1,504      |
+| ASPEN Fluids & Electrolytes | 1,127      |
+| ASPEN Pediatric Nutrition   | 3,787      |
+| Handbook                    | 1,347      |
+| NBNSC Book                  | 908        |
+| Pediatric Nutrition         | 1,666      |
+| **Total**                   | **10,339** |
+
 
 ---
 
 ## Things to Watch For
 
-- **2A**: Use `QuestionAndLabelGenerator`, not `WebSearchLabeler` — answers are in the documents
-- **2B**: `WebSearchLabeler` is correct — the web provides answers for topic-generated questions
+- From documents: use `QuestionAndLabelGenerator`, not `WebSearchLabeler` — answers are in the documents
+- From topics: `WebSearchLabeler` is correct — the web provides answers for topic-generated questions
 - **Quality filter always.** `FilterCriteria(min_score=0.7)`, score cutoffs, or agreement checks
 - **System prompt matters.** Shapes persona and gets baked into training data
 - **Match `questions_per_seed` to density:** topic tree nodes → 10, doc chunks (4000) → 3, doc chunks (2000) → 2, short text → 1
+
