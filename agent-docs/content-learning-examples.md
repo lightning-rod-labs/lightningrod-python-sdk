@@ -6,77 +6,25 @@
 
 **2A — Document Q&A**: Documents → chunk → `QuestionAndLabelGenerator` (extracts Q and A) → SFT.
 
-**2B — Topic-Driven Knowledge**: Domain → topic tree → questions → `WebSearchLabeler` (finds answers) → SFT.
-
-### TopicTreeSeedGenerator
-
-Server-side transform that decomposes broad topics into specific leaf seeds via LLM. Check if available in SDK (`from lightningrod import TopicTreeSeedGenerator`); fall back to [Pluto](https://github.com/pluto-data/pluto) if not.
-
-```python
-TopicTreeSeedGenerator(
-    topic=["Field medicine", "Water purification", "Navigation"],
-    tree_depth=2,       # levels of expansion (default: 2)
-    tree_degree=5,      # subtopics per node (default: 5)
-    # → degree^depth seeds per root (5^2 = 25 per root)
-    model_name="google/gemini-3-flash-preview",
-    model_system_prompt="You are an expert in survival and self-reliance...",
-)
-```
+**2B — Topic-Driven Knowledge**: Domain → `TopicTreeSeedGenerator` → questions → `WebSearchLabeler` (finds answers) → SFT.
 
 ---
 
 ## Example 1: Survival Field Guide (2B — Topic Tree + Web Q&A)
 
-Train a model to give step-by-step survival instructions. Topic tree for broad domain coverage, `WebSearchLabeler` for authoritative answers.
+Train a model to give step-by-step survival instructions. `TopicTreeSeedGenerator` decomposes broad domains into specific leaf seeds for coverage, then `WebSearchLabeler` finds authoritative answers from the web.
 
 > **Source**: `lightningrod-python-sdk/notebooks/fine_tuning/03_survival_llm.ipynb`
 
-### Topic Tree (Pluto fallback)
-
-```python
-from pluto import TopicTree, TopicTreeArguments
-
-DOMAINS = [
-    "Field medicine and trauma care in austere environments",
-    "Water purification and safe water sourcing without electricity",
-    "Food preservation, canning, and long-term storage without refrigeration",
-    "Ham radio and emergency communications setup and operation",
-    "Land navigation using map, compass, and natural indicators",
-    "Growing food: gardening, permaculture, and seed saving",
-    "Herbal medicine and natural remedies from wild plants",
-    "Construction, structural repair, and improvised building",
-    "Welding, metalworking, and tool fabrication",
-    "Vehicle repair and mechanical troubleshooting without a shop",
-    "Fire starting, fire management, and fuel sourcing",
-    "Emergency shelter building from natural and salvaged materials",
-    "Hunting, trapping, fishing, and wild game processing",
-    "Knot tying, rope work, and cordage making",
-    "Weather reading and natural forecasting without instruments",
-    "Perimeter security, self-defense, and community safety planning",
-]
-
-topics = []
-for domain in DOMAINS:
-    args = TopicTreeArguments(
-        root_prompt=domain,
-        tree_degree=3, tree_depth=2,
-        model_system_prompt=(
-            "You are an expert in survival and self-reliance. "
-            "Generate specific, practical subtopics useful in a grid-down emergency."
-        ),
-    )
-    tree = TopicTree(args)
-    tree.build_tree(model_name="openrouter/google/gemini-3-flash-preview")
-    topics.extend(" → ".join(path) for path in tree.tree_paths)
-```
-
-### Q&A Pipeline
+### Pipeline
 
 ```python
 from lightningrod import (
-    FreeResponseAnswerType, QuestionGenerator,
-    QuestionPipeline, WebSearchLabeler, create_sample,
+    LightningRod, QuestionPipeline, TopicTreeSeedGenerator,
+    QuestionGenerator, FreeResponseAnswerType, WebSearchLabeler, create_sample,
 )
+
+lr = LightningRod()
 
 answer_type = FreeResponseAnswerType(
     labeler_instruction=(
@@ -90,6 +38,36 @@ answer_type = FreeResponseAnswerType(
 )
 
 pipeline = QuestionPipeline(
+    # TopicTreeSeedGenerator decomposes each root topic into degree^depth leaf seeds.
+    # 16 roots × 5^2 = 400 specific seeds like
+    # "Field medicine → improvising supplies → makeshift tourniquets"
+    seed_generator=TopicTreeSeedGenerator(
+        topic=[
+            "Field medicine and trauma care in austere environments",
+            "Water purification and safe water sourcing without electricity",
+            "Food preservation, canning, and long-term storage without refrigeration",
+            "Ham radio and emergency communications setup and operation",
+            "Land navigation using map, compass, and natural indicators",
+            "Growing food: gardening, permaculture, and seed saving",
+            "Herbal medicine and natural remedies from wild plants",
+            "Construction, structural repair, and improvised building",
+            "Welding, metalworking, and tool fabrication",
+            "Vehicle repair and mechanical troubleshooting without a shop",
+            "Fire starting, fire management, and fuel sourcing",
+            "Emergency shelter building from natural and salvaged materials",
+            "Hunting, trapping, fishing, and wild game processing",
+            "Knot tying, rope work, and cordage making",
+            "Weather reading and natural forecasting without instruments",
+            "Perimeter security, self-defense, and community safety planning",
+        ],
+        tree_depth=2,       # levels of recursive expansion
+        tree_degree=5,      # subtopics per node
+        model_name="google/gemini-3-flash-preview",
+        model_system_prompt=(
+            "You are an expert in survival and self-reliance. "
+            "Generate specific, practical subtopics useful in a grid-down emergency."
+        ),
+    ),
     question_generator=QuestionGenerator(
         answer_type=answer_type,
         questions_per_seed=10,          # high — topic seeds are conceptual, not dense text
@@ -112,9 +90,7 @@ pipeline = QuestionPipeline(
     labeler=WebSearchLabeler(answer_type=answer_type, confidence_threshold=0.8),
 )
 
-samples = [create_sample(seed_text=t) for t in topics]
-input_ds = lr.datasets.create_from_samples(samples)
-dataset = lr.transforms.run(pipeline, input_dataset=input_ds, name="SurvivalLLM")
+dataset = lr.transforms.run(pipeline, name="SurvivalLLM")
 ```
 
 ### SFT Training
@@ -138,7 +114,7 @@ for s in dataset.download():
         {"role": "assistant", "content": a},
     ]})
 
-# Train with Tinker SFT — small model appropriate for ~121 focused examples
+# Small model appropriate for focused domain with ~100s of examples
 # For larger datasets (1000+), use openai/gpt-oss-120b
 BASE_MODEL = "Qwen/Qwen3-8B-Instruct"
 service = tinker.ServiceClient()
@@ -213,7 +189,7 @@ def to_sft(call):
 ## Things to Watch For
 
 - **2A**: Use `QuestionAndLabelGenerator`, not `WebSearchLabeler` — answers are in the documents
-- **2B**: `WebSearchLabeler` is correct — the web provides answers
+- **2B**: `WebSearchLabeler` is correct — the web provides answers for topic-generated questions
 - **Quality filter always.** `FilterCriteria(min_score=0.7)`, score cutoffs, or agreement checks
 - **System prompt matters.** Shapes persona and gets baked into training data
 - **Match `questions_per_seed` to density:** topic tree nodes → 10, doc chunks (4000) → 3, doc chunks (2000) → 2, short text → 1

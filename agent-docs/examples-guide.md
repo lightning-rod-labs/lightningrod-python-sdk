@@ -39,9 +39,7 @@ Teach a model domain knowledge — facts, procedures, expertise — via Q&A pair
 
 **2A — Document Q&A**: Have documents → `QuestionAndLabelGenerator` extracts Q and A from text. No labeler needed.
 
-**2B — Topic-Driven Knowledge**: Have a domain, no documents → generate a topic tree for coverage → create questions → `WebSearchLabeler` finds answers from the web.
-
-> **TopicTreeSeedGenerator**: Exists server-side ([PR #1096](https://github.com/lightning-rod-labs/llm_forecasting/pull/1096)). Takes `topic` (string or list), `tree_depth` (default 2), `tree_degree` (default 5), decomposes via LLM into `degree^depth` leaf seeds. Available as `topic_tree` seed type in the pipeline API. **Not yet in the Python SDK** — check `lightningrod.__init__` for it; fall back to [Pluto](https://github.com/pluto-data/pluto) (`pip install pluto-data`) if unavailable.
+**2B — Topic-Driven Knowledge**: Have a domain, no documents → `TopicTreeSeedGenerator` decomposes topics into specific leaf seeds → generate questions → `WebSearchLabeler` finds answers from the web.
 
 **Training**: SFT | **Answer types**: Free response, multiple choice
 
@@ -79,7 +77,7 @@ Map structured data to `Sample()` fields, fill in what's missing, optionally enr
 **Watch for**:
 - Don't leak labels into question text
 - `prediction_date` must be BEFORE the outcome
-- **Think about splits carefully.** What's the right temporal key? For per-entity data, does entity overlap between train/test cause leakage? Ask: "what would be available at prediction time in production?"
+- **Split on time.** Train on past, test on future. If data has multiple entities (countries, stocks), ensure no entity's test samples overlap temporally with its training samples.
 - Validate 10-20 samples manually before scaling
 
 **Examples**: [tabular-examples.md](tabular-examples.md)

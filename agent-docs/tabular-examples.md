@@ -145,11 +145,7 @@ test_set = [s for s in full_dataset if s["prediction_date"] >= test_date_cutoff]
 
 **Use `TemplateQuestionGenerator`.** LLM generation adds cost when questions follow a fixed pattern. Put computed values in `meta`, reference with `{meta.*}`.
 
-**Think about splits.** No single right answer:
-- **One entity time-series**: Split on date. Before cutoff = train, after = test.
-- **Many entities**: Split on date, but check entity overlap. Same entity at nearby dates can leak.
-- **Cross-sectional**: Time is still best if available. Otherwise consider grouping variables.
-- **Rule of thumb**: "What information would be available at prediction time in production?" Mirror that.
+**Split on time.** Train on past, test on future. For multi-entity data (per-country, per-stock), ensure no entity's test samples overlap temporally with its training samples. For cross-sectional data without timestamps, split on whatever grouping prevents the model from memorizing entity-specific patterns.
 
 **Validate first.** Check 10-20 samples: label correct? prediction_date < resolution_date? Enough context to reason?
 
