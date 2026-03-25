@@ -18,7 +18,7 @@ from lightningrod import (
 lr = LightningRod()
 ```
 
-**Default training config** (consistent across Golf, WWTD, Military Strikes, Foresight, Beige Book):
+**Default training config** (Foresight uses `num_rollouts=4` — large general datasets need fewer):
 
 ```python
 config = TrainingConfig(

@@ -21,7 +21,7 @@ Train a model to give step-by-step survival instructions. `TopicTreeSeedGenerato
 ```python
 from lightningrod import (
     LightningRod, QuestionPipeline, TopicTreeSeedGenerator,
-    QuestionGenerator, FreeResponseAnswerType, WebSearchLabeler, create_sample,
+    QuestionGenerator, FreeResponseAnswerType, WebSearchLabeler,
 )
 
 lr = LightningRod()

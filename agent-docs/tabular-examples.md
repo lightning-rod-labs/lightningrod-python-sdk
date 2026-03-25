@@ -93,27 +93,29 @@ pipeline = QuestionPipeline(
 )
 ```
 
-### Step 4: Add News Context (Optional)
+### Step 4: Add News Context and Render (Optional)
+
+Second pass on the uploaded dataset — adds news context and renders prompts:
 
 ```python
 from lightningrod import BinaryAnswerType, NewsContextGenerator, QuestionRenderer
 
-template = """You are a supply chain analyst forecasting disruption shocks.
+render_template = """You are a supply chain analyst forecasting disruption shocks.
     QUESTION: {question_text}
     TODAY'S DATE: {question_date}
     RESOLUTION CRITERIA: {resolution_criteria}
     CONTEXT: {context}
     ANSWER FORMAT: {answer_instructions}"""
 
-pipeline = QuestionPipeline(
+context_pipeline = QuestionPipeline(
     context_generators=[NewsContextGenerator(
         num_search_queries=3, articles_per_query=5, num_articles=10,
         time_delta_days=30, enable_relevance_ranking=True,
     )],
-    renderer=QuestionRenderer(answer_type=BinaryAnswerType(), template=template),
+    renderer=QuestionRenderer(answer_type=BinaryAnswerType(), template=render_template),
 )
 
-rendered = lr.transforms.run(pipeline, input_dataset=dataset.id, max_questions=6000)
+rendered = lr.transforms.run(context_pipeline, input_dataset=dataset.id, max_questions=6000)
 ```
 
 ### Step 5: Split and Train
