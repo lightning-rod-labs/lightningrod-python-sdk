@@ -165,7 +165,7 @@ def _make_progress_bar(pct: float, width: int = 24) -> str:
     return "█" * filled + "░" * (width - filled)
 
 
-def build_training_live_display(job: Any) -> RenderableType:
+def build_training_live_display(job: TrainingJob) -> RenderableType:
     renderables: list[RenderableType] = []
     status = str(job.status) if job is not None else ""
     header_style = {
@@ -180,6 +180,9 @@ def build_training_live_display(job: Any) -> RenderableType:
     if job is not None:
         if _is_set(job.name) and job.name:
             renderables.append(_safe_markup(f"  [bold]Job:[/bold] {job.name}"))
+            renderables.append(Text(""))
+        if _is_set(job.model_id) and job.model_id:
+            renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.model_id}"))
             renderables.append(Text(""))
 
         if job.status == TrainingJobStatus.RUNNING:
