@@ -45,3 +45,7 @@ notebooks/**/lightningrod-python-sdk/
 
 # Misc
 .DS_Store
+
+# Experiments
+military_strikes_middle_east/
+hn_github_stars/
