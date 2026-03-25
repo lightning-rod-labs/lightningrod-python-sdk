@@ -744,6 +744,48 @@
         }
       }
     },
+    "/samples/validate": {
+      "post": {
+        "tags": [
+          "Samples"
+        ],
+        "summary": "Validate Sample",
+        "description": "Validate a Sample object structure",
+        "operationId": "validate_sample_samples_validate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Sample"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateSampleResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/files": {
       "post": {
         "tags": [
@@ -2448,6 +2490,12 @@
             "$ref": "#/components/schemas/NewsSeedGenerator"
           },
           {
+            "$ref": "#/components/schemas/TopicTreeSeedGenerator"
+          },
+          {
+            "$ref": "#/components/schemas/CsvSeedGenerator"
+          },
+          {
             "$ref": "#/components/schemas/QuestionAndLabelGenerator"
           },
           {
@@ -2466,6 +2514,7 @@
         "discriminator": {
           "propertyName": "config_type",
           "mapping": {
+            "CSV_SEED_GENERATOR": "#/components/schemas/CsvSeedGenerator",
             "FILESET_QUERY_SEED_GENERATOR": "#/components/schemas/FileSetQuerySeedGenerator",
             "FILESET_SEED_GENERATOR": "#/components/schemas/FileSetSeedGenerator",
             "FORWARD_LOOKING_QUESTION_GENERATOR": "#/components/schemas/ForwardLookingQuestionGenerator",
@@ -2475,6 +2524,7 @@
             "QUESTION_GENERATOR": "#/components/schemas/QuestionGenerator",
             "QUESTION_PIPELINE": "#/components/schemas/QuestionPipeline",
             "QUESTION_RENDERER": "#/components/schemas/QuestionRenderer",
+            "TOPIC_TREE_SEED_GENERATOR": "#/components/schemas/TopicTreeSeedGenerator",
             "WEB_SEARCH_LABELER": "#/components/schemas/WebSearchLabeler"
           }
         }
@@ -2545,6 +2595,73 @@
           "config"
         ],
         "title": "CreateTransformJobRequest"
+      },
+      "CsvSeedGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "CSV_SEED_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "CSV_SEED_GENERATOR"
+          },
+          "file_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "File Id",
+            "description": "OrgFile ID(s) from POST /files/ upload response"
+          },
+          "seed_text_column": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed Text Column",
+            "description": "Column name for Seed.seed_text; if None, serialize entire row as JSON"
+          },
+          "label_column": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label Column",
+            "description": "Column name for pre-existing labels (populates Sample.label)"
+          },
+          "date_column": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Column",
+            "description": "Column name for Seed.seed_creation_date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_id"
+        ],
+        "title": "CsvSeedGenerator"
       },
       "DatasetMetadata": {
         "properties": {
@@ -3056,7 +3173,7 @@
             "type": "string",
             "title": "Model",
             "description": "Gemini model to use for file search",
-            "default": "gemini-3-flash-preview"
+            "default": "gemini-2.5-flash"
           }
         },
         "type": "object",
@@ -3411,7 +3528,7 @@
             "type": "string",
             "title": "Model",
             "description": "Gemini model for RAG query",
-            "default": "gemini-3-flash-preview"
+            "default": "gemini-2.5-flash"
           }
         },
         "type": "object",
@@ -4686,6 +4803,18 @@
             ],
             "title": "Search Queries Column",
             "description": "Column name in sample.meta containing pre-generated search queries (list of strings). If provided, skips LLM query generation."
+          },
+          "search_query_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Search Query Instructions",
+            "description": "Optional guidance for the LLM step that generates multiple search queries for news retrieval, replaces the default instructions."
           }
         },
         "type": "object",
@@ -5157,6 +5286,12 @@
                     "$ref": "#/components/schemas/FileSetQuerySeedGenerator"
                   },
                   {
+                    "$ref": "#/components/schemas/TopicTreeSeedGenerator"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CsvSeedGenerator"
+                  },
+                  {
                     "$ref": "#/components/schemas/MockTransformConfig"
                   }
                 ],
@@ -5164,11 +5299,13 @@
                   "propertyName": "config_type",
                   "mapping": {
                     "BIGQUERY_SEED_GENERATOR": "#/components/schemas/BigQuerySeedGenerator",
+                    "CSV_SEED_GENERATOR": "#/components/schemas/CsvSeedGenerator",
                     "FILESET_QUERY_SEED_GENERATOR": "#/components/schemas/FileSetQuerySeedGenerator",
                     "FILESET_SEED_GENERATOR": "#/components/schemas/FileSetSeedGenerator",
                     "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
                     "MOCK": "#/components/schemas/MockTransformConfig",
-                    "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator"
+                    "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator",
+                    "TOPIC_TREE_SEED_GENERATOR": "#/components/schemas/TopicTreeSeedGenerator"
                   }
                 }
               },
@@ -5814,6 +5951,17 @@
               }
             ],
             "title": "Prompt Template"
+          },
+          "multiple_choice_options": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Multiple Choice Options"
           }
         },
         "type": "object",
@@ -5935,6 +6083,72 @@
         ],
         "title": "TemporalConstraint",
         "description": "Temporal filtering direction relative to the seed document's date.\n\nUses the `file_date` metadata key (unix timestamp int) stored on each\nGemini document by fileset_file_processor.\n\nBEFORE: file_date <= seed_timestamp  (context: no lookahead bias)\nAFTER:  file_date >  seed_timestamp  (labels: find resolutions)"
+      },
+      "TopicTreeSeedGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "TOPIC_TREE_SEED_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "TOPIC_TREE_SEED_GENERATOR"
+          },
+          "topic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "Topic",
+            "description": "Root topic(s) to decompose into subtopic trees"
+          },
+          "tree_depth": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Tree Depth",
+            "description": "Levels of recursive expansion",
+            "default": 2
+          },
+          "tree_degree": {
+            "type": "integer",
+            "maximum": 20.0,
+            "minimum": 2.0,
+            "title": "Tree Degree",
+            "description": "Subtopics generated per node",
+            "default": 5
+          },
+          "model_name": {
+            "type": "string",
+            "title": "Model Name",
+            "description": "LLM model for subtopic generation",
+            "default": "google/gemini-3-flash-preview"
+          },
+          "model_system_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model System Prompt",
+            "description": "Optional system prompt for the LLM"
+          }
+        },
+        "type": "object",
+        "required": [
+          "topic"
+        ],
+        "title": "TopicTreeSeedGenerator",
+        "description": "Generates diverse seeds by recursively decomposing broad topics into specific subtopics.\n\nGiven one or more root topics, uses an LLM to break each into `tree_degree` subtopics,\nthen repeats `tree_depth` levels deep. The leaf paths become seeds for downstream transforms.\nThis produces tree_degree^tree_depth seeds per root topic, each more specific than the root.\n\nExample:\n    TopicTreeSeedGenerator(topic=\"AI Regulation\", tree_depth=2, tree_degree=4)\n    # Produces 16 specific seeds like \"AI Regulation \u2192 Healthcare \u2192 FDA approval of\n    # diagnostic algorithms\" that feed into QuestionGenerator or other downstream transforms."
       },
       "TrainingConfig": {
         "properties": {
@@ -6450,6 +6664,8 @@
           "ROLLOUT_SCORER",
           "FILESET_CONTEXT_GENERATOR",
           "FILESET_RAG_LABELER",
+          "TOPIC_TREE_SEED_GENERATOR",
+          "CSV_SEED_GENERATOR",
           "MOCK"
         ],
         "title": "TransformType"
@@ -6541,6 +6757,24 @@
         "type": "object",
         "title": "UsageSummary",
         "description": "Flexible usage statistics by event type and LLM model."
+      },
+      "ValidateSampleResponse": {
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "title": "Valid"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "valid",
+          "message"
+        ],
+        "title": "ValidateSampleResponse"
       },
       "ValidationError": {
         "properties": {

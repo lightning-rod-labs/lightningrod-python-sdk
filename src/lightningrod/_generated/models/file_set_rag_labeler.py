@@ -38,7 +38,7 @@ class FileSetRAGLabeler:
             (>) for resolution docs, BEFORE (<=) for historical only.
         date_metadata_key (str | Unset): Gemini metadata key storing unix timestamp for temporal filtering Default:
             'file_date'.
-        model (str | Unset): Gemini model for RAG query Default: 'gemini-3-flash-preview'.
+        model (str | Unset): Gemini model for RAG query Default: 'gemini-2.5-flash'.
     """
 
     file_set_id: str
@@ -52,7 +52,7 @@ class FileSetRAGLabeler:
     ) = UNSET
     temporal_constraint: None | TemporalConstraint | Unset = UNSET
     date_metadata_key: str | Unset = "file_date"
-    model: str | Unset = "gemini-3-flash-preview"
+    model: str | Unset = "gemini-2.5-flash"
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
