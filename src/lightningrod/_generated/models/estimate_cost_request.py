@@ -9,7 +9,6 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.csv_seed_generator import CsvSeedGenerator
     from ..models.file_set_query_seed_generator import FileSetQuerySeedGenerator
     from ..models.file_set_seed_generator import FileSetSeedGenerator
     from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
@@ -19,7 +18,6 @@ if TYPE_CHECKING:
     from ..models.question_generator import QuestionGenerator
     from ..models.question_pipeline import QuestionPipeline
     from ..models.question_renderer import QuestionRenderer
-    from ..models.topic_tree_seed_generator import TopicTreeSeedGenerator
     from ..models.web_search_labeler import WebSearchLabeler
 
 
@@ -30,15 +28,14 @@ T = TypeVar("T", bound="EstimateCostRequest")
 class EstimateCostRequest:
     """
     Attributes:
-        config (CsvSeedGenerator | FileSetQuerySeedGenerator | FileSetSeedGenerator | ForwardLookingQuestionGenerator |
-            GdeltSeedGenerator | NewsSeedGenerator | QuestionAndLabelGenerator | QuestionGenerator | QuestionPipeline |
-            QuestionRenderer | TopicTreeSeedGenerator | WebSearchLabeler):
+        config (FileSetQuerySeedGenerator | FileSetSeedGenerator | ForwardLookingQuestionGenerator | GdeltSeedGenerator
+            | NewsSeedGenerator | QuestionAndLabelGenerator | QuestionGenerator | QuestionPipeline | QuestionRenderer |
+            WebSearchLabeler):
         max_questions (int | None | Unset):
     """
 
     config: (
-        CsvSeedGenerator
-        | FileSetQuerySeedGenerator
+        FileSetQuerySeedGenerator
         | FileSetSeedGenerator
         | ForwardLookingQuestionGenerator
         | GdeltSeedGenerator
@@ -47,14 +44,12 @@ class EstimateCostRequest:
         | QuestionGenerator
         | QuestionPipeline
         | QuestionRenderer
-        | TopicTreeSeedGenerator
         | WebSearchLabeler
     )
     max_questions: int | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.csv_seed_generator import CsvSeedGenerator
         from ..models.file_set_query_seed_generator import FileSetQuerySeedGenerator
         from ..models.file_set_seed_generator import FileSetSeedGenerator
         from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
@@ -64,7 +59,6 @@ class EstimateCostRequest:
         from ..models.question_generator import QuestionGenerator
         from ..models.question_pipeline import QuestionPipeline
         from ..models.question_renderer import QuestionRenderer
-        from ..models.topic_tree_seed_generator import TopicTreeSeedGenerator
 
         config: dict[str, Any]
         if isinstance(self.config, ForwardLookingQuestionGenerator):
@@ -76,10 +70,6 @@ class EstimateCostRequest:
         elif isinstance(self.config, GdeltSeedGenerator):
             config = self.config.to_dict()
         elif isinstance(self.config, NewsSeedGenerator):
-            config = self.config.to_dict()
-        elif isinstance(self.config, TopicTreeSeedGenerator):
-            config = self.config.to_dict()
-        elif isinstance(self.config, CsvSeedGenerator):
             config = self.config.to_dict()
         elif isinstance(self.config, QuestionAndLabelGenerator):
             config = self.config.to_dict()
@@ -112,7 +102,6 @@ class EstimateCostRequest:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.csv_seed_generator import CsvSeedGenerator
         from ..models.file_set_query_seed_generator import FileSetQuerySeedGenerator
         from ..models.file_set_seed_generator import FileSetSeedGenerator
         from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
@@ -122,7 +111,6 @@ class EstimateCostRequest:
         from ..models.question_generator import QuestionGenerator
         from ..models.question_pipeline import QuestionPipeline
         from ..models.question_renderer import QuestionRenderer
-        from ..models.topic_tree_seed_generator import TopicTreeSeedGenerator
         from ..models.web_search_labeler import WebSearchLabeler
 
         d = dict(src_dict)
@@ -130,8 +118,7 @@ class EstimateCostRequest:
         def _parse_config(
             data: object,
         ) -> (
-            CsvSeedGenerator
-            | FileSetQuerySeedGenerator
+            FileSetQuerySeedGenerator
             | FileSetSeedGenerator
             | ForwardLookingQuestionGenerator
             | GdeltSeedGenerator
@@ -140,7 +127,6 @@ class EstimateCostRequest:
             | QuestionGenerator
             | QuestionPipeline
             | QuestionRenderer
-            | TopicTreeSeedGenerator
             | WebSearchLabeler
         ):
             try:
@@ -186,7 +172,7 @@ class EstimateCostRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_5 = TopicTreeSeedGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_5 = QuestionAndLabelGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_5
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -194,7 +180,7 @@ class EstimateCostRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_6 = CsvSeedGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_6 = QuestionGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_6
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -202,7 +188,7 @@ class EstimateCostRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_7 = QuestionAndLabelGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_7 = QuestionPipeline.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_7
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -210,32 +196,16 @@ class EstimateCostRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_8 = QuestionGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_8 = QuestionRenderer.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_8
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_create_transform_config_type_9 = QuestionPipeline.from_dict(data)
-
-                return componentsschemas_create_transform_config_type_9
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_create_transform_config_type_10 = QuestionRenderer.from_dict(data)
-
-                return componentsschemas_create_transform_config_type_10
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
             if not isinstance(data, dict):
                 raise TypeError()
-            componentsschemas_create_transform_config_type_11 = WebSearchLabeler.from_dict(data)
+            componentsschemas_create_transform_config_type_9 = WebSearchLabeler.from_dict(data)
 
-            return componentsschemas_create_transform_config_type_11
+            return componentsschemas_create_transform_config_type_9
 
         config = _parse_config(d.pop("config"))
 

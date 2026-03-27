@@ -13,6 +13,7 @@ from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.training_config import TrainingConfig
+    from ..models.training_job_model_id_by_step_type_0 import TrainingJobModelIdByStepType0
 
 
 T = TypeVar("T", bound="TrainingJob")
@@ -30,11 +31,11 @@ class TrainingJob:
         updated_at (datetime.datetime):
         name (None | str | Unset):
         model_id (None | str | Unset):
+        model_id_by_step (None | TrainingJobModelIdByStepType0 | Unset):
         reward_history (list[float] | None | Unset):
         current_step (int | None | Unset):
         total_steps (int | None | Unset):
         cost_dollars (float | None | Unset):
-        dataset_hf_repo (None | str | Unset):
         error_message (None | str | Unset):
     """
 
@@ -46,15 +47,17 @@ class TrainingJob:
     updated_at: datetime.datetime
     name: None | str | Unset = UNSET
     model_id: None | str | Unset = UNSET
+    model_id_by_step: None | TrainingJobModelIdByStepType0 | Unset = UNSET
     reward_history: list[float] | None | Unset = UNSET
     current_step: int | None | Unset = UNSET
     total_steps: int | None | Unset = UNSET
     cost_dollars: float | None | Unset = UNSET
-    dataset_hf_repo: None | str | Unset = UNSET
     error_message: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.training_job_model_id_by_step_type_0 import TrainingJobModelIdByStepType0
+
         id = self.id
 
         organization_id = self.organization_id
@@ -78,6 +81,14 @@ class TrainingJob:
             model_id = UNSET
         else:
             model_id = self.model_id
+
+        model_id_by_step: dict[str, Any] | None | Unset
+        if isinstance(self.model_id_by_step, Unset):
+            model_id_by_step = UNSET
+        elif isinstance(self.model_id_by_step, TrainingJobModelIdByStepType0):
+            model_id_by_step = self.model_id_by_step.to_dict()
+        else:
+            model_id_by_step = self.model_id_by_step
 
         reward_history: list[float] | None | Unset
         if isinstance(self.reward_history, Unset):
@@ -106,12 +117,6 @@ class TrainingJob:
         else:
             cost_dollars = self.cost_dollars
 
-        dataset_hf_repo: None | str | Unset
-        if isinstance(self.dataset_hf_repo, Unset):
-            dataset_hf_repo = UNSET
-        else:
-            dataset_hf_repo = self.dataset_hf_repo
-
         error_message: None | str | Unset
         if isinstance(self.error_message, Unset):
             error_message = UNSET
@@ -134,6 +139,8 @@ class TrainingJob:
             field_dict["name"] = name
         if model_id is not UNSET:
             field_dict["model_id"] = model_id
+        if model_id_by_step is not UNSET:
+            field_dict["model_id_by_step"] = model_id_by_step
         if reward_history is not UNSET:
             field_dict["reward_history"] = reward_history
         if current_step is not UNSET:
@@ -142,8 +149,6 @@ class TrainingJob:
             field_dict["total_steps"] = total_steps
         if cost_dollars is not UNSET:
             field_dict["cost_dollars"] = cost_dollars
-        if dataset_hf_repo is not UNSET:
-            field_dict["dataset_hf_repo"] = dataset_hf_repo
         if error_message is not UNSET:
             field_dict["error_message"] = error_message
 
@@ -152,6 +157,7 @@ class TrainingJob:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.training_config import TrainingConfig
+        from ..models.training_job_model_id_by_step_type_0 import TrainingJobModelIdByStepType0
 
         d = dict(src_dict)
         id = d.pop("id")
@@ -183,6 +189,23 @@ class TrainingJob:
             return cast(None | str | Unset, data)
 
         model_id = _parse_model_id(d.pop("model_id", UNSET))
+
+        def _parse_model_id_by_step(data: object) -> None | TrainingJobModelIdByStepType0 | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                model_id_by_step_type_0 = TrainingJobModelIdByStepType0.from_dict(data)
+
+                return model_id_by_step_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | TrainingJobModelIdByStepType0 | Unset, data)
+
+        model_id_by_step = _parse_model_id_by_step(d.pop("model_id_by_step", UNSET))
 
         def _parse_reward_history(data: object) -> list[float] | None | Unset:
             if data is None:
@@ -228,15 +251,6 @@ class TrainingJob:
 
         cost_dollars = _parse_cost_dollars(d.pop("cost_dollars", UNSET))
 
-        def _parse_dataset_hf_repo(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        dataset_hf_repo = _parse_dataset_hf_repo(d.pop("dataset_hf_repo", UNSET))
-
         def _parse_error_message(data: object) -> None | str | Unset:
             if data is None:
                 return data
@@ -255,11 +269,11 @@ class TrainingJob:
             updated_at=updated_at,
             name=name,
             model_id=model_id,
+            model_id_by_step=model_id_by_step,
             reward_history=reward_history,
             current_step=current_step,
             total_steps=total_steps,
             cost_dollars=cost_dollars,
-            dataset_hf_repo=dataset_hf_repo,
             error_message=error_message,
         )
 
