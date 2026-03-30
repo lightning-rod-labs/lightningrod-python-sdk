@@ -5601,12 +5601,16 @@
                     "$ref": "#/components/schemas/FileSetRAGLabeler"
                   },
                   {
+                    "$ref": "#/components/schemas/FileSetDocumentLabeler"
+                  },
+                  {
                     "$ref": "#/components/schemas/MockTransformConfig"
                   }
                 ],
                 "discriminator": {
                   "propertyName": "config_type",
                   "mapping": {
+                    "FILESET_DOCUMENT_LABELER": "#/components/schemas/FileSetDocumentLabeler",
                     "FILESET_RAG_LABELER": "#/components/schemas/FileSetRAGLabeler",
                     "MOCK": "#/components/schemas/MockTransformConfig",
                     "WEB_SEARCH_LABELER": "#/components/schemas/WebSearchLabeler"
@@ -5630,6 +5634,9 @@
                     },
                     {
                       "$ref": "#/components/schemas/FileSetContextGenerator"
+                    },
+                    {
+                      "$ref": "#/components/schemas/FileSetDocumentContextGenerator"
                     },
                     {
                       "$ref": "#/components/schemas/MockTransformConfig"
