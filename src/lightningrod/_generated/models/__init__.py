@@ -23,6 +23,7 @@ from .create_training_job_request import CreateTrainingJobRequest
 from .create_transform_job_request import CreateTransformJobRequest
 from .csv_seed_generator import CsvSeedGenerator
 from .dataset_metadata import DatasetMetadata
+from .document_context import DocumentContext
 from .estimate_cost_request import EstimateCostRequest
 from .estimate_cost_response import EstimateCostResponse
 from .estimate_training_cost_request import EstimateTrainingCostRequest
@@ -35,6 +36,8 @@ from .eval_job_status import EvalJobStatus
 from .event_usage_summary import EventUsageSummary
 from .file_set import FileSet
 from .file_set_context_generator import FileSetContextGenerator
+from .file_set_document_context_generator import FileSetDocumentContextGenerator
+from .file_set_document_labeler import FileSetDocumentLabeler
 from .file_set_file import FileSetFile
 from .file_set_file_metadata_type_0 import FileSetFileMetadataType0
 from .file_set_file_status import FileSetFileStatus
@@ -141,6 +144,7 @@ __all__ = (
     "CreateTransformJobRequest",
     "CsvSeedGenerator",
     "DatasetMetadata",
+    "DocumentContext",
     "EstimateCostRequest",
     "EstimateCostResponse",
     "EstimateTrainingCostRequest",
@@ -153,6 +157,8 @@ __all__ = (
     "EventUsageSummary",
     "FileSet",
     "FileSetContextGenerator",
+    "FileSetDocumentContextGenerator",
+    "FileSetDocumentLabeler",
     "FileSetFile",
     "FileSetFileMetadataType0",
     "FileSetFileStatus",

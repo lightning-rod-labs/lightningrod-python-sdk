@@ -22,11 +22,14 @@ class CreateFileSetRequest:
         name (str): Human-readable name for the FileSet
         description (None | str | Unset): Optional description of the FileSet's purpose
         metadata_schema (FileSetMetadataSchemaInput | None | Unset): Optional schema for validating file metadata
+        rag_enabled (bool | Unset): Whether files should be indexed in Gemini File Search for RAG. When False, files can
+            only be used with document-level transforms. This setting is immutable after creation. Default: True.
     """
 
     name: str
     description: None | str | Unset = UNSET
     metadata_schema: FileSetMetadataSchemaInput | None | Unset = UNSET
+    rag_enabled: bool | Unset = True
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -48,6 +51,8 @@ class CreateFileSetRequest:
         else:
             metadata_schema = self.metadata_schema
 
+        rag_enabled = self.rag_enabled
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -59,6 +64,8 @@ class CreateFileSetRequest:
             field_dict["description"] = description
         if metadata_schema is not UNSET:
             field_dict["metadata_schema"] = metadata_schema
+        if rag_enabled is not UNSET:
+            field_dict["rag_enabled"] = rag_enabled
 
         return field_dict
 
@@ -95,10 +102,13 @@ class CreateFileSetRequest:
 
         metadata_schema = _parse_metadata_schema(d.pop("metadata_schema", UNSET))
 
+        rag_enabled = d.pop("rag_enabled", UNSET)
+
         create_file_set_request = cls(
             name=name,
             description=description,
             metadata_schema=metadata_schema,
+            rag_enabled=rag_enabled,
         )
 
         create_file_set_request.additional_properties = d

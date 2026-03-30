@@ -2,6 +2,8 @@ from typing import Optional, Union
 
 from lightningrod._display import _is_notebook, display_error, display_warning, run_live_display
 from lightningrod._generated.models import (
+    FileSetDocumentContextGenerator,
+    FileSetDocumentLabeler,
     FileSetQuerySeedGenerator,
     FileSetSeedGenerator,
     ForwardLookingQuestionGenerator,
@@ -36,7 +38,7 @@ from lightningrod.datasets.client import DatasetSamplesClient
 from lightningrod._generated.types import Unset
 from lightningrod._errors import handle_response_error
 
-TransformConfig = Union[FileSetQuerySeedGenerator, FileSetSeedGenerator, ForwardLookingQuestionGenerator, GdeltSeedGenerator, NewsSeedGenerator, QuestionAndLabelGenerator, QuestionGenerator, QuestionPipeline, QuestionRenderer, WebSearchLabeler]
+TransformConfig = Union[FileSetDocumentContextGenerator, FileSetDocumentLabeler, FileSetQuerySeedGenerator, FileSetSeedGenerator, ForwardLookingQuestionGenerator, GdeltSeedGenerator, NewsSeedGenerator, QuestionAndLabelGenerator, QuestionGenerator, QuestionPipeline, QuestionRenderer, WebSearchLabeler]
 
 class TransformJobsClient:
     def __init__(self, client: AuthenticatedClient):

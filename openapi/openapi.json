@@ -2336,6 +2336,12 @@
               }
             ],
             "description": "Optional schema for validating file metadata"
+          },
+          "rag_enabled": {
+            "type": "boolean",
+            "title": "Rag Enabled",
+            "description": "Whether files should be indexed in Gemini File Search for RAG. When False, files can only be used with document-level transforms. This setting is immutable after creation.",
+            "default": true
           }
         },
         "type": "object",
@@ -2475,25 +2481,34 @@
       "CreateTransformConfig": {
         "oneOf": [
           {
-            "$ref": "#/components/schemas/ForwardLookingQuestionGenerator"
+            "$ref": "#/components/schemas/CsvSeedGenerator"
+          },
+          {
+            "$ref": "#/components/schemas/FileSetContextGenerator"
+          },
+          {
+            "$ref": "#/components/schemas/FileSetDocumentContextGenerator"
+          },
+          {
+            "$ref": "#/components/schemas/FileSetDocumentLabeler"
           },
           {
             "$ref": "#/components/schemas/FileSetQuerySeedGenerator"
           },
           {
+            "$ref": "#/components/schemas/FileSetRAGLabeler"
+          },
+          {
             "$ref": "#/components/schemas/FileSetSeedGenerator"
+          },
+          {
+            "$ref": "#/components/schemas/ForwardLookingQuestionGenerator"
           },
           {
             "$ref": "#/components/schemas/GdeltSeedGenerator"
           },
           {
             "$ref": "#/components/schemas/NewsSeedGenerator"
-          },
-          {
-            "$ref": "#/components/schemas/TopicTreeSeedGenerator"
-          },
-          {
-            "$ref": "#/components/schemas/CsvSeedGenerator"
           },
           {
             "$ref": "#/components/schemas/QuestionAndLabelGenerator"
@@ -2508,6 +2523,9 @@
             "$ref": "#/components/schemas/QuestionRenderer"
           },
           {
+            "$ref": "#/components/schemas/TopicTreeSeedGenerator"
+          },
+          {
             "$ref": "#/components/schemas/WebSearchLabeler"
           }
         ],
@@ -2515,7 +2533,11 @@
           "propertyName": "config_type",
           "mapping": {
             "CSV_SEED_GENERATOR": "#/components/schemas/CsvSeedGenerator",
+            "FILESET_CONTEXT_GENERATOR": "#/components/schemas/FileSetContextGenerator",
+            "FILESET_DOCUMENT_CONTEXT_GENERATOR": "#/components/schemas/FileSetDocumentContextGenerator",
+            "FILESET_DOCUMENT_LABELER": "#/components/schemas/FileSetDocumentLabeler",
             "FILESET_QUERY_SEED_GENERATOR": "#/components/schemas/FileSetQuerySeedGenerator",
+            "FILESET_RAG_LABELER": "#/components/schemas/FileSetRAGLabeler",
             "FILESET_SEED_GENERATOR": "#/components/schemas/FileSetSeedGenerator",
             "FORWARD_LOOKING_QUESTION_GENERATOR": "#/components/schemas/ForwardLookingQuestionGenerator",
             "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
@@ -2692,6 +2714,35 @@
           "updated_at"
         ],
         "title": "DatasetMetadata"
+      },
+      "DocumentContext": {
+        "properties": {
+          "context_type": {
+            "type": "string",
+            "const": "DOCUMENT_CONTEXT",
+            "title": "Context Type",
+            "default": "DOCUMENT_CONTEXT"
+          },
+          "rendered_context": {
+            "type": "string",
+            "title": "Rendered Context"
+          },
+          "document_id": {
+            "type": "string",
+            "title": "Document Id"
+          },
+          "source_file_name": {
+            "type": "string",
+            "title": "Source File Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rendered_context",
+          "document_id",
+          "source_file_name"
+        ],
+        "title": "DocumentContext"
       },
       "EstimateCostRequest": {
         "properties": {
@@ -3066,6 +3117,11 @@
               }
             ]
           },
+          "rag_enabled": {
+            "type": "boolean",
+            "title": "Rag Enabled",
+            "default": true
+          },
           "is_public": {
             "type": "boolean",
             "title": "Is Public",
@@ -3182,6 +3238,186 @@
         ],
         "title": "FileSetContextGenerator",
         "description": "Configuration for FileSet Context Generator transform."
+      },
+      "FileSetDocumentContextGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "FILESET_DOCUMENT_CONTEXT_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "FILESET_DOCUMENT_CONTEXT_GENERATOR"
+          },
+          "file_set_id": {
+            "type": "string",
+            "title": "File Set Id",
+            "description": "FileSet ID to resolve documents from"
+          },
+          "temporal_constraint": {
+            "$ref": "#/components/schemas/TemporalConstraint",
+            "description": "Temporal constraint for document resolution. NEXT_DOCUMENT selects the first file after the seed date; PREVIOUS_DOCUMENT selects the most recent file before.",
+            "default": "PREVIOUS_DOCUMENT"
+          },
+          "date_metadata_key": {
+            "type": "string",
+            "title": "Date Metadata Key",
+            "description": "Key in file metadata used for temporal ordering",
+            "default": "date"
+          },
+          "metadata_filter_keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Metadata Filter Keys",
+            "description": "Optional keys from sample's file_metadata for exact-match filtering (e.g., ['district', 'ticker'])"
+          },
+          "system_instruction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Instruction",
+            "description": "Optional system instruction for LLM processing of the document. When provided with model, the document is processed through an LLM before being stored as context."
+          },
+          "model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModelConfig"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Model for optional LLM processing. If None, raw document text is used as context."
+          },
+          "max_document_chars": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Document Chars",
+            "description": "Optional character limit for document text. Truncates from the end if exceeded."
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_set_id"
+        ],
+        "title": "FileSetDocumentContextGenerator",
+        "description": "Configuration for FileSet Document Context Generator transform.\n\nResolves a single document from a FileSet based on temporal ordering,\ndownloads the full text, and appends it as context. Optionally processes\nthe document through an LLM before injection."
+      },
+      "FileSetDocumentLabeler": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "FILESET_DOCUMENT_LABELER",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "FILESET_DOCUMENT_LABELER"
+          },
+          "file_set_id": {
+            "type": "string",
+            "title": "File Set Id",
+            "description": "FileSet ID to resolve documents from"
+          },
+          "temporal_constraint": {
+            "$ref": "#/components/schemas/TemporalConstraint",
+            "description": "Temporal constraint for document resolution. NEXT_DOCUMENT selects the first file after the seed date (for resolution); PREVIOUS_DOCUMENT selects the most recent file before.",
+            "default": "NEXT_DOCUMENT"
+          },
+          "date_metadata_key": {
+            "type": "string",
+            "title": "Date Metadata Key",
+            "description": "Key in file metadata used for temporal ordering",
+            "default": "date"
+          },
+          "metadata_filter_keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Metadata Filter Keys",
+            "description": "Optional keys from sample's file_metadata for exact-match filtering (e.g., ['district'])"
+          },
+          "confidence_threshold": {
+            "type": "number",
+            "title": "Confidence Threshold",
+            "description": "Minimum confidence threshold for valid labels",
+            "default": 0.7
+          },
+          "answer_type": {
+            "anyOf": [
+              {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BinaryAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MultipleChoiceAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ContinuousAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FreeResponseAnswerType"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "answer_type",
+                  "mapping": {
+                    "BINARY": "#/components/schemas/BinaryAnswerType",
+                    "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
+                    "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer Type",
+            "description": "The type of answer expected, used to guide the labeler"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModelConfig"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Model for label extraction. Defaults to gemini-2.5-flash."
+          },
+          "system_instruction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Instruction",
+            "description": "Domain-specific system instruction for the labeler (e.g., 'You are labeling Federal Reserve Beige Book forecasting questions.')"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_set_id"
+        ],
+        "title": "FileSetDocumentLabeler",
+        "description": "Configuration for FileSet Document Labeler transform.\n\nResolves a single document from a FileSet based on temporal ordering,\ndownloads the full text, and uses an LLM to extract a structured label."
       },
       "FileSetFile": {
         "properties": {
@@ -5881,11 +6117,15 @@
                     },
                     {
                       "$ref": "#/components/schemas/RAGContext"
+                    },
+                    {
+                      "$ref": "#/components/schemas/DocumentContext"
                     }
                   ],
                   "discriminator": {
                     "propertyName": "context_type",
                     "mapping": {
+                      "DOCUMENT_CONTEXT": "#/components/schemas/DocumentContext",
                       "NEWS_CONTEXT": "#/components/schemas/NewsContext",
                       "RAG_CONTEXT": "#/components/schemas/RAGContext"
                     }
@@ -6079,10 +6319,13 @@
         "type": "string",
         "enum": [
           "BEFORE",
-          "AFTER"
+          "AFTER",
+          "NEXT_DOCUMENT",
+          "PREVIOUS_DOCUMENT",
+          "EQUAL"
         ],
         "title": "TemporalConstraint",
-        "description": "Temporal filtering direction relative to the seed document's date.\n\nUses the `file_date` metadata key (unix timestamp int) stored on each\nGemini document by fileset_file_processor.\n\nBEFORE: file_date <= seed_timestamp  (context: no lookahead bias)\nAFTER:  file_date >  seed_timestamp  (labels: find resolutions)"
+        "description": "Temporal filtering direction relative to the seed document's date.\n\nUses the `file_date` metadata key (unix timestamp int) stored on each\nGemini document by fileset_file_processor.\n\nBEFORE: file_date <= seed_timestamp  (RAG context: no lookahead bias, multi-doc)\nAFTER:  file_date >  seed_timestamp  (RAG labels: find resolutions, multi-doc)\nNEXT_DOCUMENT: first file after seed_timestamp (single-doc resolution)\nPREVIOUS_DOCUMENT: most recent file before seed_timestamp (single-doc resolution)\nEQUAL: file_date == seed_timestamp (exact match, single-doc)"
       },
       "TopicTreeSeedGenerator": {
         "properties": {
@@ -6664,6 +6907,8 @@
           "ROLLOUT_SCORER",
           "FILESET_CONTEXT_GENERATOR",
           "FILESET_RAG_LABELER",
+          "FILESET_DOCUMENT_CONTEXT_GENERATOR",
+          "FILESET_DOCUMENT_LABELER",
           "TOPIC_TREE_SEED_GENERATOR",
           "CSV_SEED_GENERATOR",
           "MOCK"
