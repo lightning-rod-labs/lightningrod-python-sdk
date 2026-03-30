@@ -9,6 +9,7 @@ from lightningrod.datasets.dataset import SampleDataset, AsyncDataset
 from lightningrod import preprocessing, training, utils
 from lightningrod.utils.sample import create_sample
 from lightningrod.utils.models import open_router_model
+from lightningrod.utils.examples import binary_example, continuous_example, multiple_choice_example
 from lightningrod.training import filter_and_split
 from lightningrod.training.client import TrainingConfig
 from lightningrod._generated.models import (
@@ -62,8 +63,11 @@ __all__ = [
     "utils",
     "AsyncDataset",
     "BigQuerySeedGenerator",
+    "binary_example",
     "BinaryAnswerType",
+    "continuous_example",
     "ContinuousAnswerType",
+    "multiple_choice_example",
     "MultipleChoiceAnswerType",
     "FreeResponseAnswerType",
     "SampleDataset",
