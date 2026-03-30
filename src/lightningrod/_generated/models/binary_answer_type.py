@@ -6,6 +6,7 @@ from typing import Any, Literal, TypeVar, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.answer_parser_type import AnswerParserType
 from ..models.reward_function_type import RewardFunctionType
 from ..types import UNSET, Unset
 
@@ -17,11 +18,12 @@ class BinaryAnswerType:
     """
     Attributes:
         answer_type (Literal['BINARY'] | Unset):  Default: 'BINARY'.
-        answer_format_instruction (str | Unset): Instructions describing how the answer should be formatted and given.
-            Default: "This is a binary yes/no question. You are estimating the probability that the answer is 'Yes'. Provide
-            your confidence as a value between 0 (definitely No) and 1 (definitely Yes). Provide your probability estimate
-            for Yes as a decimal between 0 and 1. Provide your answer between <answer></answer> tags. Example:
-            <answer>0.75</answer>".
+        answer_format_instruction (str | Unset): Appended to training/inference prompts to instruct the model how to
+            format its prediction. Most users should not need to override this — if results are poor, override this field or
+            open an issue at https://github.com/lightning-rod-labs/lightningrod-python-sdk/issues/new Default: "This is a
+            binary yes/no question. You are estimating the probability that the answer is 'Yes'. Provide your confidence as
+            a value between 0 (definitely No) and 1 (definitely Yes). Provide your probability estimate for Yes as a decimal
+            between 0 and 1. Provide your answer between <answer></answer> tags. Example: <answer>0.75</answer>".
         labeler_instruction (str | Unset): Instructions for the labeler. Default: "The answer should be ONLY '1', '0',
             or 'Undetermined'. '1' means yes, '0' means no, and 'Undetermined' means the answer is not clear. Do not include
             any other text or explanation.".
@@ -30,6 +32,7 @@ class BinaryAnswerType:
             outcomes: Yes or No. The question should start with words like 'Will', 'Is', 'Does', 'Has', 'Can', etc. A clear
             and unambiguous yes/no question, based on the provided seed_text.".
         reward_function_type (None | RewardFunctionType | Unset):  Default: RewardFunctionType.BINARY_BRIER.
+        answer_parser_type (AnswerParserType | None | Unset):  Default: AnswerParserType.BINARY.
     """
 
     answer_type: Literal["BINARY"] | Unset = "BINARY"
@@ -43,6 +46,7 @@ class BinaryAnswerType:
         "Generate questions that can be answered with Yes or No. Frame the question so it has exactly two possible outcomes: Yes or No. The question should start with words like 'Will', 'Is', 'Does', 'Has', 'Can', etc. A clear and unambiguous yes/no question, based on the provided seed_text."
     )
     reward_function_type: None | RewardFunctionType | Unset = RewardFunctionType.BINARY_BRIER
+    answer_parser_type: AnswerParserType | None | Unset = AnswerParserType.BINARY
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -62,6 +66,14 @@ class BinaryAnswerType:
         else:
             reward_function_type = self.reward_function_type
 
+        answer_parser_type: None | str | Unset
+        if isinstance(self.answer_parser_type, Unset):
+            answer_parser_type = UNSET
+        elif isinstance(self.answer_parser_type, AnswerParserType):
+            answer_parser_type = self.answer_parser_type.value
+        else:
+            answer_parser_type = self.answer_parser_type
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
@@ -75,6 +87,8 @@ class BinaryAnswerType:
             field_dict["question_generation_instruction"] = question_generation_instruction
         if reward_function_type is not UNSET:
             field_dict["reward_function_type"] = reward_function_type
+        if answer_parser_type is not UNSET:
+            field_dict["answer_parser_type"] = answer_parser_type
 
         return field_dict
 
@@ -108,12 +122,30 @@ class BinaryAnswerType:
 
         reward_function_type = _parse_reward_function_type(d.pop("reward_function_type", UNSET))
 
+        def _parse_answer_parser_type(data: object) -> AnswerParserType | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                answer_parser_type_type_0 = AnswerParserType(data)
+
+                return answer_parser_type_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(AnswerParserType | None | Unset, data)
+
+        answer_parser_type = _parse_answer_parser_type(d.pop("answer_parser_type", UNSET))
+
         binary_answer_type = cls(
             answer_type=answer_type,
             answer_format_instruction=answer_format_instruction,
             labeler_instruction=labeler_instruction,
             question_generation_instruction=question_generation_instruction,
             reward_function_type=reward_function_type,
+            answer_parser_type=answer_parser_type,
         )
 
         binary_answer_type.additional_properties = d

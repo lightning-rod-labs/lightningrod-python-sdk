@@ -11,6 +11,7 @@ from ..types import UNSET, Unset
 if TYPE_CHECKING:
     from ..models.binary_answer_type import BinaryAnswerType
     from ..models.continuous_answer_type import ContinuousAnswerType
+    from ..models.continuous_value_only_answer_type import ContinuousValueOnlyAnswerType
     from ..models.free_response_answer_type import FreeResponseAnswerType
     from ..models.multiple_choice_answer_type import MultipleChoiceAnswerType
 
@@ -25,15 +26,21 @@ class WebSearchLabeler:
         config_type (Literal['WEB_SEARCH_LABELER'] | Unset): Type of transform configuration Default:
             'WEB_SEARCH_LABELER'.
         confidence_threshold (float | Unset): Minimum confidence threshold for including questions Default: 0.9.
-        answer_type (BinaryAnswerType | ContinuousAnswerType | FreeResponseAnswerType | MultipleChoiceAnswerType | None
-            | Unset): The type of answer expected, used to guide the labeler
+        answer_type (BinaryAnswerType | ContinuousAnswerType | ContinuousValueOnlyAnswerType | FreeResponseAnswerType |
+            MultipleChoiceAnswerType | None | Unset): The type of answer expected, used to guide the labeler
         resolve_redirects (bool | Unset): Resolve redirect URLs to actual destinations Default: False.
     """
 
     config_type: Literal["WEB_SEARCH_LABELER"] | Unset = "WEB_SEARCH_LABELER"
     confidence_threshold: float | Unset = 0.9
     answer_type: (
-        BinaryAnswerType | ContinuousAnswerType | FreeResponseAnswerType | MultipleChoiceAnswerType | None | Unset
+        BinaryAnswerType
+        | ContinuousAnswerType
+        | ContinuousValueOnlyAnswerType
+        | FreeResponseAnswerType
+        | MultipleChoiceAnswerType
+        | None
+        | Unset
     ) = UNSET
     resolve_redirects: bool | Unset = False
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -41,6 +48,7 @@ class WebSearchLabeler:
     def to_dict(self) -> dict[str, Any]:
         from ..models.binary_answer_type import BinaryAnswerType
         from ..models.continuous_answer_type import ContinuousAnswerType
+        from ..models.continuous_value_only_answer_type import ContinuousValueOnlyAnswerType
         from ..models.free_response_answer_type import FreeResponseAnswerType
         from ..models.multiple_choice_answer_type import MultipleChoiceAnswerType
 
@@ -56,6 +64,8 @@ class WebSearchLabeler:
         elif isinstance(self.answer_type, MultipleChoiceAnswerType):
             answer_type = self.answer_type.to_dict()
         elif isinstance(self.answer_type, ContinuousAnswerType):
+            answer_type = self.answer_type.to_dict()
+        elif isinstance(self.answer_type, ContinuousValueOnlyAnswerType):
             answer_type = self.answer_type.to_dict()
         elif isinstance(self.answer_type, FreeResponseAnswerType):
             answer_type = self.answer_type.to_dict()
@@ -82,6 +92,7 @@ class WebSearchLabeler:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.binary_answer_type import BinaryAnswerType
         from ..models.continuous_answer_type import ContinuousAnswerType
+        from ..models.continuous_value_only_answer_type import ContinuousValueOnlyAnswerType
         from ..models.free_response_answer_type import FreeResponseAnswerType
         from ..models.multiple_choice_answer_type import MultipleChoiceAnswerType
 
@@ -94,7 +105,15 @@ class WebSearchLabeler:
 
         def _parse_answer_type(
             data: object,
-        ) -> BinaryAnswerType | ContinuousAnswerType | FreeResponseAnswerType | MultipleChoiceAnswerType | None | Unset:
+        ) -> (
+            BinaryAnswerType
+            | ContinuousAnswerType
+            | ContinuousValueOnlyAnswerType
+            | FreeResponseAnswerType
+            | MultipleChoiceAnswerType
+            | None
+            | Unset
+        ):
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -126,14 +145,23 @@ class WebSearchLabeler:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                answer_type_type_0_type_3 = FreeResponseAnswerType.from_dict(data)
+                answer_type_type_0_type_3 = ContinuousValueOnlyAnswerType.from_dict(data)
 
                 return answer_type_type_0_type_3
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                answer_type_type_0_type_4 = FreeResponseAnswerType.from_dict(data)
+
+                return answer_type_type_0_type_4
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
             return cast(
                 BinaryAnswerType
                 | ContinuousAnswerType
+                | ContinuousValueOnlyAnswerType
                 | FreeResponseAnswerType
                 | MultipleChoiceAnswerType
                 | None

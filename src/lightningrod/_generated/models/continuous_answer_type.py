@@ -6,6 +6,7 @@ from typing import Any, Literal, TypeVar, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.answer_parser_type import AnswerParserType
 from ..models.reward_function_type import RewardFunctionType
 from ..types import UNSET, Unset
 
@@ -14,13 +15,17 @@ T = TypeVar("T", bound="ContinuousAnswerType")
 
 @_attrs_define
 class ContinuousAnswerType:
-    """
+    r"""
     Attributes:
         answer_type (Literal['CONTINUOUS'] | Unset):  Default: 'CONTINUOUS'.
-        answer_format_instruction (str | Unset): Instructions describing how the answer should be formatted and given.
-            Default: 'This question expects a numeric value as the answer. Provide your best estimate as a single number.
-            Include units if specified in the question. Provide your answer between <answer></answer> tags. Example:
-            <answer>42.5</answer>'.
+        answer_format_instruction (str | Unset): Appended to training/inference prompts to instruct the model how to
+            format its prediction. Most users should not need to override this — if results are poor, override this field or
+            open an issue at https://github.com/lightning-rod-labs/lightningrod-python-sdk/issues/new Default: 'Output the
+            parameters in JSON format surrounded by <answer></answer> tags.\n\nYour json must include the following
+            fields:\n- mean: Your best estimate of the central value.\n- standard_deviation: Standard deviation representing
+            your uncertainty in the mean value.\n\nExample Outputs. These are just examples to illustrate the format and
+            should not be considered baselines:\n<answer>\n{\n    \\"mean\\": 100,\n    \\"standard_deviation\\":
+            10\n}\n</answer>'.
         labeler_instruction (str | Unset): Instructions for the labeler. Default: "The answer should be ONLY a single
             exact numeric value, not a range. For example: '42.5' or '1000', not '40-45' or 'between 900 and 1100', or
             'Undetermined'. Do not include any other text or explanation.".
@@ -28,13 +33,13 @@ class ContinuousAnswerType:
             'Generate questions that expect a numeric value as the answer. Specify the units if applicable (e.g., dollars,
             percent, count). A clear and unambiguous question, based on the provided seed_text, that expects a numeric value
             as the answer.'.
-        reward_function_type (None | RewardFunctionType | Unset): Reward function type for scoring rollouts. None for
-            answer types that don't support scoring.
+        reward_function_type (None | RewardFunctionType | Unset):  Default: RewardFunctionType.CONTINUOUS_LOG_SCORE.
+        answer_parser_type (AnswerParserType | None | Unset):  Default: AnswerParserType.CONTINUOUS.
     """
 
     answer_type: Literal["CONTINUOUS"] | Unset = "CONTINUOUS"
     answer_format_instruction: str | Unset = (
-        "This question expects a numeric value as the answer. Provide your best estimate as a single number. Include units if specified in the question. Provide your answer between <answer></answer> tags. Example: <answer>42.5</answer>"
+        'Output the parameters in JSON format surrounded by <answer></answer> tags.\n\nYour json must include the following fields:\n- mean: Your best estimate of the central value.\n- standard_deviation: Standard deviation representing your uncertainty in the mean value.\n\nExample Outputs. These are just examples to illustrate the format and should not be considered baselines:\n<answer>\n{\n    \\"mean\\": 100,\n    \\"standard_deviation\\": 10\n}\n</answer>'
     )
     labeler_instruction: str | Unset = (
         "The answer should be ONLY a single exact numeric value, not a range. For example: '42.5' or '1000', not '40-45' or 'between 900 and 1100', or 'Undetermined'. Do not include any other text or explanation."
@@ -42,7 +47,8 @@ class ContinuousAnswerType:
     question_generation_instruction: str | Unset = (
         "Generate questions that expect a numeric value as the answer. Specify the units if applicable (e.g., dollars, percent, count). A clear and unambiguous question, based on the provided seed_text, that expects a numeric value as the answer."
     )
-    reward_function_type: None | RewardFunctionType | Unset = UNSET
+    reward_function_type: None | RewardFunctionType | Unset = RewardFunctionType.CONTINUOUS_LOG_SCORE
+    answer_parser_type: AnswerParserType | None | Unset = AnswerParserType.CONTINUOUS
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -62,6 +68,14 @@ class ContinuousAnswerType:
         else:
             reward_function_type = self.reward_function_type
 
+        answer_parser_type: None | str | Unset
+        if isinstance(self.answer_parser_type, Unset):
+            answer_parser_type = UNSET
+        elif isinstance(self.answer_parser_type, AnswerParserType):
+            answer_parser_type = self.answer_parser_type.value
+        else:
+            answer_parser_type = self.answer_parser_type
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
@@ -75,6 +89,8 @@ class ContinuousAnswerType:
             field_dict["question_generation_instruction"] = question_generation_instruction
         if reward_function_type is not UNSET:
             field_dict["reward_function_type"] = reward_function_type
+        if answer_parser_type is not UNSET:
+            field_dict["answer_parser_type"] = answer_parser_type
 
         return field_dict
 
@@ -108,12 +124,30 @@ class ContinuousAnswerType:
 
         reward_function_type = _parse_reward_function_type(d.pop("reward_function_type", UNSET))
 
+        def _parse_answer_parser_type(data: object) -> AnswerParserType | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                answer_parser_type_type_0 = AnswerParserType(data)
+
+                return answer_parser_type_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(AnswerParserType | None | Unset, data)
+
+        answer_parser_type = _parse_answer_parser_type(d.pop("answer_parser_type", UNSET))
+
         continuous_answer_type = cls(
             answer_type=answer_type,
             answer_format_instruction=answer_format_instruction,
             labeler_instruction=labeler_instruction,
             question_generation_instruction=question_generation_instruction,
             reward_function_type=reward_function_type,
+            answer_parser_type=answer_parser_type,
         )
 
         continuous_answer_type.additional_properties = d

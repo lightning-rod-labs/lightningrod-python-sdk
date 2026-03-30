@@ -10,41 +10,50 @@ from ..models.answer_parser_type import AnswerParserType
 from ..models.reward_function_type import RewardFunctionType
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="FreeResponseAnswerType")
+T = TypeVar("T", bound="ContinuousValueOnlyAnswerType")
 
 
 @_attrs_define
-class FreeResponseAnswerType:
-    """
-    Attributes:
-        answer_type (Literal['FREE_RESPONSE'] | Unset):  Default: 'FREE_RESPONSE'.
-        answer_format_instruction (str | Unset): Appended to training/inference prompts to instruct the model how to
-            format its prediction. Most users should not need to override this — if results are poor, override this field or
-            open an issue at https://github.com/lightning-rod-labs/lightningrod-python-sdk/issues/new Default: 'This
-            question expects a free-form text response. Provide an answer that directly addresses what the question is
-            asking. Provide your answer between <answer></answer> tags. Example: <answer>The company announced a new product
-            line.</answer>'.
-        labeler_instruction (str | Unset): Instructions for the labeler. Default: 'Respond with the correct answer as a
-            text description.'.
-        question_generation_instruction (str | Unset): Instructions for generating questions of this type. Default:
-            'Generate questions that expect a free-form text response. A clear and unambiguous question, based on the
-            provided seed_text, that expects a free-form text response.'.
-        reward_function_type (None | RewardFunctionType | Unset): Reward function type for scoring rollouts. None for
-            answer types that don't support scoring.
-        answer_parser_type (AnswerParserType | None | Unset): How to extract the model's prediction from raw text. Set
-            explicitly on each concrete subclass.
+class ContinuousValueOnlyAnswerType:
+    """Continuous question type that predicts a single scalar value.
+
+    Use this when the model should output a point estimate (e.g. "42.5") rather than
+    a full distribution. Scored via CONTINUOUS_VALUE_ONLY_LOG_SCORE by default.
+
+    For uncertainty-aware predictions use ContinuousAnswerType instead, which predicts
+    {mean, standard_deviation} and is scored via CONTINUOUS_LOG_SCORE.
+
+        Attributes:
+            answer_type (Literal['CONTINUOUS_VALUE_ONLY'] | Unset):  Default: 'CONTINUOUS_VALUE_ONLY'.
+            answer_format_instruction (str | Unset): Appended to training/inference prompts to instruct the model how to
+                format its prediction. Most users should not need to override this — if results are poor, override this field or
+                open an issue at https://github.com/lightning-rod-labs/lightningrod-python-sdk/issues/new Default: 'This
+                question expects a numeric value as the answer. Provide your best single-number estimate. Include units if
+                specified in the question. Provide your answer between <answer></answer> tags. Example: <answer>42.5</answer>'.
+            labeler_instruction (str | Unset): Instructions for the labeler. Default: "The answer should be ONLY a single
+                exact numeric value, not a range. For example: '42.5' or '1000', not '40-45' or 'between 900 and 1100', or
+                'Undetermined'. Do not include any other text or explanation.".
+            question_generation_instruction (str | Unset): Instructions for generating questions of this type. Default:
+                'Generate questions that expect a numeric value as the answer. Specify the units if applicable (e.g., dollars,
+                percent, count). A clear and unambiguous question, based on the provided seed_text, that expects a numeric value
+                as the answer.'.
+            reward_function_type (None | RewardFunctionType | Unset):  Default:
+                RewardFunctionType.CONTINUOUS_VALUE_ONLY_LOG_SCORE.
+            answer_parser_type (AnswerParserType | None | Unset):  Default: AnswerParserType.CONTINUOUS_VALUE_ONLY.
     """
 
-    answer_type: Literal["FREE_RESPONSE"] | Unset = "FREE_RESPONSE"
+    answer_type: Literal["CONTINUOUS_VALUE_ONLY"] | Unset = "CONTINUOUS_VALUE_ONLY"
     answer_format_instruction: str | Unset = (
-        "This question expects a free-form text response. Provide an answer that directly addresses what the question is asking. Provide your answer between <answer></answer> tags. Example: <answer>The company announced a new product line.</answer>"
+        "This question expects a numeric value as the answer. Provide your best single-number estimate. Include units if specified in the question. Provide your answer between <answer></answer> tags. Example: <answer>42.5</answer>"
     )
-    labeler_instruction: str | Unset = "Respond with the correct answer as a text description."
+    labeler_instruction: str | Unset = (
+        "The answer should be ONLY a single exact numeric value, not a range. For example: '42.5' or '1000', not '40-45' or 'between 900 and 1100', or 'Undetermined'. Do not include any other text or explanation."
+    )
     question_generation_instruction: str | Unset = (
-        "Generate questions that expect a free-form text response. A clear and unambiguous question, based on the provided seed_text, that expects a free-form text response."
+        "Generate questions that expect a numeric value as the answer. Specify the units if applicable (e.g., dollars, percent, count). A clear and unambiguous question, based on the provided seed_text, that expects a numeric value as the answer."
     )
-    reward_function_type: None | RewardFunctionType | Unset = UNSET
-    answer_parser_type: AnswerParserType | None | Unset = UNSET
+    reward_function_type: None | RewardFunctionType | Unset = RewardFunctionType.CONTINUOUS_VALUE_ONLY_LOG_SCORE
+    answer_parser_type: AnswerParserType | None | Unset = AnswerParserType.CONTINUOUS_VALUE_ONLY
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -93,9 +102,9 @@ class FreeResponseAnswerType:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        answer_type = cast(Literal["FREE_RESPONSE"] | Unset, d.pop("answer_type", UNSET))
-        if answer_type != "FREE_RESPONSE" and not isinstance(answer_type, Unset):
-            raise ValueError(f"answer_type must match const 'FREE_RESPONSE', got '{answer_type}'")
+        answer_type = cast(Literal["CONTINUOUS_VALUE_ONLY"] | Unset, d.pop("answer_type", UNSET))
+        if answer_type != "CONTINUOUS_VALUE_ONLY" and not isinstance(answer_type, Unset):
+            raise ValueError(f"answer_type must match const 'CONTINUOUS_VALUE_ONLY', got '{answer_type}'")
 
         answer_format_instruction = d.pop("answer_format_instruction", UNSET)
 
@@ -137,7 +146,7 @@ class FreeResponseAnswerType:
 
         answer_parser_type = _parse_answer_parser_type(d.pop("answer_parser_type", UNSET))
 
-        free_response_answer_type = cls(
+        continuous_value_only_answer_type = cls(
             answer_type=answer_type,
             answer_format_instruction=answer_format_instruction,
             labeler_instruction=labeler_instruction,
@@ -146,8 +155,8 @@ class FreeResponseAnswerType:
             answer_parser_type=answer_parser_type,
         )
 
-        free_response_answer_type.additional_properties = d
-        return free_response_answer_type
+        continuous_value_only_answer_type.additional_properties = d
+        return continuous_value_only_answer_type
 
     @property
     def additional_keys(self) -> list[str]:

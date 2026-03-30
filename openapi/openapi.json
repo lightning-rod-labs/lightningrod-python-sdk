@@ -5,11 +5,6 @@
     "description": "Generate verified, grounded datasets at scale for LLM fine-tuning and evaluation",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "/api/public/v1"
-    }
-  ],
   "paths": {
     "/openai/chat/completions": {
       "post": {
@@ -1620,6 +1615,17 @@
   },
   "components": {
     "schemas": {
+      "AnswerParserType": {
+        "type": "string",
+        "enum": [
+          "binary",
+          "fraction",
+          "multi_choice",
+          "continuous",
+          "continuous_value_only"
+        ],
+        "title": "AnswerParserType"
+      },
       "BalanceResponse": {
         "properties": {
           "balance_dollars": {
@@ -1689,7 +1695,7 @@
           "answer_format_instruction": {
             "type": "string",
             "title": "Answer Format Instruction",
-            "description": "Instructions describing how the answer should be formatted and given.",
+            "description": "Appended to training/inference prompts to instruct the model how to format its prediction. Most users should not need to override this \u2014 if results are poor, override this field or open an issue at https://github.com/lightning-rod-labs/lightningrod-python-sdk/issues/new",
             "default": "This is a binary yes/no question. You are estimating the probability that the answer is 'Yes'. Provide your confidence as a value between 0 (definitely No) and 1 (definitely Yes). Provide your probability estimate for Yes as a decimal between 0 and 1. Provide your answer between <answer></answer> tags. Example: <answer>0.75</answer>"
           },
           "labeler_instruction": {
@@ -1714,6 +1720,17 @@
               }
             ],
             "default": "binary_brier"
+          },
+          "answer_parser_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerParserType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "binary"
           }
         },
         "type": "object",
@@ -2173,8 +2190,8 @@
           "answer_format_instruction": {
             "type": "string",
             "title": "Answer Format Instruction",
-            "description": "Instructions describing how the answer should be formatted and given.",
-            "default": "This question expects a numeric value as the answer. Provide your best estimate as a single number. Include units if specified in the question. Provide your answer between <answer></answer> tags. Example: <answer>42.5</answer>"
+            "description": "Appended to training/inference prompts to instruct the model how to format its prediction. Most users should not need to override this \u2014 if results are poor, override this field or open an issue at https://github.com/lightning-rod-labs/lightningrod-python-sdk/issues/new",
+            "default": "Output the parameters in JSON format surrounded by <answer></answer> tags.\n\nYour json must include the following fields:\n- mean: Your best estimate of the central value.\n- standard_deviation: Standard deviation representing your uncertainty in the mean value.\n\nExample Outputs. These are just examples to illustrate the format and should not be considered baselines:\n<answer>\n{\n    \"mean\": 100,\n    \"standard_deviation\": 10\n}\n</answer>"
           },
           "labeler_instruction": {
             "type": "string",
@@ -2197,11 +2214,75 @@
                 "type": "null"
               }
             ],
-            "description": "Reward function type for scoring rollouts. None for answer types that don't support scoring."
+            "default": "continuous_log_score"
+          },
+          "answer_parser_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerParserType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "continuous"
           }
         },
         "type": "object",
         "title": "ContinuousAnswerType"
+      },
+      "ContinuousValueOnlyAnswerType": {
+        "properties": {
+          "answer_type": {
+            "type": "string",
+            "const": "CONTINUOUS_VALUE_ONLY",
+            "title": "Answer Type",
+            "default": "CONTINUOUS_VALUE_ONLY"
+          },
+          "answer_format_instruction": {
+            "type": "string",
+            "title": "Answer Format Instruction",
+            "description": "Appended to training/inference prompts to instruct the model how to format its prediction. Most users should not need to override this \u2014 if results are poor, override this field or open an issue at https://github.com/lightning-rod-labs/lightningrod-python-sdk/issues/new",
+            "default": "This question expects a numeric value as the answer. Provide your best single-number estimate. Include units if specified in the question. Provide your answer between <answer></answer> tags. Example: <answer>42.5</answer>"
+          },
+          "labeler_instruction": {
+            "type": "string",
+            "title": "Labeler Instruction",
+            "description": "Instructions for the labeler.",
+            "default": "The answer should be ONLY a single exact numeric value, not a range. For example: '42.5' or '1000', not '40-45' or 'between 900 and 1100', or 'Undetermined'. Do not include any other text or explanation."
+          },
+          "question_generation_instruction": {
+            "type": "string",
+            "title": "Question Generation Instruction",
+            "description": "Instructions for generating questions of this type.",
+            "default": "Generate questions that expect a numeric value as the answer. Specify the units if applicable (e.g., dollars, percent, count). A clear and unambiguous question, based on the provided seed_text, that expects a numeric value as the answer."
+          },
+          "reward_function_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RewardFunctionType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "continuous_value_only_log_score"
+          },
+          "answer_parser_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerParserType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "continuous_value_only"
+          }
+        },
+        "type": "object",
+        "title": "ContinuousValueOnlyAnswerType",
+        "description": "Continuous question type that predicts a single scalar value.\n\nUse this when the model should output a point estimate (e.g. \"42.5\") rather than\na full distribution. Scored via CONTINUOUS_VALUE_ONLY_LOG_SCORE by default.\n\nFor uncertainty-aware predictions use ContinuousAnswerType instead, which predicts\n{mean, standard_deviation} and is scored via CONTINUOUS_LOG_SCORE."
       },
       "CreateDatasetResponse": {
         "properties": {
@@ -3487,6 +3568,9 @@
                     "$ref": "#/components/schemas/ContinuousAnswerType"
                   },
                   {
+                    "$ref": "#/components/schemas/ContinuousValueOnlyAnswerType"
+                  },
+                  {
                     "$ref": "#/components/schemas/FreeResponseAnswerType"
                   }
                 ],
@@ -3495,6 +3579,7 @@
                   "mapping": {
                     "BINARY": "#/components/schemas/BinaryAnswerType",
                     "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "CONTINUOUS_VALUE_ONLY": "#/components/schemas/ContinuousValueOnlyAnswerType",
                     "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
                     "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
                   }
@@ -3777,6 +3862,9 @@
                     "$ref": "#/components/schemas/ContinuousAnswerType"
                   },
                   {
+                    "$ref": "#/components/schemas/ContinuousValueOnlyAnswerType"
+                  },
+                  {
                     "$ref": "#/components/schemas/FreeResponseAnswerType"
                   }
                 ],
@@ -3785,6 +3873,7 @@
                   "mapping": {
                     "BINARY": "#/components/schemas/BinaryAnswerType",
                     "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "CONTINUOUS_VALUE_ONLY": "#/components/schemas/ContinuousValueOnlyAnswerType",
                     "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
                     "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
                   }
@@ -3812,7 +3901,7 @@
           "answer_format_instruction": {
             "type": "string",
             "title": "Answer Format Instruction",
-            "description": "Instructions describing how the answer should be formatted and given.",
+            "description": "Appended to training/inference prompts to instruct the model how to format its prediction. Most users should not need to override this \u2014 if results are poor, override this field or open an issue at https://github.com/lightning-rod-labs/lightningrod-python-sdk/issues/new",
             "default": "This question expects a free-form text response. Provide an answer that directly addresses what the question is asking. Provide your answer between <answer></answer> tags. Example: <answer>The company announced a new product line.</answer>"
           },
           "labeler_instruction": {
@@ -3837,6 +3926,17 @@
               }
             ],
             "description": "Reward function type for scoring rollouts. None for answer types that don't support scoring."
+          },
+          "answer_parser_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerParserType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "How to extract the model's prediction from raw text. Set explicitly on each concrete subclass."
           }
         },
         "type": "object",
@@ -4026,6 +4126,28 @@
               }
             ],
             "title": "Answer Type"
+          },
+          "answer_parser_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer Parser Type"
+          },
+          "reward_function_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reward Function Type"
           },
           "resolution_date": {
             "anyOf": [
@@ -4687,20 +4809,20 @@
           "answer_format_instruction": {
             "type": "string",
             "title": "Answer Format Instruction",
-            "description": "Instructions describing how the answer should be formatted and given.",
-            "default": "This is a multiple choice question with answer options. The list of options will be provided in the question. You are estimating the probability for each option being the correct answer. Provide your confidence for each option as a value between 0 and 1, where the probabilities must sum to 1. Provide your answer as a JSON dictionary between <answer></answer> tags, with keys like option_0, option_1, etc. corresponding to each option in order. Example: <answer>{\"option_0\": 0.3, \"option_1\": 0.4, \"option_2\": 0.2, \"option_3\": 0.1}</answer>"
+            "description": "Appended to training/inference prompts to instruct the model how to format its prediction. Most users should not need to override this \u2014 if results are poor, override this field or open an issue at https://github.com/lightning-rod-labs/lightningrod-python-sdk/issues/new",
+            "default": "This is a multiple choice question with answer options. The list of options (option_0, option_1, \u2026) will be provided in the question. You are estimating the probability for each option being the correct answer. Provide your confidence for each option as a value between 0 and 1, where the probabilities must sum to 1. Provide your answer as a JSON dictionary between <answer></answer> tags, with keys option_0, option_1, etc. corresponding to each option in order. Example: <answer>{\"option_0\": 0.3, \"option_1\": 0.4, \"option_2\": 0.2, \"option_3\": 0.1}</answer>"
           },
           "labeler_instruction": {
             "type": "string",
             "title": "Labeler Instruction",
             "description": "Instructions for the labeler.",
-            "default": "The answer should be ONLY one of the following options: 'A', 'B', 'C', or 'D', or 'Undetermined'. Do not include any other text or explanation."
+            "default": "The answer must be EXACTLY the full text of one of the listed answer options.\nDo NOT include the option label (e.g., 'option_0') and do NOT add any extra words, punctuation, or explanation.\n\nEach question contains BETWEEN 3 AND 6 answer options, written in the question text as:\n  option_0: <brief phrase>\n  option_1: <brief phrase>\n  option_2: <brief phrase>\n  ...\n\nEach option text is a SHORT PHRASE (typically a few words), not a full sentence.\n\nRespond with:\n- The exact text of the correct option, character-for-character, if it can be determined from public web information at the resolution date\n- Otherwise, respond with exactly: Undetermined"
           },
           "question_generation_instruction": {
             "type": "string",
             "title": "Question Generation Instruction",
             "description": "Instructions for generating questions of this type.",
-            "default": "Generate questions with multiple choice options (up to 10). Format the options on separate lines after the question:\nA) First option\nB) Second option\nC) Third option\n... and so on\n\nEach option should be distinct and mutually exclusive. A clear and unambiguous multiple-choice question, based on the provided seed_text. Include the options in the question text."
+            "default": "Generate multiple-choice forecasting questions about a specific future real-world event, based on recent news coverage.\n\nThe question text MUST explicitly list all answer options (option_0, option_1, option_2, \u2026) as part of the question itself. Do not separate options from the question or imply them indirectly.\n\nEach question MUST:\n- Be about ONE clearly defined real-world event or decision (not multiple unrelated events)\n- Ask what will happen by a specific resolution date (exact date required)\n- Include BETWEEN 3 AND 6 explicitly listed answer options labeled option_0, option_1, option_2, \u2026\n- Have EXACTLY ONE correct answer among the listed options\n- Be fully self-contained, including all necessary names, locations, dates, and context\n- Be newsworthy and likely to be reported on if it occurs\n- Be resolvable via public web search at the resolution date\n- Cover a plausible range of outcomes (no option should be absurd, trivial, or irrelevant)\n\nAnswer options MUST:\n- Contain more than two options\n- Be written directly in the question text as 'option_0: <text>', 'option_1: <text>', etc.\n- Be mutually exclusive and collectively exhaustive for the event described\n- Contain ONLY brief phrases (a few words); do NOT use full sentences\n- Represent alternative outcomes of the SAME underlying event\n- Avoid logical dependence or nesting (e.g., no 'both option_0 and option_2', no subset relationships)\n\nSTRICTLY AVOID:\n- Past or ongoing events presented as future\n- Options that differ only by vague or qualitative wording (e.g., 'significant', 'major', 'substantial')\n- Context-dependent references (e.g., 'the country', 'the leader', 'later this year')\n- Options that combine multiple events, conditions, or contingencies"
           },
           "reward_function_type": {
             "anyOf": [
@@ -4712,6 +4834,32 @@
               }
             ],
             "default": "multi_choice_log_score"
+          },
+          "answer_parser_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerParserType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "multi_choice"
+          },
+          "multiple_choice_options": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Multiple Choice Options",
+            "description": "Maps option labels to option text, e.g. {'option_0': 'Rate increase', 'option_1': 'No change'}. If not set, options are extracted from the question text at scoring time."
           }
         },
         "type": "object",
@@ -5128,6 +5276,9 @@
                     "$ref": "#/components/schemas/ContinuousAnswerType"
                   },
                   {
+                    "$ref": "#/components/schemas/ContinuousValueOnlyAnswerType"
+                  },
+                  {
                     "$ref": "#/components/schemas/FreeResponseAnswerType"
                   }
                 ],
@@ -5136,6 +5287,7 @@
                   "mapping": {
                     "BINARY": "#/components/schemas/BinaryAnswerType",
                     "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "CONTINUOUS_VALUE_ONLY": "#/components/schemas/ContinuousValueOnlyAnswerType",
                     "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
                     "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
                   }
@@ -5233,6 +5385,9 @@
                     "$ref": "#/components/schemas/ContinuousAnswerType"
                   },
                   {
+                    "$ref": "#/components/schemas/ContinuousValueOnlyAnswerType"
+                  },
+                  {
                     "$ref": "#/components/schemas/FreeResponseAnswerType"
                   }
                 ],
@@ -5241,6 +5396,7 @@
                   "mapping": {
                     "BINARY": "#/components/schemas/BinaryAnswerType",
                     "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "CONTINUOUS_VALUE_ONLY": "#/components/schemas/ContinuousValueOnlyAnswerType",
                     "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
                     "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
                   }
@@ -5526,6 +5682,9 @@
                     "$ref": "#/components/schemas/ContinuousAnswerType"
                   },
                   {
+                    "$ref": "#/components/schemas/ContinuousValueOnlyAnswerType"
+                  },
+                  {
                     "$ref": "#/components/schemas/FreeResponseAnswerType"
                   }
                 ],
@@ -5534,6 +5693,7 @@
                   "mapping": {
                     "BINARY": "#/components/schemas/BinaryAnswerType",
                     "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "CONTINUOUS_VALUE_ONLY": "#/components/schemas/ContinuousValueOnlyAnswerType",
                     "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
                     "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
                   }
@@ -5761,6 +5921,9 @@
                 "$ref": "#/components/schemas/ContinuousAnswerType"
               },
               {
+                "$ref": "#/components/schemas/ContinuousValueOnlyAnswerType"
+              },
+              {
                 "$ref": "#/components/schemas/FreeResponseAnswerType"
               }
             ],
@@ -5771,6 +5934,7 @@
               "mapping": {
                 "BINARY": "#/components/schemas/BinaryAnswerType",
                 "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                "CONTINUOUS_VALUE_ONLY": "#/components/schemas/ContinuousValueOnlyAnswerType",
                 "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
                 "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
               }
@@ -6799,6 +6963,13 @@
           "type": {
             "type": "string",
             "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
           }
         },
         "type": "object",
@@ -6838,6 +7009,9 @@
                     "$ref": "#/components/schemas/ContinuousAnswerType"
                   },
                   {
+                    "$ref": "#/components/schemas/ContinuousValueOnlyAnswerType"
+                  },
+                  {
                     "$ref": "#/components/schemas/FreeResponseAnswerType"
                   }
                 ],
@@ -6846,6 +7020,7 @@
                   "mapping": {
                     "BINARY": "#/components/schemas/BinaryAnswerType",
                     "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "CONTINUOUS_VALUE_ONLY": "#/components/schemas/ContinuousValueOnlyAnswerType",
                     "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
                     "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
                   }
@@ -6875,5 +7050,10 @@
         "scheme": "bearer"
       }
     }
-  }
+  },
+  "servers": [
+    {
+      "url": "/api/public/v1"
+    }
+  ]
 }

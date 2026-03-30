@@ -11,6 +11,7 @@ from ..types import UNSET, Unset
 if TYPE_CHECKING:
     from ..models.binary_answer_type import BinaryAnswerType
     from ..models.continuous_answer_type import ContinuousAnswerType
+    from ..models.continuous_value_only_answer_type import ContinuousValueOnlyAnswerType
     from ..models.free_response_answer_type import FreeResponseAnswerType
     from ..models.multiple_choice_answer_type import MultipleChoiceAnswerType
     from ..models.rollout_scorer_multiple_choice_options_type_0 import RolloutScorerMultipleChoiceOptionsType0
@@ -23,14 +24,20 @@ T = TypeVar("T", bound="RolloutScorer")
 class RolloutScorer:
     """
     Attributes:
-        answer_type (BinaryAnswerType | ContinuousAnswerType | FreeResponseAnswerType | MultipleChoiceAnswerType): the
-            answer type of the question
+        answer_type (BinaryAnswerType | ContinuousAnswerType | ContinuousValueOnlyAnswerType | FreeResponseAnswerType |
+            MultipleChoiceAnswerType): the answer type of the question
         config_type (Literal['ROLLOUT_SCORER'] | Unset):  Default: 'ROLLOUT_SCORER'.
         multiple_choice_options (None | RolloutScorerMultipleChoiceOptionsType0 | Unset):
         is_mutually_exclusive (bool | Unset):  Default: True.
     """
 
-    answer_type: BinaryAnswerType | ContinuousAnswerType | FreeResponseAnswerType | MultipleChoiceAnswerType
+    answer_type: (
+        BinaryAnswerType
+        | ContinuousAnswerType
+        | ContinuousValueOnlyAnswerType
+        | FreeResponseAnswerType
+        | MultipleChoiceAnswerType
+    )
     config_type: Literal["ROLLOUT_SCORER"] | Unset = "ROLLOUT_SCORER"
     multiple_choice_options: None | RolloutScorerMultipleChoiceOptionsType0 | Unset = UNSET
     is_mutually_exclusive: bool | Unset = True
@@ -39,6 +46,7 @@ class RolloutScorer:
     def to_dict(self) -> dict[str, Any]:
         from ..models.binary_answer_type import BinaryAnswerType
         from ..models.continuous_answer_type import ContinuousAnswerType
+        from ..models.continuous_value_only_answer_type import ContinuousValueOnlyAnswerType
         from ..models.multiple_choice_answer_type import MultipleChoiceAnswerType
         from ..models.rollout_scorer_multiple_choice_options_type_0 import RolloutScorerMultipleChoiceOptionsType0
 
@@ -48,6 +56,8 @@ class RolloutScorer:
         elif isinstance(self.answer_type, MultipleChoiceAnswerType):
             answer_type = self.answer_type.to_dict()
         elif isinstance(self.answer_type, ContinuousAnswerType):
+            answer_type = self.answer_type.to_dict()
+        elif isinstance(self.answer_type, ContinuousValueOnlyAnswerType):
             answer_type = self.answer_type.to_dict()
         else:
             answer_type = self.answer_type.to_dict()
@@ -84,6 +94,7 @@ class RolloutScorer:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.binary_answer_type import BinaryAnswerType
         from ..models.continuous_answer_type import ContinuousAnswerType
+        from ..models.continuous_value_only_answer_type import ContinuousValueOnlyAnswerType
         from ..models.free_response_answer_type import FreeResponseAnswerType
         from ..models.multiple_choice_answer_type import MultipleChoiceAnswerType
         from ..models.rollout_scorer_multiple_choice_options_type_0 import RolloutScorerMultipleChoiceOptionsType0
@@ -92,7 +103,13 @@ class RolloutScorer:
 
         def _parse_answer_type(
             data: object,
-        ) -> BinaryAnswerType | ContinuousAnswerType | FreeResponseAnswerType | MultipleChoiceAnswerType:
+        ) -> (
+            BinaryAnswerType
+            | ContinuousAnswerType
+            | ContinuousValueOnlyAnswerType
+            | FreeResponseAnswerType
+            | MultipleChoiceAnswerType
+        ):
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
@@ -117,11 +134,19 @@ class RolloutScorer:
                 return answer_type_type_2
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                answer_type_type_3 = ContinuousValueOnlyAnswerType.from_dict(data)
+
+                return answer_type_type_3
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
             if not isinstance(data, dict):
                 raise TypeError()
-            answer_type_type_3 = FreeResponseAnswerType.from_dict(data)
+            answer_type_type_4 = FreeResponseAnswerType.from_dict(data)
 
-            return answer_type_type_3
+            return answer_type_type_4
 
         answer_type = _parse_answer_type(d.pop("answer_type"))
 

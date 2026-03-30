@@ -12,6 +12,7 @@ from ..types import UNSET, Unset
 if TYPE_CHECKING:
     from ..models.binary_answer_type import BinaryAnswerType
     from ..models.continuous_answer_type import ContinuousAnswerType
+    from ..models.continuous_value_only_answer_type import ContinuousValueOnlyAnswerType
     from ..models.free_response_answer_type import FreeResponseAnswerType
     from ..models.multiple_choice_answer_type import MultipleChoiceAnswerType
 
@@ -32,8 +33,8 @@ class FileSetRAGLabeler:
         metadata_filter (None | str | Unset): Static AIP-160 metadata filter (combined with dynamic via AND)
         system_instruction (None | str | Unset): Optional system instruction for the Gemini RAG query
         confidence_threshold (float | Unset): Minimum confidence threshold for including questions Default: 0.9.
-        answer_type (BinaryAnswerType | ContinuousAnswerType | FreeResponseAnswerType | MultipleChoiceAnswerType | None
-            | Unset): The type of answer expected, used to guide the labeler
+        answer_type (BinaryAnswerType | ContinuousAnswerType | ContinuousValueOnlyAnswerType | FreeResponseAnswerType |
+            MultipleChoiceAnswerType | None | Unset): The type of answer expected, used to guide the labeler
         temporal_constraint (None | TemporalConstraint | Unset): Filter documents by date relative to seed date. AFTER
             (>) for resolution docs, BEFORE (<=) for historical only.
         date_metadata_key (str | Unset): Gemini metadata key storing unix timestamp for temporal filtering Default:
@@ -48,7 +49,13 @@ class FileSetRAGLabeler:
     system_instruction: None | str | Unset = UNSET
     confidence_threshold: float | Unset = 0.9
     answer_type: (
-        BinaryAnswerType | ContinuousAnswerType | FreeResponseAnswerType | MultipleChoiceAnswerType | None | Unset
+        BinaryAnswerType
+        | ContinuousAnswerType
+        | ContinuousValueOnlyAnswerType
+        | FreeResponseAnswerType
+        | MultipleChoiceAnswerType
+        | None
+        | Unset
     ) = UNSET
     temporal_constraint: None | TemporalConstraint | Unset = UNSET
     date_metadata_key: str | Unset = "file_date"
@@ -58,6 +65,7 @@ class FileSetRAGLabeler:
     def to_dict(self) -> dict[str, Any]:
         from ..models.binary_answer_type import BinaryAnswerType
         from ..models.continuous_answer_type import ContinuousAnswerType
+        from ..models.continuous_value_only_answer_type import ContinuousValueOnlyAnswerType
         from ..models.free_response_answer_type import FreeResponseAnswerType
         from ..models.multiple_choice_answer_type import MultipleChoiceAnswerType
 
@@ -91,6 +99,8 @@ class FileSetRAGLabeler:
         elif isinstance(self.answer_type, MultipleChoiceAnswerType):
             answer_type = self.answer_type.to_dict()
         elif isinstance(self.answer_type, ContinuousAnswerType):
+            answer_type = self.answer_type.to_dict()
+        elif isinstance(self.answer_type, ContinuousValueOnlyAnswerType):
             answer_type = self.answer_type.to_dict()
         elif isinstance(self.answer_type, FreeResponseAnswerType):
             answer_type = self.answer_type.to_dict()
@@ -141,6 +151,7 @@ class FileSetRAGLabeler:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.binary_answer_type import BinaryAnswerType
         from ..models.continuous_answer_type import ContinuousAnswerType
+        from ..models.continuous_value_only_answer_type import ContinuousValueOnlyAnswerType
         from ..models.free_response_answer_type import FreeResponseAnswerType
         from ..models.multiple_choice_answer_type import MultipleChoiceAnswerType
 
@@ -175,7 +186,15 @@ class FileSetRAGLabeler:
 
         def _parse_answer_type(
             data: object,
-        ) -> BinaryAnswerType | ContinuousAnswerType | FreeResponseAnswerType | MultipleChoiceAnswerType | None | Unset:
+        ) -> (
+            BinaryAnswerType
+            | ContinuousAnswerType
+            | ContinuousValueOnlyAnswerType
+            | FreeResponseAnswerType
+            | MultipleChoiceAnswerType
+            | None
+            | Unset
+        ):
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -207,14 +226,23 @@ class FileSetRAGLabeler:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                answer_type_type_0_type_3 = FreeResponseAnswerType.from_dict(data)
+                answer_type_type_0_type_3 = ContinuousValueOnlyAnswerType.from_dict(data)
 
                 return answer_type_type_0_type_3
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                answer_type_type_0_type_4 = FreeResponseAnswerType.from_dict(data)
+
+                return answer_type_type_0_type_4
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
             return cast(
                 BinaryAnswerType
                 | ContinuousAnswerType
+                | ContinuousValueOnlyAnswerType
                 | FreeResponseAnswerType
                 | MultipleChoiceAnswerType
                 | None
