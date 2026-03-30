@@ -15,7 +15,7 @@ T = TypeVar("T", bound="BinaryAnswerType")
 
 @_attrs_define
 class BinaryAnswerType:
-    """
+    r"""
     Attributes:
         answer_type (Literal['BINARY'] | Unset):  Default: 'BINARY'.
         answer_format_instruction (str | Unset): Appended to training/inference prompts to instruct the model how to
@@ -28,9 +28,15 @@ class BinaryAnswerType:
             or 'Undetermined'. '1' means yes, '0' means no, and 'Undetermined' means the answer is not clear. Do not include
             any other text or explanation.".
         question_generation_instruction (str | Unset): Instructions for generating questions of this type. Default:
-            "Generate questions that can be answered with Yes or No. Frame the question so it has exactly two possible
-            outcomes: Yes or No. The question should start with words like 'Will', 'Is', 'Does', 'Has', 'Can', etc. A clear
-            and unambiguous yes/no question, based on the provided seed_text.".
+            "Generate binary forecasting questions about future events or outcomes that are unresolved at the time of asking
+            and will resolve to a clear, publicly verifiable Yes or No.\n\nEach question MUST:\n- Have EXACTLY ONE binary
+            answer: Yes or No\n- Be fully self-contained (all entities, locations, dates included)\n- Refer to a clearly
+            defined event or threshold with an explicit resolution date or deadline\n- Describe an outcome plausibly
+            reported in a major news headline or official release\n- Start with words like 'Will', 'Is', 'Does', 'Has',
+            'Can', 'Did', or similar\n\nSTRICTLY DO NOT include:\n- Numeric or continuous outcomes\n- Multiple-choice or
+            categorical questions\n- Trivial, obscure, or low-impact events\n- Vague language or ambiguous resolution
+            criteria\n- Outcomes dependent on unpublished, proprietary, or speculative data\n- Questions with more than two
+            possible outcomes".
         reward_function_type (None | RewardFunctionType | Unset):  Default: RewardFunctionType.BINARY_BRIER.
         answer_parser_type (AnswerParserType | None | Unset):  Default: AnswerParserType.BINARY.
     """
@@ -43,7 +49,7 @@ class BinaryAnswerType:
         "The answer should be ONLY '1', '0', or 'Undetermined'. '1' means yes, '0' means no, and 'Undetermined' means the answer is not clear. Do not include any other text or explanation."
     )
     question_generation_instruction: str | Unset = (
-        "Generate questions that can be answered with Yes or No. Frame the question so it has exactly two possible outcomes: Yes or No. The question should start with words like 'Will', 'Is', 'Does', 'Has', 'Can', etc. A clear and unambiguous yes/no question, based on the provided seed_text."
+        "Generate binary forecasting questions about future events or outcomes that are unresolved at the time of asking and will resolve to a clear, publicly verifiable Yes or No.\n\nEach question MUST:\n- Have EXACTLY ONE binary answer: Yes or No\n- Be fully self-contained (all entities, locations, dates included)\n- Refer to a clearly defined event or threshold with an explicit resolution date or deadline\n- Describe an outcome plausibly reported in a major news headline or official release\n- Start with words like 'Will', 'Is', 'Does', 'Has', 'Can', 'Did', or similar\n\nSTRICTLY DO NOT include:\n- Numeric or continuous outcomes\n- Multiple-choice or categorical questions\n- Trivial, obscure, or low-impact events\n- Vague language or ambiguous resolution criteria\n- Outcomes dependent on unpublished, proprietary, or speculative data\n- Questions with more than two possible outcomes"
     )
     reward_function_type: None | RewardFunctionType | Unset = RewardFunctionType.BINARY_BRIER
     answer_parser_type: AnswerParserType | None | Unset = AnswerParserType.BINARY

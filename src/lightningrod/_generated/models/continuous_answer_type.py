@@ -30,9 +30,13 @@ class ContinuousAnswerType:
             exact numeric value, not a range. For example: '42.5' or '1000', not '40-45' or 'between 900 and 1100', or
             'Undetermined'. Do not include any other text or explanation.".
         question_generation_instruction (str | Unset): Instructions for generating questions of this type. Default:
-            'Generate questions that expect a numeric value as the answer. Specify the units if applicable (e.g., dollars,
-            percent, count). A clear and unambiguous question, based on the provided seed_text, that expects a numeric value
-            as the answer.'.
+            'Generate forecasting questions that expect a single numeric answer.\n\nEach question MUST:\n- Have EXACTLY ONE
+            numeric answer (integer or decimal)\n- Specify the unit of measurement\n- Be fully self-contained (all entities,
+            locations, dates included)\n- Refer to a clearly defined event or measurement period with an explicit end
+            date\n- Describe an outcome plausibly reported in a major news headline or official release\n\nSTRICTLY DO NOT
+            include:\n- Binary or categorical outcomes\n- Trivial, obscure, or low-impact measurements\n- Vague language or
+            approximations\n- Ranges, intervals, or multiple correct values\n- Ambiguous definitions or aggregations\n-
+            Outcomes dependent on unpublished, proprietary, or speculative data'.
         reward_function_type (None | RewardFunctionType | Unset):  Default: RewardFunctionType.CONTINUOUS_LOG_SCORE.
         answer_parser_type (AnswerParserType | None | Unset):  Default: AnswerParserType.CONTINUOUS.
     """
@@ -45,7 +49,7 @@ class ContinuousAnswerType:
         "The answer should be ONLY a single exact numeric value, not a range. For example: '42.5' or '1000', not '40-45' or 'between 900 and 1100', or 'Undetermined'. Do not include any other text or explanation."
     )
     question_generation_instruction: str | Unset = (
-        "Generate questions that expect a numeric value as the answer. Specify the units if applicable (e.g., dollars, percent, count). A clear and unambiguous question, based on the provided seed_text, that expects a numeric value as the answer."
+        "Generate forecasting questions that expect a single numeric answer.\n\nEach question MUST:\n- Have EXACTLY ONE numeric answer (integer or decimal)\n- Specify the unit of measurement\n- Be fully self-contained (all entities, locations, dates included)\n- Refer to a clearly defined event or measurement period with an explicit end date\n- Describe an outcome plausibly reported in a major news headline or official release\n\nSTRICTLY DO NOT include:\n- Binary or categorical outcomes\n- Trivial, obscure, or low-impact measurements\n- Vague language or approximations\n- Ranges, intervals, or multiple correct values\n- Ambiguous definitions or aggregations\n- Outcomes dependent on unpublished, proprietary, or speculative data"
     )
     reward_function_type: None | RewardFunctionType | Unset = RewardFunctionType.CONTINUOUS_LOG_SCORE
     answer_parser_type: AnswerParserType | None | Unset = AnswerParserType.CONTINUOUS
