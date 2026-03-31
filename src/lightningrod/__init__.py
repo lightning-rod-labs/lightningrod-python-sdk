@@ -51,9 +51,11 @@ from lightningrod._generated.models import (
     FileSetMetadataSchemaInput,
     MetadataFieldDefinitionInput,
     MetadataFieldType,
+    TopicTreeSeedGenerator,
+    CsvSeedGenerator,
 )
 
-__version__ = "0.1.18"
+__version__ = "0.1.19"
 __all__ = [
     "preprocessing",
     "training",
@@ -107,4 +109,6 @@ __all__ = [
     "TransformJob",
     "TransformJobStatus",
     "WebSearchLabeler",
+    "TopicTreeSeedGenerator",
+    "CsvSeedGenerator",
 ]

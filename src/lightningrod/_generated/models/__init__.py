@@ -21,6 +21,7 @@ from .create_file_upload_response import CreateFileUploadResponse
 from .create_file_upload_response_metadata_type_0 import CreateFileUploadResponseMetadataType0
 from .create_training_job_request import CreateTrainingJobRequest
 from .create_transform_job_request import CreateTransformJobRequest
+from .csv_seed_generator import CsvSeedGenerator
 from .dataset_metadata import DatasetMetadata
 from .estimate_cost_request import EstimateCostRequest
 from .estimate_cost_response import EstimateCostResponse
@@ -97,6 +98,7 @@ from .seed import Seed
 from .step_cost_breakdown import StepCostBreakdown
 from .template_question_generator import TemplateQuestionGenerator
 from .temporal_constraint import TemporalConstraint
+from .topic_tree_seed_generator import TopicTreeSeedGenerator
 from .training_config import TrainingConfig
 from .training_job import TrainingJob
 from .training_job_list_response import TrainingJobListResponse
@@ -137,6 +139,7 @@ __all__ = (
     "CreateFileUploadResponseMetadataType0",
     "CreateTrainingJobRequest",
     "CreateTransformJobRequest",
+    "CsvSeedGenerator",
     "DatasetMetadata",
     "EstimateCostRequest",
     "EstimateCostResponse",
@@ -213,6 +216,7 @@ __all__ = (
     "StepCostBreakdown",
     "TemplateQuestionGenerator",
     "TemporalConstraint",
+    "TopicTreeSeedGenerator",
     "TrainingConfig",
     "TrainingJob",
     "TrainingJobListResponse",

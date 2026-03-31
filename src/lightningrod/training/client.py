@@ -50,6 +50,7 @@ def sample_dataset_to_config(
         id=dataset.id,
         sample_ids=ids,
         prompt_template=dataset.prompt_template if dataset.prompt_template is not None else UNSET,
+        multiple_choice_options=dataset.multiple_choice_options if dataset.multiple_choice_options is not None else UNSET,
     )
 
 def _build_config(

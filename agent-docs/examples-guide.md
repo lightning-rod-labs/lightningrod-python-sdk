@@ -1,0 +1,123 @@
+# Lightning Rod Examples Guide
+
+Three common patterns for building datasets and training models. These are starting points — adapt to fit the use case.
+
+---
+
+## Pattern 1: Forward-Looking Training (RL)
+
+Train a model to reason within a domain and/or learn to predict outcomes. Forward-looking questions with known outcomes let GRPO discover cause-and-effect, probability calibration, and signal identification. Even if the end goal isn't prediction, reasoning about the future is a powerful way to learn domain reasoning.
+
+**Training**: GRPO | **Answer types**: Binary, continuous, multiple choice | **Labels**: WebSearchLabeler, FileSetRAGLabeler, or pre-computed
+
+**When to use**: Teaching domain reasoning. Questions have a future resolution date; the answer isn't known at question time. The model learns to reason about causality and uncertainty, not just memorize facts.
+
+**Why RL**: The model explores reasoning strategies and gets rewarded for calibration. It discovers causal reasoning training data doesn't explicitly teach. SFT memorizes; GRPO generalizes.
+
+**Default model**: `openai/gpt-oss-120b` | **Benchmark**: `openai/gpt-5`
+
+**Common steps**:
+
+1. Gather seeds (news, GDELT, FileSets, custom data)
+2. Generate forward-looking questions
+3. Resolve labels (web search, RAG, or pre-computed)
+4. Add context (optional)
+5. Split temporally, train with GRPO
+
+**Watch for**:
+
+- Always split temporally — shuffling leaks future info
+- No sample's close date past the first test prediction date
+- Spot-check questions for sense and unambiguous resolution criteria
+- Filter to resolved questions (`days_to_resolution_range=(1, None)`)
+
+**Examples**: [forward-looking-examples.md](forward-looking-examples.md)
+
+---
+
+## Pattern 2: Content Learning (SFT)
+
+Teach a model domain knowledge — facts, procedures, expertise — via Q&A pairs and SFT.
+
+Two starting points depending on what you have:
+
+- **From documents**: `QuestionAndLabelGenerator` extracts Q and A from text. No labeler needed.
+- **From a topic/domain (no documents)**: `TopicTreeSeedGenerator` decomposes topics into specific leaf seeds → generate questions → `WebSearchLabeler` finds answers from the web.
+
+**Training**: SFT | **Answer types**: Free response, multiple choice
+
+**When to use**: Model should internalize domain knowledge, not predict the future.
+
+**Why SFT**: Answers are known. No reasoning to discover — SFT directly optimizes for the right answer.
+
+**Default model**: `openai/gpt-oss-120b` for production, `Qwen/Qwen3-8B-Instruct` for smaller models
+
+**Watch for**:
+
+- From documents: use `QuestionAndLabelGenerator`, not `WebSearchLabeler` — answers are in the documents
+- From topics: `WebSearchLabeler` is correct — the web is the knowledge source
+- Quality filter always. `FilterCriteria`, score cutoffs, or agreement checks
+- No reward signal for free-response yet → GRPO doesn't apply
+
+**Examples**: [content-learning-examples.md](content-learning-examples.md)
+
+---
+
+## Pattern 3: Tabular Data Processing
+
+Map structured data to `Sample()` fields, fill in what's missing, optionally enrich with context.
+
+**Training**: Often GRPO (same as Pattern 1 once prepared), but SFT is also common when the data is non-forecasting (e.g., call data, survey responses) | **Answer types**: Binary, continuous
+
+**When to use**: Structured data — CSV, BigQuery, API results, financial data. Some fields exist, some need generating.
+
+**Key challenge**: The mapping. Common scenarios:
+
+- Have outcomes, need questions → compute labels, use `TemplateQuestionGenerator`. Think about horizons: if starting from end dates, subtract the horizon to get `prediction_date` (used for context enrichment and temporal splits).
+- Have questions + labels, need context → map both, add `NewsContextGenerator`
+- Have questions, need labels → map questions, add `WebSearchLabeler`
+
+**Default model**: `openai/gpt-oss-120b` | **Benchmark**: `openai/gpt-5`
+
+**Watch for**:
+
+- Don't leak labels into question text
+- `prediction_date` must be BEFORE the outcome
+- **Split carefully.** For forecasting data, split on time — train on past, test on future. If data has multiple entities (countries, stocks), ensure no entity's test samples overlap temporally with its training samples. For non-forecasting tabular data (e.g., ad persuasion, survey responses), temporal splits may not apply — but ensure no content leakage between train and test (e.g., if multiple questions reference the same ad, keep all of that ad's questions in the same split). Shuffling is fine when there's no temporal structure.
+- Validate 10-20 samples manually before scaling
+
+**Examples**: [tabular-examples.md](tabular-examples.md)
+
+---
+
+## Context Enrichment (All Patterns)
+
+```python
+# Defaults: 5 search queries/question, 3 articles/query, 10 kept after ranking
+NewsContextGenerator()
+
+# Lighter context (common in domain notebooks):
+NewsContextGenerator(num_search_queries=3, articles_per_query=3, num_articles=5)
+```
+
+For FileSets, use `FileSetContextGenerator` with temporal constraints.
+
+---
+
+## Decision Tree
+
+Starting points — use cases may combine patterns.
+
+```
+Predict future outcomes
+├── From news/GDELT → Pattern 1
+├── From documents → Pattern 1 (FileSet RAG)
+└── From structured data → Pattern 3
+
+Teach domain knowledge
+├── From documents → Pattern 2
+└── From a topic/domain → Pattern 2
+
+Evaluate models → RolloutGenerator + RolloutScorer
+```
+
