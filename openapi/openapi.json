@@ -3219,12 +3219,6 @@
             ],
             "description": "Filter documents by date relative to seed date. BEFORE (<=) for context without lookahead, AFTER (>) for future docs."
           },
-          "date_metadata_key": {
-            "type": "string",
-            "title": "Date Metadata Key",
-            "description": "Gemini metadata key storing unix timestamp for temporal filtering",
-            "default": "file_date"
-          },
           "model": {
             "type": "string",
             "title": "Model",
@@ -3257,12 +3251,6 @@
             "$ref": "#/components/schemas/TemporalConstraint",
             "description": "Temporal constraint for document resolution. NEXT_DOCUMENT selects the first file after the seed date; PREVIOUS_DOCUMENT selects the most recent file before.",
             "default": "PREVIOUS_DOCUMENT"
-          },
-          "date_metadata_key": {
-            "type": "string",
-            "title": "Date Metadata Key",
-            "description": "Key in file metadata used for temporal ordering",
-            "default": "date"
           },
           "metadata_filter_keys": {
             "items": {
@@ -3333,12 +3321,6 @@
             "$ref": "#/components/schemas/TemporalConstraint",
             "description": "Temporal constraint for document resolution. NEXT_DOCUMENT selects the first file after the seed date (for resolution); PREVIOUS_DOCUMENT selects the most recent file before.",
             "default": "NEXT_DOCUMENT"
-          },
-          "date_metadata_key": {
-            "type": "string",
-            "title": "Date Metadata Key",
-            "description": "Key in file metadata used for temporal ordering",
-            "default": "date"
           },
           "metadata_filter_keys": {
             "items": {
@@ -3753,12 +3735,6 @@
               }
             ],
             "description": "Filter documents by date relative to seed date. AFTER (>) for resolution docs, BEFORE (<=) for historical only."
-          },
-          "date_metadata_key": {
-            "type": "string",
-            "title": "Date Metadata Key",
-            "description": "Gemini metadata key storing unix timestamp for temporal filtering",
-            "default": "file_date"
           },
           "model": {
             "type": "string",

@@ -39,7 +39,6 @@ class FileSetDocumentContextGenerator:
                 NEXT_DOCUMENT: first file after seed_timestamp (single-doc resolution)
                 PREVIOUS_DOCUMENT: most recent file before seed_timestamp (single-doc resolution)
                 EQUAL: file_date == seed_timestamp (exact match, single-doc)
-            date_metadata_key (str | Unset): Key in file metadata used for temporal ordering Default: 'date'.
             metadata_filter_keys (list[str] | Unset): Optional keys from sample's file_metadata for exact-match filtering
                 (e.g., ['district', 'ticker'])
             system_instruction (None | str | Unset): Optional system instruction for LLM processing of the document. When
@@ -53,7 +52,6 @@ class FileSetDocumentContextGenerator:
     file_set_id: str
     config_type: Literal["FILESET_DOCUMENT_CONTEXT_GENERATOR"] | Unset = "FILESET_DOCUMENT_CONTEXT_GENERATOR"
     temporal_constraint: TemporalConstraint | Unset = UNSET
-    date_metadata_key: str | Unset = "date"
     metadata_filter_keys: list[str] | Unset = UNSET
     system_instruction: None | str | Unset = UNSET
     model: ModelConfig | None | Unset = UNSET
@@ -70,8 +68,6 @@ class FileSetDocumentContextGenerator:
         temporal_constraint: str | Unset = UNSET
         if not isinstance(self.temporal_constraint, Unset):
             temporal_constraint = self.temporal_constraint.value
-
-        date_metadata_key = self.date_metadata_key
 
         metadata_filter_keys: list[str] | Unset = UNSET
         if not isinstance(self.metadata_filter_keys, Unset):
@@ -108,8 +104,6 @@ class FileSetDocumentContextGenerator:
             field_dict["config_type"] = config_type
         if temporal_constraint is not UNSET:
             field_dict["temporal_constraint"] = temporal_constraint
-        if date_metadata_key is not UNSET:
-            field_dict["date_metadata_key"] = date_metadata_key
         if metadata_filter_keys is not UNSET:
             field_dict["metadata_filter_keys"] = metadata_filter_keys
         if system_instruction is not UNSET:
@@ -138,8 +132,6 @@ class FileSetDocumentContextGenerator:
             temporal_constraint = UNSET
         else:
             temporal_constraint = TemporalConstraint(_temporal_constraint)
-
-        date_metadata_key = d.pop("date_metadata_key", UNSET)
 
         metadata_filter_keys = cast(list[str], d.pop("metadata_filter_keys", UNSET))
 
@@ -182,7 +174,6 @@ class FileSetDocumentContextGenerator:
             file_set_id=file_set_id,
             config_type=config_type,
             temporal_constraint=temporal_constraint,
-            date_metadata_key=date_metadata_key,
             metadata_filter_keys=metadata_filter_keys,
             system_instruction=system_instruction,
             model=model,

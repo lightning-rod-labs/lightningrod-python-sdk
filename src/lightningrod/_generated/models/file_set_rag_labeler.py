@@ -36,8 +36,6 @@ class FileSetRAGLabeler:
             | Unset): The type of answer expected, used to guide the labeler
         temporal_constraint (None | TemporalConstraint | Unset): Filter documents by date relative to seed date. AFTER
             (>) for resolution docs, BEFORE (<=) for historical only.
-        date_metadata_key (str | Unset): Gemini metadata key storing unix timestamp for temporal filtering Default:
-            'file_date'.
         model (str | Unset): Gemini model for RAG query Default: 'gemini-2.5-flash'.
     """
 
@@ -51,7 +49,6 @@ class FileSetRAGLabeler:
         BinaryAnswerType | ContinuousAnswerType | FreeResponseAnswerType | MultipleChoiceAnswerType | None | Unset
     ) = UNSET
     temporal_constraint: None | TemporalConstraint | Unset = UNSET
-    date_metadata_key: str | Unset = "file_date"
     model: str | Unset = "gemini-2.5-flash"
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -105,8 +102,6 @@ class FileSetRAGLabeler:
         else:
             temporal_constraint = self.temporal_constraint
 
-        date_metadata_key = self.date_metadata_key
-
         model = self.model
 
         field_dict: dict[str, Any] = {}
@@ -130,8 +125,6 @@ class FileSetRAGLabeler:
             field_dict["answer_type"] = answer_type
         if temporal_constraint is not UNSET:
             field_dict["temporal_constraint"] = temporal_constraint
-        if date_metadata_key is not UNSET:
-            field_dict["date_metadata_key"] = date_metadata_key
         if model is not UNSET:
             field_dict["model"] = model
 
@@ -241,8 +234,6 @@ class FileSetRAGLabeler:
 
         temporal_constraint = _parse_temporal_constraint(d.pop("temporal_constraint", UNSET))
 
-        date_metadata_key = d.pop("date_metadata_key", UNSET)
-
         model = d.pop("model", UNSET)
 
         file_set_rag_labeler = cls(
@@ -254,7 +245,6 @@ class FileSetRAGLabeler:
             confidence_threshold=confidence_threshold,
             answer_type=answer_type,
             temporal_constraint=temporal_constraint,
-            date_metadata_key=date_metadata_key,
             model=model,
         )
 
