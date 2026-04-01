@@ -2,6 +2,7 @@ from typing import List, Optional
 
 from lightningrod._generated.models import (
     HTTPValidationError,
+    ListDatasetsResponse,
     UploadSamplesRequest,
 )
 from lightningrod._generated.models.sample import Sample
@@ -9,9 +10,10 @@ from lightningrod._generated.api.datasets import (
     create_dataset_datasets_post,
     get_dataset_datasets_dataset_id_get,
     get_dataset_samples_datasets_dataset_id_samples_get,
+    list_datasets_datasets_get,
     upload_samples_datasets_dataset_id_samples_post,
 )
-from lightningrod._generated.types import Unset
+from lightningrod._generated.types import UNSET, Unset
 from lightningrod._generated.client import AuthenticatedClient
 from lightningrod.datasets.dataset import SampleDataset
 from lightningrod._errors import handle_response_error
@@ -172,3 +174,16 @@ class DatasetsClient:
             num_rows=dataset_result.num_rows,
             datasets_client=self._dataset_samples_client
         )
+
+    def list(
+        self,
+        *,
+        limit: int = 10,
+        cursor: Optional[str] = None,
+    ) -> ListDatasetsResponse:
+        response = list_datasets_datasets_get.sync_detailed(
+            client=self._client,
+            limit=limit,
+            cursor=cursor if cursor is not None else UNSET,
+        )
+        return handle_response_error(response, "list datasets")

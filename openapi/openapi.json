@@ -5,11 +5,6 @@
     "description": "Generate verified, grounded datasets at scale for LLM fine-tuning and evaluation",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "/api/public/v1"
-    }
-  ],
   "paths": {
     "/openai/chat/completions": {
       "post": {
@@ -2221,20 +2216,12 @@
           "dataset": {
             "$ref": "#/components/schemas/SampleDatasetConfig"
           },
-          "model_id": {
-            "type": "string",
-            "title": "Model Id"
-          },
-          "benchmark_model_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Benchmark Model Id"
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/EvalModel"
+            },
+            "type": "array",
+            "title": "Models"
           },
           "temperature": {
             "type": "number",
@@ -2245,7 +2232,7 @@
         "type": "object",
         "required": [
           "dataset",
-          "model_id"
+          "models"
         ],
         "title": "CreateEvalJobRequest"
       },
@@ -2532,10 +2519,6 @@
         "discriminator": {
           "propertyName": "config_type",
           "mapping": {
-            "CSV_SEED_GENERATOR": "#/components/schemas/CsvSeedGenerator",
-            "FILESET_CONTEXT_GENERATOR": "#/components/schemas/FileSetContextGenerator",
-            "FILESET_DOCUMENT_CONTEXT_GENERATOR": "#/components/schemas/FileSetDocumentContextGenerator",
-            "FILESET_DOCUMENT_LABELER": "#/components/schemas/FileSetDocumentLabeler",
             "FILESET_QUERY_SEED_GENERATOR": "#/components/schemas/FileSetQuerySeedGenerator",
             "FILESET_RAG_LABELER": "#/components/schemas/FileSetRAGLabeler",
             "FILESET_SEED_GENERATOR": "#/components/schemas/FileSetSeedGenerator",
@@ -2546,7 +2529,6 @@
             "QUESTION_GENERATOR": "#/components/schemas/QuestionGenerator",
             "QUESTION_PIPELINE": "#/components/schemas/QuestionPipeline",
             "QUESTION_RENDERER": "#/components/schemas/QuestionRenderer",
-            "TOPIC_TREE_SEED_GENERATOR": "#/components/schemas/TopicTreeSeedGenerator",
             "WEB_SEARCH_LABELER": "#/components/schemas/WebSearchLabeler"
           }
         }
@@ -2617,73 +2599,6 @@
           "config"
         ],
         "title": "CreateTransformJobRequest"
-      },
-      "CsvSeedGenerator": {
-        "properties": {
-          "config_type": {
-            "type": "string",
-            "const": "CSV_SEED_GENERATOR",
-            "title": "Config Type",
-            "description": "Type of transform configuration",
-            "default": "CSV_SEED_GENERATOR"
-          },
-          "file_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              }
-            ],
-            "title": "File Id",
-            "description": "OrgFile ID(s) from POST /files/ upload response"
-          },
-          "seed_text_column": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Seed Text Column",
-            "description": "Column name for Seed.seed_text; if None, serialize entire row as JSON"
-          },
-          "label_column": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Label Column",
-            "description": "Column name for pre-existing labels (populates Sample.label)"
-          },
-          "date_column": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Date Column",
-            "description": "Column name for Seed.seed_creation_date"
-          }
-        },
-        "type": "object",
-        "required": [
-          "file_id"
-        ],
-        "title": "CsvSeedGenerator"
       },
       "DatasetMetadata": {
         "properties": {
@@ -2884,23 +2799,15 @@
             "type": "string",
             "title": "Organization Id"
           },
-          "model_id": {
-            "type": "string",
-            "title": "Model Id"
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/EvalModel"
+            },
+            "type": "array",
+            "title": "Models"
           },
           "dataset": {
             "$ref": "#/components/schemas/SampleDatasetConfig"
-          },
-          "benchmark_model_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Benchmark Model Id"
           },
           "temperature": {
             "type": "number",
@@ -2921,7 +2828,7 @@
         "type": "object",
         "required": [
           "organization_id",
-          "model_id",
+          "models",
           "dataset"
         ],
         "title": "EvalConfig"
@@ -3050,6 +2957,30 @@
           "FAILED"
         ],
         "title": "EvalJobStatus"
+      },
+      "EvalModel": {
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_id"
+        ],
+        "title": "EvalModel"
       },
       "EventUsageSummary": {
         "properties": {
@@ -5498,12 +5429,6 @@
                     "$ref": "#/components/schemas/FileSetQuerySeedGenerator"
                   },
                   {
-                    "$ref": "#/components/schemas/TopicTreeSeedGenerator"
-                  },
-                  {
-                    "$ref": "#/components/schemas/CsvSeedGenerator"
-                  },
-                  {
                     "$ref": "#/components/schemas/MockTransformConfig"
                   }
                 ],
@@ -5511,13 +5436,11 @@
                   "propertyName": "config_type",
                   "mapping": {
                     "BIGQUERY_SEED_GENERATOR": "#/components/schemas/BigQuerySeedGenerator",
-                    "CSV_SEED_GENERATOR": "#/components/schemas/CsvSeedGenerator",
                     "FILESET_QUERY_SEED_GENERATOR": "#/components/schemas/FileSetQuerySeedGenerator",
                     "FILESET_SEED_GENERATOR": "#/components/schemas/FileSetSeedGenerator",
                     "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
                     "MOCK": "#/components/schemas/MockTransformConfig",
-                    "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator",
-                    "TOPIC_TREE_SEED_GENERATOR": "#/components/schemas/TopicTreeSeedGenerator"
+                    "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator"
                   }
                 }
               },
@@ -6310,72 +6233,6 @@
         "title": "TemporalConstraint",
         "description": "Temporal filtering direction relative to the seed document's date.\n\nUses the `file_date` metadata key (unix timestamp int) stored on each\nGemini document by fileset_file_processor.\n\nBEFORE: file_date <= seed_timestamp  (RAG context: no lookahead bias, multi-doc)\nAFTER:  file_date >  seed_timestamp  (RAG labels: find resolutions, multi-doc)\nNEXT_DOCUMENT: first file after seed_timestamp (single-doc resolution)\nPREVIOUS_DOCUMENT: most recent file before seed_timestamp (single-doc resolution)\nEQUAL: file_date == seed_timestamp (exact match, single-doc)"
       },
-      "TopicTreeSeedGenerator": {
-        "properties": {
-          "config_type": {
-            "type": "string",
-            "const": "TOPIC_TREE_SEED_GENERATOR",
-            "title": "Config Type",
-            "description": "Type of transform configuration",
-            "default": "TOPIC_TREE_SEED_GENERATOR"
-          },
-          "topic": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              }
-            ],
-            "title": "Topic",
-            "description": "Root topic(s) to decompose into subtopic trees"
-          },
-          "tree_depth": {
-            "type": "integer",
-            "maximum": 10.0,
-            "minimum": 1.0,
-            "title": "Tree Depth",
-            "description": "Levels of recursive expansion",
-            "default": 2
-          },
-          "tree_degree": {
-            "type": "integer",
-            "maximum": 20.0,
-            "minimum": 2.0,
-            "title": "Tree Degree",
-            "description": "Subtopics generated per node",
-            "default": 5
-          },
-          "model_name": {
-            "type": "string",
-            "title": "Model Name",
-            "description": "LLM model for subtopic generation",
-            "default": "google/gemini-3-flash-preview"
-          },
-          "model_system_prompt": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Model System Prompt",
-            "description": "Optional system prompt for the LLM"
-          }
-        },
-        "type": "object",
-        "required": [
-          "topic"
-        ],
-        "title": "TopicTreeSeedGenerator",
-        "description": "Generates diverse seeds by recursively decomposing broad topics into specific subtopics.\n\nGiven one or more root topics, uses an LLM to break each into `tree_degree` subtopics,\nthen repeats `tree_depth` levels deep. The leaf paths become seeds for downstream transforms.\nThis produces tree_degree^tree_depth seeds per root topic, each more specific than the root.\n\nExample:\n    TopicTreeSeedGenerator(topic=\"AI Regulation\", tree_depth=2, tree_degree=4)\n    # Produces 16 specific seeds like \"AI Regulation \u2192 Healthcare \u2192 FDA approval of\n    # diagnostic algorithms\" that feed into QuestionGenerator or other downstream transforms."
-      },
       "TrainingConfig": {
         "properties": {
           "dataset": {
@@ -6535,6 +6392,20 @@
             ],
             "title": "Model Id"
           },
+          "model_id_by_step": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Id By Step"
+          },
           "reward_history": {
             "anyOf": [
               {
@@ -6581,17 +6452,6 @@
               }
             ],
             "title": "Cost Dollars"
-          },
-          "dataset_hf_repo": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Dataset Hf Repo"
           },
           "error_message": {
             "anyOf": [
@@ -7027,6 +6887,13 @@
           "type": {
             "type": "string",
             "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
           }
         },
         "type": "object",
@@ -7103,5 +6970,10 @@
         "scheme": "bearer"
       }
     }
-  }
+  },
+  "servers": [
+    {
+      "url": "/api/public/v1"
+    }
+  ]
 }

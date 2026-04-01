@@ -10,7 +10,6 @@ from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.big_query_seed_generator import BigQuerySeedGenerator
-    from ..models.csv_seed_generator import CsvSeedGenerator
     from ..models.file_set_context_generator import FileSetContextGenerator
     from ..models.file_set_document_context_generator import FileSetDocumentContextGenerator
     from ..models.file_set_document_labeler import FileSetDocumentLabeler
@@ -28,7 +27,6 @@ if TYPE_CHECKING:
     from ..models.rollout_generator import RolloutGenerator
     from ..models.rollout_scorer import RolloutScorer
     from ..models.template_question_generator import TemplateQuestionGenerator
-    from ..models.topic_tree_seed_generator import TopicTreeSeedGenerator
     from ..models.web_search_labeler import WebSearchLabeler
 
 
@@ -41,9 +39,8 @@ class QuestionPipeline:
     Attributes:
         config_type (Literal['QUESTION_PIPELINE'] | Unset): Type of transform configuration Default:
             'QUESTION_PIPELINE'.
-        seed_generator (BigQuerySeedGenerator | CsvSeedGenerator | FileSetQuerySeedGenerator | FileSetSeedGenerator |
-            GdeltSeedGenerator | MockTransformConfig | NewsSeedGenerator | None | TopicTreeSeedGenerator | Unset):
-            Configuration for seed generation
+        seed_generator (BigQuerySeedGenerator | FileSetQuerySeedGenerator | FileSetSeedGenerator | GdeltSeedGenerator |
+            MockTransformConfig | NewsSeedGenerator | None | Unset): Configuration for seed generation
         question_generator (ForwardLookingQuestionGenerator | MockTransformConfig | None | QuestionAndLabelGenerator |
             QuestionGenerator | TemplateQuestionGenerator | Unset): Configuration for question generation
         labeler (FileSetDocumentLabeler | FileSetRAGLabeler | MockTransformConfig | None | Unset | WebSearchLabeler):
@@ -61,14 +58,12 @@ class QuestionPipeline:
     config_type: Literal["QUESTION_PIPELINE"] | Unset = "QUESTION_PIPELINE"
     seed_generator: (
         BigQuerySeedGenerator
-        | CsvSeedGenerator
         | FileSetQuerySeedGenerator
         | FileSetSeedGenerator
         | GdeltSeedGenerator
         | MockTransformConfig
         | NewsSeedGenerator
         | None
-        | TopicTreeSeedGenerator
         | Unset
     ) = UNSET
     question_generator: (
@@ -93,7 +88,6 @@ class QuestionPipeline:
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.big_query_seed_generator import BigQuerySeedGenerator
-        from ..models.csv_seed_generator import CsvSeedGenerator
         from ..models.file_set_context_generator import FileSetContextGenerator
         from ..models.file_set_document_context_generator import FileSetDocumentContextGenerator
         from ..models.file_set_document_labeler import FileSetDocumentLabeler
@@ -111,7 +105,6 @@ class QuestionPipeline:
         from ..models.rollout_generator import RolloutGenerator
         from ..models.rollout_scorer import RolloutScorer
         from ..models.template_question_generator import TemplateQuestionGenerator
-        from ..models.topic_tree_seed_generator import TopicTreeSeedGenerator
         from ..models.web_search_labeler import WebSearchLabeler
 
         config_type = self.config_type
@@ -128,10 +121,6 @@ class QuestionPipeline:
         elif isinstance(self.seed_generator, FileSetSeedGenerator):
             seed_generator = self.seed_generator.to_dict()
         elif isinstance(self.seed_generator, FileSetQuerySeedGenerator):
-            seed_generator = self.seed_generator.to_dict()
-        elif isinstance(self.seed_generator, TopicTreeSeedGenerator):
-            seed_generator = self.seed_generator.to_dict()
-        elif isinstance(self.seed_generator, CsvSeedGenerator):
             seed_generator = self.seed_generator.to_dict()
         elif isinstance(self.seed_generator, MockTransformConfig):
             seed_generator = self.seed_generator.to_dict()
@@ -244,7 +233,6 @@ class QuestionPipeline:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.big_query_seed_generator import BigQuerySeedGenerator
-        from ..models.csv_seed_generator import CsvSeedGenerator
         from ..models.file_set_context_generator import FileSetContextGenerator
         from ..models.file_set_document_context_generator import FileSetDocumentContextGenerator
         from ..models.file_set_document_labeler import FileSetDocumentLabeler
@@ -262,7 +250,6 @@ class QuestionPipeline:
         from ..models.rollout_generator import RolloutGenerator
         from ..models.rollout_scorer import RolloutScorer
         from ..models.template_question_generator import TemplateQuestionGenerator
-        from ..models.topic_tree_seed_generator import TopicTreeSeedGenerator
         from ..models.web_search_labeler import WebSearchLabeler
 
         d = dict(src_dict)
@@ -274,14 +261,12 @@ class QuestionPipeline:
             data: object,
         ) -> (
             BigQuerySeedGenerator
-            | CsvSeedGenerator
             | FileSetQuerySeedGenerator
             | FileSetSeedGenerator
             | GdeltSeedGenerator
             | MockTransformConfig
             | NewsSeedGenerator
             | None
-            | TopicTreeSeedGenerator
             | Unset
         ):
             if data is None:
@@ -331,37 +316,19 @@ class QuestionPipeline:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                seed_generator_type_0_type_5 = TopicTreeSeedGenerator.from_dict(data)
+                seed_generator_type_0_type_5 = MockTransformConfig.from_dict(data)
 
                 return seed_generator_type_0_type_5
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                seed_generator_type_0_type_6 = CsvSeedGenerator.from_dict(data)
-
-                return seed_generator_type_0_type_6
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                seed_generator_type_0_type_7 = MockTransformConfig.from_dict(data)
-
-                return seed_generator_type_0_type_7
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
             return cast(
                 BigQuerySeedGenerator
-                | CsvSeedGenerator
                 | FileSetQuerySeedGenerator
                 | FileSetSeedGenerator
                 | GdeltSeedGenerator
                 | MockTransformConfig
                 | NewsSeedGenerator
                 | None
-                | TopicTreeSeedGenerator
                 | Unset,
                 data,
             )

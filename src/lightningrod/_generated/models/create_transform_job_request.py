@@ -9,10 +9,6 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.csv_seed_generator import CsvSeedGenerator
-    from ..models.file_set_context_generator import FileSetContextGenerator
-    from ..models.file_set_document_context_generator import FileSetDocumentContextGenerator
-    from ..models.file_set_document_labeler import FileSetDocumentLabeler
     from ..models.file_set_query_seed_generator import FileSetQuerySeedGenerator
     from ..models.file_set_rag_labeler import FileSetRAGLabeler
     from ..models.file_set_seed_generator import FileSetSeedGenerator
@@ -23,7 +19,6 @@ if TYPE_CHECKING:
     from ..models.question_generator import QuestionGenerator
     from ..models.question_pipeline import QuestionPipeline
     from ..models.question_renderer import QuestionRenderer
-    from ..models.topic_tree_seed_generator import TopicTreeSeedGenerator
     from ..models.web_search_labeler import WebSearchLabeler
 
 
@@ -34,10 +29,9 @@ T = TypeVar("T", bound="CreateTransformJobRequest")
 class CreateTransformJobRequest:
     """
     Attributes:
-        config (CsvSeedGenerator | FileSetContextGenerator | FileSetDocumentContextGenerator | FileSetDocumentLabeler |
-            FileSetQuerySeedGenerator | FileSetRAGLabeler | FileSetSeedGenerator | ForwardLookingQuestionGenerator |
-            GdeltSeedGenerator | NewsSeedGenerator | QuestionAndLabelGenerator | QuestionGenerator | QuestionPipeline |
-            QuestionRenderer | TopicTreeSeedGenerator | WebSearchLabeler):
+        config (FileSetQuerySeedGenerator | FileSetSeedGenerator | ForwardLookingQuestionGenerator | GdeltSeedGenerator
+            | NewsSeedGenerator | QuestionAndLabelGenerator | QuestionGenerator | QuestionPipeline | QuestionRenderer |
+            WebSearchLabeler):
         input_dataset_id (None | str | Unset):
         max_questions (int | None | Unset):
         max_cost_dollars (float | None | Unset):
@@ -46,12 +40,7 @@ class CreateTransformJobRequest:
     """
 
     config: (
-        CsvSeedGenerator
-        | FileSetContextGenerator
-        | FileSetDocumentContextGenerator
-        | FileSetDocumentLabeler
-        | FileSetQuerySeedGenerator
-        | FileSetRAGLabeler
+        FileSetQuerySeedGenerator
         | FileSetSeedGenerator
         | ForwardLookingQuestionGenerator
         | GdeltSeedGenerator
@@ -60,7 +49,6 @@ class CreateTransformJobRequest:
         | QuestionGenerator
         | QuestionPipeline
         | QuestionRenderer
-        | TopicTreeSeedGenerator
         | WebSearchLabeler
     )
     input_dataset_id: None | str | Unset = UNSET
@@ -71,10 +59,6 @@ class CreateTransformJobRequest:
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.csv_seed_generator import CsvSeedGenerator
-        from ..models.file_set_context_generator import FileSetContextGenerator
-        from ..models.file_set_document_context_generator import FileSetDocumentContextGenerator
-        from ..models.file_set_document_labeler import FileSetDocumentLabeler
         from ..models.file_set_query_seed_generator import FileSetQuerySeedGenerator
         from ..models.file_set_rag_labeler import FileSetRAGLabeler
         from ..models.file_set_seed_generator import FileSetSeedGenerator
@@ -85,7 +69,6 @@ class CreateTransformJobRequest:
         from ..models.question_generator import QuestionGenerator
         from ..models.question_pipeline import QuestionPipeline
         from ..models.question_renderer import QuestionRenderer
-        from ..models.topic_tree_seed_generator import TopicTreeSeedGenerator
 
         config: dict[str, Any]
         if isinstance(self.config, CsvSeedGenerator):
@@ -173,10 +156,6 @@ class CreateTransformJobRequest:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.csv_seed_generator import CsvSeedGenerator
-        from ..models.file_set_context_generator import FileSetContextGenerator
-        from ..models.file_set_document_context_generator import FileSetDocumentContextGenerator
-        from ..models.file_set_document_labeler import FileSetDocumentLabeler
         from ..models.file_set_query_seed_generator import FileSetQuerySeedGenerator
         from ..models.file_set_rag_labeler import FileSetRAGLabeler
         from ..models.file_set_seed_generator import FileSetSeedGenerator
@@ -187,7 +166,6 @@ class CreateTransformJobRequest:
         from ..models.question_generator import QuestionGenerator
         from ..models.question_pipeline import QuestionPipeline
         from ..models.question_renderer import QuestionRenderer
-        from ..models.topic_tree_seed_generator import TopicTreeSeedGenerator
         from ..models.web_search_labeler import WebSearchLabeler
 
         d = dict(src_dict)
@@ -195,12 +173,7 @@ class CreateTransformJobRequest:
         def _parse_config(
             data: object,
         ) -> (
-            CsvSeedGenerator
-            | FileSetContextGenerator
-            | FileSetDocumentContextGenerator
-            | FileSetDocumentLabeler
-            | FileSetQuerySeedGenerator
-            | FileSetRAGLabeler
+            FileSetQuerySeedGenerator
             | FileSetSeedGenerator
             | ForwardLookingQuestionGenerator
             | GdeltSeedGenerator
@@ -209,7 +182,6 @@ class CreateTransformJobRequest:
             | QuestionGenerator
             | QuestionPipeline
             | QuestionRenderer
-            | TopicTreeSeedGenerator
             | WebSearchLabeler
         ):
             try:
@@ -255,7 +227,7 @@ class CreateTransformJobRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_5 = FileSetRAGLabeler.from_dict(data)
+                componentsschemas_create_transform_config_type_5 = QuestionAndLabelGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_5
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -263,7 +235,7 @@ class CreateTransformJobRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_6 = FileSetSeedGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_6 = QuestionGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_6
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -271,7 +243,7 @@ class CreateTransformJobRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_7 = ForwardLookingQuestionGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_7 = QuestionPipeline.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_7
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -279,64 +251,16 @@ class CreateTransformJobRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_8 = GdeltSeedGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_8 = QuestionRenderer.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_8
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_create_transform_config_type_9 = NewsSeedGenerator.from_dict(data)
-
-                return componentsschemas_create_transform_config_type_9
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_create_transform_config_type_10 = QuestionAndLabelGenerator.from_dict(data)
-
-                return componentsschemas_create_transform_config_type_10
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_create_transform_config_type_11 = QuestionGenerator.from_dict(data)
-
-                return componentsschemas_create_transform_config_type_11
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_create_transform_config_type_12 = QuestionPipeline.from_dict(data)
-
-                return componentsschemas_create_transform_config_type_12
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_create_transform_config_type_13 = QuestionRenderer.from_dict(data)
-
-                return componentsschemas_create_transform_config_type_13
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_create_transform_config_type_14 = TopicTreeSeedGenerator.from_dict(data)
-
-                return componentsschemas_create_transform_config_type_14
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
             if not isinstance(data, dict):
                 raise TypeError()
-            componentsschemas_create_transform_config_type_15 = WebSearchLabeler.from_dict(data)
+            componentsschemas_create_transform_config_type_9 = WebSearchLabeler.from_dict(data)
 
-            return componentsschemas_create_transform_config_type_15
+            return componentsschemas_create_transform_config_type_9
 
         config = _parse_config(d.pop("config"))
 
