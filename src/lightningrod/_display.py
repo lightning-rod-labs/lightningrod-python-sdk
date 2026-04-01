@@ -179,7 +179,10 @@ def build_training_live_display(job: TrainingJob) -> RenderableType:
     renderables.append(Text(""))
     if job is not None:
         if _is_set(job.name) and job.name:
-            renderables.append(_safe_markup(f"  [bold]Job:[/bold] {job.name}"))
+            renderables.append(_safe_markup(f"  [bold]Job ID:[/bold] {job.id}"))
+            renderables.append(Text(""))
+        if _is_set(job.model_id) and job.model_id:
+            renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.model_id}"))
             renderables.append(Text(""))
         if _is_set(job.model_id) and job.model_id:
             renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.model_id}"))
@@ -268,7 +271,7 @@ def build_eval_live_display(job: EvalJob) -> RenderableType:
     renderables.append(_safe_markup(f"[bold {header_style}]{header}[/bold {header_style}]"))
     renderables.append(Text(""))
     if job is not None:
-        renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.config.model_id}"))
+        renderables.append(_safe_markup(f"  [bold]Job ID:[/bold] {job.id}"))
         renderables.append(_safe_markup(f"  [bold]Dataset:[/bold] {job.config.dataset.id}"))
         renderables.append(Text(""))
         if job.status in (EvalJobStatus.RUNNING, EvalJobStatus.STARTING):
@@ -311,8 +314,7 @@ def print_eval(job: EvalJob) -> None:
     renderables.append(_safe_markup(f"[bold {header_style}]{header}[/bold {header_style}]"))
     renderables.append(Text(""))
     if job is not None:
-        renderables.append(_safe_markup(f"  [bold]ID:[/bold] {job.id}"))
-        renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.config.model_id}"))
+        renderables.append(_safe_markup(f"  [bold]Job ID:[/bold] {job.id}"))
         renderables.append(_safe_markup(f"  [bold]Dataset:[/bold] {job.config.dataset.id}"))
         renderables.append(Text(""))
         if _is_set(job.metrics) and job.metrics and job.metrics.additional_properties:

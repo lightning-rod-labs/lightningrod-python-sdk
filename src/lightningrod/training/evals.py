@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from lightningrod._display import _is_notebook, display_error, run_eval_live_display
 from lightningrod._generated.api.evaluations import (
     create_eval_job_evaluations_post,
@@ -5,7 +7,7 @@ from lightningrod._generated.api.evaluations import (
     list_eval_jobs_evaluations_get,
 )
 from lightningrod._generated.client import AuthenticatedClient
-from lightningrod._generated.models import SampleDatasetConfig
+from lightningrod._generated.models import EvalModel, SampleDatasetConfig
 from lightningrod._generated.models.create_eval_job_request import CreateEvalJobRequest
 from lightningrod._generated.models.eval_job import EvalJob
 from lightningrod._generated.models.eval_job_list_response import EvalJobListResponse
@@ -21,17 +23,13 @@ class EvalsClient:
 
     def create(
         self,
-        model_id: str,
         dataset: "SampleDataset",
-        benchmark_model_id: str | None = None,
-        temperature: float = 0.0,
+        models: list[EvalModel],
     ) -> EvalJob:
         dataset_config = sample_dataset_to_config(dataset)
         body = CreateEvalJobRequest(
-            model_id=model_id,
+            models=models,
             dataset=dataset_config,
-            benchmark_model_id=benchmark_model_id if benchmark_model_id is not None else UNSET,
-            temperature=temperature,
         )
         response = create_eval_job_evaluations_post.sync_detailed(
             client=self._client,
@@ -61,18 +59,10 @@ class EvalsClient:
 
     def run(
         self,
-        model_id: str,
+        models: list[EvalModel],
         dataset: "SampleDataset",
-        benchmark_model_id: str | None = None,
-        temperature: float = 0.0,
-        poll_interval: float = 15,
     ) -> EvalJob:
-        job = self.create(
-            model_id=model_id,
-            dataset=dataset,
-            benchmark_model_id=benchmark_model_id,
-            temperature=temperature,
-        )
+        job = self.create(models=models, dataset=dataset)
 
         if job.status == TrainingJobStatus.FAILED:
             error_msg = (
@@ -89,5 +79,5 @@ class EvalsClient:
             job = self.get(job.id)
             return job
 
-        run_eval_live_display(poll, poll_interval=poll_interval, initial_job=job)
+        run_eval_live_display(poll, initial_job=job)
         return job

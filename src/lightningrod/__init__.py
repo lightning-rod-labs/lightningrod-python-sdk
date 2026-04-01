@@ -53,6 +53,7 @@ from lightningrod._generated.models import (
     MetadataFieldType,
     TopicTreeSeedGenerator,
     CsvSeedGenerator,
+    EvalModel,
 )
 
 __version__ = "0.1.19"
@@ -111,4 +112,5 @@ __all__ = [
     "WebSearchLabeler",
     "TopicTreeSeedGenerator",
     "CsvSeedGenerator",
+    "EvalModel",
 ]
