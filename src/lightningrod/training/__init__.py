@@ -4,10 +4,13 @@ from lightningrod._display import print_eval
 from lightningrod.training.samples import (
     deduplicate_samples,
     filter_samples,
-    filter_and_split,
+    prepare_for_training,
     train_test_split,
     to_messages,
     to_record,
+    FilterParams,
+    DedupParams,
+    SplitParams,
 )
 
 __all__ = [
@@ -15,10 +18,13 @@ __all__ = [
     "print_eval",
     "TrainingClient",
     "TrainingConfig",
-    "filter_and_split",
+    "prepare_for_training",
     "train_test_split",
     "deduplicate_samples",
     "filter_samples",
     "to_record",
     "to_messages",
+    "FilterParams",
+    "DedupParams",
+    "SplitParams",
 ]
