@@ -21,7 +21,9 @@ from .create_file_upload_response import CreateFileUploadResponse
 from .create_file_upload_response_metadata_type_0 import CreateFileUploadResponseMetadataType0
 from .create_training_job_request import CreateTrainingJobRequest
 from .create_transform_job_request import CreateTransformJobRequest
+from .csv_seed_generator import CsvSeedGenerator
 from .dataset_metadata import DatasetMetadata
+from .document_context import DocumentContext
 from .estimate_cost_request import EstimateCostRequest
 from .estimate_cost_response import EstimateCostResponse
 from .estimate_training_cost_request import EstimateTrainingCostRequest
@@ -35,6 +37,8 @@ from .eval_model import EvalModel
 from .event_usage_summary import EventUsageSummary
 from .file_set import FileSet
 from .file_set_context_generator import FileSetContextGenerator
+from .file_set_document_context_generator import FileSetDocumentContextGenerator
+from .file_set_document_labeler import FileSetDocumentLabeler
 from .file_set_file import FileSetFile
 from .file_set_file_metadata_type_0 import FileSetFileMetadataType0
 from .file_set_file_status import FileSetFileStatus
@@ -52,6 +56,8 @@ from .gdelt_seed_generator import GdeltSeedGenerator
 from .http_validation_error import HTTPValidationError
 from .job_usage import JobUsage
 from .job_usage_by_step_type_0 import JobUsageByStepType0
+from .key_deduplication import KeyDeduplication
+from .key_match_config import KeyMatchConfig
 from .label import Label
 from .list_datasets_response import ListDatasetsResponse
 from .list_file_set_files_response import ListFileSetFilesResponse
@@ -98,6 +104,7 @@ from .seed import Seed
 from .step_cost_breakdown import StepCostBreakdown
 from .template_question_generator import TemplateQuestionGenerator
 from .temporal_constraint import TemporalConstraint
+from .topic_tree_seed_generator import TopicTreeSeedGenerator
 from .training_config import TrainingConfig
 from .training_job import TrainingJob
 from .training_job_list_response import TrainingJobListResponse
@@ -115,7 +122,6 @@ from .usage_summary_events import UsageSummaryEvents
 from .usage_summary_llm_by_model import UsageSummaryLlmByModel
 from .validate_sample_response import ValidateSampleResponse
 from .validation_error import ValidationError
-from .validation_error_context import ValidationErrorContext
 from .web_search_labeler import WebSearchLabeler
 
 __all__ = (
@@ -140,7 +146,9 @@ __all__ = (
     "CreateFileUploadResponseMetadataType0",
     "CreateTrainingJobRequest",
     "CreateTransformJobRequest",
+    "CsvSeedGenerator",
     "DatasetMetadata",
+    "DocumentContext",
     "EstimateCostRequest",
     "EstimateCostResponse",
     "EstimateTrainingCostRequest",
@@ -154,6 +162,8 @@ __all__ = (
     "EventUsageSummary",
     "FileSet",
     "FileSetContextGenerator",
+    "FileSetDocumentContextGenerator",
+    "FileSetDocumentLabeler",
     "FileSetFile",
     "FileSetFileMetadataType0",
     "FileSetFileStatus",
@@ -171,6 +181,8 @@ __all__ = (
     "HTTPValidationError",
     "JobUsage",
     "JobUsageByStepType0",
+    "KeyDeduplication",
+    "KeyMatchConfig",
     "Label",
     "ListDatasetsResponse",
     "ListFileSetFilesResponse",
@@ -217,6 +229,7 @@ __all__ = (
     "StepCostBreakdown",
     "TemplateQuestionGenerator",
     "TemporalConstraint",
+    "TopicTreeSeedGenerator",
     "TrainingConfig",
     "TrainingJob",
     "TrainingJobListResponse",
@@ -234,6 +247,5 @@ __all__ = (
     "UsageSummaryLlmByModel",
     "ValidateSampleResponse",
     "ValidationError",
-    "ValidationErrorContext",
     "WebSearchLabeler",
 )

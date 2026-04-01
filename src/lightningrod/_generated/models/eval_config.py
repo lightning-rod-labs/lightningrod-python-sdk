@@ -26,6 +26,7 @@ class EvalConfig:
         temperature (float | Unset):  Default: 0.0.
         max_tokens (int | Unset):  Default: 8192.
         max_concurrent (int | Unset):  Default: 50.
+        modal_use_ephemeral_app (bool | Unset):  Default: False.
     """
 
     organization_id: str
@@ -34,6 +35,7 @@ class EvalConfig:
     temperature: float | Unset = 0.0
     max_tokens: int | Unset = 8192
     max_concurrent: int | Unset = 50
+    modal_use_ephemeral_app: bool | Unset = False
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -52,6 +54,8 @@ class EvalConfig:
 
         max_concurrent = self.max_concurrent
 
+        modal_use_ephemeral_app = self.modal_use_ephemeral_app
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -67,6 +71,8 @@ class EvalConfig:
             field_dict["max_tokens"] = max_tokens
         if max_concurrent is not UNSET:
             field_dict["max_concurrent"] = max_concurrent
+        if modal_use_ephemeral_app is not UNSET:
+            field_dict["modal_use_ephemeral_app"] = modal_use_ephemeral_app
 
         return field_dict
 
@@ -93,6 +99,8 @@ class EvalConfig:
 
         max_concurrent = d.pop("max_concurrent", UNSET)
 
+        modal_use_ephemeral_app = d.pop("modal_use_ephemeral_app", UNSET)
+
         eval_config = cls(
             organization_id=organization_id,
             models=models,
@@ -100,6 +108,7 @@ class EvalConfig:
             temperature=temperature,
             max_tokens=max_tokens,
             max_concurrent=max_concurrent,
+            modal_use_ephemeral_app=modal_use_ephemeral_app,
         )
 
         eval_config.additional_properties = d

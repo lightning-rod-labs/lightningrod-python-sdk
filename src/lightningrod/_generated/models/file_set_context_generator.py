@@ -27,8 +27,6 @@ class FileSetContextGenerator:
         query_template (None | str | Unset): Template with {question} placeholder; default: raw question text
         temporal_constraint (None | TemporalConstraint | Unset): Filter documents by date relative to seed date. BEFORE
             (<=) for context without lookahead, AFTER (>) for future docs.
-        date_metadata_key (str | Unset): Gemini metadata key storing unix timestamp for temporal filtering Default:
-            'file_date'.
         model (str | Unset): Gemini model to use for file search Default: 'gemini-2.5-flash'.
     """
 
@@ -39,7 +37,6 @@ class FileSetContextGenerator:
     system_instruction: None | str | Unset = UNSET
     query_template: None | str | Unset = UNSET
     temporal_constraint: None | TemporalConstraint | Unset = UNSET
-    date_metadata_key: str | Unset = "file_date"
     model: str | Unset = "gemini-2.5-flash"
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -78,8 +75,6 @@ class FileSetContextGenerator:
         else:
             temporal_constraint = self.temporal_constraint
 
-        date_metadata_key = self.date_metadata_key
-
         model = self.model
 
         field_dict: dict[str, Any] = {}
@@ -101,8 +96,6 @@ class FileSetContextGenerator:
             field_dict["query_template"] = query_template
         if temporal_constraint is not UNSET:
             field_dict["temporal_constraint"] = temporal_constraint
-        if date_metadata_key is not UNSET:
-            field_dict["date_metadata_key"] = date_metadata_key
         if model is not UNSET:
             field_dict["model"] = model
 
@@ -163,8 +156,6 @@ class FileSetContextGenerator:
 
         temporal_constraint = _parse_temporal_constraint(d.pop("temporal_constraint", UNSET))
 
-        date_metadata_key = d.pop("date_metadata_key", UNSET)
-
         model = d.pop("model", UNSET)
 
         file_set_context_generator = cls(
@@ -175,7 +166,6 @@ class FileSetContextGenerator:
             system_instruction=system_instruction,
             query_template=query_template,
             temporal_constraint=temporal_constraint,
-            date_metadata_key=date_metadata_key,
             model=model,
         )
 
