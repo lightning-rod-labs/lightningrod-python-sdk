@@ -61,6 +61,7 @@ def _build_transform_cost_lines(job: TransformJob) -> list[RenderableType]:
 
     return lines
 
+
 def build_live_display(
     metrics: Optional[PipelineMetricsResponse] = None,
     job: Optional[TransformJob] = None,
@@ -78,6 +79,12 @@ def build_live_display(
     label, border = status_label.get(status, ("[bold bright_blue]>> Pipeline[/bold bright_blue]", "bright_blue"))
     renderables.append(_safe_markup(label))
     renderables.append(Text(""))
+
+    if job is not None:
+        renderables.append(_safe_markup(f"  [bold]Job ID:[/bold]           {job.id}"))
+        if job.input_dataset_id is not None:
+            renderables.append(_safe_markup(f"  [bold]Input dataset:[/bold]    {job.input_dataset_id}"))
+        renderables.append(Text(""))
 
     # Cost summary from job.usage
     if job is not None:
@@ -158,7 +165,7 @@ def _make_progress_bar(pct: float, width: int = 24) -> str:
     return "█" * filled + "░" * (width - filled)
 
 
-def build_training_live_display(job: Any) -> RenderableType:
+def build_training_live_display(job: TrainingJob) -> RenderableType:
     renderables: list[RenderableType] = []
     status = str(job.status) if job is not None else ""
     header_style = {
@@ -173,6 +180,9 @@ def build_training_live_display(job: Any) -> RenderableType:
     if job is not None:
         if _is_set(job.name) and job.name:
             renderables.append(_safe_markup(f"  [bold]Job:[/bold] {job.name}"))
+            renderables.append(Text(""))
+        if _is_set(job.model_id) and job.model_id:
+            renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.model_id}"))
             renderables.append(Text(""))
 
         if job.status == TrainingJobStatus.RUNNING:
@@ -411,10 +421,7 @@ def run_live_display(
     """Run a live-updating display that polls for metrics.
 
     Args:
-        poll_callback: A callable that returns (metrics, job, is_running) each cycle.
-            - metrics: PipelineMetricsResponse or None
-            - job: TransformJob with current status/usage
-            - is_running: bool, False to stop the loop
+        poll_callback: Returns ``(metrics, job)`` on each call; ``metrics`` may be None until available.
         poll_interval: Seconds between polls.
         warning_message: Optional warning to persist above the live display.
     """
@@ -437,13 +444,13 @@ def run_live_display(
         console.print(build_live_display(metrics=metrics, job=job))
     else:
         from rich.live import Live
+        metrics, job = poll_callback()
         with Live(
-            build_live_display(metrics=None, job=None),
+            build_live_display(metrics=metrics, job=job),
             console=console,
             refresh_per_second=1,
             transient=False,
         ) as live:
-            metrics, job = poll_callback()
             while job.status == TransformJobStatus.RUNNING:
                 live.update(build_live_display(metrics=metrics, job=job))
                 time.sleep(poll_interval)
