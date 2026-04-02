@@ -10,49 +10,54 @@ from ..models.answer_parser_type import AnswerParserType
 from ..models.reward_function_type import RewardFunctionType
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="BinaryAnswerType")
+T = TypeVar("T", bound="ContinuousValueOnlyAnswerType")
 
 
 @_attrs_define
-class BinaryAnswerType:
-    r"""
-    Attributes:
-        answer_type (Literal['BINARY'] | Unset):  Default: 'BINARY'.
-        answer_format_instruction (str | Unset): Appended to training/inference prompts to instruct the model how to
-            format its prediction. Most users should not need to override this — if results are poor, override this field or
-            open an issue at https://github.com/lightning-rod-labs/lightningrod-python-sdk/issues/new Default: "This is a
-            binary yes/no question. You are estimating the probability that the answer is 'Yes'. Provide your confidence as
-            a value between 0 (definitely No) and 1 (definitely Yes). Provide your probability estimate for Yes as a decimal
-            between 0 and 1. Provide your answer between <answer></answer> tags. Example: <answer>0.75</answer>".
-        labeler_instruction (str | Unset): Instructions for the labeler. Default: "The answer should be ONLY '1', '0',
-            or 'Undetermined'. '1' means yes, '0' means no, and 'Undetermined' means the answer is not clear. Do not include
-            any other text or explanation.".
-        question_generation_instruction (str | Unset): Instructions for generating questions of this type. Default:
-            "Generate binary forecasting questions about future events or outcomes that are unresolved at the time of asking
-            and will resolve to a clear, publicly verifiable Yes or No.\n\nEach question MUST:\n- Have EXACTLY ONE binary
-            answer: Yes or No\n- Be fully self-contained (all entities, locations, dates included)\n- Refer to a clearly
-            defined event or threshold with an explicit resolution date or deadline\n- Describe an outcome plausibly
-            reported in a major news headline or official release\n- Start with words like 'Will', 'Is', 'Does', 'Has',
-            'Can', 'Did', or similar\n\nSTRICTLY DO NOT include:\n- Numeric or continuous outcomes\n- Multiple-choice or
-            categorical questions\n- Trivial, obscure, or low-impact events\n- Vague language or ambiguous resolution
-            criteria\n- Outcomes dependent on unpublished, proprietary, or speculative data\n- Questions with more than two
-            possible outcomes".
-        reward_function_type (None | RewardFunctionType | Unset):  Default: RewardFunctionType.BINARY_BRIER.
-        answer_parser_type (AnswerParserType | None | Unset):  Default: AnswerParserType.BINARY.
+class ContinuousValueOnlyAnswerType:
+    r"""Continuous question type that predicts a single scalar value.
+
+    Use this when the model should output a point estimate (e.g. "42.5") rather than
+    a full distribution. Scored via CONTINUOUS_VALUE_ONLY_LOG_SCORE by default.
+
+    For uncertainty-aware predictions use ContinuousAnswerType instead, which predicts
+    {mean, standard_deviation} and is scored via CONTINUOUS_LOG_SCORE.
+
+        Attributes:
+            answer_type (Literal['CONTINUOUS_VALUE_ONLY'] | Unset):  Default: 'CONTINUOUS_VALUE_ONLY'.
+            answer_format_instruction (str | Unset): Appended to training/inference prompts to instruct the model how to
+                format its prediction. Most users should not need to override this — if results are poor, override this field or
+                open an issue at https://github.com/lightning-rod-labs/lightningrod-python-sdk/issues/new Default: 'This
+                question expects a numeric value as the answer. Provide your best single-number estimate. Include units if
+                specified in the question. Provide your answer between <answer></answer> tags. Example: <answer>42.5</answer>'.
+            labeler_instruction (str | Unset): Instructions for the labeler. Default: "The answer should be ONLY a single
+                exact numeric value, not a range. For example: '42.5' or '1000', not '40-45' or 'between 900 and 1100', or
+                'Undetermined'. Do not include any other text or explanation.".
+            question_generation_instruction (str | Unset): Instructions for generating questions of this type. Default:
+                'Generate forecasting questions that expect a single numeric answer.\n\nEach question MUST:\n- Have EXACTLY ONE
+                numeric answer (integer or decimal)\n- Specify the unit of measurement\n- Be fully self-contained (all entities,
+                locations, dates included)\n- Refer to a clearly defined event or measurement period with an explicit end
+                date\n- Describe an outcome plausibly reported in a major news headline or official release\n\nSTRICTLY DO NOT
+                include:\n- Binary or categorical outcomes\n- Trivial, obscure, or low-impact measurements\n- Vague language or
+                approximations\n- Ranges, intervals, or multiple correct values\n- Ambiguous definitions or aggregations\n-
+                Outcomes dependent on unpublished, proprietary, or speculative data'.
+            reward_function_type (None | RewardFunctionType | Unset):  Default:
+                RewardFunctionType.CONTINUOUS_VALUE_ONLY_LOG_SCORE.
+            answer_parser_type (AnswerParserType | None | Unset):  Default: AnswerParserType.CONTINUOUS_VALUE_ONLY.
     """
 
-    answer_type: Literal["BINARY"] | Unset = "BINARY"
+    answer_type: Literal["CONTINUOUS_VALUE_ONLY"] | Unset = "CONTINUOUS_VALUE_ONLY"
     answer_format_instruction: str | Unset = (
-        "This is a binary yes/no question. You are estimating the probability that the answer is 'Yes'. Provide your confidence as a value between 0 (definitely No) and 1 (definitely Yes). Provide your probability estimate for Yes as a decimal between 0 and 1. Provide your answer between <answer></answer> tags. Example: <answer>0.75</answer>"
+        "This question expects a numeric value as the answer. Provide your best single-number estimate. Include units if specified in the question. Provide your answer between <answer></answer> tags. Example: <answer>42.5</answer>"
     )
     labeler_instruction: str | Unset = (
-        "The answer should be ONLY '1', '0', or 'Undetermined'. '1' means yes, '0' means no, and 'Undetermined' means the answer is not clear. Do not include any other text or explanation."
+        "The answer should be ONLY a single exact numeric value, not a range. For example: '42.5' or '1000', not '40-45' or 'between 900 and 1100', or 'Undetermined'. Do not include any other text or explanation."
     )
     question_generation_instruction: str | Unset = (
-        "Generate binary forecasting questions about future events or outcomes that are unresolved at the time of asking and will resolve to a clear, publicly verifiable Yes or No.\n\nEach question MUST:\n- Have EXACTLY ONE binary answer: Yes or No\n- Be fully self-contained (all entities, locations, dates included)\n- Refer to a clearly defined event or threshold with an explicit resolution date or deadline\n- Describe an outcome plausibly reported in a major news headline or official release\n- Start with words like 'Will', 'Is', 'Does', 'Has', 'Can', 'Did', or similar\n\nSTRICTLY DO NOT include:\n- Numeric or continuous outcomes\n- Multiple-choice or categorical questions\n- Trivial, obscure, or low-impact events\n- Vague language or ambiguous resolution criteria\n- Outcomes dependent on unpublished, proprietary, or speculative data\n- Questions with more than two possible outcomes"
+        "Generate forecasting questions that expect a single numeric answer.\n\nEach question MUST:\n- Have EXACTLY ONE numeric answer (integer or decimal)\n- Specify the unit of measurement\n- Be fully self-contained (all entities, locations, dates included)\n- Refer to a clearly defined event or measurement period with an explicit end date\n- Describe an outcome plausibly reported in a major news headline or official release\n\nSTRICTLY DO NOT include:\n- Binary or categorical outcomes\n- Trivial, obscure, or low-impact measurements\n- Vague language or approximations\n- Ranges, intervals, or multiple correct values\n- Ambiguous definitions or aggregations\n- Outcomes dependent on unpublished, proprietary, or speculative data"
     )
-    reward_function_type: None | RewardFunctionType | Unset = RewardFunctionType.BINARY_BRIER
-    answer_parser_type: AnswerParserType | None | Unset = AnswerParserType.BINARY
+    reward_function_type: None | RewardFunctionType | Unset = RewardFunctionType.CONTINUOUS_VALUE_ONLY_LOG_SCORE
+    answer_parser_type: AnswerParserType | None | Unset = AnswerParserType.CONTINUOUS_VALUE_ONLY
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -101,9 +106,9 @@ class BinaryAnswerType:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        answer_type = cast(Literal["BINARY"] | Unset, d.pop("answer_type", UNSET))
-        if answer_type != "BINARY" and not isinstance(answer_type, Unset):
-            raise ValueError(f"answer_type must match const 'BINARY', got '{answer_type}'")
+        answer_type = cast(Literal["CONTINUOUS_VALUE_ONLY"] | Unset, d.pop("answer_type", UNSET))
+        if answer_type != "CONTINUOUS_VALUE_ONLY" and not isinstance(answer_type, Unset):
+            raise ValueError(f"answer_type must match const 'CONTINUOUS_VALUE_ONLY', got '{answer_type}'")
 
         answer_format_instruction = d.pop("answer_format_instruction", UNSET)
 
@@ -145,7 +150,7 @@ class BinaryAnswerType:
 
         answer_parser_type = _parse_answer_parser_type(d.pop("answer_parser_type", UNSET))
 
-        binary_answer_type = cls(
+        continuous_value_only_answer_type = cls(
             answer_type=answer_type,
             answer_format_instruction=answer_format_instruction,
             labeler_instruction=labeler_instruction,
@@ -154,8 +159,8 @@ class BinaryAnswerType:
             answer_parser_type=answer_parser_type,
         )
 
-        binary_answer_type.additional_properties = d
-        return binary_answer_type
+        continuous_value_only_answer_type.additional_properties = d
+        return continuous_value_only_answer_type
 
     @property
     def additional_keys(self) -> list[str]:

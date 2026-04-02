@@ -11,6 +11,7 @@ from ..types import UNSET, Unset
 if TYPE_CHECKING:
     from ..models.binary_answer_type import BinaryAnswerType
     from ..models.continuous_answer_type import ContinuousAnswerType
+    from ..models.continuous_value_only_answer_type import ContinuousValueOnlyAnswerType
     from ..models.free_response_answer_type import FreeResponseAnswerType
     from ..models.multiple_choice_answer_type import MultipleChoiceAnswerType
 
@@ -26,20 +27,27 @@ class QuestionRenderer:
             'QUESTION_RENDERER'.
         template (None | str | Unset): Custom template for rendering the prompt. If not provided, dynamically builds
             based on available content. Supports placeholders like {question_text}, {context}, {answer_instructions}.
-        answer_type (BinaryAnswerType | ContinuousAnswerType | FreeResponseAnswerType | MultipleChoiceAnswerType | None
-            | Unset): The type of answer expected, used to render answer instructions
+        answer_type (BinaryAnswerType | ContinuousAnswerType | ContinuousValueOnlyAnswerType | FreeResponseAnswerType |
+            MultipleChoiceAnswerType | None | Unset): The type of answer expected, used to render answer instructions
     """
 
     config_type: Literal["QUESTION_RENDERER"] | Unset = "QUESTION_RENDERER"
     template: None | str | Unset = UNSET
     answer_type: (
-        BinaryAnswerType | ContinuousAnswerType | FreeResponseAnswerType | MultipleChoiceAnswerType | None | Unset
+        BinaryAnswerType
+        | ContinuousAnswerType
+        | ContinuousValueOnlyAnswerType
+        | FreeResponseAnswerType
+        | MultipleChoiceAnswerType
+        | None
+        | Unset
     ) = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.binary_answer_type import BinaryAnswerType
         from ..models.continuous_answer_type import ContinuousAnswerType
+        from ..models.continuous_value_only_answer_type import ContinuousValueOnlyAnswerType
         from ..models.free_response_answer_type import FreeResponseAnswerType
         from ..models.multiple_choice_answer_type import MultipleChoiceAnswerType
 
@@ -59,6 +67,8 @@ class QuestionRenderer:
         elif isinstance(self.answer_type, MultipleChoiceAnswerType):
             answer_type = self.answer_type.to_dict()
         elif isinstance(self.answer_type, ContinuousAnswerType):
+            answer_type = self.answer_type.to_dict()
+        elif isinstance(self.answer_type, ContinuousValueOnlyAnswerType):
             answer_type = self.answer_type.to_dict()
         elif isinstance(self.answer_type, FreeResponseAnswerType):
             answer_type = self.answer_type.to_dict()
@@ -81,6 +91,7 @@ class QuestionRenderer:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.binary_answer_type import BinaryAnswerType
         from ..models.continuous_answer_type import ContinuousAnswerType
+        from ..models.continuous_value_only_answer_type import ContinuousValueOnlyAnswerType
         from ..models.free_response_answer_type import FreeResponseAnswerType
         from ..models.multiple_choice_answer_type import MultipleChoiceAnswerType
 
@@ -100,7 +111,15 @@ class QuestionRenderer:
 
         def _parse_answer_type(
             data: object,
-        ) -> BinaryAnswerType | ContinuousAnswerType | FreeResponseAnswerType | MultipleChoiceAnswerType | None | Unset:
+        ) -> (
+            BinaryAnswerType
+            | ContinuousAnswerType
+            | ContinuousValueOnlyAnswerType
+            | FreeResponseAnswerType
+            | MultipleChoiceAnswerType
+            | None
+            | Unset
+        ):
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -132,14 +151,23 @@ class QuestionRenderer:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                answer_type_type_0_type_3 = FreeResponseAnswerType.from_dict(data)
+                answer_type_type_0_type_3 = ContinuousValueOnlyAnswerType.from_dict(data)
 
                 return answer_type_type_0_type_3
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                answer_type_type_0_type_4 = FreeResponseAnswerType.from_dict(data)
+
+                return answer_type_type_0_type_4
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
             return cast(
                 BinaryAnswerType
                 | ContinuousAnswerType
+                | ContinuousValueOnlyAnswerType
                 | FreeResponseAnswerType
                 | MultipleChoiceAnswerType
                 | None

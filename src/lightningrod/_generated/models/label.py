@@ -20,6 +20,8 @@ class Label:
         label (str):
         label_confidence (float):
         answer_type (None | str | Unset):
+        answer_parser_type (None | str | Unset):
+        reward_function_type (None | str | Unset):
         resolution_date (datetime.datetime | None | Unset):
         reasoning (None | str | Unset):
         answer_sources (None | str | Unset):
@@ -28,6 +30,8 @@ class Label:
     label: str
     label_confidence: float
     answer_type: None | str | Unset = UNSET
+    answer_parser_type: None | str | Unset = UNSET
+    reward_function_type: None | str | Unset = UNSET
     resolution_date: datetime.datetime | None | Unset = UNSET
     reasoning: None | str | Unset = UNSET
     answer_sources: None | str | Unset = UNSET
@@ -43,6 +47,18 @@ class Label:
             answer_type = UNSET
         else:
             answer_type = self.answer_type
+
+        answer_parser_type: None | str | Unset
+        if isinstance(self.answer_parser_type, Unset):
+            answer_parser_type = UNSET
+        else:
+            answer_parser_type = self.answer_parser_type
+
+        reward_function_type: None | str | Unset
+        if isinstance(self.reward_function_type, Unset):
+            reward_function_type = UNSET
+        else:
+            reward_function_type = self.reward_function_type
 
         resolution_date: None | str | Unset
         if isinstance(self.resolution_date, Unset):
@@ -74,6 +90,10 @@ class Label:
         )
         if answer_type is not UNSET:
             field_dict["answer_type"] = answer_type
+        if answer_parser_type is not UNSET:
+            field_dict["answer_parser_type"] = answer_parser_type
+        if reward_function_type is not UNSET:
+            field_dict["reward_function_type"] = reward_function_type
         if resolution_date is not UNSET:
             field_dict["resolution_date"] = resolution_date
         if reasoning is not UNSET:
@@ -98,6 +118,24 @@ class Label:
             return cast(None | str | Unset, data)
 
         answer_type = _parse_answer_type(d.pop("answer_type", UNSET))
+
+        def _parse_answer_parser_type(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        answer_parser_type = _parse_answer_parser_type(d.pop("answer_parser_type", UNSET))
+
+        def _parse_reward_function_type(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        reward_function_type = _parse_reward_function_type(d.pop("reward_function_type", UNSET))
 
         def _parse_resolution_date(data: object) -> datetime.datetime | None | Unset:
             if data is None:
@@ -138,6 +176,8 @@ class Label:
             label=label,
             label_confidence=label_confidence,
             answer_type=answer_type,
+            answer_parser_type=answer_parser_type,
+            reward_function_type=reward_function_type,
             resolution_date=resolution_date,
             reasoning=reasoning,
             answer_sources=answer_sources,
