@@ -10,7 +10,7 @@ from lightningrod import preprocessing, training, utils
 from lightningrod.utils.sample import create_sample
 from lightningrod.utils.models import open_router_model
 from lightningrod.utils.examples import binary_example, continuous_example, multiple_choice_example
-from lightningrod.training import filter_and_split
+from lightningrod.training import prepare_for_training, FilterParams, DedupParams, SplitParams
 from lightningrod.training.client import TrainingConfig
 from lightningrod._generated.models import (
     TransformJob,
@@ -43,7 +43,10 @@ from lightningrod._generated.models import (
     FileSetSeedGenerator,
     FileSetQuerySeedGenerator,
     FileSetContextGenerator,
+    FileSetDocumentContextGenerator,
+    FileSetDocumentLabeler,
     FileSetRAGLabeler,
+    DocumentContext,
     TemporalConstraint,
     CreateFileSetRequest,
     CreateFileSetFileRequest,
@@ -54,6 +57,7 @@ from lightningrod._generated.models import (
     MetadataFieldType,
     TopicTreeSeedGenerator,
     CsvSeedGenerator,
+    EvalModel,
 )
 
 __version__ = "0.1.19"
@@ -71,7 +75,10 @@ __all__ = [
     "MultipleChoiceAnswerType",
     "FreeResponseAnswerType",
     "SampleDataset",
+    "DocumentContext",
     "FileSetContextGenerator",
+    "FileSetDocumentContextGenerator",
+    "FileSetDocumentLabeler",
     "FileSetRAGLabeler",
     "FileSetSeedGenerator",
     "FileSetQuerySeedGenerator",
@@ -101,7 +108,10 @@ __all__ = [
     "Rollout",
     "RolloutScorer",
     "RolloutGenerator",
-    "filter_and_split",
+    "prepare_for_training",
+    "FilterParams",
+    "DedupParams",
+    "SplitParams",
     "TrainingConfig",
     "Sample",
     "SampleMeta",
@@ -112,4 +122,5 @@ __all__ = [
     "WebSearchLabeler",
     "TopicTreeSeedGenerator",
     "CsvSeedGenerator",
+    "EvalModel",
 ]

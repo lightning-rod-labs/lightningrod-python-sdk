@@ -9,6 +9,7 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
+    from ..models.document_context import DocumentContext
     from ..models.forward_looking_question import ForwardLookingQuestion
     from ..models.label import Label
     from ..models.news_context import NewsContext
@@ -31,7 +32,7 @@ class Sample:
         question (ForwardLookingQuestion | None | Question | Unset):
         label (Label | None | Unset):
         prompt (None | str | Unset):
-        context (list[NewsContext | RAGContext] | None | Unset):
+        context (list[DocumentContext | NewsContext | RAGContext] | None | Unset):
         rollouts (list[Rollout] | None | Unset):
         meta (SampleMeta | Unset):
         is_valid (bool | Unset):  Default: True.
@@ -42,7 +43,7 @@ class Sample:
     question: ForwardLookingQuestion | None | Question | Unset = UNSET
     label: Label | None | Unset = UNSET
     prompt: None | str | Unset = UNSET
-    context: list[NewsContext | RAGContext] | None | Unset = UNSET
+    context: list[DocumentContext | NewsContext | RAGContext] | None | Unset = UNSET
     rollouts: list[Rollout] | None | Unset = UNSET
     meta: SampleMeta | Unset = UNSET
     is_valid: bool | Unset = True
@@ -53,6 +54,7 @@ class Sample:
         from ..models.label import Label
         from ..models.news_context import NewsContext
         from ..models.question import Question
+        from ..models.rag_context import RAGContext
         from ..models.seed import Seed
 
         id: None | str | Unset
@@ -101,6 +103,8 @@ class Sample:
             for context_type_0_item_data in self.context:
                 context_type_0_item: dict[str, Any]
                 if isinstance(context_type_0_item_data, NewsContext):
+                    context_type_0_item = context_type_0_item_data.to_dict()
+                elif isinstance(context_type_0_item_data, RAGContext):
                     context_type_0_item = context_type_0_item_data.to_dict()
                 else:
                     context_type_0_item = context_type_0_item_data.to_dict()
@@ -154,6 +158,7 @@ class Sample:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.document_context import DocumentContext
         from ..models.forward_looking_question import ForwardLookingQuestion
         from ..models.label import Label
         from ..models.news_context import NewsContext
@@ -242,7 +247,7 @@ class Sample:
 
         prompt = _parse_prompt(d.pop("prompt", UNSET))
 
-        def _parse_context(data: object) -> list[NewsContext | RAGContext] | None | Unset:
+        def _parse_context(data: object) -> list[DocumentContext | NewsContext | RAGContext] | None | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -254,7 +259,7 @@ class Sample:
                 _context_type_0 = data
                 for context_type_0_item_data in _context_type_0:
 
-                    def _parse_context_type_0_item(data: object) -> NewsContext | RAGContext:
+                    def _parse_context_type_0_item(data: object) -> DocumentContext | NewsContext | RAGContext:
                         try:
                             if not isinstance(data, dict):
                                 raise TypeError()
@@ -263,11 +268,19 @@ class Sample:
                             return context_type_0_item_type_0
                         except (TypeError, ValueError, AttributeError, KeyError):
                             pass
+                        try:
+                            if not isinstance(data, dict):
+                                raise TypeError()
+                            context_type_0_item_type_1 = RAGContext.from_dict(data)
+
+                            return context_type_0_item_type_1
+                        except (TypeError, ValueError, AttributeError, KeyError):
+                            pass
                         if not isinstance(data, dict):
                             raise TypeError()
-                        context_type_0_item_type_1 = RAGContext.from_dict(data)
+                        context_type_0_item_type_2 = DocumentContext.from_dict(data)
 
-                        return context_type_0_item_type_1
+                        return context_type_0_item_type_2
 
                     context_type_0_item = _parse_context_type_0_item(context_type_0_item_data)
 
@@ -276,7 +289,7 @@ class Sample:
                 return context_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(list[NewsContext | RAGContext] | None | Unset, data)
+            return cast(list[DocumentContext | NewsContext | RAGContext] | None | Unset, data)
 
         context = _parse_context(d.pop("context", UNSET))
 

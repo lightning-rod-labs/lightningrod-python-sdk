@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from attrs import define
 from lightningrod._display import _is_notebook, display_error, run_training_live_display
 from lightningrod._generated.api.training_jobs import (

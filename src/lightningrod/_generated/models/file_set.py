@@ -29,6 +29,7 @@ class FileSet:
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
         metadata_schema (FileSetMetadataSchema | None | Unset):
+        rag_enabled (bool | Unset):  Default: True.
         is_public (bool | Unset):  Default: False.
     """
 
@@ -40,6 +41,7 @@ class FileSet:
     created_at: datetime.datetime
     updated_at: datetime.datetime
     metadata_schema: FileSetMetadataSchema | None | Unset = UNSET
+    rag_enabled: bool | Unset = True
     is_public: bool | Unset = False
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -69,6 +71,8 @@ class FileSet:
         else:
             metadata_schema = self.metadata_schema
 
+        rag_enabled = self.rag_enabled
+
         is_public = self.is_public
 
         field_dict: dict[str, Any] = {}
@@ -86,6 +90,8 @@ class FileSet:
         )
         if metadata_schema is not UNSET:
             field_dict["metadata_schema"] = metadata_schema
+        if rag_enabled is not UNSET:
+            field_dict["rag_enabled"] = rag_enabled
         if is_public is not UNSET:
             field_dict["is_public"] = is_public
 
@@ -132,6 +138,8 @@ class FileSet:
 
         metadata_schema = _parse_metadata_schema(d.pop("metadata_schema", UNSET))
 
+        rag_enabled = d.pop("rag_enabled", UNSET)
+
         is_public = d.pop("is_public", UNSET)
 
         file_set = cls(
@@ -143,6 +151,7 @@ class FileSet:
             created_at=created_at,
             updated_at=updated_at,
             metadata_schema=metadata_schema,
+            rag_enabled=rag_enabled,
             is_public=is_public,
         )
 

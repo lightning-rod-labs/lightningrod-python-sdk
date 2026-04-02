@@ -61,6 +61,7 @@ def _build_transform_cost_lines(job: TransformJob) -> list[RenderableType]:
 
     return lines
 
+
 def build_live_display(
     metrics: Optional[PipelineMetricsResponse] = None,
     job: Optional[TransformJob] = None,
@@ -78,6 +79,12 @@ def build_live_display(
     label, border = status_label.get(status, ("[bold bright_blue]>> Pipeline[/bold bright_blue]", "bright_blue"))
     renderables.append(_safe_markup(label))
     renderables.append(Text(""))
+
+    if job is not None:
+        renderables.append(_safe_markup(f"  [bold]Job ID:[/bold]           {job.id}"))
+        if job.input_dataset_id is not None:
+            renderables.append(_safe_markup(f"  [bold]Input dataset:[/bold]    {job.input_dataset_id}"))
+        renderables.append(Text(""))
 
     # Cost summary from job.usage
     if job is not None:
@@ -158,7 +165,7 @@ def _make_progress_bar(pct: float, width: int = 24) -> str:
     return "█" * filled + "░" * (width - filled)
 
 
-def build_training_live_display(job: Any) -> RenderableType:
+def build_training_live_display(job: TrainingJob) -> RenderableType:
     renderables: list[RenderableType] = []
     status = str(job.status) if job is not None else ""
     header_style = {
@@ -172,7 +179,13 @@ def build_training_live_display(job: Any) -> RenderableType:
     renderables.append(Text(""))
     if job is not None:
         if _is_set(job.name) and job.name:
-            renderables.append(_safe_markup(f"  [bold]Job:[/bold] {job.name}"))
+            renderables.append(_safe_markup(f"  [bold]Job ID:[/bold] {job.id}"))
+            renderables.append(Text(""))
+        if _is_set(job.model_id) and job.model_id:
+            renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.model_id}"))
+            renderables.append(Text(""))
+        if _is_set(job.model_id) and job.model_id:
+            renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.model_id}"))
             renderables.append(Text(""))
 
         if job.status == TrainingJobStatus.RUNNING:
@@ -258,7 +271,7 @@ def build_eval_live_display(job: EvalJob) -> RenderableType:
     renderables.append(_safe_markup(f"[bold {header_style}]{header}[/bold {header_style}]"))
     renderables.append(Text(""))
     if job is not None:
-        renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.config.model_id}"))
+        renderables.append(_safe_markup(f"  [bold]Job ID:[/bold] {job.id}"))
         renderables.append(_safe_markup(f"  [bold]Dataset:[/bold] {job.config.dataset.id}"))
         renderables.append(Text(""))
         if job.status in (EvalJobStatus.RUNNING, EvalJobStatus.STARTING):
@@ -301,8 +314,7 @@ def print_eval(job: EvalJob) -> None:
     renderables.append(_safe_markup(f"[bold {header_style}]{header}[/bold {header_style}]"))
     renderables.append(Text(""))
     if job is not None:
-        renderables.append(_safe_markup(f"  [bold]ID:[/bold] {job.id}"))
-        renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.config.model_id}"))
+        renderables.append(_safe_markup(f"  [bold]Job ID:[/bold] {job.id}"))
         renderables.append(_safe_markup(f"  [bold]Dataset:[/bold] {job.config.dataset.id}"))
         renderables.append(Text(""))
         if _is_set(job.metrics) and job.metrics and job.metrics.additional_properties:
@@ -411,10 +423,7 @@ def run_live_display(
     """Run a live-updating display that polls for metrics.
 
     Args:
-        poll_callback: A callable that returns (metrics, job, is_running) each cycle.
-            - metrics: PipelineMetricsResponse or None
-            - job: TransformJob with current status/usage
-            - is_running: bool, False to stop the loop
+        poll_callback: Returns ``(metrics, job)`` on each call; ``metrics`` may be None until available.
         poll_interval: Seconds between polls.
         warning_message: Optional warning to persist above the live display.
     """
@@ -437,13 +446,13 @@ def run_live_display(
         console.print(build_live_display(metrics=metrics, job=job))
     else:
         from rich.live import Live
+        metrics, job = poll_callback()
         with Live(
-            build_live_display(metrics=None, job=None),
+            build_live_display(metrics=metrics, job=job),
             console=console,
             refresh_per_second=1,
             transient=False,
         ) as live:
-            metrics, job = poll_callback()
             while job.status == TransformJobStatus.RUNNING:
                 live.update(build_live_display(metrics=metrics, job=job))
                 time.sleep(poll_interval)
@@ -466,13 +475,13 @@ def _build_invalid_samples_error_message(original_message: str) -> Group:
     
     renderables.append(_safe_markup("[bold]Next steps:[/bold]"))
     renderables.append(_safe_markup("  • Check the dataset samples to see specific failure reasons in the 'meta.filter_reason' field"))
-    renderables.append(_safe_markup("  • Adjust and retry the transform pipeline (e.g., lower confidence thresholds, relax filter criteria)"))
+    renderables.append(_safe_markup("  • Adjust and retry the transform pipeline (e.g., try a wider date range)"))
     renderables.append(_safe_markup("  • If the problem persists, contact support or open a GitHub issue: [link=https://github.com/lightning-rod-labs/lightningrod-python-sdk/issues]https://github.com/lightning-rod-labs/lightningrod-python-sdk/issues[/link]"))
     
     return Group(*renderables)
 
 
-def display_error(message: str, title: str = "Error", job: Any = None) -> None:
+def display_error(message: str, title: str = "Error", job: Any = None, response_body: str | None = None) -> None:
     console = Console()
     renderables: list[RenderableType] = []
 
@@ -484,6 +493,11 @@ def display_error(message: str, title: str = "Error", job: Any = None) -> None:
     else:
         renderables.append(_safe_markup(f"[bold]{message}[/bold]"))
 
+    if response_body is not None and response_body.strip():
+        renderables.append(Text(""))
+        renderables.append(_safe_markup("[bold]Response body:[/bold]"))
+        renderables.append(Text(response_body.strip()[:2000], style="dim"))
+
     if job is not None:
         cost_lines = _build_transform_cost_lines(job) if isinstance(job, TransformJob) else _build_cost_lines(job)
         if cost_lines:
@@ -491,6 +505,79 @@ def display_error(message: str, title: str = "Error", job: Any = None) -> None:
             renderables.extend(cost_lines)
 
     console.print(Panel(Group(*renderables), border_style="bright_red", padding=(1, 2)))
+
+
+def display_prepare_report(report: Any, verbose: bool = True) -> None:
+    """Render a PrepareReport as a Rich panel. Used inside Jupyter notebooks."""
+    from lightningrod.training.samples import PrepareReport
+    assert isinstance(report, PrepareReport)
+    stats = report.stats
+    console = Console()
+    renderables: list[RenderableType] = []
+
+    border = "bright_green" if report.is_healthy else "yellow"
+    header_style = "bold bright_green" if report.is_healthy else "bold yellow"
+    renderables.append(_safe_markup(f"[{header_style}]>> prepare_for_training[/{header_style}]"))
+    renderables.append(Text(""))
+
+    if verbose or not report.is_healthy:
+        renderables.append(_safe_markup(f"  [dim]Starting with {stats.total} samples[/dim]"))
+        renderables.append(Text(""))
+
+        parts = []
+        if stats.filter_invalid:
+            parts.append(f"{stats.filter_invalid} invalid")
+        if stats.filter_horizon:
+            part = f"{stats.filter_horizon} horizon"
+            if stats.filter_missing_resolution_date or stats.filter_missing_prediction_date:
+                sub = []
+                if stats.filter_missing_resolution_date:
+                    sub.append(f"{stats.filter_missing_resolution_date} missing resolution date")
+                if stats.filter_missing_prediction_date:
+                    sub.append(f"{stats.filter_missing_prediction_date} missing prediction date")
+                part += f" ({', '.join(sub)})"
+            parts.append(part)
+        if stats.filter_context:
+            parts.append(f"{stats.filter_context} missing context")
+        filter_line = (
+            f"  [bold]Filter:[/bold]  Dropped {', '.join(parts)} → {stats.filter_kept} remain"
+            if parts else
+            f"  [bold]Filter:[/bold]  {stats.filter_kept} remain (0 dropped)"
+        )
+        renderables.append(_safe_markup(filter_line))
+
+        if stats.dedup_removed > 0:
+            renderables.append(_safe_markup(
+                f"  [bold]Dedup:[/bold]   Removed {stats.dedup_removed} duplicates "
+                f"({stats.dedup_kept + stats.dedup_removed} → {stats.dedup_kept})"
+            ))
+            for k, c in stats.dedup_top_collisions:
+                q = repr(k[0])[:60] + ("..." if len(repr(k[0])) > 60 else "")
+                renderables.append(Text(f"    ({q}, {k[1]}): {c} samples → 1", style="dim"))
+        else:
+            renderables.append(_safe_markup(f"  [bold]Dedup:[/bold]   {stats.dedup_kept} remain (0 duplicates)"))
+
+        split_detail = f"Splits: {stats.split_train_after} train | {stats.split_test_after} test ({stats.split_no_sort_key} dropped, no prediction_date)"
+        renderables.append(_safe_markup(f"  [bold]Split:[/bold]   {split_detail}"))
+        n_leaked = stats.split_train_before - stats.split_train_after
+        if n_leaked:
+            renderables.append(_safe_markup(
+                f"           [yellow]{n_leaked} train samples removed for leakage[/yellow]"
+            ))
+
+    if not report.is_healthy:
+        renderables.append(Text(""))
+        renderables.append(_safe_markup("[bold yellow]⚠ Unhealthy dataset[/bold yellow]"))
+        for issue in report.issues:
+            renderables.append(Text(""))
+            renderables.append(Text(issue.message, style="bold"))
+            if issue.tips:
+                renderables.append(Text(""))
+                renderables.append(_safe_markup("  [dim]Tips:[/dim]"))
+                for tip in issue.tips:
+                    renderables.append(Text(f"    • {tip}"))
+
+    console.print(Panel(Group(*renderables), border_style=border, padding=(1, 2)))
 
 
 def display_warning(message: str, title: str = "Warning", job: Any = None) -> None:

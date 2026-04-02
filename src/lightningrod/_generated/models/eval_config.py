@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, TypeVar, cast
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -9,6 +9,7 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
+    from ..models.eval_model import EvalModel
     from ..models.sample_dataset_config import SampleDatasetConfig
 
 
@@ -47,29 +48,27 @@ class EvalConfig:
         temperature (float | Unset):  Default: 0.0.
         max_tokens (int | Unset):  Default: 8192.
         max_concurrent (int | Unset):  Default: 50.
+        modal_use_ephemeral_app (bool | Unset):  Default: False.
     """
 
     organization_id: str
-    model_id: str
+    models: list[EvalModel]
     dataset: SampleDatasetConfig
-    benchmark_model_id: None | str | Unset = UNSET
     temperature: float | Unset = 0.0
     max_tokens: int | Unset = 8192
     max_concurrent: int | Unset = 50
+    modal_use_ephemeral_app: bool | Unset = False
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         organization_id = self.organization_id
 
-        model_id = self.model_id
+        models = []
+        for models_item_data in self.models:
+            models_item = models_item_data.to_dict()
+            models.append(models_item)
 
         dataset = self.dataset.to_dict()
-
-        benchmark_model_id: None | str | Unset
-        if isinstance(self.benchmark_model_id, Unset):
-            benchmark_model_id = UNSET
-        else:
-            benchmark_model_id = self.benchmark_model_id
 
         temperature = self.temperature
 
@@ -77,45 +76,44 @@ class EvalConfig:
 
         max_concurrent = self.max_concurrent
 
+        modal_use_ephemeral_app = self.modal_use_ephemeral_app
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
                 "organization_id": organization_id,
-                "model_id": model_id,
+                "models": models,
                 "dataset": dataset,
             }
         )
-        if benchmark_model_id is not UNSET:
-            field_dict["benchmark_model_id"] = benchmark_model_id
         if temperature is not UNSET:
             field_dict["temperature"] = temperature
         if max_tokens is not UNSET:
             field_dict["max_tokens"] = max_tokens
         if max_concurrent is not UNSET:
             field_dict["max_concurrent"] = max_concurrent
+        if modal_use_ephemeral_app is not UNSET:
+            field_dict["modal_use_ephemeral_app"] = modal_use_ephemeral_app
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.eval_model import EvalModel
         from ..models.sample_dataset_config import SampleDatasetConfig
 
         d = dict(src_dict)
         organization_id = d.pop("organization_id")
 
-        model_id = d.pop("model_id")
+        models = []
+        _models = d.pop("models")
+        for models_item_data in _models:
+            models_item = EvalModel.from_dict(models_item_data)
+
+            models.append(models_item)
 
         dataset = SampleDatasetConfig.from_dict(d.pop("dataset"))
-
-        def _parse_benchmark_model_id(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        benchmark_model_id = _parse_benchmark_model_id(d.pop("benchmark_model_id", UNSET))
 
         temperature = d.pop("temperature", UNSET)
 
@@ -123,14 +121,16 @@ class EvalConfig:
 
         max_concurrent = d.pop("max_concurrent", UNSET)
 
+        modal_use_ephemeral_app = d.pop("modal_use_ephemeral_app", UNSET)
+
         eval_config = cls(
             organization_id=organization_id,
-            model_id=model_id,
+            models=models,
             dataset=dataset,
-            benchmark_model_id=benchmark_model_id,
             temperature=temperature,
             max_tokens=max_tokens,
             max_concurrent=max_concurrent,
+            modal_use_ephemeral_app=modal_use_ephemeral_app,
         )
 
         eval_config.additional_properties = d

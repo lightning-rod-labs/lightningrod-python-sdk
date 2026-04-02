@@ -2,6 +2,8 @@ from typing import Optional, Union
 
 from lightningrod._display import _is_notebook, display_error, display_warning, run_live_display
 from lightningrod._generated.models import (
+    FileSetDocumentContextGenerator,
+    FileSetDocumentLabeler,
     FileSetQuerySeedGenerator,
     FileSetSeedGenerator,
     ForwardLookingQuestionGenerator,
@@ -15,6 +17,7 @@ from lightningrod._generated.models import (
     TransformJobStatus,
     CreateTransformJobRequest,
     HTTPValidationError,
+    ListTransformJobsResponse,
     WebSearchLabeler,
     EstimateCostRequest,
     EstimateCostResponse,
@@ -28,15 +31,16 @@ from lightningrod._generated.api.transform_jobs import (
     get_transform_job_metrics_transform_jobs_job_id_metrics_get,
     cost_estimation_transform_jobs_cost_estimation_post,
     cancel_transform_job_transform_jobs_job_id_delete,
+    list_transform_jobs_transform_jobs_get,
 )
 from lightningrod._generated.models.pipeline_metrics_response import PipelineMetricsResponse
 from lightningrod.datasets.dataset import SampleDataset
 from lightningrod._generated.client import AuthenticatedClient
 from lightningrod.datasets.client import DatasetSamplesClient
-from lightningrod._generated.types import Unset
+from lightningrod._generated.types import UNSET, Unset
 from lightningrod._errors import handle_response_error
 
-TransformConfig = Union[FileSetQuerySeedGenerator, FileSetSeedGenerator, ForwardLookingQuestionGenerator, GdeltSeedGenerator, NewsSeedGenerator, QuestionAndLabelGenerator, QuestionGenerator, QuestionPipeline, QuestionRenderer, WebSearchLabeler]
+TransformConfig = Union[FileSetDocumentContextGenerator, FileSetDocumentLabeler, FileSetQuerySeedGenerator, FileSetSeedGenerator, ForwardLookingQuestionGenerator, GdeltSeedGenerator, NewsSeedGenerator, QuestionAndLabelGenerator, QuestionGenerator, QuestionPipeline, QuestionRenderer, WebSearchLabeler]
 
 class TransformJobsClient:
     def __init__(self, client: AuthenticatedClient):
@@ -58,6 +62,23 @@ class TransformJobsClient:
         if isinstance(response.parsed, PipelineMetricsResponse):
             return response.parsed
         return None
+
+    def list(
+        self,
+        *,
+        limit: int = 10,
+        cursor: Optional[str] = None,
+        status: Optional[TransformJobStatus] = None,
+        configuration_id: Optional[str] = None,
+    ) -> ListTransformJobsResponse:
+        response = list_transform_jobs_transform_jobs_get.sync_detailed(
+            client=self._client,
+            limit=limit,
+            cursor=cursor if cursor is not None else UNSET,
+            status=status if status is not None else UNSET,
+            configuration_id=configuration_id if configuration_id is not None else UNSET,
+        )
+        return handle_response_error(response, "list transform jobs")
 
 
 class TransformsClient:

@@ -9,6 +9,7 @@ class RewardFunctionType(str, Enum):
     CONTINUOUS_VALUE_ONLY_LINEAR_SCORE = "continuous_value_only_linear_score"
     CONTINUOUS_VALUE_ONLY_LOG_SCORE = "continuous_value_only_log_score"
     MULTI_CHOICE_LOG_SCORE = "multi_choice_log_score"
+    RANKING_DELTA_NDCG = "ranking_delta_ndcg"
 
     def __str__(self) -> str:
         return str(self.value)

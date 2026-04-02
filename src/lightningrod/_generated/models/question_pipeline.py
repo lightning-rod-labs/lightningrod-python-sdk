@@ -12,11 +12,14 @@ if TYPE_CHECKING:
     from ..models.big_query_seed_generator import BigQuerySeedGenerator
     from ..models.csv_seed_generator import CsvSeedGenerator
     from ..models.file_set_context_generator import FileSetContextGenerator
+    from ..models.file_set_document_context_generator import FileSetDocumentContextGenerator
+    from ..models.file_set_document_labeler import FileSetDocumentLabeler
     from ..models.file_set_query_seed_generator import FileSetQuerySeedGenerator
     from ..models.file_set_rag_labeler import FileSetRAGLabeler
     from ..models.file_set_seed_generator import FileSetSeedGenerator
     from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
     from ..models.gdelt_seed_generator import GdeltSeedGenerator
+    from ..models.key_deduplication import KeyDeduplication
     from ..models.mock_transform_config import MockTransformConfig
     from ..models.news_context_generator import NewsContextGenerator
     from ..models.news_seed_generator import NewsSeedGenerator
@@ -44,10 +47,12 @@ class QuestionPipeline:
             Configuration for seed generation
         question_generator (ForwardLookingQuestionGenerator | MockTransformConfig | None | QuestionAndLabelGenerator |
             QuestionGenerator | TemplateQuestionGenerator | Unset): Configuration for question generation
-        labeler (FileSetRAGLabeler | MockTransformConfig | None | Unset | WebSearchLabeler): Configuration for labeling.
-            Not needed when using QuestionAndLabelGenerator.
-        context_generators (list[FileSetContextGenerator | MockTransformConfig | NewsContextGenerator] | None | Unset):
-            Optional list of context generators to run before rendering
+        deduplication (KeyDeduplication | MockTransformConfig | None | Unset): Deduplication config. Defaults to exact
+            dedup on question_text. Set to None to disable.
+        labeler (FileSetDocumentLabeler | FileSetRAGLabeler | MockTransformConfig | None | Unset | WebSearchLabeler):
+            Configuration for labeling. Not needed when using QuestionAndLabelGenerator.
+        context_generators (list[FileSetContextGenerator | FileSetDocumentContextGenerator | MockTransformConfig |
+            NewsContextGenerator] | None | Unset): Optional list of context generators to run before rendering
         renderer (MockTransformConfig | None | QuestionRenderer | Unset): Optional configuration for rendering the final
             prompt
         rollout_generator (MockTransformConfig | None | RolloutGenerator | Unset): Optional configuration for generating
@@ -78,10 +83,13 @@ class QuestionPipeline:
         | TemplateQuestionGenerator
         | Unset
     ) = UNSET
-    labeler: FileSetRAGLabeler | MockTransformConfig | None | Unset | WebSearchLabeler = UNSET
-    context_generators: list[FileSetContextGenerator | MockTransformConfig | NewsContextGenerator] | None | Unset = (
-        UNSET
-    )
+    deduplication: KeyDeduplication | MockTransformConfig | None | Unset = UNSET
+    labeler: FileSetDocumentLabeler | FileSetRAGLabeler | MockTransformConfig | None | Unset | WebSearchLabeler = UNSET
+    context_generators: (
+        list[FileSetContextGenerator | FileSetDocumentContextGenerator | MockTransformConfig | NewsContextGenerator]
+        | None
+        | Unset
+    ) = UNSET
     renderer: MockTransformConfig | None | QuestionRenderer | Unset = UNSET
     rollout_generator: MockTransformConfig | None | RolloutGenerator | Unset = UNSET
     scorer: MockTransformConfig | None | RolloutScorer | Unset = UNSET
@@ -91,11 +99,14 @@ class QuestionPipeline:
         from ..models.big_query_seed_generator import BigQuerySeedGenerator
         from ..models.csv_seed_generator import CsvSeedGenerator
         from ..models.file_set_context_generator import FileSetContextGenerator
+        from ..models.file_set_document_context_generator import FileSetDocumentContextGenerator
+        from ..models.file_set_document_labeler import FileSetDocumentLabeler
         from ..models.file_set_query_seed_generator import FileSetQuerySeedGenerator
         from ..models.file_set_rag_labeler import FileSetRAGLabeler
         from ..models.file_set_seed_generator import FileSetSeedGenerator
         from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
         from ..models.gdelt_seed_generator import GdeltSeedGenerator
+        from ..models.key_deduplication import KeyDeduplication
         from ..models.mock_transform_config import MockTransformConfig
         from ..models.news_context_generator import NewsContextGenerator
         from ..models.news_seed_generator import NewsSeedGenerator
@@ -148,12 +159,24 @@ class QuestionPipeline:
         else:
             question_generator = self.question_generator
 
+        deduplication: dict[str, Any] | None | Unset
+        if isinstance(self.deduplication, Unset):
+            deduplication = UNSET
+        elif isinstance(self.deduplication, KeyDeduplication):
+            deduplication = self.deduplication.to_dict()
+        elif isinstance(self.deduplication, MockTransformConfig):
+            deduplication = self.deduplication.to_dict()
+        else:
+            deduplication = self.deduplication
+
         labeler: dict[str, Any] | None | Unset
         if isinstance(self.labeler, Unset):
             labeler = UNSET
         elif isinstance(self.labeler, WebSearchLabeler):
             labeler = self.labeler.to_dict()
         elif isinstance(self.labeler, FileSetRAGLabeler):
+            labeler = self.labeler.to_dict()
+        elif isinstance(self.labeler, FileSetDocumentLabeler):
             labeler = self.labeler.to_dict()
         elif isinstance(self.labeler, MockTransformConfig):
             labeler = self.labeler.to_dict()
@@ -170,6 +193,8 @@ class QuestionPipeline:
                 if isinstance(context_generators_type_0_item_data, NewsContextGenerator):
                     context_generators_type_0_item = context_generators_type_0_item_data.to_dict()
                 elif isinstance(context_generators_type_0_item_data, FileSetContextGenerator):
+                    context_generators_type_0_item = context_generators_type_0_item_data.to_dict()
+                elif isinstance(context_generators_type_0_item_data, FileSetDocumentContextGenerator):
                     context_generators_type_0_item = context_generators_type_0_item_data.to_dict()
                 else:
                     context_generators_type_0_item = context_generators_type_0_item_data.to_dict()
@@ -218,6 +243,8 @@ class QuestionPipeline:
             field_dict["seed_generator"] = seed_generator
         if question_generator is not UNSET:
             field_dict["question_generator"] = question_generator
+        if deduplication is not UNSET:
+            field_dict["deduplication"] = deduplication
         if labeler is not UNSET:
             field_dict["labeler"] = labeler
         if context_generators is not UNSET:
@@ -236,11 +263,14 @@ class QuestionPipeline:
         from ..models.big_query_seed_generator import BigQuerySeedGenerator
         from ..models.csv_seed_generator import CsvSeedGenerator
         from ..models.file_set_context_generator import FileSetContextGenerator
+        from ..models.file_set_document_context_generator import FileSetDocumentContextGenerator
+        from ..models.file_set_document_labeler import FileSetDocumentLabeler
         from ..models.file_set_query_seed_generator import FileSetQuerySeedGenerator
         from ..models.file_set_rag_labeler import FileSetRAGLabeler
         from ..models.file_set_seed_generator import FileSetSeedGenerator
         from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
         from ..models.gdelt_seed_generator import GdeltSeedGenerator
+        from ..models.key_deduplication import KeyDeduplication
         from ..models.mock_transform_config import MockTransformConfig
         from ..models.news_context_generator import NewsContextGenerator
         from ..models.news_seed_generator import NewsSeedGenerator
@@ -424,7 +454,34 @@ class QuestionPipeline:
 
         question_generator = _parse_question_generator(d.pop("question_generator", UNSET))
 
-        def _parse_labeler(data: object) -> FileSetRAGLabeler | MockTransformConfig | None | Unset | WebSearchLabeler:
+        def _parse_deduplication(data: object) -> KeyDeduplication | MockTransformConfig | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                deduplication_type_0_type_0 = KeyDeduplication.from_dict(data)
+
+                return deduplication_type_0_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                deduplication_type_0_type_1 = MockTransformConfig.from_dict(data)
+
+                return deduplication_type_0_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(KeyDeduplication | MockTransformConfig | None | Unset, data)
+
+        deduplication = _parse_deduplication(d.pop("deduplication", UNSET))
+
+        def _parse_labeler(
+            data: object,
+        ) -> FileSetDocumentLabeler | FileSetRAGLabeler | MockTransformConfig | None | Unset | WebSearchLabeler:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -448,18 +505,32 @@ class QuestionPipeline:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                labeler_type_0_type_2 = MockTransformConfig.from_dict(data)
+                labeler_type_0_type_2 = FileSetDocumentLabeler.from_dict(data)
 
                 return labeler_type_0_type_2
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(FileSetRAGLabeler | MockTransformConfig | None | Unset | WebSearchLabeler, data)
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                labeler_type_0_type_3 = MockTransformConfig.from_dict(data)
+
+                return labeler_type_0_type_3
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(
+                FileSetDocumentLabeler | FileSetRAGLabeler | MockTransformConfig | None | Unset | WebSearchLabeler, data
+            )
 
         labeler = _parse_labeler(d.pop("labeler", UNSET))
 
         def _parse_context_generators(
             data: object,
-        ) -> list[FileSetContextGenerator | MockTransformConfig | NewsContextGenerator] | None | Unset:
+        ) -> (
+            list[FileSetContextGenerator | FileSetDocumentContextGenerator | MockTransformConfig | NewsContextGenerator]
+            | None
+            | Unset
+        ):
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -473,7 +544,12 @@ class QuestionPipeline:
 
                     def _parse_context_generators_type_0_item(
                         data: object,
-                    ) -> FileSetContextGenerator | MockTransformConfig | NewsContextGenerator:
+                    ) -> (
+                        FileSetContextGenerator
+                        | FileSetDocumentContextGenerator
+                        | MockTransformConfig
+                        | NewsContextGenerator
+                    ):
                         try:
                             if not isinstance(data, dict):
                                 raise TypeError()
@@ -490,11 +566,19 @@ class QuestionPipeline:
                             return context_generators_type_0_item_type_1
                         except (TypeError, ValueError, AttributeError, KeyError):
                             pass
+                        try:
+                            if not isinstance(data, dict):
+                                raise TypeError()
+                            context_generators_type_0_item_type_2 = FileSetDocumentContextGenerator.from_dict(data)
+
+                            return context_generators_type_0_item_type_2
+                        except (TypeError, ValueError, AttributeError, KeyError):
+                            pass
                         if not isinstance(data, dict):
                             raise TypeError()
-                        context_generators_type_0_item_type_2 = MockTransformConfig.from_dict(data)
+                        context_generators_type_0_item_type_3 = MockTransformConfig.from_dict(data)
 
-                        return context_generators_type_0_item_type_2
+                        return context_generators_type_0_item_type_3
 
                     context_generators_type_0_item = _parse_context_generators_type_0_item(
                         context_generators_type_0_item_data
@@ -505,7 +589,17 @@ class QuestionPipeline:
                 return context_generators_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(list[FileSetContextGenerator | MockTransformConfig | NewsContextGenerator] | None | Unset, data)
+            return cast(
+                list[
+                    FileSetContextGenerator
+                    | FileSetDocumentContextGenerator
+                    | MockTransformConfig
+                    | NewsContextGenerator
+                ]
+                | None
+                | Unset,
+                data,
+            )
 
         context_generators = _parse_context_generators(d.pop("context_generators", UNSET))
 
@@ -588,6 +682,7 @@ class QuestionPipeline:
             config_type=config_type,
             seed_generator=seed_generator,
             question_generator=question_generator,
+            deduplication=deduplication,
             labeler=labeler,
             context_generators=context_generators,
             renderer=renderer,
