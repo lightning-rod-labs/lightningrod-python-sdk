@@ -86,9 +86,10 @@ class FileSetsClient:
         self,
         name: str,
         description: Optional[str] = None,
-        metadata_schema: Optional[FileSetMetadataSchemaInput] = None
+        metadata_schema: Optional[FileSetMetadataSchemaInput] = None,
+        rag_enabled: bool = True,
     ) -> FileSet:
-        request = CreateFileSetRequest(name=name)
+        request = CreateFileSetRequest(name=name, rag_enabled=rag_enabled)
         if description is not None:
             request.description = description
         if metadata_schema is not None:
