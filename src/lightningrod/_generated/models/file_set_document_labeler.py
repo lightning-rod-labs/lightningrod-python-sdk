@@ -12,6 +12,7 @@ from ..types import UNSET, Unset
 if TYPE_CHECKING:
     from ..models.binary_answer_type import BinaryAnswerType
     from ..models.continuous_answer_type import ContinuousAnswerType
+    from ..models.continuous_value_only_answer_type import ContinuousValueOnlyAnswerType
     from ..models.free_response_answer_type import FreeResponseAnswerType
     from ..models.model_config import ModelConfig
     from ..models.multiple_choice_answer_type import MultipleChoiceAnswerType
@@ -45,8 +46,8 @@ class FileSetDocumentLabeler:
             metadata_filter_keys (list[str] | Unset): Optional keys from sample's file_metadata for exact-match filtering
                 (e.g., ['district'])
             confidence_threshold (float | Unset): Minimum confidence threshold for valid labels Default: 0.7.
-            answer_type (BinaryAnswerType | ContinuousAnswerType | FreeResponseAnswerType | MultipleChoiceAnswerType | None
-                | Unset): The type of answer expected, used to guide the labeler
+            answer_type (BinaryAnswerType | ContinuousAnswerType | ContinuousValueOnlyAnswerType | FreeResponseAnswerType |
+                MultipleChoiceAnswerType | None | Unset): The type of answer expected, used to guide the labeler
             model (ModelConfig | None | Unset): Model for label extraction. Defaults to gemini-2.5-flash.
             system_instruction (None | str | Unset): Domain-specific system instruction for the labeler (e.g., 'You are
                 labeling Federal Reserve Beige Book forecasting questions.')
@@ -58,7 +59,13 @@ class FileSetDocumentLabeler:
     metadata_filter_keys: list[str] | Unset = UNSET
     confidence_threshold: float | Unset = 0.7
     answer_type: (
-        BinaryAnswerType | ContinuousAnswerType | FreeResponseAnswerType | MultipleChoiceAnswerType | None | Unset
+        BinaryAnswerType
+        | ContinuousAnswerType
+        | ContinuousValueOnlyAnswerType
+        | FreeResponseAnswerType
+        | MultipleChoiceAnswerType
+        | None
+        | Unset
     ) = UNSET
     model: ModelConfig | None | Unset = UNSET
     system_instruction: None | str | Unset = UNSET
@@ -67,6 +74,7 @@ class FileSetDocumentLabeler:
     def to_dict(self) -> dict[str, Any]:
         from ..models.binary_answer_type import BinaryAnswerType
         from ..models.continuous_answer_type import ContinuousAnswerType
+        from ..models.continuous_value_only_answer_type import ContinuousValueOnlyAnswerType
         from ..models.free_response_answer_type import FreeResponseAnswerType
         from ..models.model_config import ModelConfig
         from ..models.multiple_choice_answer_type import MultipleChoiceAnswerType
@@ -93,6 +101,8 @@ class FileSetDocumentLabeler:
         elif isinstance(self.answer_type, MultipleChoiceAnswerType):
             answer_type = self.answer_type.to_dict()
         elif isinstance(self.answer_type, ContinuousAnswerType):
+            answer_type = self.answer_type.to_dict()
+        elif isinstance(self.answer_type, ContinuousValueOnlyAnswerType):
             answer_type = self.answer_type.to_dict()
         elif isinstance(self.answer_type, FreeResponseAnswerType):
             answer_type = self.answer_type.to_dict()
@@ -141,6 +151,7 @@ class FileSetDocumentLabeler:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.binary_answer_type import BinaryAnswerType
         from ..models.continuous_answer_type import ContinuousAnswerType
+        from ..models.continuous_value_only_answer_type import ContinuousValueOnlyAnswerType
         from ..models.free_response_answer_type import FreeResponseAnswerType
         from ..models.model_config import ModelConfig
         from ..models.multiple_choice_answer_type import MultipleChoiceAnswerType
@@ -165,7 +176,15 @@ class FileSetDocumentLabeler:
 
         def _parse_answer_type(
             data: object,
-        ) -> BinaryAnswerType | ContinuousAnswerType | FreeResponseAnswerType | MultipleChoiceAnswerType | None | Unset:
+        ) -> (
+            BinaryAnswerType
+            | ContinuousAnswerType
+            | ContinuousValueOnlyAnswerType
+            | FreeResponseAnswerType
+            | MultipleChoiceAnswerType
+            | None
+            | Unset
+        ):
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -197,14 +216,23 @@ class FileSetDocumentLabeler:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                answer_type_type_0_type_3 = FreeResponseAnswerType.from_dict(data)
+                answer_type_type_0_type_3 = ContinuousValueOnlyAnswerType.from_dict(data)
 
                 return answer_type_type_0_type_3
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                answer_type_type_0_type_4 = FreeResponseAnswerType.from_dict(data)
+
+                return answer_type_type_0_type_4
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
             return cast(
                 BinaryAnswerType
                 | ContinuousAnswerType
+                | ContinuousValueOnlyAnswerType
                 | FreeResponseAnswerType
                 | MultipleChoiceAnswerType
                 | None

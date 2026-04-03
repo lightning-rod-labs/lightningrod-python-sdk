@@ -41,7 +41,7 @@ class TrainingConfig:
                         question text: "What will the Fed decide by March 2025?" (no option lines)
                         multiple_choice_options='{"option_0": "Rate increase", "option_1": "No change", "option_2": "Rate
             cut"}'
-        base_model (str): HuggingFace model ID for LoRA base (e.g. Qwen/Qwen3-8B)
+        base_model_id (str): Base model ID (e.g. Qwen/Qwen3-8B, Qwen/Qwen3-32B, openai/gpt-oss-20b, openai/gpt-oss-120b)
         training_steps (int): Number of training loop iterations
         batch_size (int | None | Unset): Rows per batch; used to slice train_rows each step
         lora_rank (int | None | Unset): LoRA adapter rank passed to create_lora_training_client_async
@@ -53,10 +53,11 @@ class TrainingConfig:
         num_rollouts (int | None | Unset): Samples per prompt for GRPO
         max_response_length (int | None | Unset): Max tokens for sampling
         start_idx (int | None | Unset): Row index to skip at start; train_rows = train_rows[start_idx:]
+        save_frequency (int | Unset): The frequency at which to save checkpoints, in training steps. Default: 10.
     """
 
     dataset: SampleDatasetConfig
-    base_model: str
+    base_model_id: str
     training_steps: int
     batch_size: int | None | Unset = UNSET
     lora_rank: int | None | Unset = UNSET
@@ -66,12 +67,13 @@ class TrainingConfig:
     num_rollouts: int | None | Unset = UNSET
     max_response_length: int | None | Unset = UNSET
     start_idx: int | None | Unset = UNSET
+    save_frequency: int | Unset = 10
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         dataset = self.dataset.to_dict()
 
-        base_model = self.base_model
+        base_model_id = self.base_model_id
 
         training_steps = self.training_steps
 
@@ -123,12 +125,14 @@ class TrainingConfig:
         else:
             start_idx = self.start_idx
 
+        save_frequency = self.save_frequency
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
                 "dataset": dataset,
-                "base_model": base_model,
+                "base_model_id": base_model_id,
                 "training_steps": training_steps,
             }
         )
@@ -148,6 +152,8 @@ class TrainingConfig:
             field_dict["max_response_length"] = max_response_length
         if start_idx is not UNSET:
             field_dict["start_idx"] = start_idx
+        if save_frequency is not UNSET:
+            field_dict["save_frequency"] = save_frequency
 
         return field_dict
 
@@ -158,7 +164,7 @@ class TrainingConfig:
         d = dict(src_dict)
         dataset = SampleDatasetConfig.from_dict(d.pop("dataset"))
 
-        base_model = d.pop("base_model")
+        base_model_id = d.pop("base_model_id")
 
         training_steps = d.pop("training_steps")
 
@@ -234,9 +240,11 @@ class TrainingConfig:
 
         start_idx = _parse_start_idx(d.pop("start_idx", UNSET))
 
+        save_frequency = d.pop("save_frequency", UNSET)
+
         training_config = cls(
             dataset=dataset,
-            base_model=base_model,
+            base_model_id=base_model_id,
             training_steps=training_steps,
             batch_size=batch_size,
             lora_rank=lora_rank,
@@ -246,6 +254,7 @@ class TrainingConfig:
             num_rollouts=num_rollouts,
             max_response_length=max_response_length,
             start_idx=start_idx,
+            save_frequency=save_frequency,
         )
 
         training_config.additional_properties = d

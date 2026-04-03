@@ -122,7 +122,7 @@ for s in dataset.download():
 # Small model appropriate for on-device usage (survival in emergency)
 BASE_MODEL = "Qwen/Qwen3-8B-Instruct"
 service = tinker.ServiceClient()
-trainer = service.create_lora_training_client(base_model=BASE_MODEL, train_unembed=False)
+trainer = service.create_lora_training_client(base_model_id=BASE_MODEL, train_unembed=False)
 adam = tinker.AdamParams(learning_rate=2e-4)
 
 for epoch in range(3):

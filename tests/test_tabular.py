@@ -31,12 +31,12 @@ def _dt(hour: int = 0) -> datetime:
 
 def _training_job(
     *,
-    base_model: str = "Qwen/Qwen3-8B",
+    base_model_id: str = "Qwen/Qwen3-8B",
     training_steps: int = 10,
 ) -> TrainingJob:
     cfg = TrainingConfig(
         dataset=SampleDatasetConfig(id="ds1", sample_ids=["s1"]),
-        base_model=base_model,
+        base_model_id=base_model_id,
         training_steps=training_steps,
     )
     return TrainingJob(
@@ -115,7 +115,7 @@ class TestTrainingJobList:
         assert len(rows) == 1
         assert rows[0]["id"] == "job-1"
         assert rows[0]["status"] == "RUNNING"
-        assert rows[0]["base_model"] == "Qwen/Qwen3-8B"
+        assert rows[0]["base_model_id"] == "Qwen/Qwen3-8B"
         assert "config" not in rows[0]
 
 

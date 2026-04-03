@@ -21,7 +21,7 @@ class EvalConfig:
     r"""
     Attributes:
         organization_id (str):
-        model_id (str):
+        models (list[EvalModel]):
         dataset (SampleDatasetConfig): Configuration for loading a dataset of samples from the sample database.
 
             Fields:
@@ -44,7 +44,6 @@ class EvalConfig:
                         question text: "What will the Fed decide by March 2025?" (no option lines)
                         multiple_choice_options='{"option_0": "Rate increase", "option_1": "No change", "option_2": "Rate
             cut"}'
-        benchmark_model_id (None | str | Unset):
         temperature (float | Unset):  Default: 0.0.
         max_tokens (int | Unset):  Default: 8192.
         max_concurrent (int | Unset):  Default: 50.

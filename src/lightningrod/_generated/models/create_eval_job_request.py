@@ -42,8 +42,7 @@ class CreateEvalJobRequest:
                         question text: "What will the Fed decide by March 2025?" (no option lines)
                         multiple_choice_options='{"option_0": "Rate increase", "option_1": "No change", "option_2": "Rate
             cut"}'
-        model_id (str):
-        benchmark_model_id (None | str | Unset):
+        models (list[EvalModel]):
         temperature (float | Unset):  Default: 0.0.
     """
 

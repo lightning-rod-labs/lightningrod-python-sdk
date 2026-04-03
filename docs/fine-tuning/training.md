@@ -12,7 +12,7 @@ Configure base model, training steps, and optional LoRA parameters:
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `base_model` | str | — | HuggingFace model ID for LoRA base (e.g. `"Qwen/Qwen3-8B"`) |
+| `base_model_id` | str | — | HuggingFace model ID for LoRA base (e.g. `"Qwen/Qwen3-8B"`) |
 | `training_steps` | int | — | Number of training loop iterations |
 | `batch_size` | int \| None | None | Rows per batch; used to slice train_rows each step |
 | `lora_rank` | int \| None | None | LoRA adapter rank |
@@ -33,7 +33,7 @@ Estimate training cost before running:
 from lightningrod.training import TrainingConfig
 
 config = TrainingConfig(
-    base_model="Qwen/Qwen3-4B-Instruct-2507",
+    base_model_id="openai/gpt-oss-120b",
     training_steps=50,
 )
 

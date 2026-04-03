@@ -48,7 +48,7 @@ Create an eval job and poll until completion. In notebooks, shows a live progres
 ```python
 eval_job = lr.evals.run(
     models=[
-        EvalModel(model_id=training_job.config.base_model, label="Base"),
+        EvalModel(model_id=training_job.config.base_model_id, label="Base"),
         EvalModel(model_id=training_job.model_id, label="Fine-tuned"),
         EvalModel(model_id="openai/gpt-5.4", label="GPT-5.4"),
     ],
