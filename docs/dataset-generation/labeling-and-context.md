@@ -77,6 +77,39 @@ pipeline = QuestionPipeline(
 )
 ```
 
+## FileSetDocumentContextGenerator
+
+Resolves a **single document** from a FileSet by temporal ordering, downloads its full text, and appends it as context. Optionally processes the document through an LLM before injection. Add to `context_generators` in `QuestionPipeline`.
+
+Use this instead of `FileSetContextGenerator` when you want the complete text of one document rather than RAG-retrieved chunks from multiple documents.
+
+| Parameter | Type | Required | Default | Description |
+| ----------------------- | ------------------- | -------- | ------- | ------------------------------------------------------------------- |
+| `file_set_id` | str | Yes | — | FileSet ID to resolve documents from |
+| `temporal_constraint` | TemporalConstraint | No | — | Temporal filtering direction relative to the seed document's date |
+| `metadata_filter_keys` | `list[str]` | No | — | Keys from sample's file metadata for exact-match filtering |
+| `system_instruction` | `str \| None` | No | None | System prompt for optional LLM processing of the document |
+| `model` | `ModelConfig \| None` | No | None | Model for LLM processing; if None, raw document text is used as context |
+| `max_document_chars` | `int \| None` | No | None | Character limit for document text; truncates from the end if exceeded |
+
+```python
+from lightningrod import FileSetDocumentContextGenerator, FileSetSeedGenerator, TemporalConstraint
+
+pipeline = QuestionPipeline(
+    seed_generator=FileSetSeedGenerator(file_set_id="..."),
+    question_generator=...,
+    labeler=...,
+    context_generators=[
+        FileSetDocumentContextGenerator(
+            file_set_id="...",
+            temporal_constraint=TemporalConstraint.PREVIOUS_DOCUMENT,
+            metadata_filter_keys=["district"],
+            max_document_chars=50000,
+        ),
+    ],
+)
+```
+
 ## FileSetRAGLabeler
 
 Resolves questions by searching a FileSet for answers. Use when your seeds come from a FileSet and the answer may appear in later documents (e.g. forward-looking questions resolved by future quarterly reports).
@@ -107,16 +140,54 @@ pipeline = QuestionPipeline(
 )
 ```
 
+## FileSetDocumentLabeler
+
+Resolves a **single document** from a FileSet by temporal ordering, downloads its full text, and uses an LLM to extract a structured label. Use this instead of `FileSetRAGLabeler` when you want to label from the full content of a specific document rather than RAG-retrieved chunks.
+
+| Parameter | Type | Required | Default | Description |
+| ----------------------- | ------------------- | -------- | ------- | ------------------------------------------------------------------- |
+| `file_set_id` | str | Yes | — | FileSet ID to resolve documents from |
+| `temporal_constraint` | TemporalConstraint | No | — | Temporal filtering direction relative to the seed document's date |
+| `metadata_filter_keys` | `list[str]` | No | — | Keys from sample's file metadata for exact-match filtering (e.g. `["district"]`) |
+| `confidence_threshold` | float | No | 0.7 | Minimum confidence threshold for valid labels |
+| `answer_type` | AnswerType | No | — | Expected answer type (guides the labeler) |
+| `model` | `ModelConfig \| None` | No | None | Model for label extraction; defaults to gemini-2.5-flash |
+| `system_instruction` | `str \| None` | No | None | Domain-specific system instruction (e.g. `"You are labeling Federal Reserve Beige Book questions."`) |
+
+```python
+from lightningrod import (
+    BinaryAnswerType,
+    FileSetDocumentLabeler,
+    FileSetSeedGenerator,
+    TemporalConstraint,
+)
+
+pipeline = QuestionPipeline(
+    seed_generator=FileSetSeedGenerator(file_set_id="..."),
+    question_generator=...,
+    labeler=FileSetDocumentLabeler(
+        file_set_id="...",
+        temporal_constraint=TemporalConstraint.NEXT_DOCUMENT,
+        metadata_filter_keys=["district"],
+        answer_type=BinaryAnswerType(),
+        system_instruction="You are labeling Federal Reserve Beige Book forecasting questions.",
+    ),
+)
+```
+
 ## TemporalConstraint
 
-Enum used by `FileSetContextGenerator` and `FileSetRAGLabeler` to filter documents by date relative to the seed:
+Enum used by `FileSetContextGenerator`, `FileSetRAGLabeler`, `FileSetDocumentContextGenerator`, and `FileSetDocumentLabeler` to filter documents by date relative to the seed:
 
-| Value    | Description                                         |
-| -------- | --------------------------------------------------- |
-| `BEFORE` | Documents on or before the seed date (no lookahead) |
-| `AFTER`  | Documents after the seed date (future docs)         |
+| Value | Description |
+| ------------------- | ------------------------------------------------------------------ |
+| `BEFORE` | Documents on or before the seed date (no lookahead, multiple docs) |
+| `AFTER` | Documents after the seed date (future docs, multiple docs) |
+| `NEXT_DOCUMENT` | First document after the seed timestamp (single-doc resolution) |
+| `PREVIOUS_DOCUMENT` | Most recent document before the seed timestamp (single-doc context) |
+| `EQUAL` | Document with an exact matching date (single-doc) |
 
-Use `BEFORE` for context (historical documents only). Use `AFTER` for labeling (resolve forward-looking questions from later reports).
+Use `BEFORE` for context (historical documents). Use `AFTER` for labeling from multiple future documents. Use `NEXT_DOCUMENT` or `PREVIOUS_DOCUMENT` when you want exactly one document relative to the seed — useful with the document-level transforms (`FileSetDocumentContextGenerator`, `FileSetDocumentLabeler`).
 
 ## FilterCriteria
 

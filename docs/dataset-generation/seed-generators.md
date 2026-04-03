@@ -115,6 +115,62 @@ FileSetQuerySeedGenerator(
 )
 ```
 
+## CsvSeedGenerator
+
+Generates seeds from a CSV file uploaded via `lr.files.upload()`. Each row becomes a seed. Use when your source data is a spreadsheet or flat CSV.
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `file_id` | `str \| list[str]` | Yes | — | OrgFile ID(s) from `lr.files.upload()` response |
+| `seed_text_column` | `str \| None` | No | None | Column name for seed text; if None, serializes entire row as JSON |
+| `label_column` | `str \| None` | No | None | Column with pre-existing labels (populates `Sample.label`) |
+| `date_column` | `str \| None` | No | None | Column name for seed creation date |
+
+```python
+from lightningrod import CsvSeedGenerator
+
+# Upload your CSV first
+upload = lr.files.upload("data/my_data.csv")
+
+seed_generator = CsvSeedGenerator(
+    file_id=upload.id,
+    seed_text_column="text",
+    date_column="date",
+)
+```
+
+## TopicTreeSeedGenerator
+
+Generates diverse seeds by recursively decomposing broad topics into specific subtopics. An LLM breaks each root topic into `tree_degree` subtopics, then repeats `tree_depth` levels deep. The leaf paths become seeds for downstream transforms. Produces `tree_degree^tree_depth` seeds per root topic.
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `topic` | `str \| list[str]` | Yes | — | Root topic(s) to recursively decompose |
+| `tree_depth` | int | No | 2 | Levels of recursive expansion |
+| `tree_degree` | int | No | 5 | Subtopics generated per node |
+| `model_name` | str | No | `google/gemini-3-flash-preview` | LLM for subtopic generation |
+| `model_system_prompt` | `str \| None` | No | None | Optional system prompt for the LLM |
+
+```python
+from lightningrod import TopicTreeSeedGenerator
+
+# Produces 4^2 = 16 specific seeds branching from "AI Regulation"
+seed_generator = TopicTreeSeedGenerator(
+    topic="AI Regulation",
+    tree_depth=2,
+    tree_degree=4,
+)
+# e.g. "AI Regulation → Healthcare → FDA approval of diagnostic algorithms"
+
+# Multiple root topics
+seed_generator = TopicTreeSeedGenerator(
+    topic=["AI Regulation", "Climate Policy", "Monetary Policy"],
+    tree_depth=2,
+    tree_degree=5,
+)
+# Produces 3 × 5^2 = 75 seeds
+```
+
 ## Using with QuestionPipeline
 
 Pass any seed generator to `QuestionPipeline.seed_generator`:
