@@ -5,6 +5,11 @@
     "description": "Generate verified, grounded datasets at scale for LLM fine-tuning and evaluation",
     "version": "1.0.0"
   },
+  "servers": [
+    {
+      "url": "/api/public/v1"
+    }
+  ],
   "paths": {
     "/openai/chat/completions": {
       "post": {
@@ -1858,7 +1863,7 @@
                 "role": "user"
               }
             ],
-            "model": "LightningRodLabs/foresight-v3"
+            "model": "foresight-v3"
           }
         ]
       },
@@ -3448,6 +3453,9 @@
                     "$ref": "#/components/schemas/ContinuousAnswerType"
                   },
                   {
+                    "$ref": "#/components/schemas/ContinuousValueOnlyAnswerType"
+                  },
+                  {
                     "$ref": "#/components/schemas/FreeResponseAnswerType"
                   }
                 ],
@@ -3456,6 +3464,7 @@
                   "mapping": {
                     "BINARY": "#/components/schemas/BinaryAnswerType",
                     "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "CONTINUOUS_VALUE_ONLY": "#/components/schemas/ContinuousValueOnlyAnswerType",
                     "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
                     "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
                   }
@@ -7296,13 +7305,6 @@
           "type": {
             "type": "string",
             "title": "Error Type"
-          },
-          "input": {
-            "title": "Input"
-          },
-          "ctx": {
-            "type": "object",
-            "title": "Context"
           }
         },
         "type": "object",
@@ -7383,10 +7385,5 @@
         "scheme": "bearer"
       }
     }
-  },
-  "servers": [
-    {
-      "url": "/api/public/v1"
-    }
-  ]
+  }
 }
