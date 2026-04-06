@@ -38,6 +38,7 @@ env/
 .coverage
 htmlcov/
 jobs/
+evals/results.tsv
 
 # Developer files
 .env
