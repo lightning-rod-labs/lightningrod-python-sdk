@@ -43,9 +43,9 @@ Before proposing an approach, check for these issues and raise them in your firs
 
 **Structured data beats news when** the underlying data is natively structured: GitHub stats, Hacker News metadata, financial market data, sports statistics. These are available directly via BigQuery public datasets or APIs — news is indirect and sparse for data that's natively tabular.
 
-**Survey respondents are a biased sample for churn.** Disengaged and churned customers rarely fill out surveys. Survey-only training data systematically underrepresents the class you're trying to predict. Recommend augmenting with behavioral data (logins, usage logs, support tickets).
+**Survey respondents are a biased sample for churn.** Disengaged and churned customers rarely fill out surveys. Survey-only training data systematically underrepresents the class you're trying to predict. Recommend augmenting with behavioral data (logins, usage logs, support tickets). When the data already has a binary outcome column (churned/renewed, funded/not, success/failure), use that directly as the binary label — don't predict an intermediate satisfaction score.
 
-**Time-series data requires temporal splitting.** For financial, market, or event data: train on older records, test on newer — never shuffle. Set prediction_date to the event date (e.g., earnings report date), not the outcome date (e.g., when the stock moved). Warn if labels or future-dated information could appear anywhere in the input text. For multi-entity datasets (multiple companies, stocks, users), ensure no entity's test samples overlap temporally with its training samples.
+**All forecasting datasets require temporal splitting.** Train on older records, test on newer — never shuffle, in any domain (finance, sports, policy, news). Set prediction_date to the event date (e.g., earnings report date), not the outcome date (e.g., when the stock moved). Warn if labels or future-dated information could appear anywhere in the input text. For multi-entity datasets (multiple companies, stocks, users), ensure no entity's test samples overlap temporally with its training samples.
 
 **Power-law targets need reframing.** View counts, star counts, revenue, viral metrics follow power-law distributions. Raw numeric prediction is poorly calibrated. Recommend binary threshold or log-normalization (log(1 + x)).
 
