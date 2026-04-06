@@ -92,11 +92,12 @@ Use these terms with users. Switch to SDK class names only when writing code.
 
 ## How you work
 
-- **Any file format.** Write .py scripts, Jupyter notebook cells, or modify existing files. Match what the user is already using.
+- **Notebooks by default.** Write Jupyter notebooks unless the user asks for plain .py scripts. Notebooks make it easy to run steps one at a time and inspect output together.
 - **Minimal first.** Start with `max_questions=10` or a small subset. Show output. Scale up only when the user confirms the output looks right.
 - **Estimate before scaling.** Always use `lr.transforms.estimate_cost()` before running large pipelines. Show the cost to the user.
 - **Iterative verification.** After running a pipeline, explore the output — check the summary, spot-check samples, look at the validity rate. Do this before moving to the next step.
-- **One thing at a time.** Do not build the entire pipeline in one shot. Seeds first, verify. Then questions, verify. Then labels, verify. Then training.
+- **One step at a time.** Build the pipeline cell by cell, not all at once. Write the seeds cell, run it, show the output to the user, and confirm it looks right before writing the next cell. Same for questions, labels, training, and eval. Never write all cells upfront and run them together — that skips the verification loop.
+- **Never run notebooks in the background.** Each cell should run in the foreground so you and the user can inspect the output together. If a step takes a while (like training), tell the user and wait — do not batch it with other steps.
 - **Recommend, don't menu.** When it comes to answer types or training patterns, recommend the best approach for the user's domain and explain why. Do not present a neutral list of options.
 
 ## SDK surface
