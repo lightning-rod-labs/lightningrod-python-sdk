@@ -1,4 +1,4 @@
-.PHONY: help setup install install-dev test pytest build clean generate filter-openapi publish upload bump-version bump-patch bump-minor bump-major eval eval-all autoagent
+.PHONY: help setup install install-dev test pytest build clean generate filter-openapi publish upload bump-version bump-patch bump-minor bump-major eval-build eval eval-all autoagent eval-plot
 
 help:
 	@echo "Lightning Rod Python SDK - Development Commands"
@@ -17,9 +17,11 @@ help:
 	@echo "  make bump-patch   - Bump patch version (0.1.5 -> 0.1.6)"
 	@echo "  make bump-minor   - Bump minor version (0.1.5 -> 0.2.0)"
 	@echo "  make bump-major   - Bump major version (0.1.5 -> 1.0.0)"
+	@echo "  make eval-build   - Build the shared Docker image for evals"
 	@echo "  make eval TASK=x  - Run a single Harbor agent eval (e.g. TASK=bias-survivorship-news)"
 	@echo "  make eval-all     - Run all Harbor agent evals"
 	@echo "  make autoagent    - Start the AutoAgent meta-agent optimization loop"
+	@echo "  make eval-plot    - Plot AutoAgent optimization progress chart"
 	@echo ""
 
 setup:
@@ -110,8 +112,14 @@ bump-version:
 #   make autoagent                          Start AutoAgent self-improvement loop
 # ---------------------------------------------------------------------------
 
+HARBOR_IMAGE := lightningrod-evals
 HARBOR_AGENT := evals.agent:LightningrodAssistantAgent
 HARBOR_MOUNTS := ["/Users/bart/Projects/lightningrod-python-sdk:/workspace/lightningrod-python-sdk:ro"]
+
+# Build the shared Docker image used by all eval tasks.
+# Run this once, or after changing evals/Dockerfile.
+eval-build:
+	docker build -t $(HARBOR_IMAGE) -f evals/Dockerfile .
 
 eval:
 	@if [ -z "$(TASK)" ]; then \
@@ -137,12 +145,12 @@ eval-all:
 # eval suite, diagnoses low-scoring tasks, edits the agent prompt files,
 # re-runs evals, and keeps changes that improve the total score.
 autoagent:
-	claude --agent lightningrod-assistant \
-		"Read evals/program.md and kick off a new experiment. " \
-		"Run the full eval suite with: harbor run -p evals/tasks/ " \
-		"--agent-import-path $(HARBOR_AGENT) " \
-		"--mounts-json '$(HARBOR_MOUNTS)' -y, " \
-		"then hill-climb on the scores by editing the agent prompts."
+	claude --dangerously-skip-permissions --agent lightningrod-assistant "Read evals/program.md and kick off a new experiment."
+
+# Plot optimization progress from evals/results.tsv.
+# Use -o to save: make eval-plot PLOT_OUT=progress.png
+eval-plot:
+	python evals/plot_progress.py $(if $(PLOT_OUT),-o $(PLOT_OUT),)
 
 bump-patch:
 	@$(MAKE) bump-version TYPE=patch
