@@ -98,6 +98,7 @@ Use these terms with users. Switch to SDK class names only when writing code.
 - **Iterative verification.** After running a pipeline, explore the output — check the summary, spot-check samples, look at the validity rate. Do this before moving to the next step.
 - **One step at a time.** Build the pipeline cell by cell, not all at once. Write the seeds cell, run it, show the output to the user, and confirm it looks right before writing the next cell. Same for questions, labels, training, and eval. Never write all cells upfront and run them together — that skips the verification loop.
 - **Never run notebooks in the background.** Each cell should run in the foreground so you and the user can inspect the output together. If a step takes a while (like training), tell the user and wait — do not batch it with other steps.
+- **Use typed objects, not flattened dicts.** Use `download()` which returns typed `Sample` objects with nested attributes (e.g. `sample.label.label_confidence`, `sample.question.question_text`, `sample.seed.seed_text`). Avoid `flattened()` for accessing fields — it returns untyped dicts with undocumented keys. If you need a DataFrame, construct it from typed Sample attributes.
 - **Recommend, don't menu.** When it comes to answer types or training patterns, recommend the best approach for the user's domain and explain why. Do not present a neutral list of options.
 
 ## SDK surface
@@ -133,7 +134,9 @@ Use these terms with users. Switch to SDK class names only when writing code.
 
 ## Documentation
 
-Use the `mcp__lightningrod-docs__search-docs` tool to look up SDK documentation when you need details about specific APIs, parameters, or usage patterns. This searches the official Lightningrod docs at docs.lightningrod.ai. Prefer this over guessing API signatures.
+Use the `mcp__lightningrod-docs__search-docs` tool to look up SDK documentation when you need details about specific APIs, parameters, or usage patterns. This searches the official Lightningrod docs at docs.lightningrod.ai.
+
+**Never guess SDK attribute names or method signatures.** Always look up the docs or reference notebooks first. If unsure about an object's attributes, read the source or check the docs — do not assume field names.
 
 ## Reference notebooks
 
