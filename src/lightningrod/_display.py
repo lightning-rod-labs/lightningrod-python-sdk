@@ -144,14 +144,22 @@ def build_live_display(
         if has_rejection_reasons:
             ps = pipeline_summary_by_index.get(step.step_index)
             if ps and not isinstance(ps.rejection_reasons, Unset) and ps.rejection_reasons is not None and ps.rejection_reasons.additional_properties:
-                reasons_str = ", ".join(f"{k} ({v})" for k, v in sorted(ps.rejection_reasons.additional_properties.items(), key=lambda x: -x[1]))
-                row_cells.append(Text(reasons_str, style="dim"))
+                sorted_reasons = sorted(ps.rejection_reasons.additional_properties.items(), key=lambda x: -x[1])
+                parts = [f"{k[:40]}{'...' if len(k) > 40 else ''} ({v})" for k, v in sorted_reasons[:2]]
+                if len(sorted_reasons) > 2:
+                    parts.append(f"+{len(sorted_reasons) - 2} more")
+                row_cells.append(Text("\n".join(parts), style="dim"))
             else:
                 row_cells.append(Text("-", style="dim"))
         row_cells.append(_format_duration(step.duration_seconds))
         table.add_row(*row_cells)
 
     renderables.append(table)
+
+    if job is not None and job.output_dataset_id:
+        url = f"https://dashboard.lightningrod.ai/?redirect=/datasets/{job.output_dataset_id}"
+        renderables.append(Text(""))
+        renderables.append(_safe_markup(f"  [dim]View full details: [link={url}]{url}[/link][/dim]"))
 
     return Panel(
         Group(*renderables),
@@ -180,9 +188,6 @@ def build_training_live_display(job: TrainingJob) -> RenderableType:
     if job is not None:
         if _is_set(job.name) and job.name:
             renderables.append(_safe_markup(f"  [bold]Job ID:[/bold] {job.id}"))
-            renderables.append(Text(""))
-        if _is_set(job.model_id) and job.model_id:
-            renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.model_id}"))
             renderables.append(Text(""))
         if _is_set(job.model_id) and job.model_id:
             renderables.append(_safe_markup(f"  [bold]Model:[/bold] {job.model_id}"))

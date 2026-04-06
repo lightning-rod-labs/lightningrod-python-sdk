@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
 @define
 class TrainingConfig:
-    base_model: str
+    base_model_id: str
     training_steps: int
     batch_size: int | None = None
     lora_rank: int | None = None
@@ -62,7 +62,7 @@ def _build_config(
     dataset_config = sample_dataset_to_config(dataset)
     return ApiTrainingConfig(
         dataset=dataset_config,
-        base_model=config.base_model,
+        base_model_id=config.base_model_id,
         training_steps=config.training_steps,
         batch_size=config.batch_size if config.batch_size is not None else UNSET,
         lora_rank=config.lora_rank if config.lora_rank is not None else UNSET,

@@ -675,12 +675,12 @@ def _build_report(stats: PrepareStats, split: SplitParams, filter: FilterParams)
         ))
 
     # Issue: too few train samples for effective training
-    MIN_TRAIN_SAMPLES = 200
+    MIN_TRAIN_SAMPLES = 1000
     if stats.split_train_after < MIN_TRAIN_SAMPLES and stats.split_train_after > 0:
         issues.append(PrepareIssue(
             message=(
                 f"Only {stats.split_train_after} train samples remain after preparation. "
-                f"This is below the recommended minimum of {MIN_TRAIN_SAMPLES} for effective training."
+                f"This is below the recommended minimum of +{MIN_TRAIN_SAMPLES} for effective training."
             ),
             tips=[
                 "Increase max_questions in lr.transforms.run() to generate more samples.",
@@ -691,12 +691,12 @@ def _build_report(stats: PrepareStats, split: SplitParams, filter: FilterParams)
         ))
 
     # Issue: too few test samples for reliable evaluation
-    MIN_TEST_SAMPLES = 50
+    MIN_TEST_SAMPLES = 200
     if stats.split_test_after < MIN_TEST_SAMPLES and stats.split_test_after > 0:
         issues.append(PrepareIssue(
             message=(
                 f"Only {stats.split_test_after} test samples remain after preparation. "
-                f"This is below the recommended minimum of ~{MIN_TEST_SAMPLES} for reliable evaluation."
+                f"This is below the recommended minimum of +{MIN_TEST_SAMPLES} for reliable evaluation."
             ),
             tips=[
                 "Generate more samples overall — test samples come from the most recent portion of your date range.",

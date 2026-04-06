@@ -6656,10 +6656,10 @@
             "$ref": "#/components/schemas/SampleDatasetConfig",
             "description": "Dataset config for loading training samples"
           },
-          "base_model": {
+          "base_model_id": {
             "type": "string",
-            "title": "Base Model",
-            "description": "HuggingFace model ID for LoRA base (e.g. Qwen/Qwen3-8B)"
+            "title": "Base Model Id",
+            "description": "Base model ID (e.g. Qwen/Qwen3-8B, Qwen/Qwen3-32B, openai/gpt-oss-20b, openai/gpt-oss-120b)"
           },
           "training_steps": {
             "type": "integer",
@@ -6761,12 +6761,18 @@
             ],
             "title": "Start Idx",
             "description": "Row index to skip at start; train_rows = train_rows[start_idx:]"
+          },
+          "save_frequency": {
+            "type": "integer",
+            "title": "Save Frequency",
+            "description": "The frequency at which to save checkpoints, in training steps.",
+            "default": 10
           }
         },
         "type": "object",
         "required": [
           "dataset",
-          "base_model",
+          "base_model_id",
           "training_steps"
         ],
         "title": "TrainingConfig"

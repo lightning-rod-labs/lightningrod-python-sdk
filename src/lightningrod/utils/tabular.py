@@ -138,7 +138,7 @@ def _training_job_row(job: TrainingJob) -> dict[str, Any]:
     row: dict[str, Any] = {
         "id": job.id,
         "status": job.status.value,
-        "base_model": job.config.base_model,
+        "base_model_id": job.config.base_model_id,
         "updated_at": _iso(job.updated_at),
     }
     if not isinstance(job.name, Unset) and job.name is not None:

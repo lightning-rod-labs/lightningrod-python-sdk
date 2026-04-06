@@ -5,6 +5,7 @@
 * [Introduction](introduction.md)
 * [Quickstart](quickstart.md)
 * [Examples](examples.md)
+* [Changelog](changelog.md)
 
 ## Forecasting
 

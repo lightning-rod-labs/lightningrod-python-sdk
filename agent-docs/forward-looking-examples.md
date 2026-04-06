@@ -24,7 +24,7 @@ lr = LightningRod(api_key=api_key)
 ```python
 batch_size = 32
 config = TrainingConfig(
-    base_model="openai/gpt-oss-120b",
+    base_model_id="openai/gpt-oss-120b",
     training_steps=len(train_data) // batch_size,
     lora_rank=32,
     batch_size=batch_size,
@@ -251,7 +251,7 @@ train_dataset, test_dataset = filter_and_split(
 
 batch_size = 32
 config = TrainingConfig(
-    base_model="openai/gpt-oss-120b",
+    base_model_id="openai/gpt-oss-120b",
     training_steps=len(train_dataset.flattened()) // batch_size,
     lora_rank=32, batch_size=batch_size, num_rollouts=8,
     max_response_length=16384, learning_rate=4e-5,
@@ -419,7 +419,7 @@ train_dataset, test_dataset = filter_and_split(
 
 | Parameter             | Value                           | Notes                |
 | --------------------- | ------------------------------- | -------------------- |
-| `base_model`          | `openai/gpt-oss-120b`           | Default              |
+| `base_model_id`       | `openai/gpt-oss-120b`           | Default              |
 | `lora_rank`           | 32 or 16                        | Standard             |
 | `batch_size`          | 32                              | Standard             |
 | `num_rollouts`        | 8                               | More = better signal |
