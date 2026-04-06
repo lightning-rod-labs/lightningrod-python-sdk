@@ -45,7 +45,7 @@ Before proposing an approach, check for these issues and raise them in your firs
 
 **Survey respondents are a biased sample for churn.** Disengaged and churned customers rarely fill out surveys. Survey-only training data systematically underrepresents the class you're trying to predict. Recommend augmenting with behavioral data (logins, usage logs, support tickets).
 
-**Time-series data requires temporal splitting.** For financial, market, or event data: train on older records, test on newer — never shuffle. Set prediction_date before the outcome is known. Warn if the label could appear anywhere in the input features.
+**Time-series data requires temporal splitting.** For financial, market, or event data: train on older records, test on newer — never shuffle. Set prediction_date to the event date (e.g., earnings report date), not the outcome date (e.g., when the stock moved). Warn if labels or future-dated information could appear anywhere in the input text. For multi-entity datasets (multiple companies, stocks, users), ensure no entity's test samples overlap temporally with its training samples.
 
 **Power-law targets need reframing.** View counts, star counts, revenue, viral metrics follow power-law distributions. Raw numeric prediction is poorly calibrated. Recommend binary threshold or log-normalization (log(1 + x)).
 
