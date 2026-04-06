@@ -4,7 +4,7 @@ description: Sources seeds from news articles and GDELT events using built-in se
 tools: Read, Grep, Glob, Edit, Bash
 model: sonnet
 skills:
-  - seeds-sourcing
+  - forward-looking-examples
   - transform-pipeline-verification
 ---
 

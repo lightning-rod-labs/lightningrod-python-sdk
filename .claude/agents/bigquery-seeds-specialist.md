@@ -5,6 +5,7 @@ tools: Read, Grep, Glob, Edit, Bash
 model: sonnet
 skills:
   - bigquery-seeds
+  - tabular-examples
   - transform-pipeline-verification
 ---
 

@@ -1,3 +1,8 @@
+---
+name: forward-looking-examples
+description: Production examples for forward-looking (GRPO) training -- golf, Trump policy, military strikes, Foresight/GDELT, FileSet RAG. Use when building a forecasting dataset with NewsSeedGenerator, GdeltSeedGenerator, or FileSetSeedGenerator + ForwardLookingQuestionGenerator.
+---
+
 # Forward-Looking Training Examples (GRPO)
 
 ---
@@ -433,4 +438,3 @@ train_dataset, test_dataset = filter_and_split(
 ```python
 cost = lr.training.estimate_cost(config, dataset=train_dataset)
 ```
-

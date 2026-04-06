@@ -15,7 +15,7 @@ Each stage of the pipeline lives in its own plain Python file. Files are indepen
   state.json    # Shared run state: resource IDs only (read/written by all agents)
   seeds.py      # Seed preparation (owned by seeds specialist)
   dataset.py    # Dataset generation (owned by dataset-generator)
-  prepare.py    # prepare_for_training config (owned by dataset-generator, imported by train + eval)
+  prepare.py    # filter_and_split config (owned by dataset-generator, imported by train + eval)
   train.py      # Fine-tuning (owned by fine-tuner)
   eval.py       # Evaluation (owned by fine-tuner — separate from training)
 ```
@@ -75,7 +75,7 @@ Resource IDs only — no config. Each script reads its inputs from `state.json` 
 }
 ```
 
-**Important:** `train_dataset_id` and `test_dataset_id` do not exist as stored resources and must never appear in `state.json`. The `prepare_for_training` config lives in `prepare.py` (see below), not in `state.json`. Config belongs in code; IDs belong in state.
+**Important:** `train_dataset_id` and `test_dataset_id` do not exist as stored resources and must never appear in `state.json`. The `filter_and_split` config lives in `prepare.py` (see below), not in `state.json`. Config belongs in code; IDs belong in state.
 
 Keys are set to `null` until the responsible script has been run. Use `get_state(key)` from `state.py` to read a value that must exist — it raises a clear error with the current state if it's missing or null.
 
@@ -94,22 +94,21 @@ Keys are set to `null` until the responsible script has been run. Use `get_state
 - Writes `dataset_id` to `state.json`
 
 ### prepare.py
-- Defines and exports `get_datasets(dataset_id) -> (train_ds, test_ds)` — the single source of truth for `prepare_for_training` config
+- Defines and exports `get_datasets(dataset_id) -> (train_ds, test_ds)` — the single source of truth for filtering and splitting
 - Imported by `dataset.py` (for validation), `train.py`, and `eval.py`
 - When the dataset-generator adjusts filter/split params, this is the only file that changes
 
 ```python
 # prepare.py
-import lightningrod as lr
-from lightningrod import prepare_for_training, FilterParams, DedupParams, SplitParams
+from lightningrod import filter_and_split
+from state import get_client
 
 def get_datasets(dataset_id):
+    lr = get_client()
     dataset = lr.datasets.get(dataset_id)
-    return prepare_for_training(
-        dataset,
-        filter=FilterParams(days_to_resolution_range=(1, 60)),
-        dedup=DedupParams(),
-        split=SplitParams(strategy="temporal", test_size=0.2),
+    return filter_and_split(
+        dataset, test_size=0.2, split_strategy="temporal",
+        days_to_resolution_range=(1, 60),
     )
 ```
 
@@ -133,7 +132,7 @@ When a downstream agent determines that an upstream stage needs to change, it **
 
 2. **Fine-tuner → seeds specialist**: If the root cause is seed quality (not enough diversity, wrong date range), fine-tuner reports to orchestrator. Orchestrator delegates to the seeds specialist to modify `seeds.py` and rerun. Then dataset-generator reruns `dataset.py`. Then fine-tuner reruns `train.py`.
 
-3. **Dataset-generator → seeds specialist**: If `prepare_for_training` fails due to seed volume or quality, dataset-generator reports to orchestrator. Seeds specialist modifies `seeds.py`, reruns, new `input_dataset_id` is written. Dataset-generator reruns `dataset.py`.
+3. **Dataset-generator → seeds specialist**: If `filter_and_split` fails due to seed volume or quality, dataset-generator reports to orchestrator. Seeds specialist modifies `seeds.py`, reruns, new `input_dataset_id` is written. Dataset-generator reruns `dataset.py`.
 
 **Rule: information flows downstream automatically via `state.json`. Change requests flow upstream via the orchestrator.**
 

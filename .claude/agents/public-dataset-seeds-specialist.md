@@ -6,6 +6,7 @@ model: sonnet
 skills:
   - public-dataset-exploration
   - custom-dataset-seeds
+  - examples-guide
   - transform-pipeline-verification
 ---
 

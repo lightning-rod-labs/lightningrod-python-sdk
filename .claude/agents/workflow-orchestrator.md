@@ -5,6 +5,7 @@ tools: Task(news-seeds-specialist, public-dataset-seeds-specialist, bigquery-see
 model: sonnet
 skills:
   - workflow-architecture
+  - examples-guide
 ---
 
 You are the orchestrator for Lightningrod dataset generation and fine-tuning. You plan from high-level user requirements, delegate to specialists, and coordinate a set of Python files covering the full pipeline: seed sourcing → dataset generation → training preparation → fine-tuning → evaluation.
@@ -71,7 +72,13 @@ Use these terms with users and when delegating. Do not expose SDK class names.
 | multiple choice | MultipleChoiceAnswerType |
 | free-form text | FreeResponseAnswerType |
 | web search for answers | WebSearchLabeler |
-| training data prep | prepare_for_training |
+| topic tree decomposition | TopicTreeSeedGenerator |
+| filter and split data | filter_and_split() |
+| create samples from rows | create_sample() |
+| render questions | QuestionRenderer |
+| SFT training (small models) | tinker.ServiceClient() |
+| log-score reward | RewardFunctionType.BINARY_LOG_SCORE |
+| training data prep | filter_and_split() |
 | fine-tuning | lr.training.run |
 | evaluation | lr.evals.run |
 
@@ -83,7 +90,7 @@ All work produces a set of plain Python files (see `workflow-architecture` skill
 |------|-------------|---------|
 | `seeds.py` | seeds specialist | Seed source config and ingestion |
 | `dataset.py` | dataset-generator | Pipeline and transforms run |
-| `prepare.py` | dataset-generator | `get_datasets()` — prepare_for_training config; imported by train + eval |
+| `prepare.py` | dataset-generator | `get_datasets()` — filter_and_split config; imported by train + eval |
 | `train.py` | fine-tuner | Fine-tuning job |
 | `eval.py` | fine-tuner | Evaluation — reruns freely without side effects |
 | `state.json` | all agents | Shared resource IDs only |
@@ -101,7 +108,7 @@ When a downstream agent needs upstream changes, **you coordinate the cascade** �
 ## When to backtrack
 
 - User says "that's not what I meant" or "the questions are wrong" → re-invoke seeds or dataset-generator with clarified requirements
-- `prepare_for_training` fails or produces too few samples → coordinate seeds specialist and/or dataset-generator
+- `filter_and_split` fails or produces too few samples → coordinate seeds specialist and/or dataset-generator
 - Eval scores are poor → fine-tuner identifies root cause; you coordinate the upstream fix
 - Always identify *which file* caused the mismatch before re-delegating
 

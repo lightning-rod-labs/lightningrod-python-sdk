@@ -5,7 +5,8 @@ tools: Read, Grep, Glob, Edit, Bash
 model: sonnet
 skills:
   - custom-dataset-seeds
-  - seeds-sourcing
+  - content-learning-examples
+  - forward-looking-examples
   - transform-pipeline-verification
 ---
 

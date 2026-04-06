@@ -1,3 +1,8 @@
+---
+name: content-learning-examples
+description: Production examples for content learning (SFT) training -- survival field guide (TopicTree + WebSearch), medical textbooks (FileSet + QuestionAndLabel). Use when teaching domain knowledge via Q&A pairs and SFT.
+---
+
 # Content Learning Examples (SFT)
 
 ---
@@ -241,4 +246,3 @@ for s in dataset.download():
 - **Quality filter always.** `FilterCriteria(min_score=0.7)`, score cutoffs, or agreement checks
 - **System prompt matters.** Shapes persona and gets baked into training data
 - **Match `questions_per_seed` to density:** topic tree nodes → 10, doc chunks (4000) → 3, doc chunks (2000) → 2, short text → 1
-

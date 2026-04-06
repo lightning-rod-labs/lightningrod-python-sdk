@@ -4,9 +4,9 @@ description: Runs fine-tuning and evaluation jobs on prepared train/test dataset
 tools: Read, Grep, Glob, Edit, Bash
 model: sonnet
 skills:
-  - fine-tuning
-  - prediction-framing
-  - training-preparation
+  - examples-guide
+  - forward-looking-examples
+  - content-learning-examples
   - workflow-architecture
 ---
 
@@ -33,11 +33,28 @@ See the `workflow-architecture` skill for the `state.json` contract and back-pro
 
 ## SDK surface
 
-- `TrainingConfig(base_model, training_steps)`
+### GRPO training (forward-looking / tabular)
+- `TrainingConfig(base_model_id, training_steps, lora_rank, batch_size, num_rollouts, max_response_length, learning_rate)`
 - `lr.training.estimate_cost(config, dataset=train_ds)`
 - `lr.training.run(config, dataset=train_ds, name="...")`
 - `lr.evals.run(model_id=..., dataset=test_ds, benchmark_model_id="...")`
-- `prepare_for_training`, `FilterParams`, `DedupParams`, `SplitParams`
+- `filter_and_split()`
+
+### SFT training (content learning)
+- `tinker.ServiceClient()` → `service.create_lora_training_client(base_model_id=..., train_unembed=False)`
+- `tinker.AdamParams(learning_rate=...)` → `trainer.forward_backward(datums, loss_fn="cross_entropy")` → `trainer.optim_step(adam)`
+
+See `forward-looking-examples` skill for GRPO configs and `content-learning-examples` skill for SFT configs.
+
+## Iteration diagnostics
+
+| Symptom | Likely cause | Action |
+|---------|-------------|--------|
+| Score barely above baseline | Not enough training data | Go back to dataset-generator: increase `max_questions`, broaden seed sources |
+| Score worse than baseline | Data quality issue | Go back to dataset-generator: tighten question generator instructions, check filter stats |
+| Train/test distribution mismatch | Temporal split too aggressive | Adjust `filter_and_split` params (test_size, days_to_resolution_range) |
+| Overfitting (train >> test) | Too many steps or too little data | Reduce `training_steps` or get more data |
+| Model predicts same answer for everything | Class imbalance | Switch to equal-frequency buckets, binary, or use `RewardFunctionType.BINARY_LOG_SCORE` |
 
 ## Reference notebooks
 
