@@ -43,6 +43,7 @@ htmlcov/
 test_sdk.py
 notebooks/**/lightningrod-python-sdk/
 agent-experiments/
+userland/
 
 # Pipeline output cache
 .lr_cache/
