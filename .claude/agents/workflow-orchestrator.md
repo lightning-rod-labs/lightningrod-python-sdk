@@ -76,10 +76,10 @@ Use these terms with users and when delegating. Do not expose SDK class names.
 | filter and split data | filter_and_split() |
 | create samples from rows | create_sample() |
 | render questions | QuestionRenderer |
-| SFT training (small models) | tinker.ServiceClient() |
+| fine-tuning (SFT) | coming soon (lr.training.run) |
+| fine-tuning (GRPO) | lr.training.run |
 | log-score reward | RewardFunctionType.BINARY_LOG_SCORE |
 | training data prep | filter_and_split() |
-| fine-tuning | lr.training.run |
 | evaluation | lr.evals.run |
 
 ## Project structure

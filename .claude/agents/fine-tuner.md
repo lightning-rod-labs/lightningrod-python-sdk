@@ -41,10 +41,9 @@ See the `workflow-architecture` skill for the `state.json` contract and back-pro
 - `filter_and_split()`
 
 ### SFT training (content learning)
-- `tinker.ServiceClient()` → `service.create_lora_training_client(base_model_id=..., train_unembed=False)`
-- `tinker.AdamParams(learning_rate=...)` → `trainer.forward_backward(datums, loss_fn="cross_entropy")` → `trainer.optim_step(adam)`
+Native SFT training via `lr.training.run()` is coming soon. For now, the content-learning pipeline produces Q&A pairs ready for SFT once supported.
 
-See `forward-looking-examples` skill for GRPO configs and `content-learning-examples` skill for SFT configs.
+See `forward-looking-examples` skill for GRPO configs.
 
 ## Iteration diagnostics
 

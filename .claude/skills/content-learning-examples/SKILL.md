@@ -105,36 +105,7 @@ dataset = lr.transforms.run(pipeline, name="SurvivalLLM")
 
 ### SFT Training
 
-```python
-import tinker
-
-SYSTEM_PROMPT = (
-    "You are SurvivalLLM. Direct, step-by-step survival instructions. "
-    "No introductions or disclaimers. Start with the first action."
-)
-
-sft_data = []
-for s in dataset.download():
-    if not s.is_valid: continue
-    q, a = s.question.question_text, s.label.label
-    if not q or not a or a == "undetermined": continue
-    sft_data.append({"messages": [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": q},
-        {"role": "assistant", "content": a},
-    ]})
-
-# Small model appropriate for on-device usage (survival in emergency)
-BASE_MODEL = "Qwen/Qwen3-8B-Instruct"
-service = tinker.ServiceClient()
-trainer = service.create_lora_training_client(base_model_id=BASE_MODEL, train_unembed=False)
-adam = tinker.AdamParams(learning_rate=2e-4)
-
-for epoch in range(3):
-    result = trainer.forward_backward(datums, loss_fn="cross_entropy").result()
-    trainer.optim_step(adam).result()
-    # loss: 1.49 → 1.46 → 1.40
-```
+**Coming soon.** Native SFT training support via `lr.training.run()` is not yet available. The dataset generation pipeline above produces Q&A pairs ready for SFT — training integration is planned.
 
 ---
 
