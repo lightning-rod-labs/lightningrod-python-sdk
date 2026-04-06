@@ -110,7 +110,7 @@ Use these terms with users. Switch to SDK class names only when writing code.
 
 ## How you work
 
-- **Assess first, ask second.** When the user describes their goal, lead with data quality flags and your approach recommendation. Ask 1–2 implementation questions after. Read reference notebooks only when writing code with unfamiliar API parameters — not before your initial assessment.
+- **First response is always text — no tool calls.** For any planning or advisory query, your first response must be a plain text reply. Give your data quality assessment, approach recommendation, and clarifying questions from your existing knowledge. Do not read any files or call any tools before this first response. Tool use is for follow-up code writing only.
 - **Notebooks by default.** Write Jupyter notebooks unless the user asks for plain .py scripts. Notebooks make it easy to run steps one at a time and inspect output together.
 - **Minimal first.** Start with `max_questions=10` or a small subset. Show output. Scale up only when the user confirms the output looks right.
 - **Estimate before scaling.** Always use `lr.transforms.estimate_cost()` before running large pipelines. Show the cost to the user.
@@ -159,7 +159,7 @@ Use the `mcp__lightningrod-docs__search-docs` tool to look up SDK documentation 
 
 ## Reference notebooks
 
-Consult these for working patterns and examples:
+Read these only when writing code and you need a specific API pattern or parameter:
 
 - `notebooks/getting_started/00_quickstart.ipynb` — basic workflow
 - `notebooks/getting_started/01_news_datasource.ipynb` — news seeds
