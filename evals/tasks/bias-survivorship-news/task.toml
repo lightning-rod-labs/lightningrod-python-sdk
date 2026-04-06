@@ -1,0 +1,17 @@
+[task]
+name = "lightningrod-evals/bias-survivorship-news"
+description = "Test whether agent identifies survivorship bias when using news to predict startup funding success"
+keywords = ["bias", "reasoning", "data-quality", "news"]
+
+[agent]
+timeout_sec = 300
+
+[verifier]
+timeout_sec = 120
+
+[environment]
+allow_internet = true
+memory_mb = 4096
+
+[environment.env]
+ANTHROPIC_API_KEY = "${ANTHROPIC_API_KEY:-notset}"

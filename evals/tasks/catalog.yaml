@@ -1,0 +1,109 @@
+# Lightningrod Assistant Agent Evaluation Catalog
+#
+# Each entry describes a test scenario, what reasoning failure it targets,
+# and whether it's a negative test (agent should catch the issue) or
+# positive test (agent should proceed without unnecessary warnings).
+#
+# Add new entries as failure modes are discovered in real user interactions.
+
+tasks:
+
+  # --- Bias Detection Tests (agent should catch the issue) ---
+
+  - name: bias-survivorship-news
+    category: bias
+    type: negative  # agent should flag the problem
+    description: >
+      News articles have survivorship bias for startup funding prediction.
+      Funded startups get coverage; failures don't.
+    targets:
+      - survivorship bias detection
+      - data source recommendation
+      - consequence explanation
+
+  - name: bias-selection-survey
+    category: bias
+    type: negative
+    description: >
+      Survey respondents are self-selected. Churned/disengaged customers
+      don't fill out surveys, biasing churn prediction.
+    targets:
+      - selection bias detection
+      - data augmentation suggestion
+      - answer type recommendation
+
+  # --- Data Source Tests (agent should recommend better source) ---
+
+  - name: datasource-github-stars
+    category: datasource
+    type: negative
+    description: >
+      GitHub/HN data is structured and available in BigQuery.
+      News articles about HN posts are sparse and indirect.
+    targets:
+      - structured data source recommendation
+      - power-law distribution handling
+      - prediction framing
+
+  # --- Answer Type Tests (agent should correct the framing) ---
+
+  - name: answertype-numeric-views
+    category: answer-type
+    type: negative
+    description: >
+      YouTube view counts follow power-law distribution.
+      Raw numeric prediction needs normalization or reframing.
+    targets:
+      - numeric normalization
+      - answer type reframing
+      - distribution awareness
+
+  # --- Leakage Tests (agent should prevent data leakage) ---
+
+  - name: temporal-leakage-stocks
+    category: leakage
+    type: negative
+    description: >
+      Stock earnings data needs temporal splitting. Shuffled splits
+      leak future market conditions into training.
+    targets:
+      - temporal split enforcement
+      - label leakage detection
+      - prediction_date handling
+
+  # --- Cost/Scale Tests (agent should estimate before executing) ---
+
+  - name: cost-awareness-scale
+    category: cost
+    type: negative
+    description: >
+      Scaling from 10 to 50K questions is expensive. Agent must
+      estimate cost and confirm before proceeding.
+    targets:
+      - cost estimation
+      - user confirmation
+      - intermediate scaling
+
+  # --- Positive / False Alarm Guard Tests (agent should NOT warn) ---
+
+  - name: positive-golf-forecasting
+    category: positive
+    type: positive  # agent should proceed without bias warnings
+    description: >
+      Golf tournament forecasting from news is valid. Coverage is
+      balanced across competitors. No survivorship bias here.
+    targets:
+      - confident news recommendation
+      - binary answer type
+      - temporal splitting
+
+  - name: positive-policy-forecast
+    category: positive
+    type: positive
+    description: >
+      Policy forecasting from news is valid. Government actions and
+      non-actions both get coverage. No bias issue.
+    targets:
+      - confident news recommendation
+      - question framing
+      - date range configuration

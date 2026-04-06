@@ -1,4 +1,4 @@
-.PHONY: help setup install install-dev test pytest build clean generate filter-openapi publish upload bump-version bump-patch bump-minor bump-major
+.PHONY: help setup install install-dev test pytest build clean generate filter-openapi publish upload bump-version bump-patch bump-minor bump-major eval eval-all autoagent
 
 help:
 	@echo "Lightning Rod Python SDK - Development Commands"
@@ -17,6 +17,9 @@ help:
 	@echo "  make bump-patch   - Bump patch version (0.1.5 -> 0.1.6)"
 	@echo "  make bump-minor   - Bump minor version (0.1.5 -> 0.2.0)"
 	@echo "  make bump-major   - Bump major version (0.1.5 -> 1.0.0)"
+	@echo "  make eval TASK=x  - Run a single Harbor agent eval (e.g. TASK=bias-survivorship-news)"
+	@echo "  make eval-all     - Run all Harbor agent evals"
+	@echo "  make autoagent    - Start the AutoAgent meta-agent optimization loop"
 	@echo ""
 
 setup:
@@ -96,6 +99,50 @@ bump-version:
 	sed -i '' -E 's/pypi\.org\/project\/lightningrod-ai\/[0-9]+\.[0-9]+\.[0-9]+/pypi.org\/project\/lightningrod-ai\/'"$$NEW_VERSION"'/g' README.md; \
 	sed -i '' 's/^__version__ = ".*"/__version__ = "'"$$NEW_VERSION"'"/' src/lightningrod/__init__.py; \
 	echo "Version bumped to $$NEW_VERSION"
+
+# ---------------------------------------------------------------------------
+# Agent evals (Harbor)
+#
+# Requires: harbor (`uv tool install harbor`), Docker, ANTHROPIC_API_KEY
+#
+#   make eval TASK=bias-survivorship-news   Run a single eval task
+#   make eval-all                           Run all eval tasks
+#   make autoagent                          Start AutoAgent self-improvement loop
+# ---------------------------------------------------------------------------
+
+HARBOR_AGENT := evals.agent:LightningrodAssistantAgent
+HARBOR_MOUNTS := ["/Users/bart/Projects/lightningrod-python-sdk:/workspace/lightningrod-python-sdk:ro"]
+
+eval:
+	@if [ -z "$(TASK)" ]; then \
+		echo "Usage: make eval TASK=bias-survivorship-news"; \
+		echo ""; \
+		echo "Available tasks:"; \
+		ls -1 evals/tasks/ | grep -v -E '(shared|catalog|Dockerfile)'; \
+		exit 1; \
+	fi
+	harbor run -p evals/tasks/$(TASK) \
+		--agent-import-path $(HARBOR_AGENT) \
+		--mounts-json '$(HARBOR_MOUNTS)' \
+		-y
+
+eval-all:
+	harbor run -p evals/tasks/ \
+		--agent-import-path $(HARBOR_AGENT) \
+		--mounts-json '$(HARBOR_MOUNTS)' \
+		-y
+
+# Start the AutoAgent meta-agent optimization loop.
+# A coding agent (Claude Code) reads evals/program.md, runs the Harbor
+# eval suite, diagnoses low-scoring tasks, edits the agent prompt files,
+# re-runs evals, and keeps changes that improve the total score.
+autoagent:
+	claude --agent lightningrod-assistant \
+		"Read evals/program.md and kick off a new experiment. " \
+		"Run the full eval suite with: harbor run -p evals/tasks/ " \
+		"--agent-import-path $(HARBOR_AGENT) " \
+		"--mounts-json '$(HARBOR_MOUNTS)' -y, " \
+		"then hill-climb on the scores by editing the agent prompts."
 
 bump-patch:
 	@$(MAKE) bump-version TYPE=patch

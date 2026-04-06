@@ -1,0 +1,17 @@
+[task]
+name = "lightningrod-evals/temporal-leakage-stocks"
+description = "Test whether agent catches temporal leakage risks in stock earnings data"
+keywords = ["leakage", "reasoning", "temporal", "data-quality"]
+
+[agent]
+timeout_sec = 300
+
+[verifier]
+timeout_sec = 120
+
+[environment]
+allow_internet = true
+memory_mb = 4096
+
+[environment.env]
+ANTHROPIC_API_KEY = "${ANTHROPIC_API_KEY:-notset}"
