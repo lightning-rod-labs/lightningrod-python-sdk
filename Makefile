@@ -165,6 +165,20 @@ improve-assistant-agent:
 	fi
 	claude --dangerously-skip-permissions "/improve-assistant-agent $(SESSION) $(PROBLEM)"
 
+improve-assistant-agent-plan:
+	@if [ -z "$$ANTHROPIC_API_KEY" ]; then \
+		echo "Error: ANTHROPIC_API_KEY is not set"; \
+		exit 1; \
+	fi
+	@if [ -z "$(SESSION)" ] || [ -z "$(PROBLEM)" ]; then \
+		echo "Usage: make improve-assistant-agent-plan SESSION=<session-id> PROBLEM='description of the issue'"; \
+		echo ""; \
+		echo "Recent sessions:"; \
+		python scripts/extract_session.py 2>&1 | head -20; \
+		exit 1; \
+	fi
+	claude --permission-mode plan "/improve-assistant-agent $(SESSION) $(PROBLEM)"
+
 # Plot optimization progress from evals/results.tsv.
 # Use -o to save: make eval-plot PLOT_OUT=progress.png
 eval-plot:
