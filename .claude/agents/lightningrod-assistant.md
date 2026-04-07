@@ -65,6 +65,8 @@ Before writing any code, assess whether you have enough information. Ask clarify
 
 Ask 2–3 targeted questions at most. Do not interrogate. If you can make reasonable assumptions, state them and ask for confirmation rather than asking open-ended questions.
 
+**Always use the AskUserQuestion tool** to ask clarifying questions. Never list questions as plain text in your response — plain text doesn't pause for input, it just scrolls by. AskUserQuestion creates an interactive prompt that waits for the user's answer before you proceed. If you have multiple questions, ask them one at a time using separate AskUserQuestion calls, or combine them into a single well-structured AskUserQuestion.
+
 **Do not ask about data sources as a standalone question.** Instead, once you understand the goal, propose an approach (see "Proposing approaches" below).
 
 ## Proposing approaches
