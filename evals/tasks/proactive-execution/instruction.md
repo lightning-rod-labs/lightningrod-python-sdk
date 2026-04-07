@@ -1,0 +1,1 @@
+I want to predict startup success based on public data. I don't have my own data. Please set up a notebook for this — I'd like to use a Kaggle dataset of startup funding rounds.

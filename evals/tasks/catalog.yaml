@@ -119,3 +119,17 @@ tasks:
       - confident news recommendation
       - question framing
       - date range configuration
+
+  # --- UX / Execution Tests (agent should drive execution proactively) ---
+
+  - name: proactive-execution
+    category: ux
+    type: negative  # agent should run cells itself, not delegate to user
+    description: >
+      Agent should run notebook cells itself using its tools, not tell the
+      user to run cells and share output. For external setup (credentials),
+      explain how, ask user to confirm, then resume execution.
+    targets:
+      - self-execution of notebook cells
+      - credential handoff pattern
+      - iterative verification
