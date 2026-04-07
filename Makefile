@@ -1,4 +1,4 @@
-.PHONY: help setup install install-dev test pytest build clean generate filter-openapi publish upload bump-version bump-patch bump-minor bump-major eval-build eval eval-all autoagent eval-plot
+.PHONY: help setup install install-dev test pytest build clean generate filter-openapi publish upload bump-version bump-patch bump-minor bump-major eval-build eval eval-all autoagent eval-plot improve-assistant-agent
 
 help:
 	@echo "Lightning Rod Python SDK - Development Commands"
@@ -22,6 +22,7 @@ help:
 	@echo "  make eval-all     - Run all Harbor agent evals"
 	@echo "  make autoagent    - Start the AutoAgent meta-agent optimization loop"
 	@echo "  make eval-plot    - Plot AutoAgent optimization progress chart"
+	@echo "  make improve-assistant-agent SESSION=x PROBLEM='desc' - Create eval + fix from a testing session"
 	@echo ""
 
 setup:
@@ -146,6 +147,23 @@ eval-all:
 # re-runs evals, and keeps changes that improve the total score.
 autoagent:
 	claude --dangerously-skip-permissions --agent lightningrod-assistant "Read evals/program.md and kick off a new experiment."
+
+# Improve the assistant agent from a user testing session.
+# Extracts the session transcript, creates an eval task, fixes the prompt,
+# and runs the full regression suite.
+improve-assistant-agent:
+	@if [ -z "$$ANTHROPIC_API_KEY" ]; then \
+		echo "Error: ANTHROPIC_API_KEY is not set"; \
+		exit 1; \
+	fi
+	@if [ -z "$(SESSION)" ] || [ -z "$(PROBLEM)" ]; then \
+		echo "Usage: make improve-assistant-agent SESSION=<session-id> PROBLEM='description of the issue'"; \
+		echo ""; \
+		echo "Recent sessions:"; \
+		python scripts/extract_session.py 2>&1 | head -20; \
+		exit 1; \
+	fi
+	claude --dangerously-skip-permissions "/improve-assistant-agent $(SESSION) $(PROBLEM)"
 
 # Plot optimization progress from evals/results.tsv.
 # Use -o to save: make eval-plot PLOT_OUT=progress.png
