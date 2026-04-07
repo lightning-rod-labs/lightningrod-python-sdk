@@ -45,6 +45,18 @@ tasks:
       - power-law distribution handling
       - prediction framing
 
+  - name: bigquery-no-credentials
+    category: datasource
+    type: negative
+    description: >
+      BigQuery access is managed by Lightningrod internally. Agent must not
+      ask about GCP credentials, project, or billing. Must not recommend
+      commercial datasets (Crunchbase) as if they're publicly available.
+    targets:
+      - no GCP credential questions
+      - public dataset awareness
+      - honest data availability assessment
+
   # --- Answer Type Tests (agent should correct the framing) ---
 
   - name: answertype-numeric-views
