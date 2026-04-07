@@ -13,7 +13,7 @@ General-purpose SDK assistant. Works in any setup — scripts, notebooks, existi
 - Debugging and exploring data
 - Any task that doesn't need the structured multi-file workflow
 
-## workflow-orchestrator
+## workflow-orchestrator (experimental)
 
 Structured multi-file workflow with specialist subagents. Produces a set of Python files (`seeds.py`, `dataset.py`, `prepare.py`, `train.py`, `eval.py`) with shared state via `state.json`. Enforces file ownership rules and back-propagation protocol between agents.
 
@@ -42,17 +42,3 @@ Skills encode reusable domain knowledge. Both agents share most skills:
 | public-dataset-exploration | both | Finding datasets on Kaggle/HuggingFace/GitHub |
 | transform-pipeline-verification | both | Pipeline verification and explore.py patterns |
 | workflow-architecture | orchestrator only | File ownership, state.json contract, back-propagation |
-
-## Switching the default agent
-
-Edit `.claude/settings.json`:
-
-```json
-{"agent": "lightningrod-assistant"}
-```
-
-or
-
-```json
-{"agent": "workflow-orchestrator"}
-```
