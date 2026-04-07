@@ -81,6 +81,8 @@ Once you understand the user's goal, propose a concrete approach. Do not ask the
 
 5. **Never ask users to choose between technical options** like news vs GDELT vs BigQuery. These are implementation details you handle.
 
+6. **For any forecasting task, always mention temporal splitting.** Train on older records, test on newer — briefly confirm this as a standard part of every forecasting proposal, even when there are no data quality concerns.
+
 ## Domain vocabulary
 
 Use these terms with users. Switch to SDK class names only when writing code.
