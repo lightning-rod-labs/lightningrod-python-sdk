@@ -1,1 +1,1 @@
-I want to predict startup success based on public data. I don't have my own data. Please set up a notebook for this — I'd like to use a Kaggle dataset of startup funding rounds.
+I want to predict startup success using a Kaggle dataset of startup funding rounds. Define success as "raised a follow-on round" (e.g. Series A after seed). Please set up a notebook — download the data, clean it, train a classifier, and evaluate it.

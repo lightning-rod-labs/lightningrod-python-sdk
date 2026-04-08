@@ -1,14 +1,22 @@
 """
 Harbor agent adapter for the lightningrod-assistant Claude Code agent.
 
-Runs the claude CLI on the HOST (not inside Docker) since it uses OAuth
-credentials from the local credential store. Writes the response into
-the Docker container for the verifier to score.
+Uses the Claude Agent SDK to run the agent and capture the full conversation
+trajectory in ATIF format. Writes both trajectory.json (full trace) and
+response.txt (final output, for backward-compatible verifiers).
 """
 
+import asyncio
+import base64
 import json
-import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
+
+from claude_agent_sdk import ClaudeSDKClient, ClaudeAgentOptions, ResultMessage
+from claude_agent_sdk.types import (
+    AssistantMessage, UserMessage, TextBlock, ThinkingBlock,
+    ToolUseBlock, ToolResultBlock,
+)
 
 from harbor.agents.base import BaseAgent
 from harbor.environments.base import BaseEnvironment
@@ -22,14 +30,15 @@ class LightningrodAssistantAgent(BaseAgent):
     """Wraps the lightningrod-assistant Claude Code agent for Harbor evaluation."""
 
     AGENT_NAME = "lightningrod-assistant"
-    TIMEOUT_SEC = 240
+    SUPPORTS_ATIF = True
+    MAX_TURNS = 5
 
     @staticmethod
     def name() -> str:
         return "lightningrod-assistant"
 
     def version(self) -> str | None:
-        return "1.0.0"
+        return "2.0.0"
 
     async def setup(self, environment: BaseEnvironment) -> None:
         pass
@@ -40,74 +49,180 @@ class LightningrodAssistantAgent(BaseAgent):
         environment: BaseEnvironment,
         context: AgentContext,
     ) -> None:
-        # Run claude CLI on the host — it uses local OAuth credentials
-        cmd = [
-            "claude",
-            "-p",  # print mode (non-interactive)
-            "--agent", self.AGENT_NAME,
-            "--output-format", "json",
-            "--dangerously-skip-permissions",
-            "--max-turns", "10",
-            instruction,
-        ]
+        self.logger.info(f"Running agent via SDK with cwd={SDK_ROOT}")
 
-        self.logger.info(f"Running claude CLI on host with cwd={SDK_ROOT}")
+        opts = ClaudeAgentOptions(
+            extra_args={"agent": self.AGENT_NAME},
+            cwd=SDK_ROOT,
+            permission_mode="bypassPermissions",
+            max_turns=self.MAX_TURNS,
+            disallowed_tools=["AskUserQuestion"],
+        )
+
+        trajectory: list = []
+        result_msg: ResultMessage | None = None
 
         try:
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=self.TIMEOUT_SEC,
-                cwd=str(SDK_ROOT),
-            )
-        except subprocess.TimeoutExpired:
-            response_text = "[AGENT ERROR] Claude CLI timed out"
-            await self._write_response(environment, response_text)
-            context.metadata = {"error": "timeout"}
+            async with ClaudeSDKClient(options=opts) as client:
+                await client.query(instruction)
+                async for msg in client.receive_response():
+                    trajectory.append(msg)
+                    if isinstance(msg, ResultMessage):
+                        result_msg = msg
+        except Exception as e:
+            error_text = f"[AGENT ERROR] SDK execution failed: {e}"
+            self.logger.error(error_text)
+            await self._write_to_container(environment, "response.txt", error_text)
+            await self._write_to_container(environment, "trajectory.json", json.dumps(
+                {"error": str(e), "steps": []}, indent=2
+            ))
+            context.metadata = {"error": str(e)}
             return
 
-        # Parse the response
-        response_text = self._parse_response(result.stdout, result.stderr)
+        # Convert to ATIF and extract final response
+        atif = _trajectory_to_atif(trajectory, result_msg)
+        final_response = (result_msg.result if result_msg else None) or ""
 
-        # Write response into the Docker container for the verifier
-        await self._write_response(environment, response_text)
+        if not final_response:
+            final_response = "[AGENT ERROR] No output"
+
+        # Write both files to the container
+        await self._write_to_container(environment, "response.txt", final_response)
+        await self._write_to_container(
+            environment, "trajectory.json", json.dumps(atif, indent=2)
+        )
+
+        # Set Harbor context metrics
+        if result_msg:
+            usage = result_msg.usage or {}
+            context.cost_usd = result_msg.total_cost_usd
+            context.n_input_tokens = usage.get("input_tokens", 0)
+            context.n_output_tokens = usage.get("output_tokens", 0)
+            context.n_cache_tokens = usage.get("cache_read_input_tokens", 0)
 
         context.metadata = {
-            "response_length": len(response_text),
-            "return_code": result.returncode,
-            "stderr_preview": (result.stderr or "")[:500],
+            "response_length": len(final_response),
+            "num_turns": result_msg.num_turns if result_msg else 0,
+            "tools_used": atif.get("agent", {}).get("tools_used", []),
         }
 
-    def _parse_response(self, stdout: str, stderr: str) -> str:
-        """Parse claude CLI JSON output into plain text response."""
-        if not stdout.strip():
-            return f"[AGENT ERROR] No output\n{stderr}" if stderr else "[AGENT ERROR] No output"
-
-        try:
-            output = json.loads(stdout)
-            if isinstance(output, dict):
-                return output.get("result", stdout)
-            elif isinstance(output, list):
-                return "\n".join(
-                    msg.get("content", str(msg))
-                    for msg in output
-                    if isinstance(msg, dict)
-                )
-            return stdout
-        except (json.JSONDecodeError, KeyError):
-            return stdout
-
-    async def _write_response(
-        self, environment: BaseEnvironment, response_text: str
+    async def _write_to_container(
+        self, environment: BaseEnvironment, filename: str, content: str,
     ) -> None:
-        """Write the agent response into the container for the verifier."""
+        """Write a file into the container's /logs/agent/ directory."""
         await environment.exec("mkdir -p /logs/agent", timeout_sec=10)
-
-        # Use base64 to safely transfer arbitrary text into the container
-        import base64
-        encoded = base64.b64encode(response_text.encode()).decode()
+        encoded = base64.b64encode(content.encode()).decode()
         await environment.exec(
-            f"echo '{encoded}' | base64 -d > /logs/agent/response.txt",
+            f"echo '{encoded}' | base64 -d > /logs/agent/{filename}",
             timeout_sec=10,
         )
+
+
+def _trajectory_to_atif(
+    messages: list, result_msg: ResultMessage | None,
+) -> dict:
+    """Convert SDK messages to ATIF trajectory dict."""
+    steps: list[dict] = []
+    step_id = 0
+    now = datetime.now(timezone.utc).isoformat()
+    pending: dict[str, ToolUseBlock] = {}
+    tools_used: set[str] = set()
+
+    def _step(source: str, message: str, **kw) -> dict:
+        nonlocal step_id
+        step_id += 1
+        s = {"step_id": step_id, "timestamp": now, "source": source, "message": message}
+        s.update({k: v for k, v in kw.items() if v is not None})
+        return s
+
+    for msg in messages:
+        if isinstance(msg, UserMessage):
+            if isinstance(msg.content, list):
+                all_tool_results = True
+                for b in msg.content:
+                    if isinstance(b, ToolResultBlock) and b.tool_use_id in pending:
+                        tu = pending.pop(b.tool_use_id)
+                        tools_used.add(tu.name)
+                        content = (
+                            b.content if isinstance(b.content, str)
+                            else json.dumps(b.content) if b.content else ""
+                        )
+                        steps.append(_step(
+                            "agent", f"Tool: {tu.name}",
+                            tool_calls=[{
+                                "tool_call_id": tu.id,
+                                "function_name": tu.name,
+                                "arguments": tu.input,
+                            }],
+                            observation={"results": [{
+                                "source_call_id": tu.id,
+                                "content": content,
+                            }]},
+                        ))
+                    else:
+                        all_tool_results = False
+                if all_tool_results:
+                    continue
+            text = msg.content if isinstance(msg.content, str) else str(msg.content)
+            if text:
+                steps.append(_step("user", text))
+
+        elif isinstance(msg, AssistantMessage):
+            texts: list[str] = []
+            reasoning: str | None = None
+            for b in msg.content:
+                if isinstance(b, TextBlock):
+                    texts.append(b.text)
+                elif isinstance(b, ThinkingBlock):
+                    reasoning = b.thinking
+                elif isinstance(b, ToolUseBlock):
+                    pending[b.id] = b
+            if texts or reasoning:
+                steps.append(_step(
+                    "agent", "\n".join(texts) or "(thinking)",
+                    reasoning_content=reasoning,
+                    model_name=getattr(msg, "model", None),
+                ))
+
+    # Flush any pending tool calls that never got results
+    for tu in pending.values():
+        tools_used.add(tu.name)
+        steps.append(_step(
+            "agent", f"Tool: {tu.name}",
+            tool_calls=[{
+                "tool_call_id": tu.id,
+                "function_name": tu.name,
+                "arguments": tu.input,
+            }],
+        ))
+
+    if not steps:
+        steps.append(_step("user", "(empty)"))
+
+    # Final metrics
+    final_metrics = None
+    if result_msg:
+        usage = result_msg.usage or {}
+        final_metrics = {
+            "total_prompt_tokens": usage.get("input_tokens"),
+            "total_completion_tokens": usage.get("output_tokens"),
+            "total_cached_tokens": usage.get("cache_read_input_tokens"),
+            "total_cost_usd": result_msg.total_cost_usd,
+            "total_steps": len(steps),
+            "extra": {
+                "duration_ms": result_msg.duration_ms,
+                "num_turns": result_msg.num_turns,
+            },
+        }
+
+    return {
+        "schema_version": "ATIF-v1.2",
+        "session_id": result_msg.session_id if result_msg else "unknown",
+        "agent": {
+            "name": "lightningrod-assistant",
+            "version": "2.0.0",
+            "tools_used": sorted(tools_used),
+        },
+        "steps": steps,
+        "final_metrics": final_metrics,
+    }

@@ -116,6 +116,7 @@ bump-version:
 HARBOR_IMAGE := lightningrod-evals
 HARBOR_AGENT := evals.agent:LightningrodAssistantAgent
 HARBOR_MOUNTS := ["/Users/bart/Projects/lightningrod-python-sdk:/workspace/lightningrod-python-sdk:ro"]
+HARBOR_ENV_FILE := /tmp/harbor-eval.env
 
 # Build the shared Docker image used by all eval tasks.
 # Run this once, or after changing evals/Dockerfile.
@@ -123,6 +124,10 @@ eval-build:
 	docker build -t $(HARBOR_IMAGE) -f evals/Dockerfile .
 
 eval:
+	@if [ -z "$$ANTHROPIC_API_KEY" ]; then \
+		echo "Error: ANTHROPIC_API_KEY is not set"; \
+		exit 1; \
+	fi
 	@if [ -z "$(TASK)" ]; then \
 		echo "Usage: make eval TASK=bias-survivorship-news"; \
 		echo ""; \
@@ -130,15 +135,23 @@ eval:
 		ls -1 evals/tasks/ | grep -v -E '(shared|catalog|Dockerfile)'; \
 		exit 1; \
 	fi
+	@echo "ANTHROPIC_API_KEY=$${ANTHROPIC_API_KEY}" > $(HARBOR_ENV_FILE)
 	harbor run -p evals/tasks/$(TASK) \
 		--agent-import-path $(HARBOR_AGENT) \
 		--mounts-json '$(HARBOR_MOUNTS)' \
+		--env-file $(HARBOR_ENV_FILE) \
 		-y
 
 eval-all:
+	@if [ -z "$$ANTHROPIC_API_KEY" ]; then \
+		echo "Error: ANTHROPIC_API_KEY is not set"; \
+		exit 1; \
+	fi
+	@echo "ANTHROPIC_API_KEY=$${ANTHROPIC_API_KEY}" > $(HARBOR_ENV_FILE)
 	harbor run -p evals/tasks/ \
 		--agent-import-path $(HARBOR_AGENT) \
 		--mounts-json '$(HARBOR_MOUNTS)' \
+		--env-file $(HARBOR_ENV_FILE) \
 		-y
 
 # Start the AutoAgent meta-agent optimization loop.

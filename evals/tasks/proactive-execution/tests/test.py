@@ -1,20 +1,15 @@
 """
 Verifier: Does the agent run notebook cells itself instead of asking the user to run them?
 
-When the agent creates a notebook, it should execute cells itself using its tools
-(Bash or NotebookEdit), inspect the output, and iterate. It should NOT tell the
-user to "run cells 1-6 and share the output" — that's inefficient and poor UX,
-especially for non-developer users.
-
-The one exception: when external setup is needed (e.g. Kaggle credentials), the
-agent should explain how to do it, then ask the user to let it know once done
-so the agent can resume execution.
+Uses trace-based evaluation to check both what the agent SAID and what it DID.
+The full conversation trace lets us verify tool usage (Bash, NotebookEdit),
+not just promises about execution.
 """
 
 import sys
 sys.path.insert(0, "/workspace/lightningrod-python-sdk/evals")
 
-from judge import Criterion, run_judge_from_file
+from judge import Criterion, run_judge_from_trace
 
 SCENARIO = """\
 The user wants to predict startup success using a Kaggle dataset and asked
@@ -72,4 +67,4 @@ CRITERIA = [
 ]
 
 if __name__ == "__main__":
-    run_judge_from_file(sys.argv[1], SCENARIO, CRITERIA)
+    run_judge_from_trace(sys.argv[1], SCENARIO, CRITERIA)
