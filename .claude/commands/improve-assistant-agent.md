@@ -1,14 +1,14 @@
 Improve the lightningrod-assistant agent based on a user testing session where something went wrong.
 
-**Arguments:** `$ARGUMENTS` — format: `<session-id> <problem description>`
+**Arguments:** `$ARGUMENTS` — format: `[<session-id>] <problem description>`
 
-Parse the session ID (the first word) and the problem description (everything after) from the arguments.
+Parse: if the first word matches a UUID pattern, treat it as the session ID and the rest as the problem description. Otherwise, treat all of `$ARGUMENTS` as the problem description and skip Step 1.
 
 ## Workflow
 
 ### Step 1: Extract the session transcript
 
-Run `python scripts/extract_session.py <session-id>` and read the output. If the session ID is missing or invalid, run `python scripts/extract_session.py` with no arguments to list recent sessions and ask the user to pick one.
+If a session ID was detected, run `python scripts/extract_session.py <session-id>` and read the output. If the session ID is invalid, run `python scripts/extract_session.py` with no arguments to list recent sessions and ask the user to pick one. **If no session ID was provided, skip this step** — proceed directly to Step 2 using the problem description as context.
 
 ### Step 2: Analyze the failure
 

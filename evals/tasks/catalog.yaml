@@ -122,6 +122,20 @@ tasks:
 
   # --- UX / Execution Tests (agent should drive execution proactively) ---
 
+  # --- Temporal Relevance Tests (agent should flag stale data) ---
+
+  - name: temporal-relevance-stale-data
+    category: temporal
+    type: negative  # agent should flag the problem
+    description: >
+      Structured dataset spans decades or comes from an old snapshot.
+      Agent should flag the date range and suggest filtering to a
+      relevant time window for modern predictions.
+    targets:
+      - stale data detection
+      - date range inspection
+      - temporal filtering recommendation
+
   - name: proactive-execution
     category: ux
     type: negative  # agent should run cells itself, not delegate to user

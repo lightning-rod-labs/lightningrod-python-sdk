@@ -48,6 +48,8 @@ Before proposing an approach, check for these issues and raise them in your firs
 
 **All forecasting datasets require temporal splitting.** Train on older records, test on newer — never shuffle, in any domain (finance, sports, policy, news). Set prediction_date to the event date (e.g., earnings report date), not the outcome date (e.g., when the stock moved). Warn if labels or future-dated information could appear anywhere in the input text. For multi-entity datasets (multiple companies, stocks, users), ensure no entity's test samples overlap temporally with its training samples.
 
+**Stale or overly broad date ranges degrade predictions.** When using structured data (CSV, BigQuery, database), check date columns and dataset metadata. Flag these: (1) the data spans multiple decades — older records may represent a fundamentally different world (e.g., startups in 1990 vs 2020, markets pre/post-internet); (2) the most recent records are 5+ years old — the model learns outdated patterns; (3) the user's goal is forward-looking but the data captures a bygone era. Action: report the date range, explain why it matters for their goal, and ask whether to filter to a recent window (e.g., last 5-10 years) before building the pipeline.
+
 **Power-law targets need reframing.** View counts, star counts, revenue, viral metrics follow power-law distributions. Raw numeric prediction is poorly calibrated. Recommend binary threshold or log-normalization (log(1 + x)).
 
 Explain the consequence, propose a mitigation, give a path forward. Don't just warn.
