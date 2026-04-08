@@ -10,6 +10,7 @@ from datetime import datetime
 from lightningrod._generated.models.dataset_metadata import DatasetMetadata
 from lightningrod._generated.models.eval_config import EvalConfig
 from lightningrod._generated.models.eval_job import EvalJob
+from lightningrod._generated.models.eval_model import EvalModel
 from lightningrod._generated.models.eval_job_list_response import EvalJobListResponse
 from lightningrod._generated.models.eval_job_metrics_type_0 import EvalJobMetricsType0
 from lightningrod._generated.models.eval_job_status import EvalJobStatus
@@ -52,7 +53,7 @@ def _training_job(
 def _eval_job_with_metrics() -> EvalJob:
     cfg = EvalConfig(
         organization_id="org",
-        model_id="m",
+        models=[EvalModel(model_id="m")],
         dataset=SampleDatasetConfig(id="ds", sample_ids=[]),
     )
     metrics = EvalJobMetricsType0()

@@ -37,6 +37,8 @@ env/
 .pytest_cache/
 .coverage
 htmlcov/
+jobs/
+userland/
 
 # Developer files
 .env
