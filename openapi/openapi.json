@@ -1377,14 +1377,14 @@
         }
       }
     },
-    "/filesets/{file_set_id}/files": {
+    "/filesets/{file_set_id}/upload-folder": {
       "post": {
         "tags": [
           "FileSets"
         ],
-        "summary": "Add File To Set",
-        "description": "Add a file to a FileSet by providing file information and metadata.",
-        "operationId": "add_file_to_set_filesets__file_set_id__files_post",
+        "summary": "Generate Batch Upload Urls",
+        "description": "Generate signed upload URLs for batch file upload to a GCS folder.\n\nReturns URLs for all requested files plus a _manifest.json URL.",
+        "operationId": "generate_batch_upload_urls_filesets__file_set_id__upload_folder_post",
         "security": [
           {
             "HTTPBearer": []
@@ -1406,189 +1406,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateFileSetFileRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FileSetFile"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "FileSets"
-        ],
-        "summary": "List Files In Set",
-        "description": "List all files in a FileSet.",
-        "operationId": "list_files_in_set_filesets__file_set_id__files_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "file_set_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "File Set Id"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "maximum": 100,
-              "minimum": 1,
-              "default": 10,
-              "title": "Limit"
-            }
-          },
-          {
-            "name": "cursor",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Cursor"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ListFileSetFilesResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/filesets/{file_set_id}/status": {
-      "get": {
-        "tags": [
-          "FileSets"
-        ],
-        "summary": "Get File Set Status",
-        "description": "Get file status counts for a FileSet.",
-        "operationId": "get_file_set_status_filesets__file_set_id__status_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "file_set_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "File Set Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FileStatusCountsResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/filesets/{file_set_id}/retry-failed": {
-      "post": {
-        "tags": [
-          "FileSets"
-        ],
-        "summary": "Retry Failed Files",
-        "description": "Retry all failed files in a FileSet.",
-        "operationId": "retry_failed_files_filesets__file_set_id__retry_failed_post",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "file_set_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "File Set Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RetryFailedFilesRequest",
-                "default": {
-                  "max_retries": 3
-                }
+                "$ref": "#/components/schemas/BatchUploadRequest"
               }
             }
           }
@@ -1599,7 +1417,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RetryFailedFilesResponse"
+                  "$ref": "#/components/schemas/BatchUploadResponse"
                 }
               }
             }
@@ -1643,6 +1461,46 @@
           "balance_dollars"
         ],
         "title": "BalanceResponse"
+      },
+      "BatchUploadRequest": {
+        "properties": {
+          "file_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "File Names",
+            "description": "List of filenames to generate upload URLs for"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_names"
+        ],
+        "title": "BatchUploadRequest"
+      },
+      "BatchUploadResponse": {
+        "properties": {
+          "folder_path": {
+            "type": "string",
+            "title": "Folder Path",
+            "description": "GCS folder path where files will be stored"
+          },
+          "upload_urls": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Upload Urls",
+            "description": "Mapping of filename -> signed upload URL"
+          }
+        },
+        "type": "object",
+        "required": [
+          "folder_path",
+          "upload_urls"
+        ],
+        "title": "BatchUploadResponse"
       },
       "BigQuerySeedGenerator": {
         "properties": {
@@ -2327,64 +2185,6 @@
         ],
         "title": "CreateEvalJobRequest"
       },
-      "CreateFileSetFileRequest": {
-        "properties": {
-          "file_id": {
-            "type": "string",
-            "title": "File Id",
-            "description": "ID of the file"
-          },
-          "file_date": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "File Date",
-            "description": "The date of the document content. Critical for forward-looking question generation pipelines - this date determines the temporal context for forecasting questions."
-          },
-          "metadata": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Metadata",
-            "description": "Optional file-level metadata"
-          },
-          "deduplication_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Deduplication Id",
-            "description": "Optional id used to deduplicate file additions to a FileSet"
-          },
-          "auto_extract_metadata": {
-            "type": "boolean",
-            "title": "Auto Extract Metadata",
-            "description": "If true and the FileSet has a metadata schema, automatically extract metadata from file content using LLM. User-provided metadata takes precedence over extracted values.",
-            "default": false
-          }
-        },
-        "type": "object",
-        "required": [
-          "file_id"
-        ],
-        "title": "CreateFileSetFileRequest"
-      },
       "CreateFileSetRequest": {
         "properties": {
           "name": {
@@ -2414,12 +2214,6 @@
               }
             ],
             "description": "Optional schema for validating file metadata"
-          },
-          "rag_enabled": {
-            "type": "boolean",
-            "title": "Rag Enabled",
-            "description": "Whether files should be indexed in Gemini File Search for RAG. When False, files can only be used with document-level transforms. This setting is immutable after creation.",
-            "default": true
           }
         },
         "type": "object",
@@ -2562,19 +2356,10 @@
             "$ref": "#/components/schemas/CsvSeedGenerator"
           },
           {
-            "$ref": "#/components/schemas/FileSetContextGenerator"
-          },
-          {
             "$ref": "#/components/schemas/FileSetDocumentContextGenerator"
           },
           {
             "$ref": "#/components/schemas/FileSetDocumentLabeler"
-          },
-          {
-            "$ref": "#/components/schemas/FileSetQuerySeedGenerator"
-          },
-          {
-            "$ref": "#/components/schemas/FileSetRAGLabeler"
           },
           {
             "$ref": "#/components/schemas/FileSetSeedGenerator"
@@ -2598,6 +2383,12 @@
             "$ref": "#/components/schemas/QuestionGenerator"
           },
           {
+            "$ref": "#/components/schemas/QdrantContextGenerator"
+          },
+          {
+            "$ref": "#/components/schemas/QdrantRAGLabeler"
+          },
+          {
             "$ref": "#/components/schemas/QuestionPipeline"
           },
           {
@@ -2614,16 +2405,15 @@
           "propertyName": "config_type",
           "mapping": {
             "CSV_SEED_GENERATOR": "#/components/schemas/CsvSeedGenerator",
-            "FILESET_CONTEXT_GENERATOR": "#/components/schemas/FileSetContextGenerator",
             "FILESET_DOCUMENT_CONTEXT_GENERATOR": "#/components/schemas/FileSetDocumentContextGenerator",
             "FILESET_DOCUMENT_LABELER": "#/components/schemas/FileSetDocumentLabeler",
-            "FILESET_QUERY_SEED_GENERATOR": "#/components/schemas/FileSetQuerySeedGenerator",
-            "FILESET_RAG_LABELER": "#/components/schemas/FileSetRAGLabeler",
             "FILESET_SEED_GENERATOR": "#/components/schemas/FileSetSeedGenerator",
             "FORWARD_LOOKING_QUESTION_GENERATOR": "#/components/schemas/ForwardLookingQuestionGenerator",
             "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
             "KEY_DEDUPLICATION": "#/components/schemas/KeyDeduplication",
             "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator",
+            "QDRANT_CONTEXT_GENERATOR": "#/components/schemas/QdrantContextGenerator",
+            "QDRANT_RAG_LABELER": "#/components/schemas/QdrantRAGLabeler",
             "QUESTION_AND_LABEL_GENERATOR": "#/components/schemas/QuestionAndLabelGenerator",
             "QUESTION_GENERATOR": "#/components/schemas/QuestionGenerator",
             "QUESTION_PIPELINE": "#/components/schemas/QuestionPipeline",
@@ -3202,14 +2992,6 @@
             ],
             "title": "Description"
           },
-          "file_count": {
-            "type": "integer",
-            "title": "File Count"
-          },
-          "indexed_file_count": {
-            "type": "integer",
-            "title": "Indexed File Count"
-          },
           "metadata_schema": {
             "anyOf": [
               {
@@ -3220,15 +3002,43 @@
               }
             ]
           },
-          "rag_enabled": {
-            "type": "boolean",
-            "title": "Rag Enabled",
-            "default": true
-          },
           "is_public": {
             "type": "boolean",
             "title": "Is Public",
             "default": false
+          },
+          "cloud_storage_folder": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cloud Storage Folder"
+          },
+          "qdrant_snapshot_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qdrant Snapshot Path"
+          },
+          "qdrant_collection_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qdrant Collection Name"
           },
           "created_at": {
             "type": "string",
@@ -3246,95 +3056,10 @@
           "id",
           "name",
           "description",
-          "file_count",
-          "indexed_file_count",
           "created_at",
           "updated_at"
         ],
         "title": "FileSet"
-      },
-      "FileSetContextGenerator": {
-        "properties": {
-          "config_type": {
-            "type": "string",
-            "const": "FILESET_CONTEXT_GENERATOR",
-            "title": "Config Type",
-            "description": "Type of transform configuration",
-            "default": "FILESET_CONTEXT_GENERATOR"
-          },
-          "file_set_id": {
-            "type": "string",
-            "title": "File Set Id",
-            "description": "FileSet ID to query for context"
-          },
-          "metadata_filter_keys": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Metadata Filter Keys",
-            "description": "Keys from seed's file_metadata for dynamic filtering (e.g., ['ticker'])"
-          },
-          "metadata_filter": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Metadata Filter",
-            "description": "Static AIP-160 metadata filter (combined with dynamic via AND)"
-          },
-          "system_instruction": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "System Instruction",
-            "description": "Optional system instruction for the Gemini model"
-          },
-          "query_template": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Query Template",
-            "description": "Template with {question} placeholder; default: raw question text"
-          },
-          "temporal_constraint": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/TemporalConstraint"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Filter documents by date relative to seed date. BEFORE (<=) for context without lookahead, AFTER (>) for future docs."
-          },
-          "model": {
-            "type": "string",
-            "title": "Model",
-            "description": "Gemini model to use for file search",
-            "default": "gemini-2.5-flash"
-          }
-        },
-        "type": "object",
-        "required": [
-          "file_set_id"
-        ],
-        "title": "FileSetContextGenerator",
-        "description": "Configuration for FileSet Context Generator transform."
       },
       "FileSetDocumentContextGenerator": {
         "properties": {
@@ -3508,153 +3233,6 @@
         "title": "FileSetDocumentLabeler",
         "description": "Configuration for FileSet Document Labeler transform.\n\nResolves a single document from a FileSet based on temporal ordering,\ndownloads the full text, and uses an LLM to extract a structured label."
       },
-      "FileSetFile": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "original_file_name": {
-            "type": "string",
-            "title": "Original File Name"
-          },
-          "cloud_storage_path": {
-            "type": "string",
-            "title": "Cloud Storage Path"
-          },
-          "mime_type": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Mime Type"
-          },
-          "size_bytes": {
-            "type": "integer",
-            "title": "Size Bytes"
-          },
-          "character_count": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Character Count"
-          },
-          "metadata": {
-            "anyOf": [
-              {
-                "additionalProperties": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "integer"
-                    },
-                    {
-                      "type": "number"
-                    },
-                    {
-                      "type": "boolean"
-                    }
-                  ]
-                },
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Metadata"
-          },
-          "gemini_file_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Gemini File Id"
-          },
-          "file_created_date": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "File Created Date"
-          },
-          "status": {
-            "$ref": "#/components/schemas/FileSetFileStatus",
-            "default": "PENDING"
-          },
-          "status_message": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Status Message"
-          },
-          "retry_count": {
-            "type": "integer",
-            "title": "Retry Count",
-            "default": 0
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Created At"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Updated At"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "original_file_name",
-          "cloud_storage_path",
-          "mime_type",
-          "size_bytes",
-          "character_count",
-          "metadata",
-          "gemini_file_id",
-          "file_created_date",
-          "created_at",
-          "updated_at"
-        ],
-        "title": "FileSetFile"
-      },
-      "FileSetFileStatus": {
-        "type": "string",
-        "enum": [
-          "PENDING",
-          "PROCESSING",
-          "ACTIVE",
-          "FAILED"
-        ],
-        "title": "FileSetFileStatus"
-      },
       "FileSetMetadataSchema": {
         "properties": {
           "fields": {
@@ -3687,179 +3265,6 @@
         ],
         "title": "FileSetMetadataSchemaInput",
         "description": "Schema definition for file metadata in a FileSet (input/request version)."
-      },
-      "FileSetQuerySeedGenerator": {
-        "properties": {
-          "config_type": {
-            "type": "string",
-            "const": "FILESET_QUERY_SEED_GENERATOR",
-            "title": "Config Type",
-            "description": "Type of transform configuration",
-            "default": "FILESET_QUERY_SEED_GENERATOR"
-          },
-          "file_set_id": {
-            "type": "string",
-            "title": "File Set Id",
-            "description": "FileSet ID to query"
-          },
-          "prompts": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Prompts",
-            "description": "List of queries to run against the fileset"
-          },
-          "metadata_filters": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Metadata Filters",
-            "description": "Optional list of AIP-160 metadata filters to select which documents to process. Documents matching ANY filter will be included. (e.g., [\"ticker='AAL'\", \"ticker='MSFT'\"])"
-          },
-          "system_instruction": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "System Instruction",
-            "description": "Optional system instruction for the Gemini model"
-          }
-        },
-        "type": "object",
-        "required": [
-          "file_set_id",
-          "prompts"
-        ],
-        "title": "FileSetQuerySeedGenerator",
-        "description": "Configuration for FileSet Query Seed Generator transform."
-      },
-      "FileSetRAGLabeler": {
-        "properties": {
-          "config_type": {
-            "type": "string",
-            "const": "FILESET_RAG_LABELER",
-            "title": "Config Type",
-            "description": "Type of transform configuration",
-            "default": "FILESET_RAG_LABELER"
-          },
-          "file_set_id": {
-            "type": "string",
-            "title": "File Set Id",
-            "description": "FileSet ID to query for labeling"
-          },
-          "metadata_filter_keys": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Metadata Filter Keys",
-            "description": "Keys from seed's file_metadata for dynamic filtering (e.g., ['ticker'])"
-          },
-          "metadata_filter": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Metadata Filter",
-            "description": "Static AIP-160 metadata filter (combined with dynamic via AND)"
-          },
-          "system_instruction": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "System Instruction",
-            "description": "Optional system instruction for the Gemini RAG query"
-          },
-          "confidence_threshold": {
-            "type": "number",
-            "title": "Confidence Threshold",
-            "description": "Minimum confidence threshold for including questions",
-            "default": 0.9
-          },
-          "answer_type": {
-            "anyOf": [
-              {
-                "oneOf": [
-                  {
-                    "$ref": "#/components/schemas/BinaryAnswerType"
-                  },
-                  {
-                    "$ref": "#/components/schemas/MultipleChoiceAnswerType"
-                  },
-                  {
-                    "$ref": "#/components/schemas/ContinuousAnswerType"
-                  },
-                  {
-                    "$ref": "#/components/schemas/ContinuousValueOnlyAnswerType"
-                  },
-                  {
-                    "$ref": "#/components/schemas/FreeResponseAnswerType"
-                  }
-                ],
-                "discriminator": {
-                  "propertyName": "answer_type",
-                  "mapping": {
-                    "BINARY": "#/components/schemas/BinaryAnswerType",
-                    "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
-                    "CONTINUOUS_VALUE_ONLY": "#/components/schemas/ContinuousValueOnlyAnswerType",
-                    "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
-                    "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
-                  }
-                }
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Answer Type",
-            "description": "The type of answer expected, used to guide the labeler"
-          },
-          "temporal_constraint": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/TemporalConstraint"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Filter documents by date relative to seed date. AFTER (>) for resolution docs, BEFORE (<=) for historical only."
-          },
-          "model": {
-            "type": "string",
-            "title": "Model",
-            "description": "Gemini model for RAG query",
-            "default": "gemini-2.5-flash"
-          }
-        },
-        "type": "object",
-        "required": [
-          "file_set_id"
-        ],
-        "title": "FileSetRAGLabeler",
-        "description": "Configuration for FileSet RAG Labeler transform."
       },
       "FileSetSeedGenerator": {
         "properties": {
@@ -3911,36 +3316,6 @@
         ],
         "title": "FileSetSeedGenerator",
         "description": "Configuration for FileSet Seed Generator transform."
-      },
-      "FileStatusCountsResponse": {
-        "properties": {
-          "pending": {
-            "type": "integer",
-            "title": "Pending",
-            "description": "Files awaiting processing",
-            "default": 0
-          },
-          "processing": {
-            "type": "integer",
-            "title": "Processing",
-            "description": "Files currently being processed",
-            "default": 0
-          },
-          "active": {
-            "type": "integer",
-            "title": "Active",
-            "description": "Successfully processed files",
-            "default": 0
-          },
-          "failed": {
-            "type": "integer",
-            "title": "Failed",
-            "description": "Files that failed processing",
-            "default": 0
-          }
-        },
-        "type": "object",
-        "title": "FileStatusCountsResponse"
       },
       "FilterCriteria": {
         "properties": {
@@ -4521,43 +3896,6 @@
           "total"
         ],
         "title": "ListDatasetsResponse"
-      },
-      "ListFileSetFilesResponse": {
-        "properties": {
-          "files": {
-            "items": {
-              "$ref": "#/components/schemas/FileSetFile"
-            },
-            "type": "array",
-            "title": "Files"
-          },
-          "next_cursor": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Next Cursor"
-          },
-          "has_more": {
-            "type": "boolean",
-            "title": "Has More"
-          },
-          "total": {
-            "type": "integer",
-            "title": "Total"
-          }
-        },
-        "type": "object",
-        "required": [
-          "files",
-          "has_more",
-          "total"
-        ],
-        "title": "ListFileSetFilesResponse"
       },
       "ListFileSetsResponse": {
         "properties": {
@@ -5470,6 +4808,246 @@
         "title": "PipelineStepSummary",
         "description": "Summary of a single pipeline step including rejection reasons."
       },
+      "QdrantContextGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "QDRANT_CONTEXT_GENERATOR",
+            "title": "Config Type",
+            "default": "QDRANT_CONTEXT_GENERATOR"
+          },
+          "file_set_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Set Id",
+            "description": "FileSet ID to load Qdrant collection from GCS snapshot. When set, collection_name is read from the FileSet record."
+          },
+          "collection_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Collection Name",
+            "description": "Qdrant collection to query. Required when using direct injection, auto-populated when using file_set_id."
+          },
+          "embedding_model": {
+            "type": "string",
+            "title": "Embedding Model",
+            "description": "FastEmbed model name for query embedding (used when file_set_id is set)",
+            "default": "BAAI/bge-small-en-v1.5"
+          },
+          "top_k": {
+            "type": "integer",
+            "title": "Top K",
+            "description": "Number of chunks to retrieve",
+            "default": 5
+          },
+          "temporal_direction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temporal Direction",
+            "description": "'before' filters timestamp <= seed date (includes seed's document), 'after' filters timestamp > seed date, None = no filter"
+          },
+          "payload_filters": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payload Filters",
+            "description": "Static payload filters as {key: meta_key} mapping. Values extracted from sample.meta at query time."
+          },
+          "timestamp_key": {
+            "type": "string",
+            "title": "Timestamp Key",
+            "description": "Payload key for timestamp (unix epoch int)",
+            "default": "timestamp"
+          },
+          "text_key": {
+            "type": "string",
+            "title": "Text Key",
+            "description": "Payload key for chunk text",
+            "default": "text"
+          },
+          "source_key": {
+            "type": "string",
+            "title": "Source Key",
+            "description": "Payload key for source filename",
+            "default": "source_file"
+          }
+        },
+        "type": "object",
+        "title": "QdrantContextGenerator",
+        "description": "Configuration for Qdrant Context Generator transform."
+      },
+      "QdrantRAGLabeler": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "QDRANT_RAG_LABELER",
+            "title": "Config Type",
+            "default": "QDRANT_RAG_LABELER"
+          },
+          "file_set_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Set Id",
+            "description": "FileSet ID to load Qdrant collection from GCS snapshot."
+          },
+          "collection_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Collection Name",
+            "description": "Qdrant collection to query (required when using direct injection)."
+          },
+          "embedding_model": {
+            "type": "string",
+            "title": "Embedding Model",
+            "description": "FastEmbed model name for query embedding.",
+            "default": "BAAI/bge-small-en-v1.5"
+          },
+          "extraction_model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModelConfig"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "LLM model for structured label extraction. Defaults to gemini-2.5-flash."
+          },
+          "top_k": {
+            "type": "integer",
+            "title": "Top K",
+            "description": "Number of chunks to retrieve",
+            "default": 5
+          },
+          "temporal_direction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temporal Direction",
+            "description": "'before' or 'after' relative to seed date, or None for no filter."
+          },
+          "payload_filters": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payload Filters",
+            "description": "Payload filters as {payload_key: meta_key} mapping."
+          },
+          "confidence_threshold": {
+            "type": "number",
+            "title": "Confidence Threshold",
+            "description": "Minimum confidence threshold for including labels.",
+            "default": 0.9
+          },
+          "answer_type": {
+            "anyOf": [
+              {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BinaryAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MultipleChoiceAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ContinuousAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ContinuousValueOnlyAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FreeResponseAnswerType"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "answer_type",
+                  "mapping": {
+                    "BINARY": "#/components/schemas/BinaryAnswerType",
+                    "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "CONTINUOUS_VALUE_ONLY": "#/components/schemas/ContinuousValueOnlyAnswerType",
+                    "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
+                    "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer Type",
+            "description": "Expected answer type to guide the labeler."
+          },
+          "timestamp_key": {
+            "type": "string",
+            "title": "Timestamp Key",
+            "default": "timestamp"
+          },
+          "text_key": {
+            "type": "string",
+            "title": "Text Key",
+            "default": "text"
+          },
+          "source_key": {
+            "type": "string",
+            "title": "Source Key",
+            "default": "source_file"
+          }
+        },
+        "type": "object",
+        "title": "QdrantRAGLabeler",
+        "description": "Configuration for Qdrant RAG Labeler transform."
+      },
       "Question": {
         "properties": {
           "question_type": {
@@ -5733,9 +5311,6 @@
                     "$ref": "#/components/schemas/FileSetSeedGenerator"
                   },
                   {
-                    "$ref": "#/components/schemas/FileSetQuerySeedGenerator"
-                  },
-                  {
                     "$ref": "#/components/schemas/TopicTreeSeedGenerator"
                   },
                   {
@@ -5750,7 +5325,6 @@
                   "mapping": {
                     "BIGQUERY_SEED_GENERATOR": "#/components/schemas/BigQuerySeedGenerator",
                     "CSV_SEED_GENERATOR": "#/components/schemas/CsvSeedGenerator",
-                    "FILESET_QUERY_SEED_GENERATOR": "#/components/schemas/FileSetQuerySeedGenerator",
                     "FILESET_SEED_GENERATOR": "#/components/schemas/FileSetSeedGenerator",
                     "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
                     "MOCK": "#/components/schemas/MockTransformConfig",
@@ -5828,7 +5402,7 @@
               }
             ],
             "title": "Deduplication",
-            "description": "Deduplication config. Defaults to exact dedup on question_text. Set to None to disable."
+            "description": "Deduplication config. Set to KeyDeduplication() to enable exact/fuzzy dedup on question fields."
           },
           "labeler": {
             "anyOf": [
@@ -5838,7 +5412,7 @@
                     "$ref": "#/components/schemas/WebSearchLabeler"
                   },
                   {
-                    "$ref": "#/components/schemas/FileSetRAGLabeler"
+                    "$ref": "#/components/schemas/QdrantRAGLabeler"
                   },
                   {
                     "$ref": "#/components/schemas/FileSetDocumentLabeler"
@@ -5851,8 +5425,8 @@
                   "propertyName": "config_type",
                   "mapping": {
                     "FILESET_DOCUMENT_LABELER": "#/components/schemas/FileSetDocumentLabeler",
-                    "FILESET_RAG_LABELER": "#/components/schemas/FileSetRAGLabeler",
                     "MOCK": "#/components/schemas/MockTransformConfig",
+                    "QDRANT_RAG_LABELER": "#/components/schemas/QdrantRAGLabeler",
                     "WEB_SEARCH_LABELER": "#/components/schemas/WebSearchLabeler"
                   }
                 }
@@ -5873,7 +5447,7 @@
                       "$ref": "#/components/schemas/NewsContextGenerator"
                     },
                     {
-                      "$ref": "#/components/schemas/FileSetContextGenerator"
+                      "$ref": "#/components/schemas/QdrantContextGenerator"
                     },
                     {
                       "$ref": "#/components/schemas/FileSetDocumentContextGenerator"
@@ -6072,6 +5646,18 @@
             "type": "string",
             "title": "Content",
             "description": "The content of the message"
+          },
+          "thinking": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thinking",
+            "description": "The model's reasoning/thinking content, if available"
           }
         },
         "type": "object",
@@ -6080,34 +5666,6 @@
           "content"
         ],
         "title": "ResponseMessage"
-      },
-      "RetryFailedFilesRequest": {
-        "properties": {
-          "max_retries": {
-            "type": "integer",
-            "maximum": 10.0,
-            "minimum": 1.0,
-            "title": "Max Retries",
-            "description": "Maximum retry attempts per file",
-            "default": 3
-          }
-        },
-        "type": "object",
-        "title": "RetryFailedFilesRequest"
-      },
-      "RetryFailedFilesResponse": {
-        "properties": {
-          "files_reset": {
-            "type": "integer",
-            "title": "Files Reset",
-            "description": "Number of files reset to PENDING status"
-          }
-        },
-        "type": "object",
-        "required": [
-          "files_reset"
-        ],
-        "title": "RetryFailedFilesResponse"
       },
       "RewardFunctionType": {
         "type": "string",
@@ -6582,7 +6140,7 @@
           "EQUAL"
         ],
         "title": "TemporalConstraint",
-        "description": "Temporal filtering direction relative to the seed document's date.\n\nUses the `file_date` metadata key (unix timestamp int) stored on each\nGemini document by fileset_file_processor.\n\nBEFORE: file_date <= seed_timestamp  (RAG context: no lookahead bias, multi-doc)\nAFTER:  file_date >  seed_timestamp  (RAG labels: find resolutions, multi-doc)\nNEXT_DOCUMENT: first file after seed_timestamp (single-doc resolution)\nPREVIOUS_DOCUMENT: most recent file before seed_timestamp (single-doc resolution)\nEQUAL: file_date == seed_timestamp (exact match, single-doc)"
+        "description": "Temporal filtering direction relative to the seed document's date.\n\nUses the `file_date` metadata key (unix timestamp int) from the manifest.\n\nBEFORE: file_date <= seed_timestamp  (context: no lookahead bias, multi-doc)\nAFTER:  file_date >  seed_timestamp  (labels: find resolutions, multi-doc)\nNEXT_DOCUMENT: first file after seed_timestamp (single-doc resolution)\nPREVIOUS_DOCUMENT: most recent file before seed_timestamp (single-doc resolution)\nEQUAL: file_date == seed_timestamp (exact match, single-doc)"
       },
       "TopicTreeSeedGenerator": {
         "properties": {
@@ -7168,16 +6726,15 @@
           "ROLLOUT_GENERATOR",
           "BIGQUERY_SEED_GENERATOR",
           "FILESET_SEED_GENERATOR",
-          "FILESET_QUERY_SEED_GENERATOR",
           "TEMPLATE_QUESTION_GENERATOR",
           "ROLLOUT_SCORER",
-          "FILESET_CONTEXT_GENERATOR",
-          "FILESET_RAG_LABELER",
           "FILESET_DOCUMENT_CONTEXT_GENERATOR",
           "FILESET_DOCUMENT_LABELER",
           "TOPIC_TREE_SEED_GENERATOR",
           "CSV_SEED_GENERATOR",
           "KEY_DEDUPLICATION",
+          "QDRANT_CONTEXT_GENERATOR",
+          "QDRANT_RAG_LABELER",
           "MOCK"
         ],
         "title": "TransformType"

@@ -10,16 +10,15 @@ from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.csv_seed_generator import CsvSeedGenerator
-    from ..models.file_set_context_generator import FileSetContextGenerator
     from ..models.file_set_document_context_generator import FileSetDocumentContextGenerator
     from ..models.file_set_document_labeler import FileSetDocumentLabeler
-    from ..models.file_set_query_seed_generator import FileSetQuerySeedGenerator
-    from ..models.file_set_rag_labeler import FileSetRAGLabeler
     from ..models.file_set_seed_generator import FileSetSeedGenerator
     from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
     from ..models.gdelt_seed_generator import GdeltSeedGenerator
     from ..models.key_deduplication import KeyDeduplication
     from ..models.news_seed_generator import NewsSeedGenerator
+    from ..models.qdrant_context_generator import QdrantContextGenerator
+    from ..models.qdrant_rag_labeler import QdrantRAGLabeler
     from ..models.question_and_label_generator import QuestionAndLabelGenerator
     from ..models.question_generator import QuestionGenerator
     from ..models.question_pipeline import QuestionPipeline
@@ -35,25 +34,24 @@ T = TypeVar("T", bound="EstimateCostRequest")
 class EstimateCostRequest:
     """
     Attributes:
-        config (CsvSeedGenerator | FileSetContextGenerator | FileSetDocumentContextGenerator | FileSetDocumentLabeler |
-            FileSetQuerySeedGenerator | FileSetRAGLabeler | FileSetSeedGenerator | ForwardLookingQuestionGenerator |
-            GdeltSeedGenerator | KeyDeduplication | NewsSeedGenerator | QuestionAndLabelGenerator | QuestionGenerator |
-            QuestionPipeline | QuestionRenderer | TopicTreeSeedGenerator | WebSearchLabeler):
+        config (CsvSeedGenerator | FileSetDocumentContextGenerator | FileSetDocumentLabeler | FileSetSeedGenerator |
+            ForwardLookingQuestionGenerator | GdeltSeedGenerator | KeyDeduplication | NewsSeedGenerator |
+            QdrantContextGenerator | QdrantRAGLabeler | QuestionAndLabelGenerator | QuestionGenerator | QuestionPipeline |
+            QuestionRenderer | TopicTreeSeedGenerator | WebSearchLabeler):
         max_questions (int | None | Unset):
     """
 
     config: (
         CsvSeedGenerator
-        | FileSetContextGenerator
         | FileSetDocumentContextGenerator
         | FileSetDocumentLabeler
-        | FileSetQuerySeedGenerator
-        | FileSetRAGLabeler
         | FileSetSeedGenerator
         | ForwardLookingQuestionGenerator
         | GdeltSeedGenerator
         | KeyDeduplication
         | NewsSeedGenerator
+        | QdrantContextGenerator
+        | QdrantRAGLabeler
         | QuestionAndLabelGenerator
         | QuestionGenerator
         | QuestionPipeline
@@ -66,16 +64,15 @@ class EstimateCostRequest:
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.csv_seed_generator import CsvSeedGenerator
-        from ..models.file_set_context_generator import FileSetContextGenerator
         from ..models.file_set_document_context_generator import FileSetDocumentContextGenerator
         from ..models.file_set_document_labeler import FileSetDocumentLabeler
-        from ..models.file_set_query_seed_generator import FileSetQuerySeedGenerator
-        from ..models.file_set_rag_labeler import FileSetRAGLabeler
         from ..models.file_set_seed_generator import FileSetSeedGenerator
         from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
         from ..models.gdelt_seed_generator import GdeltSeedGenerator
         from ..models.key_deduplication import KeyDeduplication
         from ..models.news_seed_generator import NewsSeedGenerator
+        from ..models.qdrant_context_generator import QdrantContextGenerator
+        from ..models.qdrant_rag_labeler import QdrantRAGLabeler
         from ..models.question_and_label_generator import QuestionAndLabelGenerator
         from ..models.question_generator import QuestionGenerator
         from ..models.question_pipeline import QuestionPipeline
@@ -85,15 +82,9 @@ class EstimateCostRequest:
         config: dict[str, Any]
         if isinstance(self.config, CsvSeedGenerator):
             config = self.config.to_dict()
-        elif isinstance(self.config, FileSetContextGenerator):
-            config = self.config.to_dict()
         elif isinstance(self.config, FileSetDocumentContextGenerator):
             config = self.config.to_dict()
         elif isinstance(self.config, FileSetDocumentLabeler):
-            config = self.config.to_dict()
-        elif isinstance(self.config, FileSetQuerySeedGenerator):
-            config = self.config.to_dict()
-        elif isinstance(self.config, FileSetRAGLabeler):
             config = self.config.to_dict()
         elif isinstance(self.config, FileSetSeedGenerator):
             config = self.config.to_dict()
@@ -108,6 +99,10 @@ class EstimateCostRequest:
         elif isinstance(self.config, QuestionAndLabelGenerator):
             config = self.config.to_dict()
         elif isinstance(self.config, QuestionGenerator):
+            config = self.config.to_dict()
+        elif isinstance(self.config, QdrantContextGenerator):
+            config = self.config.to_dict()
+        elif isinstance(self.config, QdrantRAGLabeler):
             config = self.config.to_dict()
         elif isinstance(self.config, QuestionPipeline):
             config = self.config.to_dict()
@@ -139,16 +134,15 @@ class EstimateCostRequest:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.csv_seed_generator import CsvSeedGenerator
-        from ..models.file_set_context_generator import FileSetContextGenerator
         from ..models.file_set_document_context_generator import FileSetDocumentContextGenerator
         from ..models.file_set_document_labeler import FileSetDocumentLabeler
-        from ..models.file_set_query_seed_generator import FileSetQuerySeedGenerator
-        from ..models.file_set_rag_labeler import FileSetRAGLabeler
         from ..models.file_set_seed_generator import FileSetSeedGenerator
         from ..models.forward_looking_question_generator import ForwardLookingQuestionGenerator
         from ..models.gdelt_seed_generator import GdeltSeedGenerator
         from ..models.key_deduplication import KeyDeduplication
         from ..models.news_seed_generator import NewsSeedGenerator
+        from ..models.qdrant_context_generator import QdrantContextGenerator
+        from ..models.qdrant_rag_labeler import QdrantRAGLabeler
         from ..models.question_and_label_generator import QuestionAndLabelGenerator
         from ..models.question_generator import QuestionGenerator
         from ..models.question_pipeline import QuestionPipeline
@@ -162,16 +156,15 @@ class EstimateCostRequest:
             data: object,
         ) -> (
             CsvSeedGenerator
-            | FileSetContextGenerator
             | FileSetDocumentContextGenerator
             | FileSetDocumentLabeler
-            | FileSetQuerySeedGenerator
-            | FileSetRAGLabeler
             | FileSetSeedGenerator
             | ForwardLookingQuestionGenerator
             | GdeltSeedGenerator
             | KeyDeduplication
             | NewsSeedGenerator
+            | QdrantContextGenerator
+            | QdrantRAGLabeler
             | QuestionAndLabelGenerator
             | QuestionGenerator
             | QuestionPipeline
@@ -190,7 +183,7 @@ class EstimateCostRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_1 = FileSetContextGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_1 = FileSetDocumentContextGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_1
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -198,7 +191,7 @@ class EstimateCostRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_2 = FileSetDocumentContextGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_2 = FileSetDocumentLabeler.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_2
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -206,7 +199,7 @@ class EstimateCostRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_3 = FileSetDocumentLabeler.from_dict(data)
+                componentsschemas_create_transform_config_type_3 = FileSetSeedGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_3
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -214,7 +207,7 @@ class EstimateCostRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_4 = FileSetQuerySeedGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_4 = ForwardLookingQuestionGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_4
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -222,7 +215,7 @@ class EstimateCostRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_5 = FileSetRAGLabeler.from_dict(data)
+                componentsschemas_create_transform_config_type_5 = GdeltSeedGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_5
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -230,7 +223,7 @@ class EstimateCostRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_6 = FileSetSeedGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_6 = KeyDeduplication.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_6
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -238,7 +231,7 @@ class EstimateCostRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_7 = ForwardLookingQuestionGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_7 = NewsSeedGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_7
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -246,7 +239,7 @@ class EstimateCostRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_8 = GdeltSeedGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_8 = QuestionAndLabelGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_8
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -254,7 +247,7 @@ class EstimateCostRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_9 = KeyDeduplication.from_dict(data)
+                componentsschemas_create_transform_config_type_9 = QuestionGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_9
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -262,7 +255,7 @@ class EstimateCostRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_10 = NewsSeedGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_10 = QdrantContextGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_10
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -270,7 +263,7 @@ class EstimateCostRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_11 = QuestionAndLabelGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_11 = QdrantRAGLabeler.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_11
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -278,7 +271,7 @@ class EstimateCostRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_12 = QuestionGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_12 = QuestionPipeline.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_12
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -286,7 +279,7 @@ class EstimateCostRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_13 = QuestionPipeline.from_dict(data)
+                componentsschemas_create_transform_config_type_13 = QuestionRenderer.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_13
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -294,24 +287,16 @@ class EstimateCostRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_14 = QuestionRenderer.from_dict(data)
+                componentsschemas_create_transform_config_type_14 = TopicTreeSeedGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_14
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_create_transform_config_type_15 = TopicTreeSeedGenerator.from_dict(data)
-
-                return componentsschemas_create_transform_config_type_15
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
             if not isinstance(data, dict):
                 raise TypeError()
-            componentsschemas_create_transform_config_type_16 = WebSearchLabeler.from_dict(data)
+            componentsschemas_create_transform_config_type_15 = WebSearchLabeler.from_dict(data)
 
-            return componentsschemas_create_transform_config_type_16
+            return componentsschemas_create_transform_config_type_15
 
         config = _parse_config(d.pop("config"))
 

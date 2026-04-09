@@ -6,14 +6,14 @@ from typing import Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="CreateFileSetFileRequestMetadataType0")
+T = TypeVar("T", bound="QdrantRAGLabelerPayloadFiltersType0")
 
 
 @_attrs_define
-class CreateFileSetFileRequestMetadataType0:
+class QdrantRAGLabelerPayloadFiltersType0:
     """ """
 
-    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, str] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         field_dict: dict[str, Any] = {}
@@ -24,19 +24,19 @@ class CreateFileSetFileRequestMetadataType0:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        create_file_set_file_request_metadata_type_0 = cls()
+        qdrant_rag_labeler_payload_filters_type_0 = cls()
 
-        create_file_set_file_request_metadata_type_0.additional_properties = d
-        return create_file_set_file_request_metadata_type_0
+        qdrant_rag_labeler_payload_filters_type_0.additional_properties = d
+        return qdrant_rag_labeler_payload_filters_type_0
 
     @property
     def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
-    def __getitem__(self, key: str) -> Any:
+    def __getitem__(self, key: str) -> str:
         return self.additional_properties[key]
 
-    def __setitem__(self, key: str, value: Any) -> None:
+    def __setitem__(self, key: str, value: str) -> None:
         self.additional_properties[key] = value
 
     def __delitem__(self, key: str) -> None:

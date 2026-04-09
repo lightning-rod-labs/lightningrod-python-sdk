@@ -51,7 +51,7 @@ class LightningRod:
         self.training: TrainingClient = TrainingClient(self._generated_client)
         self.evals: EvalsClient = EvalsClient(self._generated_client)
         self.files: FilesClient = FilesClient(self._generated_client)
-        self.filesets: FileSetsClient = FileSetsClient(self._generated_client, self.files)
+        self.filesets: FileSetsClient = FileSetsClient(self._generated_client)
 
     def predict(
         self,

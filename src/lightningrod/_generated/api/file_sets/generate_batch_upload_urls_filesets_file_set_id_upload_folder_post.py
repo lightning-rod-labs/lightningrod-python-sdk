@@ -6,28 +6,27 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
+from ...models.batch_upload_request import BatchUploadRequest
+from ...models.batch_upload_response import BatchUploadResponse
 from ...models.http_validation_error import HTTPValidationError
-from ...models.retry_failed_files_request import RetryFailedFilesRequest
-from ...models.retry_failed_files_response import RetryFailedFilesResponse
-from ...types import UNSET, Response, Unset
+from ...types import Response
 
 
 def _get_kwargs(
     file_set_id: str,
     *,
-    body: RetryFailedFilesRequest | Unset = UNSET,
+    body: BatchUploadRequest,
 ) -> dict[str, Any]:
     headers: dict[str, Any] = {}
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/filesets/{file_set_id}/retry-failed".format(
+        "url": "/filesets/{file_set_id}/upload-folder".format(
             file_set_id=quote(str(file_set_id), safe=""),
         ),
     }
 
-    if not isinstance(body, Unset):
-        _kwargs["json"] = body.to_dict()
+    _kwargs["json"] = body.to_dict()
 
     headers["Content-Type"] = "application/json"
 
@@ -37,9 +36,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> HTTPValidationError | RetryFailedFilesResponse | None:
+) -> BatchUploadResponse | HTTPValidationError | None:
     if response.status_code == 200:
-        response_200 = RetryFailedFilesResponse.from_dict(response.json())
+        response_200 = BatchUploadResponse.from_dict(response.json())
 
         return response_200
 
@@ -56,7 +55,7 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[HTTPValidationError | RetryFailedFilesResponse]:
+) -> Response[BatchUploadResponse | HTTPValidationError]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -69,22 +68,24 @@ def sync_detailed(
     file_set_id: str,
     *,
     client: AuthenticatedClient,
-    body: RetryFailedFilesRequest | Unset = UNSET,
-) -> Response[HTTPValidationError | RetryFailedFilesResponse]:
-    """Retry Failed Files
+    body: BatchUploadRequest,
+) -> Response[BatchUploadResponse | HTTPValidationError]:
+    """Generate Batch Upload Urls
 
-     Retry all failed files in a FileSet.
+     Generate signed upload URLs for batch file upload to a GCS folder.
+
+    Returns URLs for all requested files plus a _manifest.json URL.
 
     Args:
         file_set_id (str):
-        body (RetryFailedFilesRequest | Unset):
+        body (BatchUploadRequest):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | RetryFailedFilesResponse]
+        Response[BatchUploadResponse | HTTPValidationError]
     """
 
     kwargs = _get_kwargs(
@@ -103,22 +104,24 @@ def sync(
     file_set_id: str,
     *,
     client: AuthenticatedClient,
-    body: RetryFailedFilesRequest | Unset = UNSET,
-) -> HTTPValidationError | RetryFailedFilesResponse | None:
-    """Retry Failed Files
+    body: BatchUploadRequest,
+) -> BatchUploadResponse | HTTPValidationError | None:
+    """Generate Batch Upload Urls
 
-     Retry all failed files in a FileSet.
+     Generate signed upload URLs for batch file upload to a GCS folder.
+
+    Returns URLs for all requested files plus a _manifest.json URL.
 
     Args:
         file_set_id (str):
-        body (RetryFailedFilesRequest | Unset):
+        body (BatchUploadRequest):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | RetryFailedFilesResponse
+        BatchUploadResponse | HTTPValidationError
     """
 
     return sync_detailed(
@@ -132,22 +135,24 @@ async def asyncio_detailed(
     file_set_id: str,
     *,
     client: AuthenticatedClient,
-    body: RetryFailedFilesRequest | Unset = UNSET,
-) -> Response[HTTPValidationError | RetryFailedFilesResponse]:
-    """Retry Failed Files
+    body: BatchUploadRequest,
+) -> Response[BatchUploadResponse | HTTPValidationError]:
+    """Generate Batch Upload Urls
 
-     Retry all failed files in a FileSet.
+     Generate signed upload URLs for batch file upload to a GCS folder.
+
+    Returns URLs for all requested files plus a _manifest.json URL.
 
     Args:
         file_set_id (str):
-        body (RetryFailedFilesRequest | Unset):
+        body (BatchUploadRequest):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | RetryFailedFilesResponse]
+        Response[BatchUploadResponse | HTTPValidationError]
     """
 
     kwargs = _get_kwargs(
@@ -164,22 +169,24 @@ async def asyncio(
     file_set_id: str,
     *,
     client: AuthenticatedClient,
-    body: RetryFailedFilesRequest | Unset = UNSET,
-) -> HTTPValidationError | RetryFailedFilesResponse | None:
-    """Retry Failed Files
+    body: BatchUploadRequest,
+) -> BatchUploadResponse | HTTPValidationError | None:
+    """Generate Batch Upload Urls
 
-     Retry all failed files in a FileSet.
+     Generate signed upload URLs for batch file upload to a GCS folder.
+
+    Returns URLs for all requested files plus a _manifest.json URL.
 
     Args:
         file_set_id (str):
-        body (RetryFailedFilesRequest | Unset):
+        body (BatchUploadRequest):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | RetryFailedFilesResponse
+        BatchUploadResponse | HTTPValidationError
     """
 
     return (
