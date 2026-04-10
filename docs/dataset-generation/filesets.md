@@ -11,7 +11,7 @@ A **FileSet** is a collection of documents with optional metadata that you can u
 Create a fileset with `lr.filesets.create()`. Optionally define a metadata schema so you can filter and organize documents by fields like `ticker`, `quarter`, or `document_type`.
 
 ```python
-from lightningrod._generated.models import (
+from lightningrod import (
     FileSetMetadataSchemaInput,
     MetadataFieldDefinitionInput,
     MetadataFieldType,
@@ -49,41 +49,73 @@ fileset = lr.filesets.create(
 
 ## Uploading Files
 
-Upload files with `lr.filesets.files.upload()`. Each file can have metadata and a `file_date` for temporal filtering.
+The SDK provides high-level methods that handle all upload complexity:
+
+### upload_files() — Upload a list of files
 
 ```python
-lr.filesets.files.upload(
-    file_set_id=fileset.id,
-    file_path="/path/to/document.pdf",
-    metadata={"ticker": "AAPL", "quarter": "Q1 2024"},
-    file_date=datetime(2024, 3, 31),
+from datetime import datetime
+
+# Simple upload without metadata
+result = lr.filesets.upload_files(fileset.id, ["doc1.pdf", "doc2.pdf"])
+
+# Upload with metadata
+result = lr.filesets.upload_files(
+    fileset.id,
+    ["report_q1.pdf", "report_q2.pdf"],
+    metadata={
+        "report_q1.pdf": {"ticker": "AAPL", "quarter": "Q1 2024", "file_date": datetime(2024, 3, 31)},
+        "report_q2.pdf": {"ticker": "AAPL", "quarter": "Q2 2024", "file_date": datetime(2024, 6, 30)},
+    }
+)
+
+print(f"Uploaded {result.succeeded} files, {result.failed} failed")
+```
+
+### upload_directory() — Upload all files from a directory
+
+```python
+# Upload all PDFs from a directory
+result = lr.filesets.upload_directory(
+    fileset.id,
+    "/path/to/reports",
+    pattern="*.pdf"
+)
+
+# Upload with metadata derived from filenames
+def get_metadata(path):
+    # e.g., "AAPL_Q1_2024.pdf" -> {"ticker": "AAPL", "quarter": "Q1 2024"}
+    parts = path.stem.split("_")
+    return {"ticker": parts[0], "quarter": f"{parts[1]} {parts[2]}"}
+
+result = lr.filesets.upload_directory(
+    fileset.id,
+    "/path/to/reports",
+    pattern="*.pdf",
+    metadata_fn=get_metadata
 )
 ```
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `file_set_id` | str | Yes | FileSet ID |
-| `file_path` | str | Yes | Path to the file |
-| `metadata` | dict | No | Metadata dict (must match schema if defined) |
-| `file_date` | datetime | No | Document date for temporal filtering |
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `file_set_id` | str | — | FileSet ID |
+| `file_paths` / `directory` | list or str | — | Files to upload |
+| `metadata` / `metadata_fn` | dict or callable | None | File metadata |
+| `pattern` | str | "*" | Glob pattern (for upload_directory) |
+| `max_workers` | int | 10 | Parallel upload threads |
 
-Files start in `PENDING` status and move to `ACTIVE` after processing (typically 1–2 minutes). Poll `lr.filesets.files.list()` until all files are `ACTIVE` before using the FileSet for generation.
-
-## Listing Files
-
-```python
-response = lr.filesets.files.list(file_set_id=fileset.id)
-for f in response.files:
-    print(f"{f.original_file_name}: {f.status} — {f.metadata}")
-```
+The vector index is built automatically when the FileSet is first used in a pipeline.
 
 ## Using FileSets in Pipelines
 
-Once files are `ACTIVE`, use the FileSet with:
+Use the FileSet with:
 
 - **FileSetSeedGenerator** — chunks documents into seeds (see [Seed Generators](seed-generators.md))
-- **FileSetQuerySeedGenerator** — runs RAG-style queries to produce seeds from retrieved chunks (see [Seed Generators](seed-generators.md))
-- **FileSetContextGenerator** — retrieves context from the FileSet during question generation (see [Labeling and Context](labeling-and-context.md))
-- **FileSetRAGLabeler** — resolves questions by searching the FileSet for answers (see [Labeling and Context](labeling-and-context.md))
+- **QdrantContextGenerator** — retrieves context from the FileSet during question generation (see [Labeling and Context](labeling-and-context.md))
+- **QdrantRAGLabeler** — resolves questions by searching the FileSet for answers (see [Labeling and Context](labeling-and-context.md))
+
+For document-level transforms:
+- **FileSetDocumentContextGenerator** — adds full document text as context
+- **FileSetDocumentLabeler** — extracts labels from full documents
 
 See the [Custom Filesets examples](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/custom_filesets/01_create_fileset.ipynb) for a full workflow.

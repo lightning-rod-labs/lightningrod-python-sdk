@@ -5,6 +5,7 @@ AI-powered forecasting dataset generation platform.
 """
 
 from lightningrod.client import LightningRod
+from lightningrod.filesets.client import UploadResult
 from lightningrod.datasets.dataset import SampleDataset, AsyncDataset
 from lightningrod import preprocessing, training, utils
 from lightningrod.utils.sample import create_sample
