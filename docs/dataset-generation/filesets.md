@@ -44,6 +44,7 @@ fileset = lr.filesets.create(
 | `name` | str | Yes | FileSet name |
 | `description` | str | No | Optional description |
 | `metadata_schema` | FileSetMetadataSchemaInput | No | Schema for file metadata fields |
+| `rag_enabled` | bool | No (default `True`) | Enable RAG indexing for this FileSet; set to `False` for document-only workflows |
 
 **MetadataFieldDefinitionInput** fields: `name`, `field_type` (`MetadataFieldType.STRING` or `MetadataFieldType.NUMBER`), `required`, `description`, `extraction_hint`.
 
@@ -66,8 +67,30 @@ lr.filesets.files.upload(
 | `file_path` | str | Yes | Path to the file |
 | `metadata` | dict | No | Metadata dict (must match schema if defined) |
 | `file_date` | datetime | No | Document date for temporal filtering |
+| `auto_extract_metadata` | bool | No (default `False`) | Automatically extract metadata fields from the document content using the FileSet's schema |
 
 Files start in `PENDING` status and move to `ACTIVE` after processing (typically 1–2 minutes). Poll `lr.filesets.files.list()` until all files are `ACTIVE` before using the FileSet for generation.
+
+## Adding an Existing File
+
+If you have already uploaded a file via `lr.files.upload()` and want to add it to a FileSet without re-uploading, use `lr.filesets.files.add()`:
+
+```python
+lr.filesets.files.add(
+    file_set_id=fileset.id,
+    file_id="existing-file-id",
+    metadata={"ticker": "AAPL", "quarter": "Q1 2024"},
+    file_date=datetime(2024, 3, 31),
+)
+```
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `file_set_id` | str | Yes | FileSet ID |
+| `file_id` | str | Yes | ID of a previously uploaded file |
+| `metadata` | dict | No | Metadata dict (must match schema if defined) |
+| `file_date` | datetime | No | Document date for temporal filtering |
+| `auto_extract_metadata` | bool | No (default `False`) | Automatically extract metadata fields from the document content |
 
 ## Listing Files
 
