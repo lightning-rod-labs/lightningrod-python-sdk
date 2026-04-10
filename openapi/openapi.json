@@ -6404,9 +6404,9 @@
                     "propertyName": "context_type",
                     "mapping": {
                       "DOCUMENT_CONTEXT": "#/components/schemas/DocumentContext",
-                      "GOOGLE_SEARCH_CONTEXT": "#/components/schemas/WebSearchContext",
                       "NEWS_CONTEXT": "#/components/schemas/NewsContext",
-                      "RAG_CONTEXT": "#/components/schemas/RAGContext"
+                      "RAG_CONTEXT": "#/components/schemas/RAGContext",
+                      "WEB_SEARCH_CONTEXT": "#/components/schemas/WebSearchContext"
                     }
                   }
                 },
@@ -7350,9 +7350,9 @@
         "properties": {
           "context_type": {
             "type": "string",
-            "const": "GOOGLE_SEARCH_CONTEXT",
+            "const": "WEB_SEARCH_CONTEXT",
             "title": "Context Type",
-            "default": "GOOGLE_SEARCH_CONTEXT"
+            "default": "WEB_SEARCH_CONTEXT"
           },
           "rendered_context": {
             "type": "string",

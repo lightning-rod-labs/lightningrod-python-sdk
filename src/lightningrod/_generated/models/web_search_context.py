@@ -17,12 +17,12 @@ class WebSearchContext:
     Attributes:
         rendered_context (str):
         search_query (str):
-        context_type (Literal['GOOGLE_SEARCH_CONTEXT'] | Unset):  Default: 'GOOGLE_SEARCH_CONTEXT'.
+        context_type (Literal['WEB_SEARCH_CONTEXT'] | Unset):  Default: 'WEB_SEARCH_CONTEXT'.
     """
 
     rendered_context: str
     search_query: str
-    context_type: Literal["GOOGLE_SEARCH_CONTEXT"] | Unset = "GOOGLE_SEARCH_CONTEXT"
+    context_type: Literal["WEB_SEARCH_CONTEXT"] | Unset = "WEB_SEARCH_CONTEXT"
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -52,9 +52,9 @@ class WebSearchContext:
 
         search_query = d.pop("search_query")
 
-        context_type = cast(Literal["GOOGLE_SEARCH_CONTEXT"] | Unset, d.pop("context_type", UNSET))
-        if context_type != "GOOGLE_SEARCH_CONTEXT" and not isinstance(context_type, Unset):
-            raise ValueError(f"context_type must match const 'GOOGLE_SEARCH_CONTEXT', got '{context_type}'")
+        context_type = cast(Literal["WEB_SEARCH_CONTEXT"] | Unset, d.pop("context_type", UNSET))
+        if context_type != "WEB_SEARCH_CONTEXT" and not isinstance(context_type, Unset):
+            raise ValueError(f"context_type must match const 'WEB_SEARCH_CONTEXT', got '{context_type}'")
 
         web_search_context = cls(
             rendered_context=rendered_context,

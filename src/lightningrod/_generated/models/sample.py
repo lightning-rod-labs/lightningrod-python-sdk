@@ -11,7 +11,6 @@ from ..types import UNSET, Unset
 if TYPE_CHECKING:
     from ..models.document_context import DocumentContext
     from ..models.forward_looking_question import ForwardLookingQuestion
-    from ..models.google_search_context import GoogleSearchContext
     from ..models.label import Label
     from ..models.news_context import NewsContext
     from ..models.question import Question
@@ -19,6 +18,7 @@ if TYPE_CHECKING:
     from ..models.rollout import Rollout
     from ..models.sample_meta import SampleMeta
     from ..models.seed import Seed
+    from ..models.web_search_context import WebSearchContext
 
 
 T = TypeVar("T", bound="Sample")
@@ -33,7 +33,7 @@ class Sample:
         question (ForwardLookingQuestion | None | Question | Unset):
         label (Label | None | Unset):
         prompt (None | str | Unset):
-        context (list[DocumentContext | GoogleSearchContext | NewsContext | RAGContext] | None | Unset):
+        context (list[DocumentContext | NewsContext | RAGContext | WebSearchContext] | None | Unset):
         rollouts (list[Rollout] | None | Unset):
         meta (SampleMeta | Unset):
         is_valid (bool | Unset):  Default: True.
@@ -44,7 +44,7 @@ class Sample:
     question: ForwardLookingQuestion | None | Question | Unset = UNSET
     label: Label | None | Unset = UNSET
     prompt: None | str | Unset = UNSET
-    context: list[DocumentContext | GoogleSearchContext | NewsContext | RAGContext] | None | Unset = UNSET
+    context: list[DocumentContext | NewsContext | RAGContext | WebSearchContext] | None | Unset = UNSET
     rollouts: list[Rollout] | None | Unset = UNSET
     meta: SampleMeta | Unset = UNSET
     is_valid: bool | Unset = True
@@ -164,7 +164,6 @@ class Sample:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.document_context import DocumentContext
         from ..models.forward_looking_question import ForwardLookingQuestion
-        from ..models.google_search_context import GoogleSearchContext
         from ..models.label import Label
         from ..models.news_context import NewsContext
         from ..models.question import Question
@@ -172,6 +171,7 @@ class Sample:
         from ..models.rollout import Rollout
         from ..models.sample_meta import SampleMeta
         from ..models.seed import Seed
+        from ..models.web_search_context import WebSearchContext
 
         d = dict(src_dict)
 
@@ -254,7 +254,7 @@ class Sample:
 
         def _parse_context(
             data: object,
-        ) -> list[DocumentContext | GoogleSearchContext | NewsContext | RAGContext] | None | Unset:
+        ) -> list[DocumentContext | NewsContext | RAGContext | WebSearchContext] | None | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -268,7 +268,7 @@ class Sample:
 
                     def _parse_context_type_0_item(
                         data: object,
-                    ) -> DocumentContext | GoogleSearchContext | NewsContext | RAGContext:
+                    ) -> DocumentContext | NewsContext | RAGContext | WebSearchContext:
                         try:
                             if not isinstance(data, dict):
                                 raise TypeError()
@@ -295,7 +295,7 @@ class Sample:
                             pass
                         if not isinstance(data, dict):
                             raise TypeError()
-                        context_type_0_item_type_3 = GoogleSearchContext.from_dict(data)
+                        context_type_0_item_type_3 = WebSearchContext.from_dict(data)
 
                         return context_type_0_item_type_3
 
@@ -306,7 +306,7 @@ class Sample:
                 return context_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(list[DocumentContext | GoogleSearchContext | NewsContext | RAGContext] | None | Unset, data)
+            return cast(list[DocumentContext | NewsContext | RAGContext | WebSearchContext] | None | Unset, data)
 
         context = _parse_context(d.pop("context", UNSET))
 
