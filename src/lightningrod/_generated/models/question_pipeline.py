@@ -47,8 +47,8 @@ class QuestionPipeline:
             Configuration for seed generation
         question_generator (ForwardLookingQuestionGenerator | MockTransformConfig | None | QuestionAndLabelGenerator |
             QuestionGenerator | TemplateQuestionGenerator | Unset): Configuration for question generation
-        deduplication (KeyDeduplication | MockTransformConfig | None | Unset): Deduplication config. Defaults to exact
-            dedup on question_text. Set to None to disable.
+        deduplication (KeyDeduplication | MockTransformConfig | None | Unset): Deduplication config. Set to
+            KeyDeduplication() to enable exact/fuzzy dedup on question fields.
         labeler (FileSetDocumentLabeler | FileSetRAGLabeler | MockTransformConfig | None | Unset | WebSearchLabeler):
             Configuration for labeling. Not needed when using QuestionAndLabelGenerator.
         context_generators (list[FileSetContextGenerator | FileSetDocumentContextGenerator | MockTransformConfig |

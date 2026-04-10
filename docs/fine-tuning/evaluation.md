@@ -93,7 +93,7 @@ print_eval(eval_job)
 Access model IDs for intermediate training checkpoints via `TrainingJob.model_id_by_step`, then evaluate them individually or compare across steps:
 
 ```python
-# After training completes
+# After training completes (config is a GRPOTrainingConfig or SFTTrainingConfig)
 job = lr.training.run(config, dataset=train_dataset)
 
 # Evaluate a specific checkpoint (e.g. step 10)

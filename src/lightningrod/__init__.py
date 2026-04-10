@@ -11,7 +11,7 @@ from lightningrod.utils.sample import create_sample
 from lightningrod.utils.models import open_router_model
 from lightningrod.utils.examples import binary_example, continuous_example, multiple_choice_example
 from lightningrod.training import prepare_for_training, FilterParams, DedupParams, SplitParams
-from lightningrod.training.client import TrainingConfig
+from lightningrod.training.client import GRPOTrainingConfig, SFTTrainingConfig, TrainingMethodConfig
 from lightningrod._generated.models import (
     TransformJob,
     TransformJobStatus,
@@ -60,7 +60,7 @@ from lightningrod._generated.models import (
     EvalModel,
 )
 
-__version__ = "0.1.21"
+__version__ = "0.1.22"
 __all__ = [
     "preprocessing",
     "training",
@@ -112,7 +112,9 @@ __all__ = [
     "FilterParams",
     "DedupParams",
     "SplitParams",
-    "TrainingConfig",
+    "GRPOTrainingConfig",
+    "SFTTrainingConfig",
+    "TrainingMethodConfig",
     "Sample",
     "SampleMeta",
     "Seed",

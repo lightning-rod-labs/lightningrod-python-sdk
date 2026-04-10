@@ -88,10 +88,10 @@ See [Dataset Generation Overview](overview.md) for pipeline details.
 Pass a dataset to train a model:
 
 ```python
-job = lr.training.run(config, dataset=train_dataset)
+job = lr.training.run(training_config, dataset=train_dataset)
 ```
 
-See [Data Preparation](../fine-tuning/data-preparation.md) for filtering and splitting, and [Training](../fine-tuning/training.md) for full training options.
+`training_config` is a `GRPOTrainingConfig` or `SFTTrainingConfig` (see [Training](../fine-tuning/training.md)). See [Data Preparation](../fine-tuning/data-preparation.md) for filtering and splitting.
 
 ### Eval input
 

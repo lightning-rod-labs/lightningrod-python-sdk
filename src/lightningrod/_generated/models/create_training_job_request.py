@@ -9,7 +9,8 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.training_config import TrainingConfig
+    from ..models.grpo_training_config import GRPOTrainingConfig
+    from ..models.sft_training_config import SFTTrainingConfig
 
 
 T = TypeVar("T", bound="CreateTrainingJobRequest")
@@ -19,16 +20,22 @@ T = TypeVar("T", bound="CreateTrainingJobRequest")
 class CreateTrainingJobRequest:
     """
     Attributes:
-        config (TrainingConfig):
+        config (GRPOTrainingConfig | SFTTrainingConfig):
         name (None | str | Unset):
     """
 
-    config: TrainingConfig
+    config: GRPOTrainingConfig | SFTTrainingConfig
     name: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        config = self.config.to_dict()
+        from ..models.grpo_training_config import GRPOTrainingConfig
+
+        config: dict[str, Any]
+        if isinstance(self.config, GRPOTrainingConfig):
+            config = self.config.to_dict()
+        else:
+            config = self.config.to_dict()
 
         name: None | str | Unset
         if isinstance(self.name, Unset):
@@ -50,10 +57,27 @@ class CreateTrainingJobRequest:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.training_config import TrainingConfig
+        from ..models.grpo_training_config import GRPOTrainingConfig
+        from ..models.sft_training_config import SFTTrainingConfig
 
         d = dict(src_dict)
-        config = TrainingConfig.from_dict(d.pop("config"))
+
+        def _parse_config(data: object) -> GRPOTrainingConfig | SFTTrainingConfig:
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                config_type_0 = GRPOTrainingConfig.from_dict(data)
+
+                return config_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            if not isinstance(data, dict):
+                raise TypeError()
+            config_type_1 = SFTTrainingConfig.from_dict(data)
+
+            return config_type_1
+
+        config = _parse_config(d.pop("config"))
 
         def _parse_name(data: object) -> None | str | Unset:
             if data is None:

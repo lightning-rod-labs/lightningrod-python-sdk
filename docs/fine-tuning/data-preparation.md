@@ -4,7 +4,7 @@ icon: filter
 
 # Data Preparation
 
-`filter_and_split` is the main entry point for preparing Lightning Rod datasets for model training. It filters invalid samples, deduplicates, splits into train/test, and returns `SampleDataset` objects ready for `lr.training.run()` or `lr.evals.run()`.
+`filter_and_split` is the main entry point for preparing Lightning Rod datasets for model training. It filters invalid samples, deduplicates, splits into train/test, and returns `SampleDataset` objects ready for `lr.training.run(...)` (with a `GRPOTrainingConfig` or `SFTTrainingConfig`) or `lr.evals.run()`.
 
 ## What It Does
 
@@ -51,4 +51,4 @@ train_dataset, test_dataset = filter_and_split(
 
 ## Output
 
-Returns `(train_dataset, test_dataset)` — two `SampleDataset` objects ready for `lr.training.run(config, dataset=train_dataset)` and `lr.evals.run(model_id=..., dataset=test_dataset)`.
+Returns `(train_dataset, test_dataset)` — two `SampleDataset` objects ready for `lr.training.run(training_config, dataset=train_dataset)` (GRPO or SFT config) and `lr.evals.run(model_id=..., dataset=test_dataset)`.

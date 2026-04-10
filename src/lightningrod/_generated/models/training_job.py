@@ -12,7 +12,8 @@ from ..models.training_job_status import TrainingJobStatus
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.training_config import TrainingConfig
+    from ..models.grpo_training_config import GRPOTrainingConfig
+    from ..models.sft_training_config import SFTTrainingConfig
     from ..models.training_job_model_id_by_step_type_0 import TrainingJobModelIdByStepType0
 
 
@@ -26,7 +27,7 @@ class TrainingJob:
         id (str):
         organization_id (str):
         status (TrainingJobStatus):
-        config (TrainingConfig):
+        config (GRPOTrainingConfig | SFTTrainingConfig):
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
         name (None | str | Unset):
@@ -42,7 +43,7 @@ class TrainingJob:
     id: str
     organization_id: str
     status: TrainingJobStatus
-    config: TrainingConfig
+    config: GRPOTrainingConfig | SFTTrainingConfig
     created_at: datetime.datetime
     updated_at: datetime.datetime
     name: None | str | Unset = UNSET
@@ -56,6 +57,7 @@ class TrainingJob:
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.grpo_training_config import GRPOTrainingConfig
         from ..models.training_job_model_id_by_step_type_0 import TrainingJobModelIdByStepType0
 
         id = self.id
@@ -64,7 +66,11 @@ class TrainingJob:
 
         status = self.status.value
 
-        config = self.config.to_dict()
+        config: dict[str, Any]
+        if isinstance(self.config, GRPOTrainingConfig):
+            config = self.config.to_dict()
+        else:
+            config = self.config.to_dict()
 
         created_at = self.created_at.isoformat()
 
@@ -156,7 +162,8 @@ class TrainingJob:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.training_config import TrainingConfig
+        from ..models.grpo_training_config import GRPOTrainingConfig
+        from ..models.sft_training_config import SFTTrainingConfig
         from ..models.training_job_model_id_by_step_type_0 import TrainingJobModelIdByStepType0
 
         d = dict(src_dict)
@@ -166,7 +173,22 @@ class TrainingJob:
 
         status = TrainingJobStatus(d.pop("status"))
 
-        config = TrainingConfig.from_dict(d.pop("config"))
+        def _parse_config(data: object) -> GRPOTrainingConfig | SFTTrainingConfig:
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                config_type_0 = GRPOTrainingConfig.from_dict(data)
+
+                return config_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            if not isinstance(data, dict):
+                raise TypeError()
+            config_type_1 = SFTTrainingConfig.from_dict(data)
+
+            return config_type_1
+
+        config = _parse_config(d.pop("config"))
 
         created_at = isoparse(d.pop("created_at"))
 

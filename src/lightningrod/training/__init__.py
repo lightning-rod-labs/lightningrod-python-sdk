@@ -1,4 +1,9 @@
-from lightningrod.training.client import TrainingClient, TrainingConfig
+from lightningrod.training.client import (
+    GRPOTrainingConfig,
+    SFTTrainingConfig,
+    TrainingClient,
+    TrainingMethodConfig,
+)
 from lightningrod.training.evals import EvalsClient
 from lightningrod._display import print_eval
 from lightningrod.training.samples import (
@@ -17,7 +22,9 @@ __all__ = [
     "EvalsClient",
     "print_eval",
     "TrainingClient",
-    "TrainingConfig",
+    "GRPOTrainingConfig",
+    "SFTTrainingConfig",
+    "TrainingMethodConfig",
     "prepare_for_training",
     "train_test_split",
     "deduplicate_samples",

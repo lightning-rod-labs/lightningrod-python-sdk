@@ -163,19 +163,6 @@ def _validate_sample_for_training(sample: Sample, idx: int) -> Optional[str]:
     except Exception as e:
         return f"Sample {sample.id or idx} has invalid answer type: {e}"
 
-    if answer_type == "binary":
-        normalized_label = str(label_value).strip().lower()
-        if normalized_label not in {"yes", "no", "true", "false", "1", "0"}:
-            return (
-                f"Sample {sample.id or idx} has binary answer_type but label "
-                f"'{label_value}' is not one of yes/no/true/false/1/0."
-            )
-    elif answer_type == "continuous":
-        try:
-            float(str(label_value).strip())
-        except (TypeError, ValueError):
-            return f"Sample {sample.id or idx} has continuous answer_type but non-numeric label '{label_value}'."
-
     return None
 
 
