@@ -30,6 +30,7 @@ if TYPE_CHECKING:
     from ..models.rollout_scorer import RolloutScorer
     from ..models.template_question_generator import TemplateQuestionGenerator
     from ..models.topic_tree_seed_generator import TopicTreeSeedGenerator
+    from ..models.web_search_context_generator import WebSearchContextGenerator
     from ..models.web_search_labeler import WebSearchLabeler
 
 
@@ -52,7 +53,8 @@ class QuestionPipeline:
         labeler (FileSetDocumentLabeler | FileSetRAGLabeler | MockTransformConfig | None | Unset | WebSearchLabeler):
             Configuration for labeling. Not needed when using QuestionAndLabelGenerator.
         context_generators (list[FileSetContextGenerator | FileSetDocumentContextGenerator | MockTransformConfig |
-            NewsContextGenerator] | None | Unset): Optional list of context generators to run before rendering
+            NewsContextGenerator | WebSearchContextGenerator] | None | Unset): Optional list of context generators to run
+            before rendering
         renderer (MockTransformConfig | None | QuestionRenderer | Unset): Optional configuration for rendering the final
             prompt
         rollout_generator (MockTransformConfig | None | RolloutGenerator | Unset): Optional configuration for generating
@@ -86,7 +88,13 @@ class QuestionPipeline:
     deduplication: KeyDeduplication | MockTransformConfig | None | Unset = UNSET
     labeler: FileSetDocumentLabeler | FileSetRAGLabeler | MockTransformConfig | None | Unset | WebSearchLabeler = UNSET
     context_generators: (
-        list[FileSetContextGenerator | FileSetDocumentContextGenerator | MockTransformConfig | NewsContextGenerator]
+        list[
+            FileSetContextGenerator
+            | FileSetDocumentContextGenerator
+            | MockTransformConfig
+            | NewsContextGenerator
+            | WebSearchContextGenerator
+        ]
         | None
         | Unset
     ) = UNSET
@@ -117,6 +125,7 @@ class QuestionPipeline:
         from ..models.rollout_scorer import RolloutScorer
         from ..models.template_question_generator import TemplateQuestionGenerator
         from ..models.topic_tree_seed_generator import TopicTreeSeedGenerator
+        from ..models.web_search_context_generator import WebSearchContextGenerator
         from ..models.web_search_labeler import WebSearchLabeler
 
         config_type = self.config_type
@@ -195,6 +204,8 @@ class QuestionPipeline:
                 elif isinstance(context_generators_type_0_item_data, FileSetContextGenerator):
                     context_generators_type_0_item = context_generators_type_0_item_data.to_dict()
                 elif isinstance(context_generators_type_0_item_data, FileSetDocumentContextGenerator):
+                    context_generators_type_0_item = context_generators_type_0_item_data.to_dict()
+                elif isinstance(context_generators_type_0_item_data, WebSearchContextGenerator):
                     context_generators_type_0_item = context_generators_type_0_item_data.to_dict()
                 else:
                     context_generators_type_0_item = context_generators_type_0_item_data.to_dict()
@@ -281,6 +292,7 @@ class QuestionPipeline:
         from ..models.rollout_scorer import RolloutScorer
         from ..models.template_question_generator import TemplateQuestionGenerator
         from ..models.topic_tree_seed_generator import TopicTreeSeedGenerator
+        from ..models.web_search_context_generator import WebSearchContextGenerator
         from ..models.web_search_labeler import WebSearchLabeler
 
         d = dict(src_dict)
@@ -527,7 +539,13 @@ class QuestionPipeline:
         def _parse_context_generators(
             data: object,
         ) -> (
-            list[FileSetContextGenerator | FileSetDocumentContextGenerator | MockTransformConfig | NewsContextGenerator]
+            list[
+                FileSetContextGenerator
+                | FileSetDocumentContextGenerator
+                | MockTransformConfig
+                | NewsContextGenerator
+                | WebSearchContextGenerator
+            ]
             | None
             | Unset
         ):
@@ -549,6 +567,7 @@ class QuestionPipeline:
                         | FileSetDocumentContextGenerator
                         | MockTransformConfig
                         | NewsContextGenerator
+                        | WebSearchContextGenerator
                     ):
                         try:
                             if not isinstance(data, dict):
@@ -574,11 +593,19 @@ class QuestionPipeline:
                             return context_generators_type_0_item_type_2
                         except (TypeError, ValueError, AttributeError, KeyError):
                             pass
+                        try:
+                            if not isinstance(data, dict):
+                                raise TypeError()
+                            context_generators_type_0_item_type_3 = WebSearchContextGenerator.from_dict(data)
+
+                            return context_generators_type_0_item_type_3
+                        except (TypeError, ValueError, AttributeError, KeyError):
+                            pass
                         if not isinstance(data, dict):
                             raise TypeError()
-                        context_generators_type_0_item_type_3 = MockTransformConfig.from_dict(data)
+                        context_generators_type_0_item_type_4 = MockTransformConfig.from_dict(data)
 
-                        return context_generators_type_0_item_type_3
+                        return context_generators_type_0_item_type_4
 
                     context_generators_type_0_item = _parse_context_generators_type_0_item(
                         context_generators_type_0_item_data
@@ -595,6 +622,7 @@ class QuestionPipeline:
                     | FileSetDocumentContextGenerator
                     | MockTransformConfig
                     | NewsContextGenerator
+                    | WebSearchContextGenerator
                 ]
                 | None
                 | Unset,
