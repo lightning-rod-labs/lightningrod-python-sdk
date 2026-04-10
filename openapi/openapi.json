@@ -5,11 +5,6 @@
     "description": "Generate verified, grounded datasets at scale for LLM fine-tuning and evaluation",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "/api/public/v1"
-    }
-  ],
   "paths": {
     "/openai/chat/completions": {
       "post": {
@@ -5828,7 +5823,7 @@
               }
             ],
             "title": "Deduplication",
-            "description": "Deduplication config. Defaults to exact dedup on question_text. Set to None to disable."
+            "description": "Deduplication config. Set to KeyDeduplication() to enable exact/fuzzy dedup on question fields."
           },
           "labeler": {
             "anyOf": [
@@ -6072,6 +6067,18 @@
             "type": "string",
             "title": "Content",
             "description": "The content of the message"
+          },
+          "thinking": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thinking",
+            "description": "The model's reasoning/thinking content, if available"
           }
         },
         "type": "object",
@@ -7178,6 +7185,7 @@
           "TOPIC_TREE_SEED_GENERATOR",
           "CSV_SEED_GENERATOR",
           "KEY_DEDUPLICATION",
+          "QDRANT_CONTEXT_GENERATOR",
           "MOCK"
         ],
         "title": "TransformType"
@@ -7311,6 +7319,13 @@
           "type": {
             "type": "string",
             "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
           }
         },
         "type": "object",
@@ -7391,5 +7406,10 @@
         "scheme": "bearer"
       }
     }
-  }
+  },
+  "servers": [
+    {
+      "url": "/api/public/v1"
+    }
+  ]
 }

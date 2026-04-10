@@ -17,6 +17,7 @@
 * [Core Concepts](dataset-generation/core-concepts.md)
 * [Seed Generators](dataset-generation/seed-generators.md)
 * [Question Generators](dataset-generation/question-generators.md)
+* [Deduplication](dataset-generation/deduplication.md)
 * [Answer Types](dataset-generation/answer-types.md)
 * [Labeling and Context](dataset-generation/labeling-and-context.md)
 * [Rollouts and Scoring](dataset-generation/rollouts-and-scoring.md)
