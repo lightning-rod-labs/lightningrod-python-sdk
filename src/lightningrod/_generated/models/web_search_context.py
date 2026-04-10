@@ -8,11 +8,11 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="GoogleSearchContext")
+T = TypeVar("T", bound="WebSearchContext")
 
 
 @_attrs_define
-class GoogleSearchContext:
+class WebSearchContext:
     """
     Attributes:
         rendered_context (str):
@@ -56,14 +56,14 @@ class GoogleSearchContext:
         if context_type != "GOOGLE_SEARCH_CONTEXT" and not isinstance(context_type, Unset):
             raise ValueError(f"context_type must match const 'GOOGLE_SEARCH_CONTEXT', got '{context_type}'")
 
-        google_search_context = cls(
+        web_search_context = cls(
             rendered_context=rendered_context,
             search_query=search_query,
             context_type=context_type,
         )
 
-        google_search_context.additional_properties = d
-        return google_search_context
+        web_search_context.additional_properties = d
+        return web_search_context
 
     @property
     def additional_keys(self) -> list[str]:

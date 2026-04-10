@@ -4225,30 +4225,6 @@
         ],
         "title": "GdeltSeedGenerator"
       },
-      "GoogleSearchContext": {
-        "properties": {
-          "context_type": {
-            "type": "string",
-            "const": "GOOGLE_SEARCH_CONTEXT",
-            "title": "Context Type",
-            "default": "GOOGLE_SEARCH_CONTEXT"
-          },
-          "rendered_context": {
-            "type": "string",
-            "title": "Rendered Context"
-          },
-          "search_query": {
-            "type": "string",
-            "title": "Search Query"
-          }
-        },
-        "type": "object",
-        "required": [
-          "rendered_context",
-          "search_query"
-        ],
-        "title": "GoogleSearchContext"
-      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -6421,14 +6397,14 @@
                       "$ref": "#/components/schemas/DocumentContext"
                     },
                     {
-                      "$ref": "#/components/schemas/GoogleSearchContext"
+                      "$ref": "#/components/schemas/WebSearchContext"
                     }
                   ],
                   "discriminator": {
                     "propertyName": "context_type",
                     "mapping": {
                       "DOCUMENT_CONTEXT": "#/components/schemas/DocumentContext",
-                      "GOOGLE_SEARCH_CONTEXT": "#/components/schemas/GoogleSearchContext",
+                      "GOOGLE_SEARCH_CONTEXT": "#/components/schemas/WebSearchContext",
                       "NEWS_CONTEXT": "#/components/schemas/NewsContext",
                       "RAG_CONTEXT": "#/components/schemas/RAGContext"
                     }
@@ -7369,6 +7345,30 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "WebSearchContext": {
+        "properties": {
+          "context_type": {
+            "type": "string",
+            "const": "GOOGLE_SEARCH_CONTEXT",
+            "title": "Context Type",
+            "default": "GOOGLE_SEARCH_CONTEXT"
+          },
+          "rendered_context": {
+            "type": "string",
+            "title": "Rendered Context"
+          },
+          "search_query": {
+            "type": "string",
+            "title": "Search Query"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rendered_context",
+          "search_query"
+        ],
+        "title": "WebSearchContext"
       },
       "WebSearchContextGenerator": {
         "properties": {
