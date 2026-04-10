@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from ..models.question_pipeline import QuestionPipeline
     from ..models.question_renderer import QuestionRenderer
     from ..models.topic_tree_seed_generator import TopicTreeSeedGenerator
+    from ..models.web_search_context_generator import WebSearchContextGenerator
     from ..models.web_search_labeler import WebSearchLabeler
 
 
@@ -38,7 +39,7 @@ class CreateTransformJobRequest:
         config (CsvSeedGenerator | FileSetContextGenerator | FileSetDocumentContextGenerator | FileSetDocumentLabeler |
             FileSetQuerySeedGenerator | FileSetRAGLabeler | FileSetSeedGenerator | ForwardLookingQuestionGenerator |
             GdeltSeedGenerator | KeyDeduplication | NewsSeedGenerator | QuestionAndLabelGenerator | QuestionGenerator |
-            QuestionPipeline | QuestionRenderer | TopicTreeSeedGenerator | WebSearchLabeler):
+            QuestionPipeline | QuestionRenderer | TopicTreeSeedGenerator | WebSearchContextGenerator | WebSearchLabeler):
         input_dataset_id (None | str | Unset):
         max_questions (int | None | Unset):
         max_cost_dollars (float | None | Unset):
@@ -63,6 +64,7 @@ class CreateTransformJobRequest:
         | QuestionPipeline
         | QuestionRenderer
         | TopicTreeSeedGenerator
+        | WebSearchContextGenerator
         | WebSearchLabeler
     )
     input_dataset_id: None | str | Unset = UNSET
@@ -89,6 +91,7 @@ class CreateTransformJobRequest:
         from ..models.question_pipeline import QuestionPipeline
         from ..models.question_renderer import QuestionRenderer
         from ..models.topic_tree_seed_generator import TopicTreeSeedGenerator
+        from ..models.web_search_context_generator import WebSearchContextGenerator
 
         config: dict[str, Any]
         if isinstance(self.config, CsvSeedGenerator):
@@ -122,6 +125,8 @@ class CreateTransformJobRequest:
         elif isinstance(self.config, QuestionRenderer):
             config = self.config.to_dict()
         elif isinstance(self.config, TopicTreeSeedGenerator):
+            config = self.config.to_dict()
+        elif isinstance(self.config, WebSearchContextGenerator):
             config = self.config.to_dict()
         else:
             config = self.config.to_dict()
@@ -194,6 +199,7 @@ class CreateTransformJobRequest:
         from ..models.question_pipeline import QuestionPipeline
         from ..models.question_renderer import QuestionRenderer
         from ..models.topic_tree_seed_generator import TopicTreeSeedGenerator
+        from ..models.web_search_context_generator import WebSearchContextGenerator
         from ..models.web_search_labeler import WebSearchLabeler
 
         d = dict(src_dict)
@@ -217,6 +223,7 @@ class CreateTransformJobRequest:
             | QuestionPipeline
             | QuestionRenderer
             | TopicTreeSeedGenerator
+            | WebSearchContextGenerator
             | WebSearchLabeler
         ):
             try:
@@ -347,11 +354,19 @@ class CreateTransformJobRequest:
                 return componentsschemas_create_transform_config_type_15
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_create_transform_config_type_16 = WebSearchContextGenerator.from_dict(data)
+
+                return componentsschemas_create_transform_config_type_16
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
             if not isinstance(data, dict):
                 raise TypeError()
-            componentsschemas_create_transform_config_type_16 = WebSearchLabeler.from_dict(data)
+            componentsschemas_create_transform_config_type_17 = WebSearchLabeler.from_dict(data)
 
-            return componentsschemas_create_transform_config_type_16
+            return componentsschemas_create_transform_config_type_17
 
         config = _parse_config(d.pop("config"))
 
