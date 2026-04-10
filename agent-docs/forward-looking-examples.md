@@ -258,9 +258,13 @@ config = GRPOTrainingConfig(
 )
 job = lr.training.run(config, dataset=train_dataset, name="military-strikes-v1")
 
+from lightningrod import EvalModel
+
 eval_job = lr.evals.run(
-    model_id=job.model_id, dataset=test_dataset,
-    benchmark_model_id="openai/gpt-5",
+    config,
+    job,
+    test_dataset,
+    extra_models=[EvalModel(model_id="openai/gpt-5", label="GPT-5")],
 )
 ```
 

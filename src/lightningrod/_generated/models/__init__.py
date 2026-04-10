@@ -116,6 +116,7 @@ from .training_job import TrainingJob
 from .training_job_list_response import TrainingJobListResponse
 from .training_job_model_id_by_step_type_0 import TrainingJobModelIdByStepType0
 from .training_job_status import TrainingJobStatus
+from .training_metric_series import TrainingMetricSeries
 from .transform_job import TransformJob
 from .transform_job_status import TransformJobStatus
 from .transform_step_metrics_response import TransformStepMetricsResponse
@@ -246,6 +247,7 @@ __all__ = (
     "TrainingJobListResponse",
     "TrainingJobModelIdByStepType0",
     "TrainingJobStatus",
+    "TrainingMetricSeries",
     "TransformJob",
     "TransformJobStatus",
     "TransformStepMetricsResponse",

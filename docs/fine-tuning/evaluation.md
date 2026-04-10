@@ -8,7 +8,7 @@ Run evals on your trained model against a test dataset. Access via `lr.evals` on
 
 ## EvalModel
 
-Specify each model to evaluate in an eval job:
+Specify each model to evaluate when using [`create`](#create) (you supply the full list). For [`run`](#run), the SDK adds the base and fine-tuned models for you; use `EvalModel` only for [`extra_models`](#run).
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|---------|---------|-------------|
@@ -25,7 +25,7 @@ EvalModel(model_id=job.model_id, label="my-fine-tune")
 
 ### create
 
-Create an eval job without waiting:
+Create an eval job without waiting. You pass the **complete** list of models to compare:
 
 ```python
 from lightningrod import EvalModel
@@ -43,18 +43,36 @@ eval_job = lr.evals.create(
 
 ### run
 
-Create an eval job and poll until completion. In notebooks, shows a live progress display:
+Create an eval job and poll until completion. In notebooks, shows a live progress display.
+
+The benchmark **always** includes two models, in order:
+
+1. **Base** — `config.base_model_id` (label `"Base"`).
+2. **Fine-tuned** — `job.model_id` after training completes (label `"Fine-tuned"`).
+
+You do not pass these explicitly. Use **`extra_models`** only for additional models (e.g. OpenAI baselines).
+
+**SFT:** `run` raises `NotImplementedError` if `config` is `SFTTrainingConfig`, because SFT-specific eval metrics are not implemented yet. Use **GRPO** with `run`, or use `create` with your own `EvalModel` list.
 
 ```python
+from lightningrod import EvalModel, training
+
 eval_job = lr.evals.run(
-    models=[
-        EvalModel(model_id=training_job.config.base_model_id, label="Base"),
-        EvalModel(model_id=training_job.model_id, label="Fine-tuned"),
+    config,
+    training_job,
+    test_dataset,
+    extra_models=[
         EvalModel(model_id="openai/gpt-5.4", label="GPT-5.4"),
     ],
-    dataset=test_dataset,
 )
 ```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `config` | `GRPOTrainingConfig \| SFTTrainingConfig` | — | Same training config you used with `lr.training.run` (SFT raises until supported). |
+| `job` | `TrainingJob` | — | Completed job from `lr.training.run`; must have `model_id` set. |
+| `dataset` | SampleDataset | — | Test dataset (e.g. test split). |
+| `extra_models` | `list[EvalModel] \| None` | `None` | Optional extra models appended after Base and Fine-tuned. |
 
 ### get
 
@@ -79,29 +97,28 @@ for job in response.jobs:
 Pretty-print eval results:
 
 ```python
-from lightningrod.training import print_eval
+from lightningrod import training
 
-eval_job = lr.evals.run(
-    models=[EvalModel(model_id=job.model_id)],
-    dataset=test_dataset,
-)
-print_eval(eval_job)
+eval_job = lr.evals.run(config, training_job, test_dataset)
+training.print_eval(eval_job)
 ```
 
 ## Evaluating Intermediate Checkpoints
 
-Access model IDs for intermediate training checkpoints via `TrainingJob.model_id_by_step`, then evaluate them individually or compare across steps:
+`run` always evaluates the **final** `job.model_id` as the fine-tuned slot. To compare checkpoints or choose a different model list, use **`create`** and pass every `EvalModel` yourself:
 
 ```python
-# After training completes (config is a GRPOTrainingConfig or SFTTrainingConfig)
+from lightningrod import EvalModel
+from lightningrod.training import print_eval
+
+# After training completes (config is GRPO or SFT)
 job = lr.training.run(config, dataset=train_dataset)
 
-# Evaluate a specific checkpoint (e.g. step 10)
 checkpoint_model_id = job.model_id_by_step["10"]
 
-eval_job = lr.evals.run(
+eval_job = lr.evals.create(
     models=[
-        EvalModel(model_id=checkpoint_model_id, label="step-500"),
+        EvalModel(model_id=checkpoint_model_id, label="step-10"),
         EvalModel(model_id=job.model_id, label="final"),
     ],
     dataset=test_dataset,
@@ -115,7 +132,7 @@ print_eval(eval_job)
 from lightningrod import EvalModel
 from lightningrod.training import print_eval
 
-eval_job = lr.evals.run(
+eval_job = lr.evals.create(
     models=[
         EvalModel(model_id=job.model_id, label="fine-tuned"),
         EvalModel(model_id="openai/gpt-4.1", label="baseline"),
@@ -125,4 +142,4 @@ eval_job = lr.evals.run(
 print_eval(eval_job)
 ```
 
-See [notebooks/getting_started/05_fine_tuning.ipynb](../../notebooks/getting_started/05_fine_tuning.ipynb) for the full workflow.
+See [notebooks/getting_started/05_grpo_training.ipynb](../../notebooks/getting_started/05_grpo_training.ipynb) for the full GRPO workflow including `evals.run`.

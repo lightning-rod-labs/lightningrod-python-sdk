@@ -7014,6 +7014,13 @@
             ],
             "title": "Model Id By Step"
           },
+          "metric_history": {
+            "items": {
+              "$ref": "#/components/schemas/TrainingMetricSeries"
+            },
+            "type": "array",
+            "title": "Metric History"
+          },
           "reward_history": {
             "anyOf": [
               {
@@ -7124,6 +7131,27 @@
           "FAILED"
         ],
         "title": "TrainingJobStatus"
+      },
+      "TrainingMetricSeries": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "values": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Values"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "values"
+        ],
+        "title": "TrainingMetricSeries"
       },
       "TransformJob": {
         "properties": {

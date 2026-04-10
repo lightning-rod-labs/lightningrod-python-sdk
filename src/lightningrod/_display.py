@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Callable, Optional
 
 from rich.console import Console, Group, RenderableType
+from rich.markup import escape
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
@@ -173,6 +174,26 @@ def _make_progress_bar(pct: float, width: int = 24) -> str:
     return "█" * filled + "░" * (width - filled)
 
 
+def _training_metric_history_covers_reward(job: TrainingJob) -> bool:
+    if not _is_set(job.metric_history) or not job.metric_history:
+        return False
+    for series in job.metric_history:
+        if series.name.lower() == "reward" and series.values:
+            return True
+    return False
+
+
+def _format_training_metric_line(name: str, values: list[float], hint: str | None = None) -> Text:
+    latest = values[-1]
+    count = len(values)
+    avg = sum(values) / count
+    safe_name = escape(name)
+    hint_part = f"  [dim]{escape(hint)}[/dim]" if hint else ""
+    return _safe_markup(
+        f"  [bold]{safe_name}:[/bold] latest {latest:.4f}  avg {avg:.4f}  ({count} steps){hint_part}"
+    )
+
+
 def build_training_live_display(job: TrainingJob) -> RenderableType:
     renderables: list[RenderableType] = []
     status = str(job.status) if job is not None else ""
@@ -205,12 +226,30 @@ def build_training_live_display(job: TrainingJob) -> RenderableType:
             renderables.append(_safe_markup(f"  [bold]Progress:[/bold] [{bar}] {step_progress}"))
             renderables.append(Text(""))
 
-        if _is_set(job.reward_history) and job.reward_history:
-            latest = job.reward_history[-1]
-            count = len(job.reward_history)
-            avg = sum(job.reward_history) / count
-            reward_line = f"  [bold]Reward:[/bold] latest {latest:.4f}  avg {avg:.4f}  ({count} steps)  [dim](higher is better)[/dim]"
-            renderables.append(_safe_markup(reward_line))
+        if _is_set(job.metric_history) and job.metric_history:
+            for series in job.metric_history:
+                if not series.values:
+                    continue
+
+                hint = None
+                if series.name.lower() == "loss":
+                    hint = "(lower is better)"
+                elif series.name.lower() == "reward":
+                    hint = "(higher is better)"
+                renderables.append(_format_training_metric_line(series.name, series.values, hint))
+            if any(s.values for s in job.metric_history):
+                renderables.append(Text(""))
+
+        if (
+            _is_set(job.reward_history)
+            and job.reward_history
+            and not _training_metric_history_covers_reward(job)
+        ):
+            renderables.append(
+                _format_training_metric_line(
+                    "Reward", job.reward_history, "(higher is better)"
+                )
+            )
             renderables.append(Text(""))
 
         if job.status == TrainingJobStatus.FAILED:

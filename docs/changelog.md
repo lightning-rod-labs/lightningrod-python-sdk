@@ -14,6 +14,12 @@ The single `TrainingConfig` export is removed. Use **`GRPOTrainingConfig`** for 
 
 See [Training](fine-tuning/training.md) for field tables.
 
+### Breaking: `evals.run` uses training config and job
+
+`lr.evals.run(config, job, dataset, *, extra_models=None)` replaces the positional `models=` list. The eval benchmark **always** includes the base model and the fine-tuned `job.model_id`; pass optional **`extra_models`** for additional `EvalModel` entries (e.g. OpenAI baselines). **`SFTTrainingConfig`** raises `NotImplementedError` from `run` until SFT eval metrics exist; use `lr.evals.create(...)` with an explicit model list for SFT or custom benchmarks.
+
+See [Evaluation](fine-tuning/evaluation.md).
+
 ### New: SFT getting-started notebook
 
 [notebooks/getting_started/06_sft_training.ipynb](../notebooks/getting_started/06_sft_training.ipynb) walks through hosted SFT with `SFTTrainingConfig`.
