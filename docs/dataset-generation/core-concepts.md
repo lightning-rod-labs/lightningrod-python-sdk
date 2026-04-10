@@ -28,6 +28,7 @@ A dataset generation pipeline that processes data through multiple stages. Pipel
 
 - **Seed generator** — Produces raw data
 - **Question generator** — Creates questions from seeds
+- **Deduplication** (optional) — Removes near-duplicate questions
 - **Labeler** — Resolves questions with ground truth
 - **Context generators** (optional) — Add relevant context
 - **Renderer** (optional) — Format prompts
