@@ -12,11 +12,12 @@ A typical pipeline runs through these stages:
 
 1. **Seed generation** — Fetch raw data (news articles, documents, etc.)
 2. **Question generation** — Create forecasting questions from seeds using AI
-3. **Context** (optional) — Enrich samples with relevant news or RAG-retrieved documents
-4. **Labeling** — Resolve questions with ground truth via web search
-5. **Rendering** — Format questions into prompts for model input
-6. **Rollouts** (optional) — Send prompts to one or more LLMs
-7. **Scoring** (optional) — Score model outputs (from rollouts) against ground truth
+3. **Deduplication** (optional) — Remove near-duplicate questions via exact or fuzzy matching
+4. **Context** (optional) — Enrich samples with relevant news or RAG-retrieved documents
+5. **Labeling** — Resolve questions with ground truth via web search
+6. **Rendering** — Format questions into prompts for model input
+7. **Rollouts** (optional) — Send prompts to one or more LLMs
+8. **Scoring** (optional) — Score model outputs (from rollouts) against ground truth
 
 ## QuestionPipeline
 
@@ -52,8 +53,8 @@ dataset = client.transforms.run(pipeline, max_questions=1000)
 
 ## Running the Pipeline
 
-- **`lr.transforms.run(config, input_dataset=None, max_questions=None, max_cost_dollars=None, detach=False)`** — Submit and wait for completion. Returns a `Dataset`.
-- **`lr.transforms.submit(config, ...)`** — Submit without waiting. Returns a `TransformJob`.
+- **`lr.transforms.run(config, input_dataset=None, max_questions=None, max_cost_dollars=None, name=None, detach=False)`** — Submit and wait for completion. Returns a `Dataset`.
+- **`lr.transforms.submit(config, input_dataset=None, max_questions=None, max_cost_dollars=None, name=None)`** — Submit without waiting. Returns a `TransformJob`.
 - **`lr.transforms.estimate_cost(config, max_questions=None)`** — Estimate cost in dollars before running.
 
 Use `detach=True` for long-running jobs so the job continues even if your local process exits.
@@ -63,6 +64,7 @@ Use `detach=True` for long-running jobs so the job continues even if your local 
 - [Core Concepts](core-concepts.md) — Sample, Pipeline, Dataset, Transform Job
 - [Seed Generators](seed-generators.md) — News, GDELT, FileSet, FileSetQuery
 - [Question Generators](question-generators.md) — Question, ForwardLooking, QuestionAndLabel, Template
+- [Deduplication](deduplication.md) — KeyDeduplication, fuzzy and exact field matching
 - [Labeling and Context](labeling-and-context.md) — WebSearchLabeler, NewsContextGenerator
 - [Rollouts & Scoring](rollouts-and-scoring.md) — QuestionRenderer, RolloutGenerator, RolloutScorer, model consensus analysis
 - [Answer Types](answer-types.md) — Binary, Continuous, MultipleChoice, FreeResponse
