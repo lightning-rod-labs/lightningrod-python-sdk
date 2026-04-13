@@ -100,36 +100,31 @@ dataset = lr.transforms.run(pipeline, name="SurvivalLLM")
 
 ### SFT Training
 
-```python
-import tinker
+After `dataset = lr.transforms.run(...)`, prepare a train split and run **hosted SFT** on Lightning Rod (same service as GRPO training):
 
-SYSTEM_PROMPT = (
-    "You are SurvivalLLM. Direct, step-by-step survival instructions. "
-    "No introductions or disclaimers. Start with the first action."
+```python
+from lightningrod import prepare_for_training, FilterParams, SplitParams, SFTTrainingConfig
+
+train_dataset, test_dataset = prepare_for_training(
+    dataset,
+    filter=FilterParams(),
+    split=SplitParams(test_size=0.2),
 )
 
-sft_data = []
-for s in dataset.download():
-    if not s.is_valid: continue
-    q, a = s.question.question_text, s.label.label
-    if not q or not a or a == "undetermined": continue
-    sft_data.append({"messages": [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": q},
-        {"role": "assistant", "content": a},
-    ]})
-
-# Small model appropriate for on-device usage (survival in emergency)
 BASE_MODEL = "Qwen/Qwen3-8B-Instruct"
-service = tinker.ServiceClient()
-trainer = service.create_lora_training_client(base_model_id=BASE_MODEL, train_unembed=False)
-adam = tinker.AdamParams(learning_rate=2e-4)
+training_config = SFTTrainingConfig(
+    base_model_id=BASE_MODEL,
+    training_steps=50,
+    epochs=3,
+    learning_rate=2e-4,
+)
 
-for epoch in range(3):
-    result = trainer.forward_backward(datums, loss_fn="cross_entropy").result()
-    trainer.optim_step(adam).result()
-    # loss: 1.49 → 1.46 → 1.40
+cost = lr.training.estimate_cost(training_config, dataset=train_dataset)
+job = lr.training.run(training_config, dataset=train_dataset, name="survival-sft-v1")
+# job.model_id — your LoRA checkpoint for inference via lr.predict(...)
 ```
+
+For low-level local training loops (e.g. direct Tinker `ServiceClient`), use the Tinker SDK separately; the snippet above is the recommended path when your data already lives in Lightning Rod samples.
 
 ---
 

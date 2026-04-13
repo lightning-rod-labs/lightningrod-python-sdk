@@ -12,8 +12,10 @@ from ..models.training_job_status import TrainingJobStatus
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.training_config import TrainingConfig
+    from ..models.grpo_training_config import GRPOTrainingConfig
+    from ..models.sft_training_config import SFTTrainingConfig
     from ..models.training_job_model_id_by_step_type_0 import TrainingJobModelIdByStepType0
+    from ..models.training_metric_series import TrainingMetricSeries
 
 
 T = TypeVar("T", bound="TrainingJob")
@@ -26,12 +28,13 @@ class TrainingJob:
         id (str):
         organization_id (str):
         status (TrainingJobStatus):
-        config (TrainingConfig):
+        config (GRPOTrainingConfig | SFTTrainingConfig):
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
         name (None | str | Unset):
         model_id (None | str | Unset):
         model_id_by_step (None | TrainingJobModelIdByStepType0 | Unset):
+        metric_history (list[TrainingMetricSeries] | Unset):
         reward_history (list[float] | None | Unset):
         current_step (int | None | Unset):
         total_steps (int | None | Unset):
@@ -42,12 +45,13 @@ class TrainingJob:
     id: str
     organization_id: str
     status: TrainingJobStatus
-    config: TrainingConfig
+    config: GRPOTrainingConfig | SFTTrainingConfig
     created_at: datetime.datetime
     updated_at: datetime.datetime
     name: None | str | Unset = UNSET
     model_id: None | str | Unset = UNSET
     model_id_by_step: None | TrainingJobModelIdByStepType0 | Unset = UNSET
+    metric_history: list[TrainingMetricSeries] | Unset = UNSET
     reward_history: list[float] | None | Unset = UNSET
     current_step: int | None | Unset = UNSET
     total_steps: int | None | Unset = UNSET
@@ -56,6 +60,7 @@ class TrainingJob:
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.grpo_training_config import GRPOTrainingConfig
         from ..models.training_job_model_id_by_step_type_0 import TrainingJobModelIdByStepType0
 
         id = self.id
@@ -64,7 +69,11 @@ class TrainingJob:
 
         status = self.status.value
 
-        config = self.config.to_dict()
+        config: dict[str, Any]
+        if isinstance(self.config, GRPOTrainingConfig):
+            config = self.config.to_dict()
+        else:
+            config = self.config.to_dict()
 
         created_at = self.created_at.isoformat()
 
@@ -89,6 +98,13 @@ class TrainingJob:
             model_id_by_step = self.model_id_by_step.to_dict()
         else:
             model_id_by_step = self.model_id_by_step
+
+        metric_history: list[dict[str, Any]] | Unset = UNSET
+        if not isinstance(self.metric_history, Unset):
+            metric_history = []
+            for metric_history_item_data in self.metric_history:
+                metric_history_item = metric_history_item_data.to_dict()
+                metric_history.append(metric_history_item)
 
         reward_history: list[float] | None | Unset
         if isinstance(self.reward_history, Unset):
@@ -141,6 +157,8 @@ class TrainingJob:
             field_dict["model_id"] = model_id
         if model_id_by_step is not UNSET:
             field_dict["model_id_by_step"] = model_id_by_step
+        if metric_history is not UNSET:
+            field_dict["metric_history"] = metric_history
         if reward_history is not UNSET:
             field_dict["reward_history"] = reward_history
         if current_step is not UNSET:
@@ -156,8 +174,10 @@ class TrainingJob:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.training_config import TrainingConfig
+        from ..models.grpo_training_config import GRPOTrainingConfig
+        from ..models.sft_training_config import SFTTrainingConfig
         from ..models.training_job_model_id_by_step_type_0 import TrainingJobModelIdByStepType0
+        from ..models.training_metric_series import TrainingMetricSeries
 
         d = dict(src_dict)
         id = d.pop("id")
@@ -166,7 +186,22 @@ class TrainingJob:
 
         status = TrainingJobStatus(d.pop("status"))
 
-        config = TrainingConfig.from_dict(d.pop("config"))
+        def _parse_config(data: object) -> GRPOTrainingConfig | SFTTrainingConfig:
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                config_type_0 = GRPOTrainingConfig.from_dict(data)
+
+                return config_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            if not isinstance(data, dict):
+                raise TypeError()
+            config_type_1 = SFTTrainingConfig.from_dict(data)
+
+            return config_type_1
+
+        config = _parse_config(d.pop("config"))
 
         created_at = isoparse(d.pop("created_at"))
 
@@ -206,6 +241,15 @@ class TrainingJob:
             return cast(None | TrainingJobModelIdByStepType0 | Unset, data)
 
         model_id_by_step = _parse_model_id_by_step(d.pop("model_id_by_step", UNSET))
+
+        _metric_history = d.pop("metric_history", UNSET)
+        metric_history: list[TrainingMetricSeries] | Unset = UNSET
+        if _metric_history is not UNSET:
+            metric_history = []
+            for metric_history_item_data in _metric_history:
+                metric_history_item = TrainingMetricSeries.from_dict(metric_history_item_data)
+
+                metric_history.append(metric_history_item)
 
         def _parse_reward_history(data: object) -> list[float] | None | Unset:
             if data is None:
@@ -270,6 +314,7 @@ class TrainingJob:
             name=name,
             model_id=model_id,
             model_id_by_step=model_id_by_step,
+            metric_history=metric_history,
             reward_history=reward_history,
             current_step=current_step,
             total_steps=total_steps,

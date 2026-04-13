@@ -6,9 +6,11 @@ icon: gears
 
 Create and manage LoRA fine-tuning jobs on Lightning Rod datasets. Access via `lr.training` on your `LightningRod` client.
 
-## TrainingConfig
+Training jobs use one of two configuration types: **GRPO** (reinforcement-style training for forecasting) or **SFT** (supervised fine-tuning on labeled question–answer pairs). Pass the matching SDK config class; the API stores a discriminated config on the job. When you read `job.config` from `get` or `list`, it is a generated `GRPOTrainingConfig` or `SFTTrainingConfig` from the API (not the thin SDK wrapper classes).
 
-Configure base model, training steps, and optional LoRA parameters:
+## GRPOTrainingConfig
+
+Use for forward-looking / GRPO training. Configure base model, training steps, and optional LoRA parameters:
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
@@ -22,6 +24,25 @@ Configure base model, training steps, and optional LoRA parameters:
 | `num_rollouts` | int \| None | None | Samples per prompt for GRPO |
 | `max_response_length` | int \| None | None | Max tokens for sampling |
 | `start_idx` | int \| None | None | Row index to skip at start; train_rows = train_rows[start_idx:] |
+| `save_frequency` | int \| None | None | Checkpoint frequency in training steps (server default if omitted) |
+
+## SFTTrainingConfig
+
+Use for supervised fine-tuning. Same core hyperparameters as GRPO where applicable, plus SFT-specific fields. **No** `num_rollouts` or `max_response_length`.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `base_model_id` | str | — | HuggingFace model ID for LoRA base |
+| `training_steps` | int | — | Number of training loop iterations |
+| `batch_size` | int \| None | None | Rows per batch |
+| `lora_rank` | int \| None | None | LoRA adapter rank |
+| `learning_rate` | float \| None | None | Step size for weight updates |
+| `adam_beta1` | float \| None | None | Adam β₁ |
+| `adam_beta2` | float \| None | None | Adam β₂ |
+| `start_idx` | int \| None | None | Row index to skip at start |
+| `save_frequency` | int \| None | None | Checkpoint frequency in training steps (server default if omitted) |
+| `resume_from` | str \| None | None | Resume from a Tinker checkpoint path |
+| `epochs` | int \| None | None | Passes over the training data (server default if omitted) |
 
 ## Methods
 
@@ -30,9 +51,9 @@ Configure base model, training steps, and optional LoRA parameters:
 Estimate training cost before running:
 
 ```python
-from lightningrod.training import TrainingConfig
+from lightningrod.training import GRPOTrainingConfig
 
-config = TrainingConfig(
+config = GRPOTrainingConfig(
     base_model_id="openai/gpt-oss-120b",
     training_steps=50,
 )
@@ -42,6 +63,8 @@ print(f"Estimated cost: ${cost_estimate.total_cost_dollars:.2f}")
 print(f"Effective steps: {cost_estimate.effective_steps}")
 print(f"Train tokens: {cost_estimate.train_tokens}")
 ```
+
+For SFT, use `SFTTrainingConfig` the same way.
 
 Returns `EstimateTrainingCostResponse` with `total_cost_dollars`, `prefill_tokens`, `sample_tokens`, `train_tokens`, `effective_steps`, `notes`, and optional `warning_message`.
 
@@ -88,4 +111,4 @@ for job in response.jobs:
 
 ## Example
 
-See [notebooks/getting_started/05_fine_tuning.ipynb](../../notebooks/getting_started/05_fine_tuning.ipynb) for the full workflow.
+See [notebooks/getting_started/05_fine_tuning.ipynb](../../notebooks/getting_started/05_fine_tuning.ipynb) for GRPO forecasting workflow and [notebooks/getting_started/06_sft_training.ipynb](../../notebooks/getting_started/06_sft_training.ipynb) for SFT.

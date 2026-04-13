@@ -11,7 +11,7 @@ Seeds → ForwardLookingQuestionGenerator → Labels → Context (optional) → 
 ```python
 from datetime import datetime
 from lightningrod import (
-    LightningRod, TrainingConfig, BinaryAnswerType,
+    LightningRod, GRPOTrainingConfig, BinaryAnswerType,
     NewsSeedGenerator, ForwardLookingQuestionGenerator,
     NewsContextGenerator, WebSearchLabeler, QuestionPipeline,
     filter_and_split,
@@ -23,7 +23,7 @@ lr = LightningRod(api_key=api_key)
 
 ```python
 batch_size = 32
-config = TrainingConfig(
+config = GRPOTrainingConfig(
     base_model_id="openai/gpt-oss-120b",
     training_steps=len(train_data) // batch_size,
     lora_rank=32,
@@ -250,7 +250,7 @@ train_dataset, test_dataset = filter_and_split(
 )
 
 batch_size = 32
-config = TrainingConfig(
+config = GRPOTrainingConfig(
     base_model_id="openai/gpt-oss-120b",
     training_steps=len(train_dataset.flattened()) // batch_size,
     lora_rank=32, batch_size=batch_size, num_rollouts=8,
@@ -258,9 +258,13 @@ config = TrainingConfig(
 )
 job = lr.training.run(config, dataset=train_dataset, name="military-strikes-v1")
 
+from lightningrod import EvalModel
+
 eval_job = lr.evals.run(
-    model_id=job.model_id, dataset=test_dataset,
-    benchmark_model_id="openai/gpt-5",
+    config,
+    job,
+    test_dataset,
+    extra_models=[EvalModel(model_id="openai/gpt-5", label="GPT-5")],
 )
 ```
 
