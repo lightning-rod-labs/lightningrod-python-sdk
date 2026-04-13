@@ -8,7 +8,7 @@ from lightningrod._generated.models.label import Label
 from lightningrod._generated.models.sample import Sample
 from lightningrod._generated.models.seed import Seed
 from lightningrod.datasets.dataset import SampleDataset
-from lightningrod.training.samples import prepare_for_training, to_record
+from lightningrod.training.samples import PrepareStats, filter_samples, prepare_for_training, to_record
 from lightningrod.utils.sample import create_sample
 
 
@@ -50,17 +50,58 @@ def test_prepare_for_training_fails_early_when_answer_type_missing() -> None:
         prepare_for_training(dataset, verbose=False)
 
 
-def test_prepare_for_training_fails_early_for_bad_binary_label() -> None:
+def test_filter_samples_drops_invalid_binary_label() -> None:
     bad = Sample(
         id="s-bad-binary",
         is_valid=True,
         seed=Seed(seed_text="seed"),
         label=Label(label="maybe", label_confidence=1.0, answer_type="binary"),
     )
-    dataset = _dataset([bad])
+    stats = PrepareStats(total=1)
+    result = filter_samples([bad], stats=stats)
+    assert result == []
+    assert stats.filter_invalid_label == 1
 
-    with pytest.raises(ValueError, match="binary answer_type"):
-        prepare_for_training(dataset, verbose=False)
+
+def test_filter_samples_keeps_valid_binary_labels() -> None:
+    samples = [
+        Sample(
+            id=f"s-{val}",
+            is_valid=True,
+            seed=Seed(seed_text="seed"),
+            label=Label(label=val, label_confidence=1.0, answer_type="binary"),
+        )
+        for val in ("yes", "no", "true", "false", "1", "0")
+    ]
+    stats = PrepareStats(total=len(samples))
+    result = filter_samples(samples, stats=stats)
+    assert len(result) == 6
+    assert stats.filter_invalid_label == 0
+
+
+def test_filter_samples_drops_invalid_continuous_label() -> None:
+    bad = Sample(
+        id="s-bad-continuous",
+        is_valid=True,
+        seed=Seed(seed_text="seed"),
+        label=Label(label="not a number", label_confidence=1.0, answer_type="continuous"),
+    )
+    stats = PrepareStats(total=1)
+    result = filter_samples([bad], stats=stats)
+    assert result == []
+    assert stats.filter_invalid_label == 1
+
+
+def test_filter_samples_keeps_unlabeled_sample() -> None:
+    unlabeled = Sample(
+        id="s-unlabeled",
+        is_valid=True,
+        seed=Seed(seed_text="seed"),
+    )
+    stats = PrepareStats(total=1)
+    result = filter_samples([unlabeled], stats=stats)
+    assert len(result) == 1
+    assert stats.filter_invalid_label == 0
 
 
 def test_to_record_raises_clear_error_for_missing_answer_type() -> None:

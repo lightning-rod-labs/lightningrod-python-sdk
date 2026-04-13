@@ -35,7 +35,7 @@ class PrepareStats:
     """Tracks metrics collected during prepare_for_training.
 
     Fields are grouped by pipeline stage. Invariants:
-      filter_kept  = total - filter_invalid - filter_horizon - filter_context
+      filter_kept  = total - filter_invalid - filter_invalid_label - filter_horizon - filter_context
       dedup_kept   = filter_kept - dedup_removed
       split_train_before + split_test_after + split_no_sort_key = dedup_kept (temporal)
       split_train_excluded = split_train_before - split_train_after (inferred; train leakage only)
@@ -46,6 +46,7 @@ class PrepareStats:
 
     # ── Stage 1: filter_samples ───────────────────────────────────────────────
     filter_invalid: int = 0
+    filter_invalid_label: int = 0
     filter_horizon: int = 0
     filter_context: int = 0
     filter_missing_resolution_date: int = 0
@@ -193,11 +194,15 @@ def filter_samples(
     min_horizon = params.days_to_resolution_range[0] if params.days_to_resolution_range else None
     max_horizon = params.days_to_resolution_range[1] if params.days_to_resolution_range else None
 
-    n_invalid = n_horizon = n_context = n_missing_resolution_date = n_missing_prediction_date = 0
+    n_invalid = n_invalid_label = n_horizon = n_context = n_missing_resolution_date = n_missing_prediction_date = 0
     filtered: list[Sample] = []
     for sample in samples:
         if sample.is_valid is not True:
             n_invalid += 1
+            continue
+
+        if not _has_valid_label_value(sample):
+            n_invalid_label += 1
             continue
 
         pred_raw: Any = None
@@ -248,6 +253,7 @@ def filter_samples(
 
     if stats is not None:
         stats.filter_invalid = n_invalid
+        stats.filter_invalid_label = n_invalid_label
         stats.filter_horizon = n_horizon
         stats.filter_context = n_context
         stats.filter_missing_resolution_date = n_missing_resolution_date
@@ -312,6 +318,17 @@ def _answer_type_from_str(answer_type: str) -> AnswerType:
     elif answer_type == "free_response":
         return FreeResponseAnswerType()
     raise ValueError(f"Unsupported answer type: {answer_type}")
+
+def _has_valid_label_value(sample: Sample) -> bool:
+    """Return True if the sample has no label or its label parses for its answer_type."""
+    if sample.label is None or isinstance(sample.label, Unset):
+        return True
+    try:
+        answer_type_str = _normalize_answer_type(sample.label.answer_type)
+    except (ValueError, Exception):
+        return False
+    answer_type = _answer_type_from_str(answer_type_str)
+    return sample_label(sample, answer_type) is not None
 
 def _default_leakage_keys() -> list[Callable[[Sample], str | None]]:
     def get_date_close(sample: Sample) -> str | None:
@@ -783,6 +800,24 @@ def _build_report(stats: PrepareStats, split: SplitParams, filter: FilterParams)
             ],
         ))
 
+    # Issue: high invalid-label rate (>10% of valid samples had unparseable labels)
+    HIGH_INVALID_LABEL_THRESHOLD = 0.10
+    labeled_total = stats.total - stats.filter_invalid
+    if labeled_total > 0 and stats.filter_invalid_label / labeled_total > HIGH_INVALID_LABEL_THRESHOLD:
+        pct = int(100 * stats.filter_invalid_label / labeled_total)
+        issues.append(PrepareIssue(
+            message=(
+                f"{stats.filter_invalid_label}/{labeled_total} valid samples ({pct}%) had label values that "
+                "could not be parsed for their declared answer_type and were filtered out."
+            ),
+            tips=[
+                "For binary questions, labels must be one of: 'yes', 'true', '1', 'no', 'false', '0'.",
+                "For continuous questions, labels must be parseable as a float.",
+                "Check your labeler configuration — the labeler may be producing verbose or ambiguous answers.",
+                "Inspect filtered samples with dataset.flattened() to identify patterns in bad labels.",
+            ],
+        ))
+
     # Issue: high dedup rate (>40% removed as duplicates)
     HIGH_DEDUP_THRESHOLD = 0.40
     if stats.filter_kept > 0 and stats.dedup_removed / stats.filter_kept > HIGH_DEDUP_THRESHOLD:
@@ -837,6 +872,8 @@ def _print_report(report: PrepareReport, verbose: bool) -> None:
         parts = []
         if stats.filter_invalid:
             parts.append(f"{stats.filter_invalid} invalid")
+        if stats.filter_invalid_label:
+            parts.append(f"{stats.filter_invalid_label} invalid label")
         if stats.filter_horizon:
             part = f"{stats.filter_horizon} horizon"
             if stats.filter_missing_resolution_date or stats.filter_missing_prediction_date:

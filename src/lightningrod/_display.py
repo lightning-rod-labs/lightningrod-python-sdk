@@ -617,6 +617,8 @@ def display_prepare_report(report: Any, verbose: bool = True) -> None:
         parts = []
         if stats.filter_invalid:
             parts.append(f"{stats.filter_invalid} invalid")
+        if stats.filter_invalid_label:
+            parts.append(f"{stats.filter_invalid_label} invalid label")
         if stats.filter_horizon:
             part = f"{stats.filter_horizon} horizon"
             if stats.filter_missing_resolution_date or stats.filter_missing_prediction_date:
