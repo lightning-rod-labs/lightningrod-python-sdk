@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from typing import Any, Callable, Optional
 
 from rich.console import Console, Group, RenderableType
@@ -183,14 +184,59 @@ def _training_metric_history_covers_reward(job: TrainingJob) -> bool:
     return False
 
 
-def _format_training_metric_line(name: str, values: list[float], hint: str | None = None) -> Text:
+_SPARKLINE_BLOCKS = "▁▂▃▄▅▆▇█"
+
+
+def _finite_floats(values: list[float]) -> list[float]:
+    out: list[float] = []
+    for v in values:
+        if isinstance(v, (int, float)) and math.isfinite(float(v)):
+            out.append(float(v))
+    return out
+
+
+def _subsample_for_sparkline(values: list[float], max_width: int) -> list[float]:
+    n = len(values)
+    if n <= max_width:
+        return list(values)
+    return [values[int(i * (n - 1) / (max_width - 1))] for i in range(max_width)]
+
+
+def _metric_sparkline(values: list[float], max_width: int = 32) -> str:
+    finite = _finite_floats(values)
+    if not finite:
+        return ""
+    sampled = _subsample_for_sparkline(finite, max_width)
+    if len(sampled) == 1:
+        return _SPARKLINE_BLOCKS[3]
+    vmin, vmax = min(sampled), max(sampled)
+    if vmin == vmax:
+        return _SPARKLINE_BLOCKS[3] * len(sampled)
+    parts: list[str] = []
+    for v in sampled:
+        t = (v - vmin) / (vmax - vmin)
+        idx = min(7, max(0, int(t * 7 + 0.5)))
+        parts.append(_SPARKLINE_BLOCKS[idx])
+    return "".join(parts)
+
+
+def _format_training_metric_line(
+    name: str, values: list[float], hint: str | None = None, sparkline_width: int = 32
+) -> RenderableType:
     latest = values[-1]
     count = len(values)
     avg = sum(values) / count
     safe_name = escape(name)
     hint_part = f"  [dim]{escape(hint)}[/dim]" if hint else ""
-    return _safe_markup(
+    header = _safe_markup(
         f"  [bold]{safe_name}:[/bold] latest {latest:.4f}  avg {avg:.4f}  ({count} steps){hint_part}"
+    )
+    spark = _metric_sparkline(values, max_width=sparkline_width)
+    if not spark:
+        return header
+    return Group(
+        header,
+        Text(f"      {spark}", style="dim cyan"),
     )
 
 
