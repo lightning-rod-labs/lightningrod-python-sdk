@@ -57,6 +57,6 @@ See `forward-looking-examples` skill for GRPO configs.
 
 ## Reference notebooks
 
-- `notebooks/getting_started/05_fine_tuning.ipynb`
+- `notebooks/getting_started/05_grpo_training.ipynb`
 - `notebooks/fine_tuning/02_trump_forecasting.ipynb` — full end-to-end example
 - `notebooks/evaluation/` — evaluation patterns

@@ -173,7 +173,8 @@ Read these only when writing code and you need a specific API pattern or paramet
 - `notebooks/getting_started/02_custom_documents_datasource.ipynb` — document seeds
 - `notebooks/getting_started/03_bigquery_datasource.ipynb` — BigQuery seeds
 - `notebooks/getting_started/04_answer_types.ipynb` — answer type selection
-- `notebooks/getting_started/05_fine_tuning.ipynb` — training basics
+- `notebooks/getting_started/05_grpo_training.ipynb` — GRPO training basics
+- `notebooks/getting_started/06_sft_training.ipynb` — SFT training basics
 - `notebooks/fine_tuning/01_golf_forecasting.ipynb` — domain-specific GRPO
 - `notebooks/fine_tuning/02_trump_forecasting.ipynb` — end-to-end forecasting
 - `notebooks/fine_tuning/03_survival_llm.ipynb` — content learning with topic trees
