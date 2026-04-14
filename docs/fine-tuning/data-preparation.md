@@ -4,7 +4,7 @@ icon: filter
 
 # Data Preparation
 
-`prepare_for_training` is the main entry point for preparing Lightning Rod datasets for model training. It filters invalid samples, deduplicates, splits into train/test, and returns `SampleDataset` objects ready for `lr.training.run()` or `lr.evals.run()`.
+`prepare_for_training` is the main entry point for preparing Lightning Rod datasets for model training. It filters invalid samples, deduplicates, splits into train/test, and returns `SampleDataset` objects ready for `lr.training.run(...)` with a **`GRPOTrainingConfig`** or **`SFTTrainingConfig`**, for `lr.evals.run(config, job, test_dataset)` (GRPO), or for `lr.evals.create(...)` when you supply the full model list (e.g. SFT or custom evals).
 
 ## What It Does
 
@@ -89,4 +89,4 @@ train_dataset, test_dataset = prepare_for_training(
 
 ## Output
 
-Returns `(train_dataset, test_dataset)` — two `SampleDataset` objects ready for `lr.training.run(config, dataset=train_dataset)` and `lr.evals.run(models=..., dataset=test_dataset)`.
+Returns `(train_dataset, test_dataset)` — two `SampleDataset` objects ready for `lr.training.run(training_config, dataset=train_dataset)` (GRPO or SFT config) and evaluation on `test_dataset` via `lr.evals.run(training_config, job, test_dataset)` or `lr.evals.create(...)`.

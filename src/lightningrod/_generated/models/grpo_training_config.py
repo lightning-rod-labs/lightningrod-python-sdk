@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -12,11 +12,11 @@ if TYPE_CHECKING:
     from ..models.sample_dataset_config import SampleDatasetConfig
 
 
-T = TypeVar("T", bound="TrainingConfig")
+T = TypeVar("T", bound="GRPOTrainingConfig")
 
 
 @_attrs_define
-class TrainingConfig:
+class GRPOTrainingConfig:
     r"""
     Attributes:
         dataset (SampleDatasetConfig): Configuration for loading a dataset of samples from the sample database.
@@ -43,6 +43,7 @@ class TrainingConfig:
             cut"}'
         base_model_id (str): Base model ID (e.g. Qwen/Qwen3-8B, Qwen/Qwen3-32B, openai/gpt-oss-20b, openai/gpt-oss-120b)
         training_steps (int): Number of training loop iterations
+        training_type (Literal['GRPO'] | Unset):  Default: 'GRPO'.
         batch_size (int | None | Unset): Rows per batch; used to slice train_rows each step
         lora_rank (int | None | Unset): LoRA adapter rank passed to create_lora_training_client_async
         learning_rate (float | None | Unset): Step size for weight updates; higher values learn faster but may overshoot
@@ -59,6 +60,7 @@ class TrainingConfig:
     dataset: SampleDatasetConfig
     base_model_id: str
     training_steps: int
+    training_type: Literal["GRPO"] | Unset = "GRPO"
     batch_size: int | None | Unset = UNSET
     lora_rank: int | None | Unset = UNSET
     learning_rate: float | None | Unset = UNSET
@@ -76,6 +78,8 @@ class TrainingConfig:
         base_model_id = self.base_model_id
 
         training_steps = self.training_steps
+
+        training_type = self.training_type
 
         batch_size: int | None | Unset
         if isinstance(self.batch_size, Unset):
@@ -136,6 +140,8 @@ class TrainingConfig:
                 "training_steps": training_steps,
             }
         )
+        if training_type is not UNSET:
+            field_dict["training_type"] = training_type
         if batch_size is not UNSET:
             field_dict["batch_size"] = batch_size
         if lora_rank is not UNSET:
@@ -167,6 +173,10 @@ class TrainingConfig:
         base_model_id = d.pop("base_model_id")
 
         training_steps = d.pop("training_steps")
+
+        training_type = cast(Literal["GRPO"] | Unset, d.pop("training_type", UNSET))
+        if training_type != "GRPO" and not isinstance(training_type, Unset):
+            raise ValueError(f"training_type must match const 'GRPO', got '{training_type}'")
 
         def _parse_batch_size(data: object) -> int | None | Unset:
             if data is None:
@@ -242,10 +252,11 @@ class TrainingConfig:
 
         save_frequency = d.pop("save_frequency", UNSET)
 
-        training_config = cls(
+        grpo_training_config = cls(
             dataset=dataset,
             base_model_id=base_model_id,
             training_steps=training_steps,
+            training_type=training_type,
             batch_size=batch_size,
             lora_rank=lora_rank,
             learning_rate=learning_rate,
@@ -257,8 +268,8 @@ class TrainingConfig:
             save_frequency=save_frequency,
         )
 
-        training_config.additional_properties = d
-        return training_config
+        grpo_training_config.additional_properties = d
+        return grpo_training_config
 
     @property
     def additional_keys(self) -> list[str]:

@@ -179,10 +179,11 @@ def _transform_job_row(job: TransformJob) -> dict[str, Any]:
 
 
 def _eval_job_row(job: EvalJob) -> dict[str, Any]:
+    model_ids = ", ".join(m.model_id for m in job.config.models)
     row: dict[str, Any] = {
         "id": job.id,
         "status": job.status.value,
-        "model_id": job.config.model_id,
+        "model_id": model_ids,
         "updated_at": _iso(job.updated_at),
     }
     if not isinstance(job.cost_dollars, Unset) and job.cost_dollars is not None:

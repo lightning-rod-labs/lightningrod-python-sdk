@@ -57,7 +57,7 @@ class LightningRod:
         self,
         model_id: str,
         prompt: str,
-        system_prompt: str = "Answer as a probability between 0 and 1 between <answer></answer> tags.",
+        system_prompt: str | None = None,
         **kwargs,
     ) -> str:
         try:
@@ -65,12 +65,13 @@ class LightningRod:
         except ImportError:
             raise ImportError("Run `pip install openai` to use lr.predict().")
         client = OpenAI(api_key=self.api_key, base_url=f"{self.base_url}/openai")
+        messages = []
+        if system_prompt:
+            messages.insert(0, {"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
         response = client.chat.completions.create(
             model=model_id,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt},
-            ],
+            messages=messages,
             **kwargs,
         )
         return response.choices[0].message.content

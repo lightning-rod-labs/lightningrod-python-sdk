@@ -10,6 +10,7 @@ from datetime import datetime
 from lightningrod._generated.models.dataset_metadata import DatasetMetadata
 from lightningrod._generated.models.eval_config import EvalConfig
 from lightningrod._generated.models.eval_job import EvalJob
+from lightningrod._generated.models.eval_model import EvalModel
 from lightningrod._generated.models.eval_job_list_response import EvalJobListResponse
 from lightningrod._generated.models.eval_job_metrics_type_0 import EvalJobMetricsType0
 from lightningrod._generated.models.eval_job_status import EvalJobStatus
@@ -17,7 +18,7 @@ from lightningrod._generated.models.list_datasets_response import ListDatasetsRe
 from lightningrod._generated.models.paginated_samples_response import PaginatedSamplesResponse
 from lightningrod._generated.models.sample import Sample
 from lightningrod._generated.models.sample_dataset_config import SampleDatasetConfig
-from lightningrod._generated.models.training_config import TrainingConfig
+from lightningrod._generated.models.grpo_training_config import GRPOTrainingConfig
 from lightningrod._generated.models.training_job import TrainingJob
 from lightningrod._generated.models.training_job_list_response import TrainingJobListResponse
 from lightningrod._generated.models.training_job_status import TrainingJobStatus
@@ -34,7 +35,7 @@ def _training_job(
     base_model_id: str = "Qwen/Qwen3-8B",
     training_steps: int = 10,
 ) -> TrainingJob:
-    cfg = TrainingConfig(
+    cfg = GRPOTrainingConfig(
         dataset=SampleDatasetConfig(id="ds1", sample_ids=["s1"]),
         base_model_id=base_model_id,
         training_steps=training_steps,
@@ -52,7 +53,7 @@ def _training_job(
 def _eval_job_with_metrics() -> EvalJob:
     cfg = EvalConfig(
         organization_id="org",
-        model_id="m",
+        models=[EvalModel(model_id="m")],
         dataset=SampleDatasetConfig(id="ds", sample_ids=[]),
     )
     metrics = EvalJobMetricsType0()

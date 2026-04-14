@@ -2341,7 +2341,22 @@
             "title": "Name"
           },
           "config": {
-            "$ref": "#/components/schemas/TrainingConfig"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/GRPOTrainingConfig"
+              },
+              {
+                "$ref": "#/components/schemas/SFTTrainingConfig"
+              }
+            ],
+            "title": "Config",
+            "discriminator": {
+              "propertyName": "training_type",
+              "mapping": {
+                "GRPO": "#/components/schemas/GRPOTrainingConfig",
+                "SFT": "#/components/schemas/SFTTrainingConfig"
+              }
+            }
           }
         },
         "type": "object",
@@ -2696,7 +2711,22 @@
       "EstimateTrainingCostRequest": {
         "properties": {
           "config": {
-            "$ref": "#/components/schemas/TrainingConfig"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/GRPOTrainingConfig"
+              },
+              {
+                "$ref": "#/components/schemas/SFTTrainingConfig"
+              }
+            ],
+            "title": "Config",
+            "discriminator": {
+              "propertyName": "training_type",
+              "mapping": {
+                "GRPO": "#/components/schemas/GRPOTrainingConfig",
+                "SFT": "#/components/schemas/SFTTrainingConfig"
+              }
+            }
           }
         },
         "type": "object",
@@ -3558,6 +3588,139 @@
         },
         "type": "object",
         "title": "FreeResponseAnswerType"
+      },
+      "GRPOTrainingConfig": {
+        "properties": {
+          "training_type": {
+            "type": "string",
+            "const": "GRPO",
+            "title": "Training Type",
+            "default": "GRPO"
+          },
+          "dataset": {
+            "$ref": "#/components/schemas/SampleDatasetConfig",
+            "description": "Dataset config for loading training samples"
+          },
+          "base_model_id": {
+            "type": "string",
+            "title": "Base Model Id",
+            "description": "Base model ID (e.g. Qwen/Qwen3-8B, Qwen/Qwen3-32B, openai/gpt-oss-20b, openai/gpt-oss-120b)"
+          },
+          "training_steps": {
+            "type": "integer",
+            "title": "Training Steps",
+            "description": "Number of training loop iterations"
+          },
+          "batch_size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Batch Size",
+            "description": "Rows per batch; used to slice train_rows each step"
+          },
+          "lora_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lora Rank",
+            "description": "LoRA adapter rank passed to create_lora_training_client_async"
+          },
+          "learning_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Learning Rate",
+            "description": "Step size for weight updates; higher values learn faster but may overshoot"
+          },
+          "adam_beta1": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adam Beta1",
+            "description": "Exponential decay rate for first-moment estimates (moving average of gradients)"
+          },
+          "adam_beta2": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adam Beta2",
+            "description": "Exponential decay rate for second-moment estimates (moving average of squared gradients)"
+          },
+          "num_rollouts": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Num Rollouts",
+            "description": "Samples per prompt for GRPO"
+          },
+          "max_response_length": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Response Length",
+            "description": "Max tokens for sampling"
+          },
+          "start_idx": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Idx",
+            "description": "Row index to skip at start; train_rows = train_rows[start_idx:]"
+          },
+          "save_frequency": {
+            "type": "integer",
+            "title": "Save Frequency",
+            "description": "The frequency at which to save checkpoints, in training steps.",
+            "default": 10
+          }
+        },
+        "type": "object",
+        "required": [
+          "dataset",
+          "base_model_id",
+          "training_steps"
+        ],
+        "title": "GRPOTrainingConfig"
       },
       "GdeltSeedGenerator": {
         "properties": {
@@ -5859,6 +6022,133 @@
         ],
         "title": "RolloutScorer"
       },
+      "SFTTrainingConfig": {
+        "properties": {
+          "training_type": {
+            "type": "string",
+            "const": "SFT",
+            "title": "Training Type",
+            "default": "SFT"
+          },
+          "dataset": {
+            "$ref": "#/components/schemas/SampleDatasetConfig",
+            "description": "Dataset config for loading training samples"
+          },
+          "base_model_id": {
+            "type": "string",
+            "title": "Base Model Id",
+            "description": "Base model ID (e.g. Qwen/Qwen3-8B, Qwen/Qwen3-32B, openai/gpt-oss-20b, openai/gpt-oss-120b)"
+          },
+          "training_steps": {
+            "type": "integer",
+            "title": "Training Steps",
+            "description": "Number of training loop iterations"
+          },
+          "batch_size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Batch Size",
+            "description": "Rows per batch; used to slice train_rows each step"
+          },
+          "lora_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lora Rank",
+            "description": "LoRA adapter rank passed to create_lora_training_client_async"
+          },
+          "learning_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Learning Rate",
+            "description": "Step size for weight updates; higher values learn faster but may overshoot"
+          },
+          "adam_beta1": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adam Beta1",
+            "description": "Exponential decay rate for first-moment estimates (moving average of gradients)"
+          },
+          "adam_beta2": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adam Beta2",
+            "description": "Exponential decay rate for second-moment estimates (moving average of squared gradients)"
+          },
+          "save_frequency": {
+            "type": "integer",
+            "title": "Save Frequency",
+            "description": "The frequency at which to save checkpoints, in training steps.",
+            "default": 10
+          },
+          "resume_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resume From",
+            "description": "Resume training from a Tinker checkpoint path"
+          },
+          "epochs": {
+            "type": "integer",
+            "title": "Epochs",
+            "description": "Number of passes over the training data",
+            "default": 1
+          },
+          "start_idx": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Idx",
+            "description": "Row index to skip at start; train_rows = train_rows[start_idx:]"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dataset",
+          "base_model_id",
+          "training_steps"
+        ],
+        "title": "SFTTrainingConfig"
+      },
       "Sample": {
         "properties": {
           "id": {
@@ -6219,133 +6509,6 @@
         "title": "TopicTreeSeedGenerator",
         "description": "Generates diverse seeds by recursively decomposing broad topics into specific subtopics.\n\nGiven one or more root topics, uses an LLM to break each into `tree_degree` subtopics,\nthen repeats `tree_depth` levels deep. The leaf paths become seeds for downstream transforms.\nThis produces tree_degree^tree_depth seeds per root topic, each more specific than the root.\n\nExample:\n    TopicTreeSeedGenerator(topic=\"AI Regulation\", tree_depth=2, tree_degree=4)\n    # Produces 16 specific seeds like \"AI Regulation \u2192 Healthcare \u2192 FDA approval of\n    # diagnostic algorithms\" that feed into QuestionGenerator or other downstream transforms."
       },
-      "TrainingConfig": {
-        "properties": {
-          "dataset": {
-            "$ref": "#/components/schemas/SampleDatasetConfig",
-            "description": "Dataset config for loading training samples"
-          },
-          "base_model_id": {
-            "type": "string",
-            "title": "Base Model Id",
-            "description": "Base model ID (e.g. Qwen/Qwen3-8B, Qwen/Qwen3-32B, openai/gpt-oss-20b, openai/gpt-oss-120b)"
-          },
-          "training_steps": {
-            "type": "integer",
-            "title": "Training Steps",
-            "description": "Number of training loop iterations"
-          },
-          "batch_size": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Batch Size",
-            "description": "Rows per batch; used to slice train_rows each step"
-          },
-          "lora_rank": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Lora Rank",
-            "description": "LoRA adapter rank passed to create_lora_training_client_async"
-          },
-          "learning_rate": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Learning Rate",
-            "description": "Step size for weight updates; higher values learn faster but may overshoot"
-          },
-          "adam_beta1": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Adam Beta1",
-            "description": "Exponential decay rate for first-moment estimates (moving average of gradients)"
-          },
-          "adam_beta2": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Adam Beta2",
-            "description": "Exponential decay rate for second-moment estimates (moving average of squared gradients)"
-          },
-          "num_rollouts": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Num Rollouts",
-            "description": "Samples per prompt for GRPO"
-          },
-          "max_response_length": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Max Response Length",
-            "description": "Max tokens for sampling"
-          },
-          "start_idx": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Start Idx",
-            "description": "Row index to skip at start; train_rows = train_rows[start_idx:]"
-          },
-          "save_frequency": {
-            "type": "integer",
-            "title": "Save Frequency",
-            "description": "The frequency at which to save checkpoints, in training steps.",
-            "default": 10
-          }
-        },
-        "type": "object",
-        "required": [
-          "dataset",
-          "base_model_id",
-          "training_steps"
-        ],
-        "title": "TrainingConfig"
-      },
       "TrainingJob": {
         "properties": {
           "id": {
@@ -6371,7 +6534,22 @@
             "$ref": "#/components/schemas/TrainingJobStatus"
           },
           "config": {
-            "$ref": "#/components/schemas/TrainingConfig"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/GRPOTrainingConfig"
+              },
+              {
+                "$ref": "#/components/schemas/SFTTrainingConfig"
+              }
+            ],
+            "title": "Config",
+            "discriminator": {
+              "propertyName": "training_type",
+              "mapping": {
+                "GRPO": "#/components/schemas/GRPOTrainingConfig",
+                "SFT": "#/components/schemas/SFTTrainingConfig"
+              }
+            }
           },
           "model_id": {
             "anyOf": [
@@ -6397,6 +6575,13 @@
               }
             ],
             "title": "Model Id By Step"
+          },
+          "metric_history": {
+            "items": {
+              "$ref": "#/components/schemas/TrainingMetricSeries"
+            },
+            "type": "array",
+            "title": "Metric History"
           },
           "reward_history": {
             "anyOf": [
@@ -6508,6 +6693,27 @@
           "FAILED"
         ],
         "title": "TrainingJobStatus"
+      },
+      "TrainingMetricSeries": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "values": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Values"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "values"
+        ],
+        "title": "TrainingMetricSeries"
       },
       "TransformJob": {
         "properties": {
