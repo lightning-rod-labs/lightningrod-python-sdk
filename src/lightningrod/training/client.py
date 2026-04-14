@@ -16,20 +16,18 @@ from lightningrod._generated.models.estimate_training_cost_request import (
 from lightningrod._generated.models.estimate_training_cost_response import (
     EstimateTrainingCostResponse,
 )
-from lightningrod._generated.models.grpo_training_config import GRPOTrainingConfig
-from lightningrod._generated.models.sft_training_config import SFTTrainingConfig
+from lightningrod._generated.models.grpo_training_config import GRPOTrainingConfig as _ApiGRPOTrainingConfig
+from lightningrod._generated.models.sft_training_config import SFTTrainingConfig as _ApiSFTTrainingConfig
 from lightningrod._generated.models.training_job import TrainingJob
 from lightningrod._generated.models.training_job_list_response import TrainingJobListResponse
 from lightningrod._generated.models.training_job_status import TrainingJobStatus
 from lightningrod._generated.models.sample_dataset_config import SampleDatasetConfig
 from lightningrod._generated.types import UNSET, Unset
 from lightningrod._errors import handle_response_error
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from lightningrod.datasets.dataset import SampleDataset
-
-ApiTrainingConfig = GRPOTrainingConfig | SFTTrainingConfig
 
 
 @define
@@ -44,7 +42,25 @@ class GRPOTrainingConfig:
     num_rollouts: int | None = None
     max_response_length: int | None = None
     start_idx: int | None = None
-    training_type: Literal["SFT", "GRPO"] | None = None
+    save_frequency: int | None = None
+
+
+@define
+class SFTTrainingConfig:
+    base_model_id: str
+    training_steps: int
+    batch_size: int | None = None
+    lora_rank: int | None = None
+    learning_rate: float | None = None
+    adam_beta1: float | None = None
+    adam_beta2: float | None = None
+    start_idx: int | None = None
+    save_frequency: int | None = None
+    resume_from: str | None = None
+    epochs: int | None = None
+
+
+TrainingMethodConfig = GRPOTrainingConfig | SFTTrainingConfig
 
 
 def sample_dataset_to_config(
@@ -64,7 +80,7 @@ def _build_grpo_api_config(
     dataset: "SampleDataset",
 ) -> _ApiGRPOTrainingConfig:
     dataset_config = sample_dataset_to_config(dataset)
-    shared_kwargs = dict(
+    return _ApiGRPOTrainingConfig(
         dataset=dataset_config,
         base_model_id=config.base_model_id,
         training_steps=config.training_steps,
@@ -73,32 +89,11 @@ def _build_grpo_api_config(
         learning_rate=config.learning_rate if config.learning_rate is not None else UNSET,
         adam_beta1=config.adam_beta1 if config.adam_beta1 is not None else UNSET,
         adam_beta2=config.adam_beta2 if config.adam_beta2 is not None else UNSET,
+        num_rollouts=config.num_rollouts if config.num_rollouts is not None else UNSET,
+        max_response_length=config.max_response_length if config.max_response_length is not None else UNSET,
         start_idx=config.start_idx if config.start_idx is not None else UNSET,
         save_frequency=config.save_frequency if config.save_frequency is not None else UNSET,
     )
-
-    training_type = config.training_type
-    if training_type is None:
-        training_type = (
-            "GRPO"
-            if config.num_rollouts is not None or config.max_response_length is not None
-            else "SFT"
-        )
-
-    if training_type == "GRPO":
-        return GRPOTrainingConfig(
-            **shared_kwargs,
-            num_rollouts=config.num_rollouts if config.num_rollouts is not None else UNSET,
-            max_response_length=config.max_response_length if config.max_response_length is not None else UNSET,
-        )
-
-    if config.num_rollouts is not None or config.max_response_length is not None:
-        raise ValueError(
-            "num_rollouts and max_response_length are only supported for GRPO training. "
-            "Set training_type='GRPO' or remove those fields."
-        )
-
-    return SFTTrainingConfig(**shared_kwargs)
 
 
 def _build_sft_api_config(
