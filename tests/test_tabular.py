@@ -18,7 +18,7 @@ from lightningrod._generated.models.list_datasets_response import ListDatasetsRe
 from lightningrod._generated.models.paginated_samples_response import PaginatedSamplesResponse
 from lightningrod._generated.models.sample import Sample
 from lightningrod._generated.models.sample_dataset_config import SampleDatasetConfig
-from lightningrod._generated.models.sft_training_config import SFTTrainingConfig
+from lightningrod._generated.models.grpo_training_config import GRPOTrainingConfig
 from lightningrod._generated.models.training_job import TrainingJob
 from lightningrod._generated.models.training_job_list_response import TrainingJobListResponse
 from lightningrod._generated.models.training_job_status import TrainingJobStatus
@@ -35,7 +35,7 @@ def _training_job(
     base_model_id: str = "Qwen/Qwen3-8B",
     training_steps: int = 10,
 ) -> TrainingJob:
-    cfg = SFTTrainingConfig(
+    cfg = GRPOTrainingConfig(
         dataset=SampleDatasetConfig(id="ds1", sample_ids=["s1"]),
         base_model_id=base_model_id,
         training_steps=training_steps,
