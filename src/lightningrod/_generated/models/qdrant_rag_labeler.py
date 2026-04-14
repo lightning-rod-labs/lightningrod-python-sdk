@@ -30,6 +30,9 @@ class QdrantRAGLabeler:
         file_set_id (None | str | Unset): FileSet ID to load Qdrant collection from GCS snapshot.
         collection_name (None | str | Unset): Qdrant collection to query (required when using direct injection).
         embedding_model (str | Unset): FastEmbed model name for query embedding. Default: 'BAAI/bge-small-en-v1.5'.
+        index_chunk_size (int | Unset): Chunk size to use when building the backing FileSet Qdrant index. Default: 1500.
+        index_chunk_overlap (int | Unset): Chunk overlap to use when building the backing FileSet Qdrant index. Default:
+            150.
         extraction_model (ModelConfig | None | Unset): LLM model for structured label extraction. Defaults to
             gemini-2.5-flash.
         top_k (int | Unset): Number of chunks to retrieve Default: 5.
@@ -48,6 +51,8 @@ class QdrantRAGLabeler:
     file_set_id: None | str | Unset = UNSET
     collection_name: None | str | Unset = UNSET
     embedding_model: str | Unset = "BAAI/bge-small-en-v1.5"
+    index_chunk_size: int | Unset = 1500
+    index_chunk_overlap: int | Unset = 150
     extraction_model: ModelConfig | None | Unset = UNSET
     top_k: int | Unset = 5
     temporal_direction: None | str | Unset = UNSET
@@ -91,6 +96,10 @@ class QdrantRAGLabeler:
             collection_name = self.collection_name
 
         embedding_model = self.embedding_model
+
+        index_chunk_size = self.index_chunk_size
+
+        index_chunk_overlap = self.index_chunk_overlap
 
         extraction_model: dict[str, Any] | None | Unset
         if isinstance(self.extraction_model, Unset):
@@ -151,6 +160,10 @@ class QdrantRAGLabeler:
             field_dict["collection_name"] = collection_name
         if embedding_model is not UNSET:
             field_dict["embedding_model"] = embedding_model
+        if index_chunk_size is not UNSET:
+            field_dict["index_chunk_size"] = index_chunk_size
+        if index_chunk_overlap is not UNSET:
+            field_dict["index_chunk_overlap"] = index_chunk_overlap
         if extraction_model is not UNSET:
             field_dict["extraction_model"] = extraction_model
         if top_k is not UNSET:
@@ -206,6 +219,10 @@ class QdrantRAGLabeler:
         collection_name = _parse_collection_name(d.pop("collection_name", UNSET))
 
         embedding_model = d.pop("embedding_model", UNSET)
+
+        index_chunk_size = d.pop("index_chunk_size", UNSET)
+
+        index_chunk_overlap = d.pop("index_chunk_overlap", UNSET)
 
         def _parse_extraction_model(data: object) -> ModelConfig | None | Unset:
             if data is None:
@@ -333,6 +350,8 @@ class QdrantRAGLabeler:
             file_set_id=file_set_id,
             collection_name=collection_name,
             embedding_model=embedding_model,
+            index_chunk_size=index_chunk_size,
+            index_chunk_overlap=index_chunk_overlap,
             extraction_model=extraction_model,
             top_k=top_k,
             temporal_direction=temporal_direction,

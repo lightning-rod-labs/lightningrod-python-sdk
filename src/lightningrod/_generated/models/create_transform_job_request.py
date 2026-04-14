@@ -35,13 +35,14 @@ T = TypeVar("T", bound="CreateTransformJobRequest")
 class CreateTransformJobRequest:
     """
     Attributes:
-        config (CsvSeedGenerator | FileSetContextGenerator | FileSetDocumentContextGenerator | FileSetDocumentLabeler |
-            FileSetQuerySeedGenerator | FileSetRAGLabeler | FileSetSeedGenerator | ForwardLookingQuestionGenerator |
-            GdeltSeedGenerator | KeyDeduplication | NewsSeedGenerator | QuestionAndLabelGenerator | QuestionGenerator |
-            QuestionPipeline | QuestionRenderer | TopicTreeSeedGenerator | WebSearchContextGenerator | WebSearchLabeler):
+        config (CsvSeedGenerator | FileSetDocumentContextGenerator | FileSetDocumentLabeler | FileSetSeedGenerator |
+            ForwardLookingQuestionGenerator | GdeltSeedGenerator | KeyDeduplication | NewsSeedGenerator |
+            QdrantContextGenerator | QdrantRAGLabeler | QuestionAndLabelGenerator | QuestionGenerator | QuestionPipeline |
+            QuestionRenderer | TopicTreeSeedGenerator | WebSearchContextGenerator | WebSearchLabeler):
         input_dataset_id (None | str | Unset):
         max_questions (int | None | Unset):
         max_cost_dollars (float | None | Unset):
+        cache_enabled (bool | Unset):  Default: True.
         configuration_id (None | str | Unset):
         name (None | str | Unset):
     """
@@ -68,6 +69,7 @@ class CreateTransformJobRequest:
     input_dataset_id: None | str | Unset = UNSET
     max_questions: int | None | Unset = UNSET
     max_cost_dollars: float | None | Unset = UNSET
+    cache_enabled: bool | Unset = True
     configuration_id: None | str | Unset = UNSET
     name: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -144,6 +146,8 @@ class CreateTransformJobRequest:
         else:
             max_cost_dollars = self.max_cost_dollars
 
+        cache_enabled = self.cache_enabled
+
         configuration_id: None | str | Unset
         if isinstance(self.configuration_id, Unset):
             configuration_id = UNSET
@@ -169,6 +173,8 @@ class CreateTransformJobRequest:
             field_dict["max_questions"] = max_questions
         if max_cost_dollars is not UNSET:
             field_dict["max_cost_dollars"] = max_cost_dollars
+        if cache_enabled is not UNSET:
+            field_dict["cache_enabled"] = cache_enabled
         if configuration_id is not UNSET:
             field_dict["configuration_id"] = configuration_id
         if name is not UNSET:
@@ -342,24 +348,16 @@ class CreateTransformJobRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_15 = TopicTreeSeedGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_15 = WebSearchContextGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_15
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_create_transform_config_type_16 = WebSearchContextGenerator.from_dict(data)
-
-                return componentsschemas_create_transform_config_type_16
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
             if not isinstance(data, dict):
                 raise TypeError()
-            componentsschemas_create_transform_config_type_17 = WebSearchLabeler.from_dict(data)
+            componentsschemas_create_transform_config_type_16 = WebSearchLabeler.from_dict(data)
 
-            return componentsschemas_create_transform_config_type_17
+            return componentsschemas_create_transform_config_type_16
 
         config = _parse_config(d.pop("config"))
 
@@ -390,6 +388,8 @@ class CreateTransformJobRequest:
 
         max_cost_dollars = _parse_max_cost_dollars(d.pop("max_cost_dollars", UNSET))
 
+        cache_enabled = d.pop("cache_enabled", UNSET)
+
         def _parse_configuration_id(data: object) -> None | str | Unset:
             if data is None:
                 return data
@@ -413,6 +413,7 @@ class CreateTransformJobRequest:
             input_dataset_id=input_dataset_id,
             max_questions=max_questions,
             max_cost_dollars=max_cost_dollars,
+            cache_enabled=cache_enabled,
             configuration_id=configuration_id,
             name=name,
         )

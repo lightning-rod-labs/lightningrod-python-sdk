@@ -116,6 +116,7 @@ from .transform_job import TransformJob
 from .transform_job_status import TransformJobStatus
 from .transform_step_metrics_response import TransformStepMetricsResponse
 from .transform_type import TransformType
+from .upload_credentials_response import UploadCredentialsResponse
 from .upload_samples_request import UploadSamplesRequest
 from .upload_samples_response import UploadSamplesResponse
 from .usage import Usage
@@ -243,6 +244,7 @@ __all__ = (
     "TransformJobStatus",
     "TransformStepMetricsResponse",
     "TransformType",
+    "UploadCredentialsResponse",
     "UploadSamplesRequest",
     "UploadSamplesResponse",
     "Usage",

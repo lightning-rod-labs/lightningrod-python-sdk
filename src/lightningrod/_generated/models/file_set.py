@@ -29,8 +29,6 @@ class FileSet:
         metadata_schema (FileSetMetadataSchema | None | Unset):
         is_public (bool | Unset):  Default: False.
         cloud_storage_folder (None | str | Unset):
-        qdrant_snapshot_path (None | str | Unset):
-        qdrant_collection_name (None | str | Unset):
     """
 
     id: str
@@ -41,8 +39,6 @@ class FileSet:
     metadata_schema: FileSetMetadataSchema | None | Unset = UNSET
     is_public: bool | Unset = False
     cloud_storage_folder: None | str | Unset = UNSET
-    qdrant_snapshot_path: None | str | Unset = UNSET
-    qdrant_collection_name: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -75,18 +71,6 @@ class FileSet:
         else:
             cloud_storage_folder = self.cloud_storage_folder
 
-        qdrant_snapshot_path: None | str | Unset
-        if isinstance(self.qdrant_snapshot_path, Unset):
-            qdrant_snapshot_path = UNSET
-        else:
-            qdrant_snapshot_path = self.qdrant_snapshot_path
-
-        qdrant_collection_name: None | str | Unset
-        if isinstance(self.qdrant_collection_name, Unset):
-            qdrant_collection_name = UNSET
-        else:
-            qdrant_collection_name = self.qdrant_collection_name
-
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -104,10 +88,6 @@ class FileSet:
             field_dict["is_public"] = is_public
         if cloud_storage_folder is not UNSET:
             field_dict["cloud_storage_folder"] = cloud_storage_folder
-        if qdrant_snapshot_path is not UNSET:
-            field_dict["qdrant_snapshot_path"] = qdrant_snapshot_path
-        if qdrant_collection_name is not UNSET:
-            field_dict["qdrant_collection_name"] = qdrant_collection_name
 
         return field_dict
 
@@ -159,24 +139,6 @@ class FileSet:
 
         cloud_storage_folder = _parse_cloud_storage_folder(d.pop("cloud_storage_folder", UNSET))
 
-        def _parse_qdrant_snapshot_path(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        qdrant_snapshot_path = _parse_qdrant_snapshot_path(d.pop("qdrant_snapshot_path", UNSET))
-
-        def _parse_qdrant_collection_name(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        qdrant_collection_name = _parse_qdrant_collection_name(d.pop("qdrant_collection_name", UNSET))
-
         file_set = cls(
             id=id,
             name=name,
@@ -186,8 +148,6 @@ class FileSet:
             metadata_schema=metadata_schema,
             is_public=is_public,
             cloud_storage_folder=cloud_storage_folder,
-            qdrant_snapshot_path=qdrant_snapshot_path,
-            qdrant_collection_name=qdrant_collection_name,
         )
 
         file_set.additional_properties = d

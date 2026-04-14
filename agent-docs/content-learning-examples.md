@@ -139,6 +139,9 @@ For low-level local training loops (e.g. direct Tinker `ServiceClient`), use the
 ### Step 1: Upload Documents to FileSet
 
 ```python
+import json
+import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from lightningrod import (
     LightningRod, FileSetMetadataSchemaInput,
     MetadataFieldDefinitionInput, MetadataFieldType,
@@ -159,16 +162,26 @@ fileset = lr.filesets.create(
     metadata_schema=schema,
 )
 
-# Upload each PDF with metadata
-for pdf_path, title in textbooks:
-    lr.filesets.files.upload(
-        file_set_id=fileset.id,
-        file_path=pdf_path,
-        metadata={"book_title": title},
-    )
+# textbooks is a list of (pdf_path, title) tuples
+file_names = [pdf_path.name for pdf_path, _ in textbooks]
+upload_response = lr.filesets.upload_folder(fileset.id, file_names)
 
-# Wait for file processing (PENDING → PROCESSING → ACTIVE)
-# Poll lr.filesets.files.list(fileset.id) until all files are ACTIVE
+# Upload PDFs in parallel
+def upload_file(pdf_path, title):
+    url = upload_response.upload_urls.additional_properties[pdf_path.name]
+    with open(pdf_path, "rb") as f:
+        requests.put(url, data=f.read()).raise_for_status()
+
+with ThreadPoolExecutor(max_workers=10) as executor:
+    for pdf_path, title in textbooks:
+        executor.submit(upload_file, pdf_path, title)
+
+# Upload metadata manifest
+manifest = {pdf_path.name: {"book_title": title} for pdf_path, title in textbooks}
+manifest_url = upload_response.upload_urls.additional_properties["_manifest.json"]
+requests.put(manifest_url, data=json.dumps(manifest).encode("utf-8"))
+
+# The vector index is built automatically when the FileSet is first used in a pipeline
 ```
 
 ### Step 2: Run Q&A Generation Pipeline

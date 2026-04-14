@@ -1434,6 +1434,54 @@
           }
         }
       }
+    },
+    "/filesets/{file_set_id}/upload-credentials": {
+      "post": {
+        "tags": [
+          "FileSets"
+        ],
+        "summary": "Generate Upload Credentials",
+        "description": "Generate short-lived, write-only credentials for uploading files via GCS Transfer Manager.\n\nReturns an OAuth2 token scoped to only create objects in this fileset's folder.",
+        "operationId": "generate_upload_credentials_filesets__file_set_id__upload_credentials_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "file_set_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File Set Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadCredentialsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2480,6 +2528,11 @@
             ],
             "title": "Max Cost Dollars"
           },
+          "cache_enabled": {
+            "type": "boolean",
+            "title": "Cache Enabled",
+            "default": true
+          },
           "configuration_id": {
             "anyOf": [
               {
@@ -3051,28 +3104,6 @@
               }
             ],
             "title": "Cloud Storage Folder"
-          },
-          "qdrant_snapshot_path": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Qdrant Snapshot Path"
-          },
-          "qdrant_collection_name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Qdrant Collection Name"
           },
           "created_at": {
             "type": "string",
@@ -5013,6 +5044,18 @@
             "description": "FastEmbed model name for query embedding (used when file_set_id is set)",
             "default": "BAAI/bge-small-en-v1.5"
           },
+          "index_chunk_size": {
+            "type": "integer",
+            "title": "Index Chunk Size",
+            "description": "Chunk size to use when building the backing FileSet Qdrant index.",
+            "default": 1500
+          },
+          "index_chunk_overlap": {
+            "type": "integer",
+            "title": "Index Chunk Overlap",
+            "description": "Chunk overlap to use when building the backing FileSet Qdrant index.",
+            "default": 150
+          },
           "top_k": {
             "type": "integer",
             "title": "Top K",
@@ -5106,6 +5149,18 @@
             "title": "Embedding Model",
             "description": "FastEmbed model name for query embedding.",
             "default": "BAAI/bge-small-en-v1.5"
+          },
+          "index_chunk_size": {
+            "type": "integer",
+            "title": "Index Chunk Size",
+            "description": "Chunk size to use when building the backing FileSet Qdrant index.",
+            "default": 1500
+          },
+          "index_chunk_overlap": {
+            "type": "integer",
+            "title": "Index Chunk Overlap",
+            "description": "Chunk overlap to use when building the backing FileSet Qdrant index.",
+            "default": 150
           },
           "extraction_model": {
             "anyOf": [
@@ -6952,9 +7007,42 @@
           "KEY_DEDUPLICATION",
           "WEB_SEARCH_CONTEXT_GENERATOR",
           "QDRANT_CONTEXT_GENERATOR",
+          "QDRANT_RAG_LABELER",
           "MOCK"
         ],
         "title": "TransformType"
+      },
+      "UploadCredentialsResponse": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token",
+            "description": "Short-lived OAuth2 access token for GCS uploads"
+          },
+          "expiry": {
+            "type": "string",
+            "title": "Expiry",
+            "description": "Token expiry time (ISO 8601)"
+          },
+          "bucket": {
+            "type": "string",
+            "title": "Bucket",
+            "description": "GCS bucket name"
+          },
+          "folder": {
+            "type": "string",
+            "title": "Folder",
+            "description": "GCS folder prefix (include trailing slash)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token",
+          "expiry",
+          "bucket",
+          "folder"
+        ],
+        "title": "UploadCredentialsResponse"
       },
       "UploadSamplesRequest": {
         "properties": {

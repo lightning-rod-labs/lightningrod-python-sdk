@@ -49,10 +49,10 @@ class QuestionPipeline:
             QuestionGenerator | TemplateQuestionGenerator | Unset): Configuration for question generation
         deduplication (KeyDeduplication | MockTransformConfig | None | Unset): Deduplication config. Set to
             KeyDeduplication() to enable exact/fuzzy dedup on question fields.
-        labeler (FileSetDocumentLabeler | FileSetRAGLabeler | MockTransformConfig | None | Unset | WebSearchLabeler):
+        labeler (FileSetDocumentLabeler | MockTransformConfig | None | QdrantRAGLabeler | Unset | WebSearchLabeler):
             Configuration for labeling. Not needed when using QuestionAndLabelGenerator.
-        context_generators (list[FileSetContextGenerator | FileSetDocumentContextGenerator | MockTransformConfig |
-            NewsContextGenerator | WebSearchContextGenerator] | None | Unset): Optional list of context generators to run
+        context_generators (list[FileSetDocumentContextGenerator | MockTransformConfig | NewsContextGenerator |
+            QdrantContextGenerator | WebSearchContextGenerator] | None | Unset): Optional list of context generators to run
             before rendering
         renderer (MockTransformConfig | None | QuestionRenderer | Unset): Optional configuration for rendering the final
             prompt
@@ -87,10 +87,10 @@ class QuestionPipeline:
     labeler: FileSetDocumentLabeler | MockTransformConfig | None | QdrantRAGLabeler | Unset | WebSearchLabeler = UNSET
     context_generators: (
         list[
-            FileSetContextGenerator
-            | FileSetDocumentContextGenerator
+            FileSetDocumentContextGenerator
             | MockTransformConfig
             | NewsContextGenerator
+            | QdrantContextGenerator
             | WebSearchContextGenerator
         ]
         | None
@@ -524,10 +524,10 @@ class QuestionPipeline:
             data: object,
         ) -> (
             list[
-                FileSetContextGenerator
-                | FileSetDocumentContextGenerator
+                FileSetDocumentContextGenerator
                 | MockTransformConfig
                 | NewsContextGenerator
+                | QdrantContextGenerator
                 | WebSearchContextGenerator
             ]
             | None
@@ -550,6 +550,7 @@ class QuestionPipeline:
                         FileSetDocumentContextGenerator
                         | MockTransformConfig
                         | NewsContextGenerator
+                        | QdrantContextGenerator
                         | WebSearchContextGenerator
                     ):
                         try:
@@ -604,6 +605,7 @@ class QuestionPipeline:
                     FileSetDocumentContextGenerator
                     | MockTransformConfig
                     | NewsContextGenerator
+                    | QdrantContextGenerator
                     | WebSearchContextGenerator
                 ]
                 | None

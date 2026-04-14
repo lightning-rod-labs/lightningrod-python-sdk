@@ -35,10 +35,10 @@ T = TypeVar("T", bound="EstimateCostRequest")
 class EstimateCostRequest:
     """
     Attributes:
-        config (CsvSeedGenerator | FileSetContextGenerator | FileSetDocumentContextGenerator | FileSetDocumentLabeler |
-            FileSetQuerySeedGenerator | FileSetRAGLabeler | FileSetSeedGenerator | ForwardLookingQuestionGenerator |
-            GdeltSeedGenerator | KeyDeduplication | NewsSeedGenerator | QuestionAndLabelGenerator | QuestionGenerator |
-            QuestionPipeline | QuestionRenderer | TopicTreeSeedGenerator | WebSearchContextGenerator | WebSearchLabeler):
+        config (CsvSeedGenerator | FileSetDocumentContextGenerator | FileSetDocumentLabeler | FileSetSeedGenerator |
+            ForwardLookingQuestionGenerator | GdeltSeedGenerator | KeyDeduplication | NewsSeedGenerator |
+            QdrantContextGenerator | QdrantRAGLabeler | QuestionAndLabelGenerator | QuestionGenerator | QuestionPipeline |
+            QuestionRenderer | TopicTreeSeedGenerator | WebSearchContextGenerator | WebSearchLabeler):
         max_questions (int | None | Unset):
     """
 
@@ -302,24 +302,16 @@ class EstimateCostRequest:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_create_transform_config_type_15 = TopicTreeSeedGenerator.from_dict(data)
+                componentsschemas_create_transform_config_type_15 = WebSearchContextGenerator.from_dict(data)
 
                 return componentsschemas_create_transform_config_type_15
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_create_transform_config_type_16 = WebSearchContextGenerator.from_dict(data)
-
-                return componentsschemas_create_transform_config_type_16
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
             if not isinstance(data, dict):
                 raise TypeError()
-            componentsschemas_create_transform_config_type_17 = WebSearchLabeler.from_dict(data)
+            componentsschemas_create_transform_config_type_16 = WebSearchLabeler.from_dict(data)
 
-            return componentsschemas_create_transform_config_type_17
+            return componentsschemas_create_transform_config_type_16
 
         config = _parse_config(d.pop("config"))
 

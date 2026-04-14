@@ -27,6 +27,9 @@ class QdrantContextGenerator:
             populated when using file_set_id.
         embedding_model (str | Unset): FastEmbed model name for query embedding (used when file_set_id is set) Default:
             'BAAI/bge-small-en-v1.5'.
+        index_chunk_size (int | Unset): Chunk size to use when building the backing FileSet Qdrant index. Default: 1500.
+        index_chunk_overlap (int | Unset): Chunk overlap to use when building the backing FileSet Qdrant index. Default:
+            150.
         top_k (int | Unset): Number of chunks to retrieve Default: 5.
         temporal_direction (None | str | Unset): 'before' filters timestamp <= seed date (includes seed's document),
             'after' filters timestamp > seed date, None = no filter
@@ -41,6 +44,8 @@ class QdrantContextGenerator:
     file_set_id: None | str | Unset = UNSET
     collection_name: None | str | Unset = UNSET
     embedding_model: str | Unset = "BAAI/bge-small-en-v1.5"
+    index_chunk_size: int | Unset = 1500
+    index_chunk_overlap: int | Unset = 150
     top_k: int | Unset = 5
     temporal_direction: None | str | Unset = UNSET
     payload_filters: None | QdrantContextGeneratorPayloadFiltersType0 | Unset = UNSET
@@ -67,6 +72,10 @@ class QdrantContextGenerator:
             collection_name = self.collection_name
 
         embedding_model = self.embedding_model
+
+        index_chunk_size = self.index_chunk_size
+
+        index_chunk_overlap = self.index_chunk_overlap
 
         top_k = self.top_k
 
@@ -101,6 +110,10 @@ class QdrantContextGenerator:
             field_dict["collection_name"] = collection_name
         if embedding_model is not UNSET:
             field_dict["embedding_model"] = embedding_model
+        if index_chunk_size is not UNSET:
+            field_dict["index_chunk_size"] = index_chunk_size
+        if index_chunk_overlap is not UNSET:
+            field_dict["index_chunk_overlap"] = index_chunk_overlap
         if top_k is not UNSET:
             field_dict["top_k"] = top_k
         if temporal_direction is not UNSET:
@@ -145,6 +158,10 @@ class QdrantContextGenerator:
 
         embedding_model = d.pop("embedding_model", UNSET)
 
+        index_chunk_size = d.pop("index_chunk_size", UNSET)
+
+        index_chunk_overlap = d.pop("index_chunk_overlap", UNSET)
+
         top_k = d.pop("top_k", UNSET)
 
         def _parse_temporal_direction(data: object) -> None | str | Unset:
@@ -184,6 +201,8 @@ class QdrantContextGenerator:
             file_set_id=file_set_id,
             collection_name=collection_name,
             embedding_model=embedding_model,
+            index_chunk_size=index_chunk_size,
+            index_chunk_overlap=index_chunk_overlap,
             top_k=top_k,
             temporal_direction=temporal_direction,
             payload_filters=payload_filters,
