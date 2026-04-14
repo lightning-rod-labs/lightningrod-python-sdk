@@ -14,12 +14,15 @@ def create_sample(
     label: Optional[str] = None,
     seed_date: Optional[datetime] = None,
     meta: Optional[dict[str, Any]] = None,
+    *,
+    answer_type: Optional[str] = None,
 ) -> Sample:
     """Create a Sample with less boilerplate.
 
     Args:
         seed_text: The text content for the seed.
         label: Optional label value. If provided, wraps in a Label object.
+        answer_type: Required when label is provided (e.g. "binary", "continuous").
         seed_date: Optional creation date for the seed.
 
     Returns:
@@ -29,7 +32,10 @@ def create_sample(
 
     label_obj = None
     if label is not None:
-        label_obj = Label(label=label, label_confidence=1.0)
+        normalized_answer_type = (answer_type or "").strip().lower()
+        if not normalized_answer_type:
+            raise ValueError("answer_type is required when label is provided.")
+        label_obj = Label(label=label, label_confidence=1.0, answer_type=normalized_answer_type)
     
     meta_obj = SampleMeta()
     if meta is not None:

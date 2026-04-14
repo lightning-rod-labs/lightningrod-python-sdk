@@ -4,6 +4,40 @@ icon: clock-rotate-left
 
 # Changelog
 
+## v0.1.22 — April 2026
+
+### Breaking: training config split (GRPO vs SFT)
+
+The single `TrainingConfig` export is removed. Use **`GRPOTrainingConfig`** for GRPO / forward-looking training (same hyperparameters as before, including `num_rollouts` and `max_response_length`) and **`SFTTrainingConfig`** for supervised fine-tuning (`epochs`, `resume_from`, and shared LoRA fields; no rollouts or max response length).
+
+`lr.training.create`, `estimate_cost`, and `run` accept either config type. `TrainingJob.config` from the API remains a discriminated union of the generated API models.
+
+See [Training](fine-tuning/training.md) for field tables.
+
+### Breaking: `evals.run` uses training config and job
+
+`lr.evals.run(config, job, dataset, *, extra_models=None)` replaces the positional `models=` list. The eval benchmark **always** includes the base model and the fine-tuned `job.model_id`; pass optional **`extra_models`** for additional `EvalModel` entries (e.g. OpenAI baselines). **`SFTTrainingConfig`** raises `NotImplementedError` from `run` until SFT eval metrics exist; use `lr.evals.create(...)` with an explicit model list for SFT or custom benchmarks.
+
+See [Evaluation](fine-tuning/evaluation.md).
+
+### New: SFT getting-started notebook
+
+[notebooks/getting_started/06_sft_training.ipynb](../notebooks/getting_started/06_sft_training.ipynb) walks through hosted SFT with `SFTTrainingConfig`.
+
+### Docs
+
+The [content-learning agent examples](../agent-docs/content-learning-examples.md) SFT section now uses the Lightning Rod training API instead of a raw Tinker-only loop.
+
+## v0.1.21 — April 2026
+
+### New: `KeyDeduplication`
+
+Remove near-duplicate questions from your pipeline with exact or fuzzy field matching. Runs after question generation, before labeling. Pass `KeyDeduplication()` to `QuestionPipeline(deduplication=...)` to enable.
+
+Default behavior matches on `question_text` (90% similarity) and `date_close` (exact). Customize with `KeyMatchConfig` to control which fields are compared and their similarity thresholds.
+
+See [Deduplication](dataset-generation/deduplication.md).
+
 ## v0.1.19 — April 2026
 
 ### New: `ContinuousValueOnlyAnswerType`

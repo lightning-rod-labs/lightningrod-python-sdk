@@ -138,6 +138,50 @@ def _parse_date(value: Any) -> Optional[date]:
     return None
 
 
+def _normalize_answer_type(answer_type: Any) -> str:
+    if isinstance(answer_type, Unset) or answer_type is None:
+        raise ValueError("missing answer_type")
+    normalized = str(answer_type).strip().lower()
+    if not normalized:
+        raise ValueError("missing answer_type")
+    _answer_type_from_str(normalized)
+    return normalized
+
+
+def _validate_sample_for_training(sample: Sample, idx: int) -> Optional[str]:
+    if sample.label is None or isinstance(sample.label, Unset):
+        return None
+
+    label_value = getattr(sample.label, "label", None)
+    if label_value is None or not str(label_value).strip():
+        return f"Sample {sample.id or idx} has an empty label value."
+
+    try:
+        answer_type = _normalize_answer_type(sample.label.answer_type)
+    except ValueError:
+        return f"Sample {sample.id or idx} has no answer type."
+    except Exception as e:
+        return f"Sample {sample.id or idx} has invalid answer type: {e}"
+
+    return None
+
+
+def _validate_samples_for_training(samples: list[Sample], max_issues: int = 10) -> None:
+    issues: list[str] = []
+    for idx, sample in enumerate(samples):
+        issue = _validate_sample_for_training(sample, idx)
+        if issue:
+            issues.append(issue)
+            if len(issues) >= max_issues:
+                break
+
+    if issues:
+        error_lines = ["Invalid samples detected before training preparation:", *issues]
+        if len(issues) == max_issues:
+            error_lines.append(f"... and more (showing first {max_issues}).")
+        raise ValueError("\n".join(error_lines))
+
+
 def filter_samples(
     samples: list[Sample],
     params: FilterParams | None = None,
@@ -450,9 +494,14 @@ def to_record(sample: Sample) -> dict[str, Any]:
                 row["question_text"] = question_text
 
     if sample.label and not isinstance(sample.label, Unset):
-        answer_type = _answer_type_from_str(sample.label.answer_type)
+        sample_id = sample.id or "<unknown>"
+        try:
+            normalized_answer_type = _normalize_answer_type(sample.label.answer_type)
+        except ValueError as e:
+            raise ValueError(f"Sample {sample_id} has invalid label answer_type: {e}") from e
+        answer_type = _answer_type_from_str(normalized_answer_type)
         row["label"] = sample_label(sample, answer_type)
-        row["answer_type"] = sample.label.answer_type.lower()
+        row["answer_type"] = normalized_answer_type
         row["label_confidence"] = sample.label.label_confidence
         if sample.label.resolution_date is not None and not isinstance(sample.label.resolution_date, Unset):
             row["resolution_date"] = sample.label.resolution_date.isoformat()
@@ -674,6 +723,20 @@ def _build_report(stats: PrepareStats, split: SplitParams, filter: FilterParams)
             tips=tips,
         ))
 
+    # Issue: all samples dropped because prediction_date was missing
+    if stats.split_no_sort_key > 0 and stats.split_train_after == 0 and stats.split_test_after == 0:
+        issues.append(PrepareIssue(
+            message=(
+                f"All {stats.split_no_sort_key} samples were dropped because prediction_date was missing. "
+                "No train or test samples remain."
+            ),
+            tips=[
+                "Ensure your question generator sets prediction_date on every sample.",
+                "Check that the sort_key passed to SplitParams can extract a valid date from each sample.",
+                "Inspect a few samples with dataset.flattened() to confirm prediction_date is populated.",
+            ],
+        ))
+
     # Issue: too few train samples for effective training
     MIN_TRAIN_SAMPLES = 1000
     if stats.split_train_after < MIN_TRAIN_SAMPLES and stats.split_train_after > 0:
@@ -841,6 +904,7 @@ def prepare_for_training(
     split = split or SplitParams()
 
     samples = dataset.samples()
+    _validate_samples_for_training(samples)
     stats = PrepareStats(total=len(samples))
 
     filtered = filter_samples(samples, filter, stats=stats)

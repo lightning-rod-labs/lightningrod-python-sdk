@@ -105,7 +105,31 @@ dataset = lr.transforms.run(pipeline, name="SurvivalLLM")
 
 ### SFT Training
 
-**Coming soon.** Native SFT training support via `lr.training.run()` is not yet available. The dataset generation pipeline above produces Q&A pairs ready for SFT — training integration is planned.
+After `dataset = lr.transforms.run(...)`, prepare a train split and run **hosted SFT** on Lightning Rod (same service as GRPO training):
+
+```python
+from lightningrod import prepare_for_training, FilterParams, SplitParams, SFTTrainingConfig
+
+train_dataset, test_dataset = prepare_for_training(
+    dataset,
+    filter=FilterParams(),
+    split=SplitParams(test_size=0.2),
+)
+
+BASE_MODEL = "Qwen/Qwen3-8B-Instruct"
+training_config = SFTTrainingConfig(
+    base_model_id=BASE_MODEL,
+    training_steps=50,
+    epochs=3,
+    learning_rate=2e-4,
+)
+
+cost = lr.training.estimate_cost(training_config, dataset=train_dataset)
+job = lr.training.run(training_config, dataset=train_dataset, name="survival-sft-v1")
+# job.model_id — your LoRA checkpoint for inference via lr.predict(...)
+```
+
+For low-level local training loops (e.g. direct Tinker `ServiceClient`), use the Tinker SDK separately; the snippet above is the recommended path when your data already lives in Lightning Rod samples.
 
 ---
 

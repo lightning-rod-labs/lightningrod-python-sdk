@@ -10,6 +10,7 @@ from lightningrod._generated.models import Label, Sample, SampleMeta, Seed
 
 _DEFAULT_CSV_TEXT_COLUMNS = ("text", "seed_text", "content")
 _DEFAULT_CSV_LABEL_COLUMN = "label"
+_DEFAULT_CSV_ANSWER_TYPE_COLUMN = "answer_type"
 
 _SUPPORTED_FILE_TYPES = {"txt", "text", "md", "markdown", "pdf", "csv"}
 
@@ -89,6 +90,7 @@ def _csv_rows_to_samples(
     rows: list[dict[str, str]],
     text_column: str,
     label_column: str | None,
+    answer_type_column: str | None,
     metadata: dict[str, Any],
 ) -> list[Sample]:
     samples: list[Sample] = []
@@ -102,7 +104,18 @@ def _csv_rows_to_samples(
         if label_column and label_column in row:
             label_val = row.get(label_column, "")
             if label_val is not None and str(label_val).strip():
-                label_obj = Label(label=str(label_val).strip(), label_confidence=1.0)
+                answer_type_val = row.get(answer_type_column, "") if answer_type_column else ""
+                normalized_answer_type = str(answer_type_val).strip().lower()
+                if not normalized_answer_type:
+                    raise ValueError(
+                        f"CSV row {idx} in {path.name} has a label but no answer_type. "
+                        "Provide an answer_type column or pass csv_answer_type_col."
+                    )
+                label_obj = Label(
+                    label=str(label_val).strip(),
+                    label_confidence=1.0,
+                    answer_type=normalized_answer_type,
+                )
 
         meta_dict = {**metadata, "row_index": idx, "file_name": path.name, "file_type": "csv"}
         sample_meta = SampleMeta.from_dict(meta_dict)
@@ -216,6 +229,7 @@ def file_to_samples(
     *,
     csv_seed_text_col: str | None = None,
     csv_label_col: str | None = None,
+    csv_answer_type_col: str | None = None,
 ) -> list[Sample]:
     """
     Read a file, split it into chunks, and convert to Sample objects.
@@ -232,6 +246,7 @@ def file_to_samples(
         chunk_overlap: Number of characters to overlap between chunks (ignored for CSV)
         csv_text_column: CSV column for seed text. Default: first of text, seed_text, content
         csv_label_column: CSV column for label. Default: label
+        csv_answer_type_column: CSV column for answer type. Default: answer_type
 
     Returns:
         List of Sample objects
@@ -267,7 +282,10 @@ def file_to_samples(
         label_col = csv_label_col if csv_label_col is not None else (
             _DEFAULT_CSV_LABEL_COLUMN if _DEFAULT_CSV_LABEL_COLUMN in columns else None
         )
-        return _csv_rows_to_samples(path, rows, text_col, label_col, meta)
+        answer_type_col = csv_answer_type_col if csv_answer_type_col is not None else (
+            _DEFAULT_CSV_ANSWER_TYPE_COLUMN if _DEFAULT_CSV_ANSWER_TYPE_COLUMN in columns else None
+        )
+        return _csv_rows_to_samples(path, rows, text_col, label_col, answer_type_col, meta)
 
     text = _read_file_content(path, file_type=inferred_file_type)
     chunks = chunk_text(text, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
@@ -283,6 +301,7 @@ def files_to_samples(
     *,
     csv_text_column: str | None = None,
     csv_label_column: str | None = None,
+    csv_answer_type_column: str | None = None,
 ) -> list[Sample]:
     """
     Process multiple files matching a glob pattern and convert to Sample objects.
@@ -296,6 +315,7 @@ def files_to_samples(
         chunk_overlap: Number of characters to overlap between chunks
         csv_text_column: CSV column for seed text (CSV files only)
         csv_label_column: CSV column for label (CSV files only)
+        csv_answer_type_column: CSV column for answer type (CSV files only)
 
     Returns:
         List of Sample objects from all matching files
@@ -323,6 +343,7 @@ def files_to_samples(
             metadata=metadata,
             csv_seed_text_col=csv_text_column,
             csv_label_col=csv_label_column,
+            csv_answer_type_col=csv_answer_type_column,
         )
         all_samples.extend(file_samples)
     return all_samples

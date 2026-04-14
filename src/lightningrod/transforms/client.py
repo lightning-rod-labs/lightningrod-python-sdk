@@ -21,6 +21,7 @@ from lightningrod._generated.models import (
     WebSearchLabeler,
     EstimateCostRequest,
     EstimateCostResponse,
+    WebSearchContextGenerator,
 )
 from lightningrod._generated.api.datasets import (
     get_dataset_datasets_dataset_id_get,
@@ -41,7 +42,7 @@ from lightningrod._generated.types import UNSET, Unset
 from lightningrod._errors import handle_response_error
 from lightningrod.datasets.client import DatasetSamplesClient
 
-TransformConfig = Union[FileSetDocumentContextGenerator, FileSetDocumentLabeler, FileSetQuerySeedGenerator, FileSetSeedGenerator, ForwardLookingQuestionGenerator, GdeltSeedGenerator, NewsSeedGenerator, QuestionAndLabelGenerator, QuestionGenerator, QuestionPipeline, QuestionRenderer, WebSearchLabeler]
+TransformConfig = Union[FileSetDocumentContextGenerator, FileSetDocumentLabeler, FileSetQuerySeedGenerator, FileSetSeedGenerator, ForwardLookingQuestionGenerator, GdeltSeedGenerator, NewsSeedGenerator, QuestionAndLabelGenerator, QuestionGenerator, QuestionPipeline, QuestionRenderer, WebSearchLabeler, WebSearchContextGenerator]
 
 
 def _fetch_error_details_from_samples(
