@@ -44,6 +44,7 @@ fileset = lr.filesets.create(
 | `name` | str | Yes | FileSet name |
 | `description` | str | No | Optional description |
 | `metadata_schema` | FileSetMetadataSchemaInput | No | Schema for file metadata fields |
+| `rag_enabled` | bool | No (default `True`) | Enable RAG indexing for this FileSet; set to `False` for document-only workflows |
 
 **MetadataFieldDefinitionInput** fields: `name`, `field_type` (`MetadataFieldType.STRING` or `MetadataFieldType.NUMBER`), `required`, `description`, `extraction_hint`.
 
@@ -103,6 +104,8 @@ result = lr.filesets.upload_directory(
 | `metadata` / `metadata_fn` | dict or callable | None | File metadata |
 | `pattern` | str | "*" | Glob pattern (for upload_directory) |
 | `max_workers` | int | 10 | Parallel upload threads |
+| `use_transfer_manager` | bool | `True` | Use GCS Transfer Manager when available for large uploads |
+| `show_progress` | bool | `False` | Display upload progress; requires `google-cloud-storage` |
 
 The vector index is built automatically when the FileSet is first used in a pipeline.
 

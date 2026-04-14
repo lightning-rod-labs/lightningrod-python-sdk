@@ -2398,6 +2398,9 @@
             "$ref": "#/components/schemas/TopicTreeSeedGenerator"
           },
           {
+            "$ref": "#/components/schemas/WebSearchContextGenerator"
+          },
+          {
             "$ref": "#/components/schemas/WebSearchLabeler"
           }
         ],
@@ -2419,6 +2422,7 @@
             "QUESTION_PIPELINE": "#/components/schemas/QuestionPipeline",
             "QUESTION_RENDERER": "#/components/schemas/QuestionRenderer",
             "TOPIC_TREE_SEED_GENERATOR": "#/components/schemas/TopicTreeSeedGenerator",
+            "WEB_SEARCH_CONTEXT_GENERATOR": "#/components/schemas/WebSearchContextGenerator",
             "WEB_SEARCH_LABELER": "#/components/schemas/WebSearchLabeler"
           }
         }
@@ -5453,6 +5457,9 @@
                       "$ref": "#/components/schemas/FileSetDocumentContextGenerator"
                     },
                     {
+                      "$ref": "#/components/schemas/WebSearchContextGenerator"
+                    },
+                    {
                       "$ref": "#/components/schemas/MockTransformConfig"
                     }
                   ]
@@ -5934,6 +5941,9 @@
                     },
                     {
                       "$ref": "#/components/schemas/DocumentContext"
+                    },
+                    {
+                      "$ref": "#/components/schemas/WebSearchContext"
                     }
                   ],
                   "discriminator": {
@@ -5941,7 +5951,8 @@
                     "mapping": {
                       "DOCUMENT_CONTEXT": "#/components/schemas/DocumentContext",
                       "NEWS_CONTEXT": "#/components/schemas/NewsContext",
-                      "RAG_CONTEXT": "#/components/schemas/RAGContext"
+                      "RAG_CONTEXT": "#/components/schemas/RAGContext",
+                      "WEB_SEARCH_CONTEXT": "#/components/schemas/WebSearchContext"
                     }
                   }
                 },
@@ -6733,8 +6744,8 @@
           "TOPIC_TREE_SEED_GENERATOR",
           "CSV_SEED_GENERATOR",
           "KEY_DEDUPLICATION",
+          "WEB_SEARCH_CONTEXT_GENERATOR",
           "QDRANT_CONTEXT_GENERATOR",
-          "QDRANT_RAG_LABELER",
           "MOCK"
         ],
         "title": "TransformType"
@@ -6877,6 +6888,109 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "WebSearchContext": {
+        "properties": {
+          "context_type": {
+            "type": "string",
+            "const": "WEB_SEARCH_CONTEXT",
+            "title": "Context Type",
+            "default": "WEB_SEARCH_CONTEXT"
+          },
+          "rendered_context": {
+            "type": "string",
+            "title": "Rendered Context"
+          },
+          "search_query": {
+            "type": "string",
+            "title": "Search Query"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rendered_context",
+          "search_query"
+        ],
+        "title": "WebSearchContext"
+      },
+      "WebSearchContextGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "WEB_SEARCH_CONTEXT_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "WEB_SEARCH_CONTEXT_GENERATOR"
+          },
+          "num_search_queries": {
+            "type": "integer",
+            "title": "Num Search Queries",
+            "description": "Number of search queries to generate per question",
+            "default": 5
+          },
+          "results_per_query": {
+            "type": "integer",
+            "title": "Results Per Query",
+            "description": "Number of search results to return per query",
+            "default": 3
+          },
+          "num_results": {
+            "type": "integer",
+            "title": "Num Results",
+            "description": "Maximum number of search results to include in final output",
+            "default": 10
+          },
+          "relevance_threshold": {
+            "type": "integer",
+            "title": "Relevance Threshold",
+            "description": "Minimum relevance rating (1-6 scale) to include result",
+            "default": 2
+          },
+          "min_results": {
+            "type": "integer",
+            "title": "Min Results",
+            "description": "Minimum number of results to ensure",
+            "default": 6
+          },
+          "time_delta_days": {
+            "type": "integer",
+            "title": "Time Delta Days",
+            "description": "Number of days to look back for search results",
+            "default": 30
+          },
+          "enable_relevance_ranking": {
+            "type": "boolean",
+            "title": "Enable Relevance Ranking",
+            "description": "Whether to perform LLM-based relevance ranking",
+            "default": true
+          },
+          "search_queries_column": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Search Queries Column",
+            "description": "Column name in sample.meta containing pre-generated search queries (list of strings). If provided, skips LLM query generation."
+          },
+          "search_query_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Search Query Instructions",
+            "description": "Optional guidance for the LLM step that generates multiple search queries, replaces the default instructions."
+          }
+        },
+        "type": "object",
+        "title": "WebSearchContextGenerator"
       },
       "WebSearchLabeler": {
         "properties": {

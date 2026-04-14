@@ -4,7 +4,7 @@ icon: filter
 
 # Data Preparation
 
-`filter_and_split` is the main entry point for preparing Lightning Rod datasets for model training. It filters invalid samples, deduplicates, splits into train/test, and returns `SampleDataset` objects ready for `lr.training.run()` or `lr.evals.run()`.
+`prepare_for_training` is the main entry point for preparing Lightning Rod datasets for model training. It filters invalid samples, deduplicates, splits into train/test, and returns `SampleDataset` objects ready for `lr.training.run()` or `lr.evals.run()`.
 
 ## What It Does
 
@@ -14,18 +14,56 @@ icon: filter
 
 ## Parameters
 
+```python
+from lightningrod.training import prepare_for_training, FilterParams, DedupParams, SplitParams
+
+train_dataset, test_dataset = prepare_for_training(
+    dataset,
+    filter=FilterParams(...),
+    dedup=DedupParams(...),
+    split=SplitParams(...),
+    verbose=True,
+)
+```
+
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `dataset` | SampleDataset | — | Dataset to prepare (required) |
-| `test_size` | float | 0.2 | Fraction of samples for test set (0.0–1.0) |
-| `split_strategy` | str | `"temporal"` | `"temporal"` (chronological) or `"random"` |
-| `test_start` | str \| None | None | ISO date for temporal split cutoff; alternative to `test_size` for exact date control |
-| `drop_missing_context` | bool | False | Exclude samples with no rendered context |
+| `filter` | FilterParams \| None | None | Filtering options (see below) |
+| `dedup` | DedupParams \| None | None | Deduplication options (see below) |
+| `split` | SplitParams \| None | None | Train/test split options (see below) |
+| `verbose` | bool | True | Print filter/dedup/split stats |
+
+### FilterParams
+
+Controls which samples are kept before splitting.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
 | `days_to_resolution_range` | (min, max) \| None | None | Filter by resolution horizon. E.g. `(90, None)` keeps ≥ 90 days; `(14, 60)` keeps 14–60 days |
+| `drop_missing_context` | bool | False | Exclude samples with no rendered context |
+
+### DedupParams
+
+Controls duplicate removal.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `key_fn` | Callable \| None | None | Custom dedup key; default is `(question_text, resolution_date)` |
+
+### SplitParams
+
+Controls how samples are divided into train and test sets.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `strategy` | str | `"temporal"` | `"temporal"` (chronological) or `"random"` |
+| `test_size` | float \| None | 0.2 | Fraction of samples for test set (0.0–1.0) |
+| `test_start` | str \| None | None | ISO date for temporal split cutoff; alternative to `test_size` for exact date control |
 | `random_state` | int | 196 | Seed for reproducible random splits |
 | `filter_leaky_train` | bool | True | Remove train samples whose `date_close` or `resolution_date` falls within the test period |
-| `deduplicate_key_fn` | Callable \| None | None | Custom dedup key; default is `(question_text, resolution_date)` |
-| `verbose` | bool | False | Print filter/dedup/split stats |
+| `sort_key` | Callable \| None | None | Custom sort key for temporal ordering; defaults to `resolution_date` |
+| `leakage_keys` | list[Callable] \| None | None | Additional fields to check for temporal leakage |
 
 ## Guidelines
 
@@ -39,16 +77,16 @@ icon: filter
 ## Example
 
 ```python
-from lightningrod.training import filter_and_split
+from lightningrod.training import prepare_for_training, FilterParams, SplitParams
 
-train_dataset, test_dataset = filter_and_split(
+train_dataset, test_dataset = prepare_for_training(
     dataset,
-    test_size=0.2,
-    days_to_resolution_range=(90, None),
+    filter=FilterParams(days_to_resolution_range=(90, None)),
+    split=SplitParams(test_size=0.2),
     verbose=True,
 )
 ```
 
 ## Output
 
-Returns `(train_dataset, test_dataset)` — two `SampleDataset` objects ready for `lr.training.run(config, dataset=train_dataset)` and `lr.evals.run(model_id=..., dataset=test_dataset)`.
+Returns `(train_dataset, test_dataset)` — two `SampleDataset` objects ready for `lr.training.run(config, dataset=train_dataset)` and `lr.evals.run(models=..., dataset=test_dataset)`.

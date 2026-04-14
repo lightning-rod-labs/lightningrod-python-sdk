@@ -24,6 +24,7 @@ if TYPE_CHECKING:
     from ..models.question_pipeline import QuestionPipeline
     from ..models.question_renderer import QuestionRenderer
     from ..models.topic_tree_seed_generator import TopicTreeSeedGenerator
+    from ..models.web_search_context_generator import WebSearchContextGenerator
     from ..models.web_search_labeler import WebSearchLabeler
 
 
@@ -34,10 +35,10 @@ T = TypeVar("T", bound="EstimateCostRequest")
 class EstimateCostRequest:
     """
     Attributes:
-        config (CsvSeedGenerator | FileSetDocumentContextGenerator | FileSetDocumentLabeler | FileSetSeedGenerator |
-            ForwardLookingQuestionGenerator | GdeltSeedGenerator | KeyDeduplication | NewsSeedGenerator |
-            QdrantContextGenerator | QdrantRAGLabeler | QuestionAndLabelGenerator | QuestionGenerator | QuestionPipeline |
-            QuestionRenderer | TopicTreeSeedGenerator | WebSearchLabeler):
+        config (CsvSeedGenerator | FileSetContextGenerator | FileSetDocumentContextGenerator | FileSetDocumentLabeler |
+            FileSetQuerySeedGenerator | FileSetRAGLabeler | FileSetSeedGenerator | ForwardLookingQuestionGenerator |
+            GdeltSeedGenerator | KeyDeduplication | NewsSeedGenerator | QuestionAndLabelGenerator | QuestionGenerator |
+            QuestionPipeline | QuestionRenderer | TopicTreeSeedGenerator | WebSearchContextGenerator | WebSearchLabeler):
         max_questions (int | None | Unset):
     """
 
@@ -57,6 +58,7 @@ class EstimateCostRequest:
         | QuestionPipeline
         | QuestionRenderer
         | TopicTreeSeedGenerator
+        | WebSearchContextGenerator
         | WebSearchLabeler
     )
     max_questions: int | None | Unset = UNSET
@@ -78,6 +80,7 @@ class EstimateCostRequest:
         from ..models.question_pipeline import QuestionPipeline
         from ..models.question_renderer import QuestionRenderer
         from ..models.topic_tree_seed_generator import TopicTreeSeedGenerator
+        from ..models.web_search_context_generator import WebSearchContextGenerator
 
         config: dict[str, Any]
         if isinstance(self.config, CsvSeedGenerator):
@@ -109,6 +112,8 @@ class EstimateCostRequest:
         elif isinstance(self.config, QuestionRenderer):
             config = self.config.to_dict()
         elif isinstance(self.config, TopicTreeSeedGenerator):
+            config = self.config.to_dict()
+        elif isinstance(self.config, WebSearchContextGenerator):
             config = self.config.to_dict()
         else:
             config = self.config.to_dict()
@@ -148,6 +153,7 @@ class EstimateCostRequest:
         from ..models.question_pipeline import QuestionPipeline
         from ..models.question_renderer import QuestionRenderer
         from ..models.topic_tree_seed_generator import TopicTreeSeedGenerator
+        from ..models.web_search_context_generator import WebSearchContextGenerator
         from ..models.web_search_labeler import WebSearchLabeler
 
         d = dict(src_dict)
@@ -170,6 +176,7 @@ class EstimateCostRequest:
             | QuestionPipeline
             | QuestionRenderer
             | TopicTreeSeedGenerator
+            | WebSearchContextGenerator
             | WebSearchLabeler
         ):
             try:
@@ -292,11 +299,27 @@ class EstimateCostRequest:
                 return componentsschemas_create_transform_config_type_14
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_create_transform_config_type_15 = TopicTreeSeedGenerator.from_dict(data)
+
+                return componentsschemas_create_transform_config_type_15
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_create_transform_config_type_16 = WebSearchContextGenerator.from_dict(data)
+
+                return componentsschemas_create_transform_config_type_16
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
             if not isinstance(data, dict):
                 raise TypeError()
-            componentsschemas_create_transform_config_type_15 = WebSearchLabeler.from_dict(data)
+            componentsschemas_create_transform_config_type_17 = WebSearchLabeler.from_dict(data)
 
-            return componentsschemas_create_transform_config_type_15
+            return componentsschemas_create_transform_config_type_17
 
         config = _parse_config(d.pop("config"))
 

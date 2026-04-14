@@ -4,6 +4,16 @@ icon: clock-rotate-left
 
 # Changelog
 
+## v0.1.21 — April 2026
+
+### New: `KeyDeduplication`
+
+Remove near-duplicate questions from your pipeline with exact or fuzzy field matching. Runs after question generation, before labeling. Pass `KeyDeduplication()` to `QuestionPipeline(deduplication=...)` to enable.
+
+Default behavior matches on `question_text` (90% similarity) and `date_close` (exact). Customize with `KeyMatchConfig` to control which fields are compared and their similarity thresholds.
+
+See [Deduplication](dataset-generation/deduplication.md).
+
 ## v0.1.19 — April 2026
 
 ### New: `ContinuousValueOnlyAnswerType`
