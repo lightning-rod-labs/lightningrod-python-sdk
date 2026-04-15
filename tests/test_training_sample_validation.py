@@ -8,7 +8,7 @@ from lightningrod._generated.models.label import Label
 from lightningrod._generated.models.sample import Sample
 from lightningrod._generated.models.seed import Seed
 from lightningrod.datasets.dataset import SampleDataset
-from lightningrod.training.samples import prepare_for_training, to_record
+from lightningrod.training.samples import FilterParams, PrepareStats, filter_samples, prepare_for_training, to_record
 from lightningrod.utils.sample import create_sample
 
 
@@ -50,7 +50,35 @@ def test_prepare_for_training_fails_early_when_answer_type_missing() -> None:
         prepare_for_training(dataset, verbose=False)
 
 
-def test_prepare_for_training_fails_early_for_bad_binary_label() -> None:
+def test_filter_samples_drops_bad_binary_label_and_counts_stat() -> None:
+    bad = Sample(
+        id="s-bad-binary",
+        is_valid=True,
+        seed=Seed(seed_text="seed"),
+        label=Label(label="maybe", label_confidence=1.0, answer_type="binary"),
+    )
+    stats = PrepareStats(total=1)
+    out = filter_samples([bad], params=FilterParams(), stats=stats)
+    assert out == []
+    assert stats.filter_missing_or_invalid_label == 1
+    assert stats.filter_kept == 0
+
+
+def test_filter_samples_drops_empty_label_value_and_counts_stat() -> None:
+    bad = Sample(
+        id="s-empty-label",
+        is_valid=True,
+        seed=Seed(seed_text="seed"),
+        label=Label(label="", label_confidence=1.0, answer_type="binary"),
+    )
+    stats = PrepareStats(total=1)
+    out = filter_samples([bad], params=FilterParams(), stats=stats)
+    assert out == []
+    assert stats.filter_missing_or_invalid_label == 1
+    assert stats.filter_kept == 0
+
+
+def test_prepare_for_training_raises_when_all_samples_dropped_for_bad_labels() -> None:
     bad = Sample(
         id="s-bad-binary",
         is_valid=True,
@@ -59,7 +87,7 @@ def test_prepare_for_training_fails_early_for_bad_binary_label() -> None:
     )
     dataset = _dataset([bad])
 
-    with pytest.raises(ValueError, match="binary answer_type"):
+    with pytest.raises(ValueError, match="could not be parsed for the declared answer_type"):
         prepare_for_training(dataset, verbose=False)
 
 

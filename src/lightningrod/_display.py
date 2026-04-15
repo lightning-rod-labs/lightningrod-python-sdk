@@ -629,6 +629,8 @@ def display_prepare_report(report: Any, verbose: bool = True) -> None:
             parts.append(part)
         if stats.filter_context:
             parts.append(f"{stats.filter_context} missing context")
+        if stats.filter_missing_or_invalid_label:
+            parts.append(f"{stats.filter_missing_or_invalid_label} missing/bad label")
         filter_line = (
             f"  [bold]Filter:[/bold]  Dropped {', '.join(parts)} → {stats.filter_kept} remain"
             if parts else
