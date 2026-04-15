@@ -5,6 +5,7 @@ AI-powered forecasting dataset generation platform.
 """
 
 from lightningrod.client import LightningRod
+from lightningrod.filesets.client import UploadResult
 from lightningrod.datasets.dataset import SampleDataset, AsyncDataset
 from lightningrod import preprocessing, training, utils
 from lightningrod.utils.sample import create_sample
@@ -41,17 +42,14 @@ from lightningrod._generated.models import (
     MultipleChoiceAnswerType,
     FreeResponseAnswerType,
     FileSetSeedGenerator,
-    FileSetQuerySeedGenerator,
-    FileSetContextGenerator,
     FileSetDocumentContextGenerator,
     FileSetDocumentLabeler,
-    FileSetRAGLabeler,
+    QdrantContextGenerator,
+    QdrantRAGLabeler,
     DocumentContext,
     TemporalConstraint,
     CreateFileSetRequest,
-    CreateFileSetFileRequest,
     CreateFileUploadResponse,
-    FileSetFile,
     FileSetMetadataSchemaInput,
     MetadataFieldDefinitionInput,
     MetadataFieldType,
@@ -77,17 +75,14 @@ __all__ = [
     "FreeResponseAnswerType",
     "SampleDataset",
     "DocumentContext",
-    "FileSetContextGenerator",
     "FileSetDocumentContextGenerator",
     "FileSetDocumentLabeler",
-    "FileSetRAGLabeler",
     "FileSetSeedGenerator",
-    "FileSetQuerySeedGenerator",
+    "QdrantContextGenerator",
+    "QdrantRAGLabeler",
     "TemporalConstraint",
     "CreateFileSetRequest",
-    "CreateFileSetFileRequest",
     "CreateFileUploadResponse",
-    "FileSetFile",
     "FilterCriteria",
     "ForwardLookingQuestionGenerator",
     "GdeltSeedGenerator",

@@ -31,11 +31,10 @@ class FileSetDocumentContextGenerator:
             temporal_constraint (TemporalConstraint | Unset): Temporal filtering direction relative to the seed document's
                 date.
 
-                Uses the `file_date` metadata key (unix timestamp int) stored on each
-                Gemini document by fileset_file_processor.
+                Uses the `file_date` metadata key (unix timestamp int) from the manifest.
 
-                BEFORE: file_date <= seed_timestamp  (RAG context: no lookahead bias, multi-doc)
-                AFTER:  file_date >  seed_timestamp  (RAG labels: find resolutions, multi-doc)
+                BEFORE: file_date <= seed_timestamp  (context: no lookahead bias, multi-doc)
+                AFTER:  file_date >  seed_timestamp  (labels: find resolutions, multi-doc)
                 NEXT_DOCUMENT: first file after seed_timestamp (single-doc resolution)
                 PREVIOUS_DOCUMENT: most recent file before seed_timestamp (single-doc resolution)
                 EQUAL: file_date == seed_timestamp (exact match, single-doc)

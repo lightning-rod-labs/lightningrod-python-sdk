@@ -7,35 +7,18 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.http_validation_error import HTTPValidationError
-from ...models.list_file_set_files_response import ListFileSetFilesResponse
-from ...types import UNSET, Response, Unset
+from ...models.upload_credentials_response import UploadCredentialsResponse
+from ...types import Response
 
 
 def _get_kwargs(
     file_set_id: str,
-    *,
-    limit: int | Unset = 10,
-    cursor: None | str | Unset = UNSET,
 ) -> dict[str, Any]:
-    params: dict[str, Any] = {}
-
-    params["limit"] = limit
-
-    json_cursor: None | str | Unset
-    if isinstance(cursor, Unset):
-        json_cursor = UNSET
-    else:
-        json_cursor = cursor
-    params["cursor"] = json_cursor
-
-    params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
-
     _kwargs: dict[str, Any] = {
-        "method": "get",
-        "url": "/filesets/{file_set_id}/files".format(
+        "method": "post",
+        "url": "/filesets/{file_set_id}/upload-credentials".format(
             file_set_id=quote(str(file_set_id), safe=""),
         ),
-        "params": params,
     }
 
     return _kwargs
@@ -43,9 +26,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> HTTPValidationError | ListFileSetFilesResponse | None:
+) -> HTTPValidationError | UploadCredentialsResponse | None:
     if response.status_code == 200:
-        response_200 = ListFileSetFilesResponse.from_dict(response.json())
+        response_200 = UploadCredentialsResponse.from_dict(response.json())
 
         return response_200
 
@@ -62,7 +45,7 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[HTTPValidationError | ListFileSetFilesResponse]:
+) -> Response[HTTPValidationError | UploadCredentialsResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -75,30 +58,26 @@ def sync_detailed(
     file_set_id: str,
     *,
     client: AuthenticatedClient,
-    limit: int | Unset = 10,
-    cursor: None | str | Unset = UNSET,
-) -> Response[HTTPValidationError | ListFileSetFilesResponse]:
-    """List Files In Set
+) -> Response[HTTPValidationError | UploadCredentialsResponse]:
+    """Generate Upload Credentials
 
-     List all files in a FileSet.
+     Generate short-lived, write-only credentials for uploading files via GCS Transfer Manager.
+
+    Returns an OAuth2 token scoped to only create objects in this fileset's folder.
 
     Args:
         file_set_id (str):
-        limit (int | Unset):  Default: 10.
-        cursor (None | str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | ListFileSetFilesResponse]
+        Response[HTTPValidationError | UploadCredentialsResponse]
     """
 
     kwargs = _get_kwargs(
         file_set_id=file_set_id,
-        limit=limit,
-        cursor=cursor,
     )
 
     response = client.get_httpx_client().request(
@@ -112,31 +91,27 @@ def sync(
     file_set_id: str,
     *,
     client: AuthenticatedClient,
-    limit: int | Unset = 10,
-    cursor: None | str | Unset = UNSET,
-) -> HTTPValidationError | ListFileSetFilesResponse | None:
-    """List Files In Set
+) -> HTTPValidationError | UploadCredentialsResponse | None:
+    """Generate Upload Credentials
 
-     List all files in a FileSet.
+     Generate short-lived, write-only credentials for uploading files via GCS Transfer Manager.
+
+    Returns an OAuth2 token scoped to only create objects in this fileset's folder.
 
     Args:
         file_set_id (str):
-        limit (int | Unset):  Default: 10.
-        cursor (None | str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | ListFileSetFilesResponse
+        HTTPValidationError | UploadCredentialsResponse
     """
 
     return sync_detailed(
         file_set_id=file_set_id,
         client=client,
-        limit=limit,
-        cursor=cursor,
     ).parsed
 
 
@@ -144,30 +119,26 @@ async def asyncio_detailed(
     file_set_id: str,
     *,
     client: AuthenticatedClient,
-    limit: int | Unset = 10,
-    cursor: None | str | Unset = UNSET,
-) -> Response[HTTPValidationError | ListFileSetFilesResponse]:
-    """List Files In Set
+) -> Response[HTTPValidationError | UploadCredentialsResponse]:
+    """Generate Upload Credentials
 
-     List all files in a FileSet.
+     Generate short-lived, write-only credentials for uploading files via GCS Transfer Manager.
+
+    Returns an OAuth2 token scoped to only create objects in this fileset's folder.
 
     Args:
         file_set_id (str):
-        limit (int | Unset):  Default: 10.
-        cursor (None | str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | ListFileSetFilesResponse]
+        Response[HTTPValidationError | UploadCredentialsResponse]
     """
 
     kwargs = _get_kwargs(
         file_set_id=file_set_id,
-        limit=limit,
-        cursor=cursor,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -179,31 +150,27 @@ async def asyncio(
     file_set_id: str,
     *,
     client: AuthenticatedClient,
-    limit: int | Unset = 10,
-    cursor: None | str | Unset = UNSET,
-) -> HTTPValidationError | ListFileSetFilesResponse | None:
-    """List Files In Set
+) -> HTTPValidationError | UploadCredentialsResponse | None:
+    """Generate Upload Credentials
 
-     List all files in a FileSet.
+     Generate short-lived, write-only credentials for uploading files via GCS Transfer Manager.
+
+    Returns an OAuth2 token scoped to only create objects in this fileset's folder.
 
     Args:
         file_set_id (str):
-        limit (int | Unset):  Default: 10.
-        cursor (None | str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | ListFileSetFilesResponse
+        HTTPValidationError | UploadCredentialsResponse
     """
 
     return (
         await asyncio_detailed(
             file_set_id=file_set_id,
             client=client,
-            limit=limit,
-            cursor=cursor,
         )
     ).parsed

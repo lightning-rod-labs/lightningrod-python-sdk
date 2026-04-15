@@ -6,27 +6,42 @@ from typing import Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="RetryFailedFilesResponse")
+T = TypeVar("T", bound="UploadCredentialsResponse")
 
 
 @_attrs_define
-class RetryFailedFilesResponse:
+class UploadCredentialsResponse:
     """
     Attributes:
-        files_reset (int): Number of files reset to PENDING status
+        token (str): Short-lived OAuth2 access token for GCS uploads
+        expiry (str): Token expiry time (ISO 8601)
+        bucket (str): GCS bucket name
+        folder (str): GCS folder prefix (include trailing slash)
     """
 
-    files_reset: int
+    token: str
+    expiry: str
+    bucket: str
+    folder: str
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        files_reset = self.files_reset
+        token = self.token
+
+        expiry = self.expiry
+
+        bucket = self.bucket
+
+        folder = self.folder
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "files_reset": files_reset,
+                "token": token,
+                "expiry": expiry,
+                "bucket": bucket,
+                "folder": folder,
             }
         )
 
@@ -35,14 +50,23 @@ class RetryFailedFilesResponse:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        files_reset = d.pop("files_reset")
+        token = d.pop("token")
 
-        retry_failed_files_response = cls(
-            files_reset=files_reset,
+        expiry = d.pop("expiry")
+
+        bucket = d.pop("bucket")
+
+        folder = d.pop("folder")
+
+        upload_credentials_response = cls(
+            token=token,
+            expiry=expiry,
+            bucket=bucket,
+            folder=folder,
         )
 
-        retry_failed_files_response.additional_properties = d
-        return retry_failed_files_response
+        upload_credentials_response.additional_properties = d
+        return upload_credentials_response
 
     @property
     def additional_keys(self) -> list[str]:
