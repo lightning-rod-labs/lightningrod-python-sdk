@@ -126,23 +126,50 @@ training.print_eval(eval_job)
 
 ## Evaluating Intermediate Checkpoints
 
-`run_from_training_job` always evaluates the **final** `job.model_id` as the fine-tuned slot. To compare checkpoints or choose a different model list, use **`run`** / **`create`** and pass every `EvalModel` yourself:
+`run_from_training_job` always evaluates the **final** `job.model_id` as the fine-tuned slot. To compare intermediate checkpoints, swap in a different checkpoint as one of the `EvalModel` entries, or evaluate several checkpoints in one job, use **`run`** / **`create`** and pass the full `EvalModel` list yourself.
+
+After training finishes, a completed **`TrainingJob`** exposes:
+
+- **`job.model_id`** — the final trained adapter (same ID `run_from_training_job` uses as `"Fine-tuned"`).
+- **`job.model_id_by_step`** — a mapping from **training step** to checkpoint **model ID**. Keys are strings (e.g. `"10"`, `"20"`). Values are the same model ID strings you pass to `EvalModel`. Inspect which steps exist on your job (`print(job.model_id_by_step)` or iterate keys) instead of assuming a particular step number.
+
+Checkpoint cadence follows your [`save_frequency`](training.md) (and server defaults when omitted). Which step keys appear depends on the run; read them from the completed job.
+
+`model_id_by_step` may be `None` or unset for some job states; only use keys that are actually present. SFT workflows that cannot use `run_from_training_job` for metrics still use the same pattern: build an explicit list of `EvalModel`s, including IDs from `model_id_by_step` when available.
+
+Use [`run`](#run) if you want the same waited, live progress behavior as elsewhere; use [`create`](#create) if you only need to submit the eval and poll or fetch it yourself.
 
 ```python
 from lightningrod import EvalModel
 from lightningrod.training import print_eval
 
-# After training completes (config is GRPO or SFT)
 job = lr.training.run(config, dataset=train_dataset)
 
+# Illustrative: pick a step that exists on your job (see job.model_id_by_step)
 checkpoint_model_id = job.model_id_by_step["10"]
 
+eval_job = lr.evals.run(
+    test_dataset,
+    [
+        EvalModel(model_id=config.base_model_id, label="Base"),
+        EvalModel(model_id=checkpoint_model_id, label="step-10"),
+        EvalModel(model_id=job.model_id, label="final"),
+    ],
+)
+print_eval(eval_job)
+```
+
+Same models with [`create`](#create) (no built-in wait; fetch or poll `eval_job.id` as needed):
+
+```python
+checkpoint_model_id = job.model_id_by_step["10"]  # illustrative; use a key from your job
+
 eval_job = lr.evals.create(
+    dataset=test_dataset,
     models=[
         EvalModel(model_id=checkpoint_model_id, label="step-10"),
         EvalModel(model_id=job.model_id, label="final"),
     ],
-    dataset=test_dataset,
 )
 print_eval(eval_job)
 ```
