@@ -8,7 +8,14 @@ from lightningrod._generated.models.label import Label
 from lightningrod._generated.models.sample import Sample
 from lightningrod._generated.models.seed import Seed
 from lightningrod.datasets.dataset import SampleDataset
-from lightningrod.training.samples import prepare_for_training, to_record
+from lightningrod.training.samples import (
+    DedupParams,
+    FilterParams,
+    SplitParams,
+    prepare_for_training,
+    to_record,
+)
+from lightningrod._generated.models.forward_looking_question import ForwardLookingQuestion
 from lightningrod.utils.sample import create_sample
 
 
@@ -59,7 +66,7 @@ def test_prepare_for_training_fails_early_for_bad_binary_label() -> None:
     )
     dataset = _dataset([bad])
 
-    with pytest.raises(ValueError, match="binary answer_type"):
+    with pytest.raises(ValueError, match="Unhealthy split"):
         prepare_for_training(dataset, verbose=False)
 
 
@@ -72,6 +79,84 @@ def test_to_record_raises_clear_error_for_missing_answer_type() -> None:
 
     with pytest.raises(ValueError, match="invalid label answer_type: missing answer_type"):
         to_record(sample)
+
+
+@pytest.fixture
+def suppress_prepare_report_raise(monkeypatch: pytest.MonkeyPatch) -> None:
+    import lightningrod.training.samples as samples_mod
+
+    monkeypatch.setattr(samples_mod, "_print_report", lambda report, verbose: None)
+
+
+def test_prepare_for_training_explicit_none_skips_stages(
+    suppress_prepare_report_raise: None,
+) -> None:
+    res = datetime(2026, 6, 1)
+    dup_a = Sample(
+        id="dup-a",
+        is_valid=True,
+        seed=Seed(seed_text="same"),
+        label=Label(label="yes", label_confidence=1.0, answer_type="binary", resolution_date=res),
+    )
+    dup_b = Sample(
+        id="dup-b",
+        is_valid=True,
+        seed=Seed(seed_text="same"),
+        label=Label(label="yes", label_confidence=1.0, answer_type="binary", resolution_date=res),
+    )
+    invalid = Sample(
+        id="inv",
+        is_valid=False,
+        seed=Seed(seed_text="seed"),
+        label=Label(label="yes", label_confidence=1.0, answer_type="binary"),
+    )
+    dataset = _dataset([dup_a, dup_b, invalid])
+    train, test = prepare_for_training(
+        dataset,
+        filter=None,
+        dedup=None,
+        split=None,
+        verbose=False,
+    )
+    assert train.num_rows == 3
+    assert test.num_rows == 0
+
+
+def test_prepare_for_training_omitted_params_use_defaults(
+    suppress_prepare_report_raise: None,
+) -> None:
+    def make_sample(sid: str, qtext: str) -> Sample:
+        q = ForwardLookingQuestion(
+            question_text=qtext,
+            date_close=datetime(2026, 3, 1),
+            event_date=datetime(2026, 1, 1),
+            resolution_criteria="x",
+            prediction_date=datetime(2026, 1, 15),
+        )
+        return Sample(
+            id=sid,
+            is_valid=True,
+            question=q,
+            seed=Seed(seed_text="seed"),
+            label=Label(
+                label="yes",
+                label_confidence=1.0,
+                answer_type="binary",
+                resolution_date=datetime(2026, 6, 1),
+            ),
+        )
+
+    dataset = _dataset([make_sample("a", "q-a"), make_sample("b", "q-b")])
+    train_default, test_default = prepare_for_training(dataset, verbose=False)
+    train_explicit, test_explicit = prepare_for_training(
+        dataset,
+        filter=FilterParams(),
+        dedup=DedupParams(),
+        split=SplitParams(),
+        verbose=False,
+    )
+    assert train_default.num_rows == train_explicit.num_rows
+    assert test_default.num_rows == test_explicit.num_rows
 
 
 def test_to_record_normalizes_answer_type() -> None:
