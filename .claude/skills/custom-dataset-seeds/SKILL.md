@@ -60,7 +60,7 @@ Before building a pipeline, check that the data is suitable:
 | Text quality | Spot-check `sample.text` values | Readable prose, not garbled OCR or empty strings |
 | Label availability | Check `sample.label` if using `QuestionAndLabelGenerator` | Labels present and non-null |
 
-If the data fails a check, surface the issue to the orchestrator before proceeding.
+If the data fails a check, explain the issue clearly and stop — do not build a pipeline on bad inputs.
 
 ## Chunking guidance
 
