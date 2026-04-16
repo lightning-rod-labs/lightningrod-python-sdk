@@ -24,25 +24,21 @@ class FileSet:
         id (str):
         name (str):
         description (None | str):
-        file_count (int):
-        indexed_file_count (int):
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
         metadata_schema (FileSetMetadataSchema | None | Unset):
-        rag_enabled (bool | Unset):  Default: True.
         is_public (bool | Unset):  Default: False.
+        cloud_storage_folder (None | str | Unset):
     """
 
     id: str
     name: str
     description: None | str
-    file_count: int
-    indexed_file_count: int
     created_at: datetime.datetime
     updated_at: datetime.datetime
     metadata_schema: FileSetMetadataSchema | None | Unset = UNSET
-    rag_enabled: bool | Unset = True
     is_public: bool | Unset = False
+    cloud_storage_folder: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -54,10 +50,6 @@ class FileSet:
 
         description: None | str
         description = self.description
-
-        file_count = self.file_count
-
-        indexed_file_count = self.indexed_file_count
 
         created_at = self.created_at.isoformat()
 
@@ -71,9 +63,13 @@ class FileSet:
         else:
             metadata_schema = self.metadata_schema
 
-        rag_enabled = self.rag_enabled
-
         is_public = self.is_public
+
+        cloud_storage_folder: None | str | Unset
+        if isinstance(self.cloud_storage_folder, Unset):
+            cloud_storage_folder = UNSET
+        else:
+            cloud_storage_folder = self.cloud_storage_folder
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -82,18 +78,16 @@ class FileSet:
                 "id": id,
                 "name": name,
                 "description": description,
-                "file_count": file_count,
-                "indexed_file_count": indexed_file_count,
                 "created_at": created_at,
                 "updated_at": updated_at,
             }
         )
         if metadata_schema is not UNSET:
             field_dict["metadata_schema"] = metadata_schema
-        if rag_enabled is not UNSET:
-            field_dict["rag_enabled"] = rag_enabled
         if is_public is not UNSET:
             field_dict["is_public"] = is_public
+        if cloud_storage_folder is not UNSET:
+            field_dict["cloud_storage_folder"] = cloud_storage_folder
 
         return field_dict
 
@@ -112,10 +106,6 @@ class FileSet:
             return cast(None | str, data)
 
         description = _parse_description(d.pop("description"))
-
-        file_count = d.pop("file_count")
-
-        indexed_file_count = d.pop("indexed_file_count")
 
         created_at = isoparse(d.pop("created_at"))
 
@@ -138,21 +128,26 @@ class FileSet:
 
         metadata_schema = _parse_metadata_schema(d.pop("metadata_schema", UNSET))
 
-        rag_enabled = d.pop("rag_enabled", UNSET)
-
         is_public = d.pop("is_public", UNSET)
+
+        def _parse_cloud_storage_folder(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        cloud_storage_folder = _parse_cloud_storage_folder(d.pop("cloud_storage_folder", UNSET))
 
         file_set = cls(
             id=id,
             name=name,
             description=description,
-            file_count=file_count,
-            indexed_file_count=indexed_file_count,
             created_at=created_at,
             updated_at=updated_at,
             metadata_schema=metadata_schema,
-            rag_enabled=rag_enabled,
             is_public=is_public,
+            cloud_storage_folder=cloud_storage_folder,
         )
 
         file_set.additional_properties = d

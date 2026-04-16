@@ -1,48 +1,48 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any, TypeVar
+from typing import Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-from ..types import UNSET, Unset
-
-T = TypeVar("T", bound="RetryFailedFilesRequest")
+T = TypeVar("T", bound="BatchUploadRequest")
 
 
 @_attrs_define
-class RetryFailedFilesRequest:
+class BatchUploadRequest:
     """
     Attributes:
-        max_retries (int | Unset): Maximum retry attempts per file Default: 3.
+        file_names (list[str]): List of filenames to generate upload URLs for
     """
 
-    max_retries: int | Unset = 3
+    file_names: list[str]
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        max_retries = self.max_retries
+        file_names = self.file_names
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update({})
-        if max_retries is not UNSET:
-            field_dict["max_retries"] = max_retries
+        field_dict.update(
+            {
+                "file_names": file_names,
+            }
+        )
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        max_retries = d.pop("max_retries", UNSET)
+        file_names = cast(list[str], d.pop("file_names"))
 
-        retry_failed_files_request = cls(
-            max_retries=max_retries,
+        batch_upload_request = cls(
+            file_names=file_names,
         )
 
-        retry_failed_files_request.additional_properties = d
-        return retry_failed_files_request
+        batch_upload_request.additional_properties = d
+        return batch_upload_request
 
     @property
     def additional_keys(self) -> list[str]:
