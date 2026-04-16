@@ -4,6 +4,14 @@ icon: clock-rotate-left
 
 # Changelog
 
+## v0.1.25 — April 2026
+
+### Breaking: `max_questions` → `max_seeds` on transforms
+
+`lr.transforms.run()`, `.submit()`, and `.estimate_cost()` now take `max_seeds` instead of `max_questions`. The parameter caps the number of seeds fed into the pipeline rather than the number of final samples — per-transform expansion ratios are no longer part of the user-facing model.
+
+Migration: rename the keyword argument. If you were previously sizing `max_questions` as `seeds × questions_per_seed`, pass just the seed count.
+
 ## v0.1.22 — April 2026
 
 ### Breaking: training config split (GRPO vs SFT)

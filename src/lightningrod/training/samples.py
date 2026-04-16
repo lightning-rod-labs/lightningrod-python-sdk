@@ -748,7 +748,7 @@ def _build_report(
                 "will resolve well before the test window. Aim for at least 2× your max resolution horizon."
             )
         tips.append(
-            "Generate more samples by increasing max_questions in lr.transforms.run() or removing the limit, "
+            "Generate more samples by increasing max_seeds in lr.transforms.run() or removing the limit, "
             "or increase questions_per_seed in your question generator config. "
             "A larger, temporally well-spread dataset naturally pushes the split cutoff far enough back."
         )
@@ -788,7 +788,7 @@ def _build_report(
                 f"This is below the recommended minimum of +{MIN_TRAIN_SAMPLES} for effective training."
             ),
             tips=[
-                "Increase max_questions in lr.transforms.run() to generate more samples.",
+                "Increase max_seeds in lr.transforms.run() to generate more samples.",
                 "Increase questions_per_seed in your question generator (ForwardLookingQuestionGenerator or QuestionGenerator) to produce more questions from each seed article."
                 "Add more search queries to your seed generator to diversify seed sources.",
                 "Widen the seed generator date range (start_date to end_date) to capture more events.",

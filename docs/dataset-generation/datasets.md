@@ -77,7 +77,7 @@ input_dataset = lr.datasets.create_from_samples(samples)
 dataset = lr.transforms.run(
     pipeline_config,
     input_dataset=input_dataset,
-    max_questions=500,
+    max_seeds=500,
 )
 ```
 

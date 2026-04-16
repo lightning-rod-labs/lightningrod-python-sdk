@@ -26,7 +26,6 @@ class MockTransformConfig:
         delay_variance (float | Unset): Random variance (+/- seconds) Default: 0.05.
         error_rate (float | Unset): Probability of error (0.0-1.0) Default: 0.01.
         error_message (str | Unset): Error message when error_rate triggers Default: 'Mock error'.
-        expansion_factor (int | Unset): Outputs per input (1:N expansion) Default: 1.
         filter_rate (float | Unset): Probability of marking invalid Default: 0.0.
         add_question (bool | Unset): Add a mock question to samples Default: False.
         question_template (str | Unset): Template for question text Default: 'Mock question {index}?'.
@@ -46,7 +45,6 @@ class MockTransformConfig:
     delay_variance: float | Unset = 0.05
     error_rate: float | Unset = 0.01
     error_message: str | Unset = "Mock error"
-    expansion_factor: int | Unset = 1
     filter_rate: float | Unset = 0.0
     add_question: bool | Unset = False
     question_template: str | Unset = "Mock question {index}?"
@@ -72,8 +70,6 @@ class MockTransformConfig:
         error_rate = self.error_rate
 
         error_message = self.error_message
-
-        expansion_factor = self.expansion_factor
 
         filter_rate = self.filter_rate
 
@@ -120,8 +116,6 @@ class MockTransformConfig:
             field_dict["error_rate"] = error_rate
         if error_message is not UNSET:
             field_dict["error_message"] = error_message
-        if expansion_factor is not UNSET:
-            field_dict["expansion_factor"] = expansion_factor
         if filter_rate is not UNSET:
             field_dict["filter_rate"] = filter_rate
         if add_question is not UNSET:
@@ -163,8 +157,6 @@ class MockTransformConfig:
         error_rate = d.pop("error_rate", UNSET)
 
         error_message = d.pop("error_message", UNSET)
-
-        expansion_factor = d.pop("expansion_factor", UNSET)
 
         filter_rate = d.pop("filter_rate", UNSET)
 
@@ -211,7 +203,6 @@ class MockTransformConfig:
             delay_variance=delay_variance,
             error_rate=error_rate,
             error_message=error_message,
-            expansion_factor=expansion_factor,
             filter_rate=filter_rate,
             add_question=add_question,
             question_template=question_template,

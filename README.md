@@ -50,7 +50,7 @@ pipeline = QuestionPipeline(
     labeler=WebSearchLabeler(answer_type=binary_answer),
 )
 
-dataset = lr.transforms.run(pipeline, max_questions=3000)
+dataset = lr.transforms.run(pipeline, max_seeds=3000)
 dataset.flattened()  # Ready-to-use data for your training pipelines
 ```
 

@@ -93,13 +93,13 @@ class TransformsClient:
         self,
         config: TransformConfig,
         input_dataset: Optional[Union[SampleDataset, str]] = None,
-        max_questions: Optional[int] = None,
+        max_seeds: Optional[int] = None,
         max_cost_dollars: Optional[float] = None,
         name: Optional[str] = None,
         # If True, will not stop the app if the local process dies or disconnects
         detach: bool = False,
     ) -> SampleDataset:
-        job: TransformJob = self.submit(config, input_dataset, max_questions, max_cost_dollars, name)
+        job: TransformJob = self.submit(config, input_dataset, max_seeds, max_cost_dollars, name)
 
         # Save the warning message before polling overwrites the job object
         warning_message = job.warning_message if (not isinstance(job.warning_message, Unset) and job.warning_message is not None) else None
@@ -156,7 +156,7 @@ class TransformsClient:
         self,
         config: TransformConfig,
         input_dataset: Optional[Union[SampleDataset, str]] = None,
-        max_questions: Optional[int] = None,
+        max_seeds: Optional[int] = None,
         max_cost_dollars: Optional[float] = None,
         name: Optional[str] = None,
     ) -> TransformJob:
@@ -168,11 +168,12 @@ class TransformsClient:
         request: CreateTransformJobRequest = CreateTransformJobRequest(
             config=config,
             input_dataset_id=dataset_id,
-            max_questions=max_questions,
             max_cost_dollars=max_cost_dollars,
             name=name,
         )
-        
+        if max_seeds is not None:
+            request.additional_properties["max_seeds"] = max_seeds
+
         response = create_transform_job_transform_jobs_post.sync_detailed(
             client=self._client,
             body=request,
@@ -188,13 +189,13 @@ class TransformsClient:
 
         return job
 
-    def estimate_cost(self, config: TransformConfig, max_questions: Optional[int] = None) -> float:
+    def estimate_cost(self, config: TransformConfig, max_seeds: Optional[int] = None) -> float:
+        body = EstimateCostRequest(config=config)
+        if max_seeds is not None:
+            body.additional_properties["max_seeds"] = max_seeds
         response = cost_estimation_transform_jobs_cost_estimation_post.sync_detailed(
             client=self._client,
-            body=EstimateCostRequest(
-                config=config,
-                max_questions=max_questions,
-            ),
+            body=body,
         )
         parsed: EstimateCostResponse = handle_response_error(response, "estimate cost")
         return parsed.total_cost_dollars
