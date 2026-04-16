@@ -8,7 +8,7 @@ Run evals on your trained model against a test dataset. Access via `lr.evals` on
 
 ## EvalModel
 
-Specify each model to evaluate when using [`create`](#create) (you supply the full list). For [`run`](#run), the SDK adds the base and fine-tuned models for you; use `EvalModel` only for [`extra_models`](#run).
+Specify each model to evaluate when using [`create`](#create) or [`run`](#run) (you supply the full list). For [`run_from_training_job`](#run_from_training_job), the SDK adds the base and fine-tuned models for you; use `EvalModel` only for [`extra_models`](#run_from_training_job).
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|---------|---------|-------------|
@@ -43,7 +43,28 @@ eval_job = lr.evals.create(
 
 ### run
 
-Create an eval job and poll until completion. In notebooks, shows a live progress display.
+Create an eval job and poll until completion. In notebooks, shows a live progress display. You pass the **full** `models` list (same idea as [`create`](#create), but waited).
+
+```python
+from lightningrod import EvalModel
+
+eval_job = lr.evals.run(
+    test_dataset,
+    [
+        EvalModel(model_id=config.base_model_id, label="Base"),
+        EvalModel(model_id=training_job.model_id, label="Fine-tuned"),
+    ],
+)
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `dataset` | SampleDataset | — | Test dataset (e.g. test split). |
+| `models` | `list[EvalModel]` | — | Models to evaluate (complete list). |
+
+### run_from_training_job
+
+Same waiting behavior as [`run`](#run), but builds the model list from your training config and completed job.
 
 The benchmark **always** includes two models, in order:
 
@@ -52,12 +73,12 @@ The benchmark **always** includes two models, in order:
 
 You do not pass these explicitly. Use **`extra_models`** only for additional models (e.g. OpenAI baselines).
 
-**SFT:** `run` raises `NotImplementedError` if `config` is `SFTTrainingConfig`, because SFT-specific eval metrics are not implemented yet. Use **GRPO** with `run`, or use `create` with your own `EvalModel` list.
+**SFT:** `run_from_training_job` raises `NotImplementedError` if `config` is `SFTTrainingConfig`, because SFT-specific eval metrics are not implemented yet. Use **GRPO** with `run_from_training_job`, or use [`run`](#run) / [`create`](#create) with your own `EvalModel` list.
 
 ```python
-from lightningrod import EvalModel, training
+from lightningrod import EvalModel
 
-eval_job = lr.evals.run(
+eval_job = lr.evals.run_from_training_job(
     config,
     training_job,
     test_dataset,
@@ -99,13 +120,13 @@ Pretty-print eval results:
 ```python
 from lightningrod import training
 
-eval_job = lr.evals.run(config, training_job, test_dataset)
+eval_job = lr.evals.run_from_training_job(config, training_job, test_dataset)
 training.print_eval(eval_job)
 ```
 
 ## Evaluating Intermediate Checkpoints
 
-`run` always evaluates the **final** `job.model_id` as the fine-tuned slot. To compare checkpoints or choose a different model list, use **`create`** and pass every `EvalModel` yourself:
+`run_from_training_job` always evaluates the **final** `job.model_id` as the fine-tuned slot. To compare checkpoints or choose a different model list, use **`run`** / **`create`** and pass every `EvalModel` yourself:
 
 ```python
 from lightningrod import EvalModel
@@ -142,4 +163,4 @@ eval_job = lr.evals.create(
 print_eval(eval_job)
 ```
 
-See [notebooks/getting_started/05_grpo_training.ipynb](../../notebooks/getting_started/05_grpo_training.ipynb) for the full GRPO workflow including `evals.run`.
+See [notebooks/getting_started/05_grpo_training.ipynb](../../notebooks/getting_started/05_grpo_training.ipynb) for the full GRPO workflow including `evals.run_from_training_job`.
