@@ -390,7 +390,7 @@ def build_eval_live_display(job: EvalJob) -> RenderableType:
 
 
 def print_eval(job: EvalJob) -> None:
-    """Print a prettified eval job summary. Use with evals.run() or evals.get()."""
+    """Print a prettified eval job summary. Use with evals.run(), run_from_training_job(), or evals.get()."""
     console = Console()
     renderables: list[RenderableType] = []
     status = str(job.status) if job is not None else ""

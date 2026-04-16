@@ -91,6 +91,8 @@ job = lr.training.run(
 print(f"Model ID: {job.model_id}")
 ```
 
+**Training job fields:** On a completed job, **`job.model_id`** is the final adapter. **`job.model_id_by_step`** maps training step (string keys) to intermediate checkpoint model IDs so you can run evals or inference on a specific checkpoint, not only the final one. See [Evaluating Intermediate Checkpoints](evaluation.md#evaluating-intermediate-checkpoints).
+
 ### get
 
 Fetch a single job by ID:

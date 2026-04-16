@@ -260,7 +260,7 @@ job = lr.training.run(config, dataset=train_dataset, name="military-strikes-v1")
 
 from lightningrod import EvalModel
 
-eval_job = lr.evals.run(
+eval_job = lr.evals.run_from_training_job(
     config,
     job,
     test_dataset,

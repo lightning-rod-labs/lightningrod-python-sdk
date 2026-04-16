@@ -14,9 +14,9 @@ The single `TrainingConfig` export is removed. Use **`GRPOTrainingConfig`** for 
 
 See [Training](fine-tuning/training.md) for field tables.
 
-### Breaking: `evals.run` uses training config and job
+### Breaking: `evals.run` takes dataset and models; training defaults are `run_from_training_job`
 
-`lr.evals.run(config, job, dataset, *, extra_models=None)` replaces the positional `models=` list. The eval benchmark **always** includes the base model and the fine-tuned `job.model_id`; pass optional **`extra_models`** for additional `EvalModel` entries (e.g. OpenAI baselines). **`SFTTrainingConfig`** raises `NotImplementedError` from `run` until SFT eval metrics exist; use `lr.evals.create(...)` with an explicit model list for SFT or custom benchmarks.
+`lr.evals.run(dataset, models)` creates an eval job, waits, and shows live progress (same as before minus model inference from the training job). For the previous behavior—base + fine-tuned from a completed **`TrainingJob`**—use **`lr.evals.run_from_training_job(config, job, dataset, *, extra_models=None)`**. **`SFTTrainingConfig`** raises `NotImplementedError` from `run_from_training_job` until SFT eval metrics exist; use `lr.evals.run(dataset, models)` or `lr.evals.create(...)` with an explicit model list.
 
 See [Evaluation](fine-tuning/evaluation.md).
 
@@ -98,11 +98,11 @@ lr.evals.run(model_id=job.model_id, dataset=test_dataset, benchmark_model_id="op
 from lightningrod import EvalModel
 
 lr.evals.run(
-    models=[
+    test_dataset,
+    [
         EvalModel(model_id=job.model_id, label="fine-tuned"),
         EvalModel(model_id="openai/gpt-4.1", label="baseline"),
     ],
-    dataset=test_dataset,
 )
 ```
 

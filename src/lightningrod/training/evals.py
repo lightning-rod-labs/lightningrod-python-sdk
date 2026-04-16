@@ -65,43 +65,14 @@ class EvalsClient:
 
     def run(
         self,
-        config: TrainingMethodConfig,
-        job: TrainingJob,
         dataset: SampleDataset,
-        *,
-        extra_models: list[EvalModel] | None = None,
+        models: list[EvalModel],
     ) -> EvalJob:
         """Create an eval job, poll until completion, and show live progress in notebooks.
 
-        The benchmark always includes two models, in order: the **base** checkpoint
-        (`config.base_model_id`) and the **fine-tuned** model (`job.model_id`). You do not
-        pass these explicitly. Use ``extra_models`` only for additional models (e.g.
-        third-party baselines).
-
-        Raises:
-            NotImplementedError: If ``config`` is :class:`~lightningrod.training.client.SFTTrainingConfig`
-                (SFT eval metrics are not implemented yet). Use :meth:`create` for a custom model list.
-            ValueError: If ``job.model_id`` is missing (training not finished).
+        For the usual base-vs-fine-tuned benchmark after GRPO training, use
+        :meth:`run_from_training_job` instead; it fills in models from the training config and job.
         """
-        if isinstance(config, SFTTrainingConfig):
-            raise NotImplementedError(
-                "Evaluation metrics for SFT training are not implemented yet. Use GRPO with "
-                "evals.run(), or use lr.evals.create(...) to define a custom eval model list."
-            )
-
-        finetuned_id = job.model_id
-        if isinstance(finetuned_id, Unset) or finetuned_id is None:
-            raise ValueError(
-                "Training job has no model_id yet; wait until training completes before running evals."
-            )
-
-        models: list[EvalModel] = [
-            EvalModel(model_id=config.base_model_id, label="Base"),
-            EvalModel(model_id=finetuned_id, label="Fine-tuned"),
-        ]
-        if extra_models:
-            models.extend(extra_models)
-
         eval_job = self.create(models=models, dataset=dataset)
 
         if eval_job.status == EvalJobStatus.FAILED:
@@ -121,4 +92,44 @@ class EvalsClient:
 
         run_eval_live_display(poll, initial_job=eval_job)
         return eval_job
-    
+
+    def run_from_training_job(
+        self,
+        config: TrainingMethodConfig,
+        job: TrainingJob,
+        dataset: SampleDataset,
+        *,
+        extra_models: list[EvalModel] | None = None,
+    ) -> EvalJob:
+        """Like :meth:`run` but builds the model list from training state.
+
+        The benchmark includes two models, in order: the **base** checkpoint
+        (``config.base_model_id``) and the **fine-tuned** model (``job.model_id``). Use
+        ``extra_models`` only for additional models (e.g. third-party baselines).
+
+        Raises:
+            NotImplementedError: If ``config`` is :class:`~lightningrod.training.client.SFTTrainingConfig`
+                (SFT eval metrics are not implemented yet). Use :meth:`run` or :meth:`create` for a custom model list.
+            ValueError: If ``job.model_id`` is missing (training not finished).
+        """
+        if isinstance(config, SFTTrainingConfig):
+            raise NotImplementedError(
+                "Evaluation metrics for SFT training are not implemented yet. Use GRPO with "
+                "evals.run_from_training_job(), or use lr.evals.run(...) / lr.evals.create(...) "
+                "to define a custom eval model list."
+            )
+
+        finetuned_id = job.model_id
+        if isinstance(finetuned_id, Unset) or finetuned_id is None:
+            raise ValueError(
+                "Training job has no model_id yet; wait until training completes before running evals."
+            )
+
+        models: list[EvalModel] = [
+            EvalModel(model_id=config.base_model_id, label="Base"),
+            EvalModel(model_id=finetuned_id, label="Fine-tuned"),
+        ]
+        if extra_models:
+            models.extend(extra_models)
+
+        return self.run(dataset, models)

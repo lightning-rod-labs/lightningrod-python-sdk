@@ -98,7 +98,7 @@ job = lr.training.run(training_config, dataset=train_dataset)
 Pass a dataset to evaluate a model:
 
 ```python
-eval_job = lr.evals.run(training_config, job, test_dataset)
+eval_job = lr.evals.run_from_training_job(training_config, job, test_dataset)
 ```
 
 See [Evaluation](../fine-tuning/evaluation.md) for eval options.
