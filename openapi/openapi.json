@@ -5,11 +5,6 @@
     "description": "Generate verified, grounded datasets at scale for LLM fine-tuning and evaluation",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "/api/public/v1"
-    }
-  ],
   "paths": {
     "/openai/chat/completions": {
       "post": {
@@ -5062,17 +5057,16 @@
             "description": "Number of chunks to retrieve",
             "default": 5
           },
-          "temporal_direction": {
+          "temporal_constraint": {
             "anyOf": [
               {
-                "type": "string"
+                "$ref": "#/components/schemas/TemporalConstraint"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Temporal Direction",
-            "description": "'before' filters timestamp <= seed date (includes seed's document), 'after' filters timestamp > seed date, None = no filter"
+            "description": "Filter chunks by timestamp relative to seed_creation_date. BEFORE: timestamp <= seed_ts (historical context, no lookahead). AFTER: timestamp > seed_ts (future docs for resolution). EQUAL: timestamp == seed_ts. NEXT_DOCUMENT: chunks at the nearest timestamp > seed_ts (single-doc). PREVIOUS_DOCUMENT: chunks at the nearest timestamp < seed_ts (single-doc). None = no temporal filter."
           },
           "payload_filters": {
             "anyOf": [
@@ -5179,17 +5173,16 @@
             "description": "Number of chunks to retrieve",
             "default": 5
           },
-          "temporal_direction": {
+          "temporal_constraint": {
             "anyOf": [
               {
-                "type": "string"
+                "$ref": "#/components/schemas/TemporalConstraint"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Temporal Direction",
-            "description": "'before' or 'after' relative to seed date, or None for no filter."
+            "description": "Filter chunks by timestamp relative to seed_creation_date. BEFORE: timestamp <= seed_ts (historical context, no lookahead). AFTER: timestamp > seed_ts (future docs for resolution). EQUAL: timestamp == seed_ts. NEXT_DOCUMENT: chunks at the nearest timestamp > seed_ts (single-doc). PREVIOUS_DOCUMENT: chunks at the nearest timestamp < seed_ts (single-doc). None = no temporal filter."
           },
           "payload_filters": {
             "anyOf": [
@@ -6496,7 +6489,7 @@
           "EQUAL"
         ],
         "title": "TemporalConstraint",
-        "description": "Temporal filtering direction relative to the seed document's date.\n\nUses the `file_date` metadata key (unix timestamp int) from the manifest.\n\nBEFORE: file_date <= seed_timestamp  (context: no lookahead bias, multi-doc)\nAFTER:  file_date >  seed_timestamp  (labels: find resolutions, multi-doc)\nNEXT_DOCUMENT: first file after seed_timestamp (single-doc resolution)\nPREVIOUS_DOCUMENT: most recent file before seed_timestamp (single-doc resolution)\nEQUAL: file_date == seed_timestamp (exact match, single-doc)"
+        "description": "Temporal filtering direction relative to a reference (seed) timestamp.\n\nUses the `file_date` metadata key (unix timestamp int) from the manifest.\n\nBEFORE: file_date <= seed_timestamp  (context: no lookahead bias, multi-doc)\nAFTER:  file_date >  seed_timestamp  (labels: find resolutions, multi-doc)\nNEXT_DOCUMENT: first file after seed_timestamp (single-doc resolution)\nPREVIOUS_DOCUMENT: most recent file before seed_timestamp (single-doc resolution)\nEQUAL: file_date == seed_timestamp (exact match, single-doc)"
       },
       "TopicTreeSeedGenerator": {
         "properties": {
@@ -7173,6 +7166,13 @@
           "type": {
             "type": "string",
             "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
           }
         },
         "type": "object",
@@ -7356,5 +7356,10 @@
         "scheme": "bearer"
       }
     }
-  }
+  },
+  "servers": [
+    {
+      "url": "/api/public/v1"
+    }
+  ]
 }
