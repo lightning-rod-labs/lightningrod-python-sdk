@@ -37,6 +37,9 @@ dev = [
 transfer = [
     "google-cloud-storage>=2.0.0",
 ]
+extract = [
+    "openai>=1.0.0",
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
