@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import sys
+import types
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -18,6 +20,7 @@ from lightningrod._generated.models.metadata_field_type import MetadataFieldType
 from lightningrod.filesets.extraction import (
     _build_json_schema,
     _coerce_value,
+    _read_file_for_extraction,
     _read_text_for_extraction,
     extract_metadata_for_files,
 )
@@ -89,16 +92,23 @@ def test_coerce_value_handles_number_strings() -> None:
     assert _coerce_value(42, MetadataFieldType.STRING) == "42"
 
 
-def test_read_text_truncates_and_skips_unsupported(tmp_path: Path) -> None:
+def test_read_text_truncates_and_skips_non_text(tmp_path: Path) -> None:
     txt = tmp_path / "doc.txt"
     txt.write_text("A" * 50_000, encoding="utf-8")
     out = _read_text_for_extraction(txt, max_chars=1_000)
     assert out is not None
     assert len(out) == 1_000
 
+    # The plain-text reader itself does not handle PDFs; dispatch handles those.
     pdf = tmp_path / "doc.pdf"
     pdf.write_bytes(b"%PDF-1.4 not a real pdf")
     assert _read_text_for_extraction(pdf, max_chars=1_000) is None
+
+
+def test_read_file_dispatcher_skips_unknown_types(tmp_path: Path) -> None:
+    unknown = tmp_path / "mystery.xyz"
+    unknown.write_text("whatever", encoding="utf-8")
+    assert _read_file_for_extraction(unknown, max_chars=1_000, max_pages=None) is None
 
 
 def test_read_text_handles_non_utf8_bytes(tmp_path: Path) -> None:
@@ -137,16 +147,16 @@ def test_extract_metadata_for_files_returns_typed_dict(tmp_path: Path) -> None:
 
 def test_extract_metadata_skips_unsupported_files(tmp_path: Path) -> None:
     txt = tmp_path / "good.txt"
-    pdf = tmp_path / "skip.pdf"
+    unknown = tmp_path / "skip.xyz"
     txt.write_text("some content", encoding="utf-8")
-    pdf.write_bytes(b"%PDF-1.4")
+    unknown.write_text("opaque", encoding="utf-8")
 
     client = _make_openai_stub({
         "good.txt": {"ticker": "NVDA", "year": 2024},
     })
 
     result = extract_metadata_for_files(
-        file_paths=[txt, pdf],
+        file_paths=[txt, unknown],
         schema=_schema(),
         api_key="sk-test",
         base_url="https://api.example.com",
@@ -154,7 +164,7 @@ def test_extract_metadata_skips_unsupported_files(tmp_path: Path) -> None:
     )
 
     assert set(result.keys()) == {"good.txt"}
-    # The PDF should never have triggered an LLM call.
+    # The unknown file should never have triggered an LLM call.
     assert client.chat.completions.create.call_count == 1
 
 
@@ -186,6 +196,115 @@ def test_extract_metadata_raises_for_empty_schema() -> None:
         extract_metadata_for_files(
             file_paths=[],
             schema=empty,
+            api_key="sk-test",
+            base_url="https://api.example.com",
+            openai_client=MagicMock(),
+        )
+
+
+def _install_fake_pypdf(monkeypatch: pytest.MonkeyPatch, pages_by_path: Dict[str, List[str]]) -> None:
+    """Inject a minimal fake ``pypdf`` module into sys.modules.
+
+    ``pages_by_path`` maps the absolute path string of each PDF to the list
+    of page texts the fake PdfReader should return.
+    """
+
+    class _FakePage:
+        def __init__(self, text: str) -> None:
+            self._text = text
+
+        def extract_text(self) -> str:
+            return self._text
+
+    class _FakeReader:
+        def __init__(self, path: str) -> None:
+            if path not in pages_by_path:
+                raise FileNotFoundError(path)
+            self.pages = [_FakePage(t) for t in pages_by_path[path]]
+
+    module = types.ModuleType("pypdf")
+    module.PdfReader = _FakeReader  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "pypdf", module)
+
+
+def test_extract_metadata_reads_pdf(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    pdf = tmp_path / "report.pdf"
+    pdf.write_bytes(b"%PDF-stub")
+    _install_fake_pypdf(monkeypatch, {str(pdf): ["Cover: AAPL FY2024", "Body text that's long"]})
+
+    captured_prompts: List[str] = []
+
+    def _create(*, model, messages, response_format):
+        captured_prompts.append(messages[-1]["content"])
+        completion = MagicMock()
+        completion.choices = [MagicMock()]
+        completion.choices[0].message.content = json.dumps({"ticker": "AAPL", "year": 2024})
+        return completion
+
+    client = MagicMock()
+    client.chat.completions.create.side_effect = _create
+
+    result = extract_metadata_for_files(
+        file_paths=[pdf],
+        schema=_schema(),
+        api_key="sk-test",
+        base_url="https://api.example.com",
+        openai_client=client,
+    )
+
+    assert result == {"report.pdf": {"ticker": "AAPL", "year": 2024}}
+    # Both pages' text should have made it into the prompt by default.
+    assert "Cover: AAPL FY2024" in captured_prompts[0]
+    assert "Body text that's long" in captured_prompts[0]
+
+
+def test_extract_metadata_respects_max_pages(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    pdf = tmp_path / "report.pdf"
+    pdf.write_bytes(b"%PDF-stub")
+    _install_fake_pypdf(
+        monkeypatch,
+        {str(pdf): ["FIRST PAGE ONLY", "SECRET FROM PAGE TWO", "MORE SECRETS FROM PAGE THREE"]},
+    )
+
+    captured_prompts: List[str] = []
+
+    def _create(*, model, messages, response_format):
+        captured_prompts.append(messages[-1]["content"])
+        completion = MagicMock()
+        completion.choices = [MagicMock()]
+        completion.choices[0].message.content = json.dumps({"ticker": "AAPL"})
+        return completion
+
+    client = MagicMock()
+    client.chat.completions.create.side_effect = _create
+
+    result = extract_metadata_for_files(
+        file_paths=[pdf],
+        schema=_schema(),
+        api_key="sk-test",
+        base_url="https://api.example.com",
+        max_pages=1,
+        openai_client=client,
+    )
+
+    assert "report.pdf" in result
+    prompt = captured_prompts[0]
+    assert "FIRST PAGE ONLY" in prompt
+    assert "SECRET FROM PAGE TWO" not in prompt
+    assert "MORE SECRETS FROM PAGE THREE" not in prompt
+
+
+def test_extract_metadata_raises_when_pypdf_missing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    pdf = tmp_path / "no_pypdf.pdf"
+    pdf.write_bytes(b"%PDF-stub")
+
+    # Simulate pypdf not being installed.
+    monkeypatch.setitem(sys.modules, "pypdf", None)
+
+    with pytest.raises(ImportError, match="pypdf is required"):
+        extract_metadata_for_files(
+            file_paths=[pdf],
+            schema=_schema(),
             api_key="sk-test",
             base_url="https://api.example.com",
             openai_client=MagicMock(),

@@ -21,6 +21,7 @@ TEXT_SUFFIXES = {
     ".txt", ".md", ".csv", ".json", ".html", ".htm",
     ".xml", ".yaml", ".yml", ".log",
 }
+PDF_SUFFIXES = {".pdf"}
 
 DEFAULT_MODEL = "gpt-4.1-mini"
 DEFAULT_MAX_CHARS = 20_000
@@ -39,9 +40,10 @@ def _schema_fields(schema: Any) -> List[Any]:
 
 
 def _read_text_for_extraction(path: Path, max_chars: int) -> Optional[str]:
-    """Read a file as text if its suffix is supported, truncating to ``max_chars``.
+    """Read a plain-text file, truncating to ``max_chars``.
 
-    Returns ``None`` for unsupported file types so callers can skip them.
+    Returns ``None`` if the suffix isn't a recognized plain-text type or the
+    file can't be opened.
     """
     if path.suffix.lower() not in TEXT_SUFFIXES:
         return None
@@ -54,6 +56,66 @@ def _read_text_for_extraction(path: Path, max_chars: int) -> Optional[str]:
     if len(text) > max_chars:
         text = text[:max_chars]
     return text
+
+
+def _read_pdf_for_extraction(
+    path: Path,
+    max_chars: int,
+    max_pages: Optional[int],
+) -> Optional[str]:
+    """Extract text from a PDF using ``pypdf``.
+
+    Honors ``max_pages`` (first N pages) and truncates to ``max_chars``.
+    Returns ``None`` if the PDF can't be opened.
+    """
+    from pypdf import PdfReader  # eager ImportError is checked upstream
+
+    try:
+        reader = PdfReader(str(path))
+    except Exception:
+        return None
+
+    pages = reader.pages
+    if max_pages is not None:
+        pages = pages[:max_pages]
+
+    chunks: List[str] = []
+    total = 0
+    for page in pages:
+        try:
+            text = page.extract_text() or ""
+        except Exception:
+            text = ""
+        if not text:
+            continue
+        chunks.append(text)
+        total += len(text)
+        if total >= max_chars:
+            break
+
+    if not chunks:
+        return None
+    out = "\n\n".join(chunks)
+    if len(out) > max_chars:
+        out = out[:max_chars]
+    return out
+
+
+def _read_file_for_extraction(
+    path: Path,
+    max_chars: int,
+    max_pages: Optional[int],
+) -> Optional[str]:
+    """Dispatch to the right reader based on suffix.
+
+    Returns ``None`` for unsupported file types so callers can skip them.
+    """
+    suffix = path.suffix.lower()
+    if suffix in PDF_SUFFIXES:
+        return _read_pdf_for_extraction(path, max_chars, max_pages)
+    if suffix in TEXT_SUFFIXES:
+        return _read_text_for_extraction(path, max_chars)
+    return None
 
 
 def _build_json_schema(schema: Any) -> Dict[str, Any]:
@@ -151,8 +213,9 @@ def _extract_one(
     json_schema: Dict[str, Any],
     model: str,
     max_chars: int,
+    max_pages: Optional[int],
 ) -> Optional[Dict[str, Any]]:
-    text = _read_text_for_extraction(path, max_chars)
+    text = _read_file_for_extraction(path, max_chars, max_pages)
     if text is None:
         return None
 
@@ -194,10 +257,14 @@ def extract_metadata_for_files(
     base_url: str,
     model: str = DEFAULT_MODEL,
     max_chars: int = DEFAULT_MAX_CHARS,
+    max_pages: Optional[int] = None,
     max_workers: int = 10,
     openai_client: Any = None,
 ) -> Dict[str, Dict[str, Any]]:
     """Extract per-file metadata from a list of files using an LLM.
+
+    Supports plain-text files (``.txt``, ``.md``, ``.csv``, ``.json``,
+    ``.html``, ``.htm``, ``.xml``, ``.yaml``, ``.yml``, ``.log``) and PDFs.
 
     Args:
         file_paths: Files to extract metadata from.
@@ -210,6 +277,9 @@ def extract_metadata_for_files(
             The OpenAI proxy is reached at ``{base_url}/openai``.
         model: Model id to call. Defaults to ``gpt-4.1-mini``.
         max_chars: Max characters of file text to include in the prompt.
+        max_pages: For PDFs, only read the first N pages. Ignored for
+            plain-text files. Useful when the metadata lives on e.g. a
+            cover page and later pages would waste context.
         max_workers: Parallelism for per-file LLM calls.
         openai_client: Optional pre-configured client (primarily for testing).
             If provided, ``api_key``/``base_url`` are ignored.
@@ -220,6 +290,18 @@ def extract_metadata_for_files(
     """
     if not _schema_fields(schema):
         raise ValueError("Cannot extract metadata: schema has no fields.")
+
+    paths = [Path(p) for p in file_paths]
+
+    has_pdf = any(p.suffix.lower() in PDF_SUFFIXES for p in paths)
+    if has_pdf:
+        try:
+            import pypdf  # noqa: F401  (checked eagerly for a clear error)
+        except ImportError:
+            raise ImportError(
+                "pypdf is required to extract metadata from PDF files. "
+                "Install with: pip install 'lightningrod-ai[extract]' or pip install pypdf"
+            )
 
     if openai_client is None:
         try:
@@ -235,12 +317,13 @@ def extract_metadata_for_files(
         )
 
     json_schema = _build_json_schema(schema)
-    paths = [Path(p) for p in file_paths]
 
     results: Dict[str, Dict[str, Any]] = {}
 
     def _task(path: Path) -> Optional[Dict[str, Any]]:
-        return _extract_one(openai_client, path, schema, json_schema, model, max_chars)
+        return _extract_one(
+            openai_client, path, schema, json_schema, model, max_chars, max_pages
+        )
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = {executor.submit(_task, p): p for p in paths}

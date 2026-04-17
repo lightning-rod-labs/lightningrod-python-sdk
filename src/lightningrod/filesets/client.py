@@ -287,6 +287,7 @@ class FileSetsClient:
         *,
         model: str = DEFAULT_MODEL,
         max_chars: int = DEFAULT_MAX_CHARS,
+        max_pages: Optional[int] = None,
         max_workers: int = 10,
     ) -> Dict[str, Dict[str, Any]]:
         """Extract per-file metadata using an LLM, guided by the FileSet's schema.
@@ -297,13 +298,13 @@ class FileSetsClient:
         shape :meth:`upload_files` expects for its ``metadata`` argument, so
         callers can inspect or edit it before uploading.
 
-        Only plain-text file types are supported in this version
-        (``.txt``, ``.md``, ``.csv``, ``.json``, ``.html``, ``.htm``,
-        ``.xml``, ``.yaml``, ``.yml``, ``.log``). Unsupported files are
-        silently skipped.
+        Supports plain-text files (``.txt``, ``.md``, ``.csv``, ``.json``,
+        ``.html``, ``.htm``, ``.xml``, ``.yaml``, ``.yml``, ``.log``) and
+        PDFs. Unsupported files are silently skipped.
 
         Requires the ``extract`` optional dependency
-        (``pip install 'lightningrod-ai[extract]'``).
+        (``pip install 'lightningrod-ai[extract]'``), which bundles
+        ``openai`` and ``pypdf``.
 
         Args:
             file_set_id: The ID of the FileSet whose metadata schema should
@@ -311,6 +312,9 @@ class FileSetsClient:
             file_paths: Files to extract metadata from.
             model: Model id to call (defaults to ``gpt-4.1-mini``).
             max_chars: Max characters of file text to include in the prompt.
+            max_pages: For PDFs, only read the first N pages (e.g.
+                ``max_pages=1`` for cover-page-only extraction). Ignored
+                for plain-text files.
             max_workers: Parallelism for per-file LLM calls.
 
         Returns:
@@ -338,6 +342,7 @@ class FileSetsClient:
             base_url=base_url,
             model=model,
             max_chars=max_chars,
+            max_pages=max_pages,
             max_workers=max_workers,
         )
 
@@ -350,6 +355,7 @@ class FileSetsClient:
         use_transfer_manager: bool = True,
         show_progress: bool = False,
         auto_extract_metadata: bool = False,
+        extraction_max_pages: Optional[int] = None,
     ) -> UploadResult:
         """Upload files to a FileSet with optional metadata.
 
@@ -380,6 +386,10 @@ class FileSetsClient:
                           for each file based on the FileSet's metadata schema
                           (see :meth:`extract_metadata`). Any values supplied
                           via ``metadata`` take precedence over extracted ones.
+            extraction_max_pages: Only applies when ``auto_extract_metadata=True``.
+                          For PDFs, read only the first N pages during
+                          extraction (e.g. ``extraction_max_pages=1`` for
+                          cover-page-only extraction). Ignored for text files.
 
         Returns:
             UploadResult with counts of succeeded/failed uploads and error messages
@@ -413,7 +423,9 @@ class FileSetsClient:
 
         # Auto-extract metadata if requested; user-supplied values win on conflict.
         if auto_extract_metadata:
-            extracted = self.extract_metadata(file_set_id, paths)
+            extracted = self.extract_metadata(
+                file_set_id, paths, max_pages=extraction_max_pages
+            )
             if metadata:
                 merged: Dict[str, Dict[str, Any]] = {
                     fn: dict(meta) for fn, meta in extracted.items()
@@ -508,6 +520,7 @@ class FileSetsClient:
         use_transfer_manager: bool = True,
         show_progress: bool = False,
         auto_extract_metadata: bool = False,
+        extraction_max_pages: Optional[int] = None,
     ) -> UploadResult:
         """Upload all files from a directory to a FileSet.
 
@@ -525,6 +538,9 @@ class FileSetsClient:
                           for each file based on the FileSet's metadata schema.
                           If ``metadata_fn`` is also provided, its values take
                           precedence over extracted ones.
+            extraction_max_pages: Only applies when ``auto_extract_metadata=True``.
+                          For PDFs, read only the first N pages during
+                          extraction. Ignored for text files.
 
         Returns:
             UploadResult with counts of succeeded/failed uploads and error messages
@@ -583,4 +599,5 @@ class FileSetsClient:
             use_transfer_manager=use_transfer_manager,
             show_progress=show_progress,
             auto_extract_metadata=auto_extract_metadata,
+            extraction_max_pages=extraction_max_pages,
         )
