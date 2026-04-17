@@ -36,8 +36,8 @@ _USE_DEFAULT = object()
 class PrepareStats:
     """Tracks metrics collected during prepare_for_training.
 
-    Fields are grouped by pipeline stage. Invariants:
-      filter_kept  = total - filter_invalid - filter_horizon - filter_context
+    Fields are grouped by pipeline stage.     Invariants:
+      filter_kept  = total - filter_invalid - filter_horizon - filter_context - filter_missing_or_invalid_label
       dedup_kept   = filter_kept - dedup_removed
       split_train_before + split_test_after + split_no_sort_key = dedup_kept (temporal)
       split_train_excluded = split_train_before - split_train_after (inferred; train leakage only)
@@ -52,6 +52,7 @@ class PrepareStats:
     filter_context: int = 0
     filter_missing_resolution_date: int = 0
     filter_missing_prediction_date: int = 0
+    filter_missing_or_invalid_label: int = 0
     filter_kept: int = 0
 
     # ── Stage 2: deduplicate_samples ─────────────────────────────────────────
@@ -212,10 +213,25 @@ def filter_samples(
     max_horizon = params.days_to_resolution_range[1] if params.days_to_resolution_range else None
 
     n_invalid = n_horizon = n_context = n_missing_resolution_date = n_missing_prediction_date = 0
+    n_bad_label = 0
     filtered: list[Sample] = []
     for sample in samples:
         if sample.is_valid is not True:
             n_invalid += 1
+            continue
+
+        if sample.label is None or isinstance(sample.label, Unset):
+            n_bad_label += 1
+            continue
+        try:
+            normalized_at = _normalize_answer_type(sample.label.answer_type)
+            at_obj = _answer_type_from_str(normalized_at)
+            extracted = sample_label(sample, at_obj)
+        except ValueError:
+            n_bad_label += 1
+            continue
+        if extracted is None:
+            n_bad_label += 1
             continue
 
         pred_raw: Any = None
@@ -270,6 +286,7 @@ def filter_samples(
         stats.filter_context = n_context
         stats.filter_missing_resolution_date = n_missing_resolution_date
         stats.filter_missing_prediction_date = n_missing_prediction_date
+        stats.filter_missing_or_invalid_label = n_bad_label
         stats.filter_kept = len(filtered)
 
     return filtered
@@ -293,9 +310,10 @@ def _label_to_boolean(sample: Sample) -> Optional[int]:
     if not sample.label:
         return None
     value = sample.label.label
-    if value.lower() in ["yes", "true", "1"]:
+    s = str(value).strip().lower()
+    if s in ["yes", "true", "1"]:
         return 1
-    elif value.lower() in ["no", "false", "0"]:
+    if s in ["no", "false", "0"]:
         return 0
     return None
 
@@ -308,7 +326,7 @@ def _label_to_text(sample: Sample) -> Optional[str]:
     s = str(value).strip()
     return s or None
 
-def sample_label(sample: Sample, answer_type: AnswerType) -> str:
+def sample_label(sample: Sample, answer_type: AnswerType) -> str | int | float | None:
     """Extract the label value from a sample as numeric (float) or text (str) based on answer type."""
     if isinstance(answer_type, BinaryAnswerType):
         return _label_to_boolean(sample)
@@ -809,6 +827,23 @@ def _build_report(
             ],
         ))
 
+    # Issue: high rate of missing or unusable training labels (>30%)
+    HIGH_MISSING_LABEL_THRESHOLD = 0.30
+    if stats.total > 0 and stats.filter_missing_or_invalid_label / stats.total > HIGH_MISSING_LABEL_THRESHOLD:
+        pct = int(100 * stats.filter_missing_or_invalid_label / stats.total)
+        issues.append(PrepareIssue(
+            message=(
+                f"{stats.filter_missing_or_invalid_label}/{stats.total} samples ({pct}%) were dropped because labels "
+                "were missing or could not be parsed for the declared answer_type."
+            ),
+            tips=[
+                "For binary tasks, use yes/no (or true/false, 1/0). For continuous, use a numeric string. "
+                "For multiple choice or free response, use a non-empty string.",
+                "Ensure every sample has a label and answer_type set consistently with your labeler output.",
+                "Inspect filtered-out samples with dataset.flattened() and compare label strings to answer_type.",
+            ],
+        ))
+
     # Issue: high invalid rate (>30% of samples were invalid)
     HIGH_INVALID_THRESHOLD = 0.30
     if stats.total > 0 and stats.filter_invalid / stats.total > HIGH_INVALID_THRESHOLD:
@@ -895,6 +930,8 @@ def _print_report(report: PrepareReport, verbose: bool) -> None:
             parts.append(part)
         if stats.filter_context:
             parts.append(f"{stats.filter_context} missing context")
+        if stats.filter_missing_or_invalid_label:
+            parts.append(f"{stats.filter_missing_or_invalid_label} missing/bad label")
         print(f"[filter] Dropped {', '.join(parts)} → {stats.filter_kept} remain" if parts else f"[filter] {stats.filter_kept} remain (0 dropped)")
 
         if stats.dedup_removed > 0:
