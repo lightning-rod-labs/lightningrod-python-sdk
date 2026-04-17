@@ -7,7 +7,7 @@ and returns train/test SampleDatasets.
 import random
 from dataclasses import dataclass, field
 from datetime import date, datetime
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
 
 if TYPE_CHECKING:
     from lightningrod.datasets.dataset import SampleDataset
@@ -28,6 +28,8 @@ AnswerType = Union[BinaryAnswerType, ContinuousAnswerType, MultipleChoiceAnswerT
 DaysToResolutionRange = Optional[tuple[Optional[int], Optional[int]]]
 
 TrainingSample = dict[str, Any]
+
+_USE_DEFAULT = object()
 
 
 @dataclass
@@ -184,11 +186,27 @@ def _validate_samples_for_training(samples: list[Sample], max_issues: int = 10) 
 
 def filter_samples(
     samples: list[Sample],
-    params: FilterParams | None = None,
+    params: FilterParams | None = cast(Any, _USE_DEFAULT),
     stats: PrepareStats | None = None,
 ) -> list[Sample]:
-    """Filter samples by validity, horizon, and optional context presence."""
-    params = params or FilterParams()
+    """Filter samples by validity, horizon, and optional context presence.
+
+    Omit ``params`` to use :class:`FilterParams` defaults. Pass ``None`` explicitly to
+    skip filtering: all samples are returned unchanged and filter stats (when ``stats``
+    is provided) record no drops and ``filter_kept`` equals the input length.
+    """
+    if params is _USE_DEFAULT:
+        params = FilterParams()
+    elif params is None:
+        if stats is not None:
+            stats.filter_invalid = 0
+            stats.filter_horizon = 0
+            stats.filter_context = 0
+            stats.filter_missing_resolution_date = 0
+            stats.filter_missing_prediction_date = 0
+            stats.filter_kept = len(samples)
+        return list(samples)
+
     _validate_days_to_resolution_range(params.days_to_resolution_range)
     min_horizon = params.days_to_resolution_range[0] if params.days_to_resolution_range else None
     max_horizon = params.days_to_resolution_range[1] if params.days_to_resolution_range else None
@@ -434,11 +452,24 @@ def _default_dedup_key(sample: Sample) -> tuple[Any, ...]:
 
 def deduplicate_samples(
     samples: list[Sample],
-    params: DedupParams | None = None,
+    params: DedupParams | None = cast(Any, _USE_DEFAULT),
     stats: PrepareStats | None = None,
 ) -> list[Sample]:
-    """Remove duplicate samples by (question_text, resolution_date) or custom key."""
-    params = params or DedupParams()
+    """Remove duplicate samples by (question_text, resolution_date) or custom key.
+
+    Omit ``params`` to use :class:`DedupParams` defaults. Pass ``None`` explicitly to skip
+    deduplication: samples are returned unchanged and dedup stats (when ``stats`` is
+    provided) record no removals.
+    """
+    if params is _USE_DEFAULT:
+        params = DedupParams()
+    elif params is None:
+        if stats is not None:
+            stats.dedup_removed = 0
+            stats.dedup_kept = len(samples)
+            stats.dedup_top_collisions = []
+        return list(samples)
+
     key_fn_local: Callable[[Sample], tuple[Any, ...]] = params.key_fn or _default_dedup_key
     seen: set[tuple[Any, ...]] = set()
     key_counts: dict[tuple[Any, ...], int] = {}
@@ -679,22 +710,33 @@ def _render_context(context: list[Union[NewsContext, RAGContext]]) -> str:
     return "\n\n".join(rendered_sections)
 
 
-def _build_report(stats: PrepareStats, split: SplitParams, filter: FilterParams) -> PrepareReport:
+def _build_report(
+    stats: PrepareStats,
+    split: SplitParams | None,
+    filter: FilterParams | None,
+) -> PrepareReport:
     """Build a structured PrepareReport from pipeline stats and params. Pure — no side effects."""
     issues: list[PrepareIssue] = []
     split_train_excluded = stats.split_train_before - stats.split_train_after
 
     # Issue: majority of train samples leaked into test period
     majority_train_leaked = (
-        split.filter_leaky_train
+        split is not None
+        and split.filter_leaky_train
         and split.strategy == "temporal"
         and stats.split_train_before > 0
         and split_train_excluded > stats.split_train_before // 2
     )
     if majority_train_leaked:
+        assert split is not None
         pct = int(100 * split_train_excluded / stats.split_train_before)
         tips: list[str] = []
-        max_horizon = filter.days_to_resolution_range[1] if filter.days_to_resolution_range else None
+        filter_for_tips = filter or FilterParams()
+        max_horizon = (
+            filter_for_tips.days_to_resolution_range[1]
+            if filter_for_tips.days_to_resolution_range
+            else None
+        )
         if max_horizon is not None:
             tips.append(
                 f"Extend the seed generator date range to start earlier — the range should span at least "
@@ -802,7 +844,11 @@ def _build_report(stats: PrepareStats, split: SplitParams, filter: FilterParams)
 
     # Issue: high horizon filter rate (>50% filtered out by horizon)
     HIGH_HORIZON_THRESHOLD = 0.50
-    if stats.total > 0 and stats.filter_horizon / stats.total > HIGH_HORIZON_THRESHOLD:
+    if (
+        filter is not None
+        and stats.total > 0
+        and stats.filter_horizon / stats.total > HIGH_HORIZON_THRESHOLD
+    ):
         pct = int(100 * stats.filter_horizon / stats.total)
         horizon_desc = ""
         if filter.days_to_resolution_range:
@@ -878,9 +924,9 @@ def _print_report(report: PrepareReport, verbose: bool) -> None:
 def prepare_for_training(
     dataset: "SampleDataset",
     *,
-    filter: FilterParams | None = None,
-    dedup: DedupParams | None = None,
-    split: SplitParams | None = None,
+    filter: FilterParams | None = cast(Any, _USE_DEFAULT),
+    dedup: DedupParams | None = cast(Any, _USE_DEFAULT),
+    split: SplitParams | None = cast(Any, _USE_DEFAULT),
     verbose: bool = True,
 ) -> tuple["SampleDataset", "SampleDataset"]:
     """Prepare a dataset for model training: filter, deduplicate, split into train/test.
@@ -892,26 +938,48 @@ def prepare_for_training(
     Args:
         dataset: SampleDataset to prepare (samples are fetched via dataset.samples()).
         filter: Controls validity filtering and horizon range. See :class:`FilterParams`.
+            Omit to use defaults; pass ``None`` to skip filtering (keep all samples).
         dedup: Controls deduplication key. See :class:`DedupParams`.
+            Omit to use defaults; pass ``None`` to skip deduplication.
         split: Controls train/test split strategy, size, and leakage filtering. See :class:`SplitParams`.
+            Omit to use defaults; pass ``None`` to skip splitting (all samples in train, empty test).
         verbose: When True, print step-by-step stats.
 
     Returns:
         (train_dataset, test_dataset): SampleDatasets ready for training/eval.
     """
-    filter = filter or FilterParams()
-    dedup = dedup or DedupParams()
-    split = split or SplitParams()
+    if filter is _USE_DEFAULT:
+        filter_params: FilterParams | None = FilterParams()
+    else:
+        filter_params = filter
+
+    if dedup is _USE_DEFAULT:
+        dedup_params: DedupParams | None = DedupParams()
+    else:
+        dedup_params = dedup
+
+    if split is _USE_DEFAULT:
+        split_params: SplitParams | None = SplitParams()
+    else:
+        split_params = split
 
     samples = dataset.samples()
     _validate_samples_for_training(samples)
     stats = PrepareStats(total=len(samples))
 
-    filtered = filter_samples(samples, filter, stats=stats)
-    deduped = deduplicate_samples(filtered, dedup, stats=stats)
-    train_ids, test_ids = train_test_split(deduped, split, stats=stats)
+    filtered = filter_samples(samples, filter_params, stats=stats)
+    deduped = deduplicate_samples(filtered, dedup_params, stats=stats)
 
-    report = _build_report(stats, split=split, filter=filter)
+    if split_params is None:
+        stats.split_train_before = len(deduped)
+        stats.split_train_after = len(deduped)
+        stats.split_test_after = 0
+        train_ids = [s.id for s in deduped]
+        test_ids = []
+    else:
+        train_ids, test_ids = train_test_split(deduped, split_params, stats=stats)
+
+    report = _build_report(stats, split=split_params, filter=filter_params)
     from lightningrod._display import _is_notebook, display_prepare_report
     if _is_notebook():
         display_prepare_report(report, verbose=verbose)

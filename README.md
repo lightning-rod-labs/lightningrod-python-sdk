@@ -3,7 +3,7 @@
   <img src="https://github.com/lightning-rod-labs/lightningrod-python-sdk/blob/main/banner.png?raw=true" alt="Lightning Rod Labs" />
 </div>
 
-# Lightning Rod Python SDK [![Beta](https://img.shields.io/badge/beta-0.1.21-orange)](https://pypi.org/project/lightningrod-ai/0.1.21/)
+# Lightning Rod Python SDK [![Beta](https://img.shields.io/badge/beta-0.1.24-orange)](https://pypi.org/project/lightningrod-ai/0.1.24/)
 
 The Lightning Rod SDK provides a simple Python API for generating custom forecasting datasets to train your LLMs. Transform news articles, documents, and other real-world data into high-quality training samples automatically.
 
@@ -79,47 +79,58 @@ See the [API docs](https://docs.lightningrod.ai/rest-api#post-openai-chat-comple
 
 ## ✨ Examples
 
-We have some example notebooks to help you get started! If you have trouble using the SDK, please submit an issue on Github.
+We have example notebooks to help you get started. If you have trouble using the SDK, please submit an issue on GitHub.
+
+### Quick Start
+
+| Example Name | Path | Google Colab Link |
+| ------------ | ---- | ----------------- |
+| Quick Start | `notebooks/00_quickstart.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/00_quickstart.ipynb) |
 
 ### Getting Started
 
-
-| Example Name       | Path                                                        | Google Colab Link                                                                                                                                                        |
-| ------------------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Quick Start        | `notebooks/00_quickstart.ipynb`                             | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/00_quickstart.ipynb)                             |
-| News Datasource    | `notebooks/getting_started/01_news_datasource.ipynb`        | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/01_news_datasource.ipynb)        |
-| Custom Documents   | `notebooks/getting_started/02_custom_documents_datasource.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/02_custom_documents_datasource.ipynb) |
-| BigQuery Datasource | `notebooks/getting_started/03_bigquery_datasource.ipynb`   | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/03_bigquery_datasource.ipynb)    |
-| Answer Types       | `notebooks/getting_started/04_answer_types.ipynb`           | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/04_answer_types.ipynb)           |
-| Fine Tuning       | `notebooks/getting_started/05_fine_tuning.ipynb`           | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/05_fine_tuning.ipynb)           |
-
-### Evaluation
-
-
-| Example Name           | Path                                                        | Google Colab Link                                                                                                                                                        |
-| ---------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Foresight-v3 Model     | `notebooks/evaluation/01_foresight_model.ipynb`             | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/01_foresight_model.ipynb)             |
-| Model Consensus        | `notebooks/evaluation/02_model_consensus.ipynb`             | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/02_model_consensus.ipynb)             |
-| Polymarket Backtesting | `notebooks/evaluation/03_polymarket_backtesting.ipynb`      | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/03_polymarket_backtesting.ipynb)      |
-| Document Classification | `notebooks/evaluation/04_document_classification.ipynb`    | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/04_document_classification.ipynb)     |
-
-### Fine Tuning
-
-
-| Example Name       | Path                                                   | Google Colab Link                                                                                                                                                   |
-| ------------------ | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Golf Forecasting   | `notebooks/fine_tuning/01_golf_forecasting.ipynb`      | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/fine_tuning/01_golf_forecasting.ipynb)      |
-| Trump Forecasting  | `notebooks/fine_tuning/02_trump_forecasting.ipynb`     | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/fine_tuning/02_trump_forecasting.ipynb)     |
-| Survival LLM      | `notebooks/fine_tuning/03_survival_llm.ipynb`          | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/fine_tuning/03_survival_llm.ipynb)          |
+| Example Name | Path | Google Colab Link |
+| ------------ | ---- | ----------------- |
+| News Datasource | `notebooks/getting_started/01_news_datasource.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/01_news_datasource.ipynb) |
+| Custom Documents | `notebooks/getting_started/02_custom_documents_datasource.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/02_custom_documents_datasource.ipynb) |
+| BigQuery Datasource | `notebooks/getting_started/03_bigquery_datasource.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/03_bigquery_datasource.ipynb) |
+| Answer Types | `notebooks/getting_started/04_answer_types.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/04_answer_types.ipynb) |
+| GRPO Training | `notebooks/getting_started/05_grpo_training.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/05_grpo_training.ipynb) |
+| SFT Training | `notebooks/getting_started/06_sft_training.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/06_sft_training.ipynb) |
 
 ### Custom Filesets
 
+| Example Name | Path | Google Colab Link |
+| ------------ | ---- | ----------------- |
+| Create Fileset | `notebooks/custom_filesets/01_create_fileset.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/custom_filesets/01_create_fileset.ipynb) |
+| Basic QA Generation | `notebooks/custom_filesets/02_basic_qa_generation.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/custom_filesets/02_basic_qa_generation.ipynb) |
+| Advanced Features | `notebooks/custom_filesets/03_advanced_features.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/custom_filesets/03_advanced_features.ipynb) |
+| Beige Book (Document Labeling) | `notebooks/custom_filesets/04_beige_book.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/custom_filesets/04_beige_book.ipynb) |
 
-| Example Name       | Path                                                        | Google Colab Link                                                                                                                                                        |
-| ------------------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Create Fileset     | `notebooks/custom_filesets/01_create_fileset.ipynb`         | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/custom_filesets/01_create_fileset.ipynb)         |
-| Basic QA Generation | `notebooks/custom_filesets/02_basic_qa_generation.ipynb`   | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/custom_filesets/02_basic_qa_generation.ipynb)    |
-| Advanced Features  | `notebooks/custom_filesets/03_advanced_features.ipynb`      | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/custom_filesets/03_advanced_features.ipynb)      |
+### Answer Types
 
+| Example Name | Path | Google Colab Link |
+| ------------ | ---- | ----------------- |
+| Binary | `notebooks/answer_types/binary.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/answer_types/binary.ipynb) |
+| Continuous | `notebooks/answer_types/continuous.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/answer_types/continuous.ipynb) |
+| Multiple Choice | `notebooks/answer_types/multi-choice.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/answer_types/multi-choice.ipynb) |
+
+### Evaluation
+
+| Example Name | Path | Google Colab Link |
+| ------------ | ---- | ----------------- |
+| Foresight-v3 Model | `notebooks/evaluation/01_foresight_model.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/01_foresight_model.ipynb) |
+| Model Consensus | `notebooks/evaluation/02_model_consensus.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/02_model_consensus.ipynb) |
+| Polymarket Backtesting | `notebooks/evaluation/03_polymarket_backtesting.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/03_polymarket_backtesting.ipynb) |
+| Document Classification | `notebooks/evaluation/04_document_classification.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/04_document_classification.ipynb) |
+
+### Fine Tuning
+
+| Example Name | Path | Google Colab Link |
+| ------------ | ---- | ----------------- |
+| Golf Forecasting | `notebooks/fine_tuning/01_golf_forecasting.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/fine_tuning/01_golf_forecasting.ipynb) |
+| Trump Forecasting | `notebooks/fine_tuning/02_trump_forecasting.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/fine_tuning/02_trump_forecasting.ipynb) |
+| Survival LLM | `notebooks/fine_tuning/03_survival_llm.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/fine_tuning/03_survival_llm.ipynb) |
+| Military Strikes Forecasting | `notebooks/fine_tuning/04_military_strikes.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/fine_tuning/04_military_strikes.ipynb) |
 
 For full documentation, see [docs.lightningrod.ai](https://docs.lightningrod.ai/). For the SDK API reference in this repo, see [API.md](API.md).

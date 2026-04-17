@@ -4,11 +4,12 @@ from lightningrod._display import _is_notebook, display_error, display_warning, 
 from lightningrod._generated.models import (
     FileSetDocumentContextGenerator,
     FileSetDocumentLabeler,
-    FileSetQuerySeedGenerator,
     FileSetSeedGenerator,
     ForwardLookingQuestionGenerator,
     GdeltSeedGenerator,
     NewsSeedGenerator,
+    QdrantContextGenerator,
+    QdrantRAGLabeler,
     QuestionAndLabelGenerator,
     QuestionGenerator,
     QuestionPipeline,
@@ -42,7 +43,7 @@ from lightningrod._generated.types import UNSET, Unset
 from lightningrod._errors import handle_response_error
 from lightningrod.datasets.client import DatasetSamplesClient
 
-TransformConfig = Union[FileSetDocumentContextGenerator, FileSetDocumentLabeler, FileSetQuerySeedGenerator, FileSetSeedGenerator, ForwardLookingQuestionGenerator, GdeltSeedGenerator, NewsSeedGenerator, QuestionAndLabelGenerator, QuestionGenerator, QuestionPipeline, QuestionRenderer, WebSearchLabeler, WebSearchContextGenerator]
+TransformConfig = Union[FileSetDocumentContextGenerator, FileSetDocumentLabeler, FileSetSeedGenerator, ForwardLookingQuestionGenerator, GdeltSeedGenerator, NewsSeedGenerator, QuestionAndLabelGenerator, QuestionGenerator, QuestionPipeline, QuestionRenderer, WebSearchLabeler, WebSearchContextGenerator, QdrantContextGenerator, QdrantRAGLabeler]
 
 
 def _fetch_error_details_from_samples(
