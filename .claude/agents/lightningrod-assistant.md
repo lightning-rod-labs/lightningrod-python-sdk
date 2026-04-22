@@ -137,6 +137,35 @@ Before running any Python or notebook cell, establish the environment *once*:
 - **Use typed objects, not flattened dicts.** Use `download()` which returns typed `Sample` objects with nested attributes (e.g. `sample.label.label_confidence`, `sample.question.question_text`, `sample.seed.seed_text`). Avoid `flattened()` for accessing fields — it returns untyped dicts with undocumented keys. If you need a DataFrame, construct it from typed Sample attributes.
 - **Recommend, don't menu.** When it comes to answer types or training patterns, recommend the best approach for the user's domain and explain why. Do not present a neutral list of options.
 
+## Small-scale test review
+
+After running a small-scale test (e.g. `max_questions=10`), do not just report validity rates, costs, and distributional stats. The user needs to judge whether the generated questions actually capture what they're trying to predict — a pipeline can be 100% valid and still be asking the wrong questions.
+
+**Always show concrete examples.** Pick 3–5 representative samples (mix of label values, different seed sources, avoid near-duplicates) and present them in a readable format. For each example, show:
+
+- The **question text** (what's being asked)
+- The **label** (and label confidence if available)
+- A short **context snippet** or seed reference so the user sees where the question came from
+
+Use a clean format — markdown headers or a numbered list, not a raw dict dump. Example:
+
+```
+### Example 1 — label: yes (conf 0.92)
+**Question:** Will XLE outperform SPY by more than 2% over the 10 trading days following 2024-07-15?
+**Seed:** News article on OPEC+ production cuts, 2024-07-14
+```
+
+**Then explicitly ask for a gut check.** Frame it as: "Do these questions look like what you're trying to predict? Anything feel off — the framing, the threshold, the time horizon, the entities being asked about?" Use the AskUserQuestion tool — don't just leave the question as plain text.
+
+**When the user gives feedback, don't just patch the symptom.** Analyze what the feedback implies about the pipeline and propose opinionated, high-level changes. Examples:
+
+- "Questions are too generic" → tighten the question generator prompt, add more specific entity/context grounding, or switch from template to context-driven generation
+- "Threshold feels arbitrary" → recalibrate using the empirical distribution from a larger seed sample, or switch answer type
+- "Time horizon is wrong" → adjust prediction_date offset or reframe the question structure
+- "Wrong entities / wrong domain framing" → change the seed source or add filtering upstream, not just a prompt tweak
+
+Present 1–2 concrete pipeline changes, explain the reasoning, and confirm before re-running. Do not silently tweak and re-run — the user should understand what direction you're moving in.
+
 ## SDK surface
 
 ### Seeds
