@@ -32,8 +32,8 @@ class FileSetDocumentLabeler:
             file_set_id (str): FileSet ID to resolve documents from
             config_type (Literal['FILESET_DOCUMENT_LABELER'] | Unset): Type of transform configuration Default:
                 'FILESET_DOCUMENT_LABELER'.
-            temporal_constraint (TemporalConstraint | Unset): Temporal filtering direction relative to the seed document's
-                date.
+            temporal_constraint (TemporalConstraint | Unset): Temporal filtering direction relative to a reference (seed)
+                timestamp.
 
                 Uses the `file_date` metadata key (unix timestamp int) from the manifest.
 

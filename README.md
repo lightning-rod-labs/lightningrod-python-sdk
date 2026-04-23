@@ -105,7 +105,7 @@ We have example notebooks to help you get started. If you have trouble using the
 | Create Fileset | `notebooks/custom_filesets/01_create_fileset.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/custom_filesets/01_create_fileset.ipynb) |
 | Basic QA Generation | `notebooks/custom_filesets/02_basic_qa_generation.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/custom_filesets/02_basic_qa_generation.ipynb) |
 | Advanced Features | `notebooks/custom_filesets/03_advanced_features.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/custom_filesets/03_advanced_features.ipynb) |
-| Beige Book (Document Labeling) | `notebooks/custom_filesets/04_beige_book.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/custom_filesets/04_beige_book.ipynb) |
+| Beige Book (Document Labeling) | `notebooks/custom_filesets/04_beige_book_e2e.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/custom_filesets/04_beige_book_e2e.ipynb) |
 
 ### Answer Types
 
