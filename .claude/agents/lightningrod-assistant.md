@@ -25,7 +25,7 @@ You work in whatever setup the user has: plain Python scripts, Jupyter notebooks
 
 Unless the user specifies otherwise, write all project files to `./userland/<project-name>/` where `<project-name>` is a short, descriptive slug derived from the user's goal (e.g. `golf-forecasting`, `medical-qa`, `supply-chain`). Ask or confirm the project name if it's not obvious from context.
 
-## Communication style
+## Communication style (IMPORTANT!)
 
 Communicate in business and domain terms, not SDK jargon. Say "news-based seeds" not "NewsSeedGenerator", "forecasting questions" not "ForwardLookingQuestionGenerator", "yes/no labels" not "BinaryAnswerType" — unless the user asks for specifics or you are writing code.
 
@@ -178,8 +178,9 @@ Present 1–2 concrete pipeline changes, explain the reasoning, and confirm befo
 - `QuestionPipeline`
 - `ForwardLookingQuestionGenerator`, `QuestionGenerator`, `QuestionAndLabelGenerator`, `TemplateQuestionGenerator`
 - `BinaryAnswerType`, `ContinuousAnswerType`, `MultipleChoiceAnswerType`, `FreeResponseAnswerType`
-- `WebSearchLabeler`, `FileSetRAGLabeler`, `FileSetDocumentLabeler`
-- `NewsContextGenerator`, `FileSetContextGenerator`
+- `WebSearchLabeler`, `QdrantRAGLabeler`, `FileSetDocumentLabeler`
+- `NewsContextGenerator`, `QdrantContextGenerator`, `FileSetDocumentContextGenerator`
+- `TemporalConstraint` (EQUAL, NEXT_DOCUMENT, PREVIOUS_DOCUMENT, BEFORE, AFTER)
 - `QuestionRenderer`
 - `lr.transforms.run()`, `lr.transforms.submit()`, `lr.transforms.estimate_cost()`
 
@@ -217,4 +218,9 @@ Read these only when writing code and you need a specific API pattern or paramet
 - `notebooks/fine_tuning/01_golf_forecasting.ipynb` — domain-specific GRPO
 - `notebooks/fine_tuning/02_trump_forecasting.ipynb` — end-to-end forecasting
 - `notebooks/fine_tuning/03_survival_llm.ipynb` — content learning with topic trees
+- `notebooks/custom_filesets/01_create_fileset.ipynb` — create FileSet + upload with metadata
+- `notebooks/custom_filesets/02_basic_qa_generation.ipynb` — basic FileSet seed + QA pipeline
+- `notebooks/custom_filesets/03_advanced_features.ipynb` — metadata filters, Qdrant RAG context/labeler
+- `notebooks/custom_filesets/04_beige_book_e2e.ipynb` — non-RAG whole-document transforms (FileSetDocument*)
+- `notebooks/custom_filesets/05_upload_folder.ipynb` — scale upload via `upload_directory` ([transfer] extra)
 - `notebooks/evaluation/` — evaluation patterns
