@@ -356,6 +356,9 @@ class FileSetsClient:
         show_progress: bool = False,
         auto_extract_metadata: bool = False,
         extraction_max_pages: Optional[int] = None,
+        extraction_model: str = DEFAULT_MODEL,
+        extraction_max_chars: int = DEFAULT_MAX_CHARS,
+        extraction_max_workers: Optional[int] = None,
     ) -> UploadResult:
         """Upload files to a FileSet with optional metadata.
 
@@ -390,6 +393,13 @@ class FileSetsClient:
                           For PDFs, read only the first N pages during
                           extraction (e.g. ``extraction_max_pages=1`` for
                           cover-page-only extraction). Ignored for text files.
+            extraction_model: Only applies when ``auto_extract_metadata=True``.
+                          Model id to use for extraction.
+            extraction_max_chars: Only applies when ``auto_extract_metadata=True``.
+                          Max characters of file text to include in each prompt.
+            extraction_max_workers: Only applies when ``auto_extract_metadata=True``.
+                          Parallelism for per-file extraction calls. Defaults
+                          to ``max_workers``.
 
         Returns:
             UploadResult with counts of succeeded/failed uploads and error messages
@@ -424,7 +434,16 @@ class FileSetsClient:
         # Auto-extract metadata if requested; user-supplied values win on conflict.
         if auto_extract_metadata:
             extracted = self.extract_metadata(
-                file_set_id, paths, max_pages=extraction_max_pages
+                file_set_id,
+                paths,
+                model=extraction_model,
+                max_chars=extraction_max_chars,
+                max_pages=extraction_max_pages,
+                max_workers=(
+                    max_workers
+                    if extraction_max_workers is None
+                    else extraction_max_workers
+                ),
             )
             if metadata:
                 merged: Dict[str, Dict[str, Any]] = {
@@ -521,6 +540,9 @@ class FileSetsClient:
         show_progress: bool = False,
         auto_extract_metadata: bool = False,
         extraction_max_pages: Optional[int] = None,
+        extraction_model: str = DEFAULT_MODEL,
+        extraction_max_chars: int = DEFAULT_MAX_CHARS,
+        extraction_max_workers: Optional[int] = None,
     ) -> UploadResult:
         """Upload all files from a directory to a FileSet.
 
@@ -541,6 +563,13 @@ class FileSetsClient:
             extraction_max_pages: Only applies when ``auto_extract_metadata=True``.
                           For PDFs, read only the first N pages during
                           extraction. Ignored for text files.
+            extraction_model: Only applies when ``auto_extract_metadata=True``.
+                          Model id to use for extraction.
+            extraction_max_chars: Only applies when ``auto_extract_metadata=True``.
+                          Max characters of file text to include in each prompt.
+            extraction_max_workers: Only applies when ``auto_extract_metadata=True``.
+                          Parallelism for per-file extraction calls. Defaults
+                          to ``max_workers``.
 
         Returns:
             UploadResult with counts of succeeded/failed uploads and error messages
@@ -600,4 +629,7 @@ class FileSetsClient:
             show_progress=show_progress,
             auto_extract_metadata=auto_extract_metadata,
             extraction_max_pages=extraction_max_pages,
+            extraction_model=extraction_model,
+            extraction_max_chars=extraction_max_chars,
+            extraction_max_workers=extraction_max_workers,
         )

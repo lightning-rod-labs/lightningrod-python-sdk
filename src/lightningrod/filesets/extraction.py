@@ -18,8 +18,16 @@ from lightningrod._generated.types import Unset
 
 
 TEXT_SUFFIXES = {
-    ".txt", ".md", ".csv", ".json", ".html", ".htm",
-    ".xml", ".yaml", ".yml", ".log",
+    ".txt",
+    ".md",
+    ".csv",
+    ".json",
+    ".html",
+    ".htm",
+    ".xml",
+    ".yaml",
+    ".yml",
+    ".log",
 }
 PDF_SUFFIXES = {".pdf"}
 
@@ -37,6 +45,45 @@ def _schema_fields(schema: Any) -> List[Any]:
     if not _is_set(fields):
         return []
     return list(fields)
+
+
+def _validate_extraction_options(
+    max_chars: int,
+    max_pages: Optional[int],
+    max_workers: int,
+) -> None:
+    if max_chars <= 0:
+        raise ValueError("max_chars must be greater than 0.")
+    if max_pages is not None and max_pages <= 0:
+        raise ValueError("max_pages must be greater than 0 when provided.")
+    if max_workers <= 0:
+        raise ValueError("max_workers must be greater than 0.")
+
+
+def _metadata_key(path: Path) -> str:
+    return path.name
+
+
+def _is_supported_path(path: Path) -> bool:
+    suffix = path.suffix.lower()
+    return suffix in TEXT_SUFFIXES or suffix in PDF_SUFFIXES
+
+
+def _validate_unique_metadata_keys(paths: List[Path]) -> None:
+    seen: Dict[str, Path] = {}
+    duplicates: List[str] = []
+    for path in paths:
+        key = _metadata_key(path)
+        if key in seen:
+            duplicates.append(key)
+        else:
+            seen[key] = path
+    if duplicates:
+        names = ", ".join(sorted(set(duplicates)))
+        raise ValueError(
+            "Cannot extract metadata for files with duplicate names: "
+            f"{names}. Metadata is keyed by filename, so each file name must be unique."
+        )
 
 
 def _read_text_for_extraction(path: Path, max_chars: int) -> Optional[str]:
@@ -134,7 +181,7 @@ def _build_json_schema(schema: Any) -> Dict[str, Any]:
             description_parts.append(str(field.description))
         if _is_set(getattr(field, "extraction_hint", None)):
             description_parts.append(f"Extraction hint: {field.extraction_hint}")
-        prop: Dict[str, Any] = {"type": json_type}
+        prop: Dict[str, Any] = {"type": [json_type, "null"]}
         if description_parts:
             prop["description"] = " ".join(description_parts)
         properties[field.name] = prop
@@ -159,7 +206,7 @@ def _coerce_value(value: Any, ftype: MetadataFieldType) -> Any:
         return None
     if ftype == MetadataFieldType.NUMBER:
         if isinstance(value, bool):
-            return int(value)
+            return None
         if isinstance(value, (int, float)):
             return value
         try:
@@ -253,8 +300,8 @@ def extract_metadata_for_files(
     file_paths: List[Union[str, Path]],
     schema: Any,
     *,
-    api_key: str,
-    base_url: str,
+    api_key: Optional[str] = None,
+    base_url: Optional[str] = None,
     model: str = DEFAULT_MODEL,
     max_chars: int = DEFAULT_MAX_CHARS,
     max_pages: Optional[int] = None,
@@ -271,10 +318,12 @@ def extract_metadata_for_files(
         schema: A ``FileSetMetadataSchema`` or ``FileSetMetadataSchemaInput``
             describing the fields to populate. Each field's ``extraction_hint``
             (if set) is passed to the model.
-        api_key: LightningRod API key. Used to authenticate against the
-            LR-hosted OpenAI-compatible endpoint.
+        api_key: LightningRod API key. Required unless ``openai_client`` is
+            provided. Used to authenticate against the LR-hosted
+            OpenAI-compatible endpoint.
         base_url: LightningRod API base URL (e.g. the SDK client's ``base_url``).
-            The OpenAI proxy is reached at ``{base_url}/openai``.
+            Required unless ``openai_client`` is provided. The OpenAI proxy is
+            reached at ``{base_url}/openai``.
         model: Model id to call. Defaults to ``gpt-4.1-mini``.
         max_chars: Max characters of file text to include in the prompt.
         max_pages: For PDFs, only read the first N pages. Ignored for
@@ -288,12 +337,20 @@ def extract_metadata_for_files(
         Mapping of ``filename`` -> extracted metadata dict. Files that failed
         extraction or whose type is not supported are omitted.
     """
+    _validate_extraction_options(max_chars, max_pages, max_workers)
+
     if not _schema_fields(schema):
         raise ValueError("Cannot extract metadata: schema has no fields.")
 
     paths = [Path(p) for p in file_paths]
+    if not paths:
+        return {}
+    supported_paths = [path for path in paths if _is_supported_path(path)]
+    if not supported_paths:
+        return {}
+    _validate_unique_metadata_keys(supported_paths)
 
-    has_pdf = any(p.suffix.lower() in PDF_SUFFIXES for p in paths)
+    has_pdf = any(p.suffix.lower() in PDF_SUFFIXES for p in supported_paths)
     if has_pdf:
         try:
             import pypdf  # noqa: F401  (checked eagerly for a clear error)
@@ -304,6 +361,10 @@ def extract_metadata_for_files(
             )
 
     if openai_client is None:
+        if not api_key:
+            raise ValueError("api_key is required when openai_client is not provided.")
+        if not base_url:
+            raise ValueError("base_url is required when openai_client is not provided.")
         try:
             from openai import OpenAI
         except ImportError:
@@ -326,7 +387,7 @@ def extract_metadata_for_files(
         )
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = {executor.submit(_task, p): p for p in paths}
+        futures = {executor.submit(_task, p): p for p in supported_paths}
         for future in as_completed(futures):
             path = futures[future]
             try:
@@ -334,6 +395,6 @@ def extract_metadata_for_files(
             except Exception:
                 continue
             if extracted:
-                results[path.name] = extracted
+                results[_metadata_key(path)] = extracted
 
     return results

@@ -52,7 +52,12 @@ def _make_openai_stub(responses_by_filename: Dict[str, Any]) -> MagicMock:
     (a dict to serialize as JSON, or an Exception to raise)."""
     client = MagicMock()
 
-    def _create(*, model: str, messages: List[Dict[str, str]], response_format: Dict[str, Any]):
+    def _create(
+        *,
+        model: str,
+        messages: List[Dict[str, str]],
+        response_format: Dict[str, Any],
+    ):
         user_content = messages[-1]["content"]
         for fn, payload in responses_by_filename.items():
             if f"file named '{fn}'" in user_content:
@@ -77,8 +82,8 @@ def test_build_json_schema_translates_fields() -> None:
     assert js["required"] == ["ticker"]  # only required=True field listed
 
     props = js["properties"]
-    assert props["ticker"]["type"] == "string"
-    assert props["year"]["type"] == "number"
+    assert props["ticker"]["type"] == ["string", "null"]
+    assert props["year"]["type"] == ["number", "null"]
     assert "stock ticker symbol" in props["ticker"]["description"]
     assert "Company ticker" in props["ticker"]["description"]
     assert "fiscal year" in props["year"]["description"]
@@ -88,6 +93,7 @@ def test_coerce_value_handles_number_strings() -> None:
     assert _coerce_value("2024", MetadataFieldType.NUMBER) == 2024
     assert _coerce_value("3.14", MetadataFieldType.NUMBER) == pytest.approx(3.14)
     assert _coerce_value(2024, MetadataFieldType.NUMBER) == 2024
+    assert _coerce_value(True, MetadataFieldType.NUMBER) is None
     assert _coerce_value("abc", MetadataFieldType.NUMBER) is None
     assert _coerce_value(42, MetadataFieldType.STRING) == "42"
 
@@ -145,6 +151,21 @@ def test_extract_metadata_for_files_returns_typed_dict(tmp_path: Path) -> None:
     }
 
 
+def test_extract_metadata_accepts_injected_client_without_auth_details(tmp_path: Path) -> None:
+    f = tmp_path / "a.txt"
+    f.write_text("Apple Q1 2024 report", encoding="utf-8")
+
+    client = _make_openai_stub({"a.txt": {"ticker": "AAPL", "year": "2024"}})
+
+    result = extract_metadata_for_files(
+        file_paths=[f],
+        schema=_schema(),
+        openai_client=client,
+    )
+
+    assert result == {"a.txt": {"ticker": "AAPL", "year": 2024}}
+
+
 def test_extract_metadata_skips_unsupported_files(tmp_path: Path) -> None:
     txt = tmp_path / "good.txt"
     unknown = tmp_path / "skip.xyz"
@@ -166,6 +187,18 @@ def test_extract_metadata_skips_unsupported_files(tmp_path: Path) -> None:
     assert set(result.keys()) == {"good.txt"}
     # The unknown file should never have triggered an LLM call.
     assert client.chat.completions.create.call_count == 1
+
+
+def test_extract_metadata_skips_unsupported_files_without_client(tmp_path: Path) -> None:
+    unknown = tmp_path / "skip.xyz"
+    unknown.write_text("opaque", encoding="utf-8")
+
+    result = extract_metadata_for_files(
+        file_paths=[unknown],
+        schema=_schema(),
+    )
+
+    assert result == {}
 
 
 def test_extract_metadata_isolates_per_file_failures(tmp_path: Path) -> None:
@@ -202,7 +235,57 @@ def test_extract_metadata_raises_for_empty_schema() -> None:
         )
 
 
-def _install_fake_pypdf(monkeypatch: pytest.MonkeyPatch, pages_by_path: Dict[str, List[str]]) -> None:
+def test_extract_metadata_validates_options(tmp_path: Path) -> None:
+    f = tmp_path / "a.txt"
+    f.write_text("content", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="max_chars"):
+        extract_metadata_for_files(
+            file_paths=[f],
+            schema=_schema(),
+            max_chars=0,
+            openai_client=MagicMock(),
+        )
+
+    with pytest.raises(ValueError, match="max_pages"):
+        extract_metadata_for_files(
+            file_paths=[f],
+            schema=_schema(),
+            max_pages=0,
+            openai_client=MagicMock(),
+        )
+
+    with pytest.raises(ValueError, match="max_workers"):
+        extract_metadata_for_files(
+            file_paths=[f],
+            schema=_schema(),
+            max_workers=0,
+            openai_client=MagicMock(),
+        )
+
+
+def test_extract_metadata_rejects_duplicate_filenames(tmp_path: Path) -> None:
+    one = tmp_path / "one"
+    two = tmp_path / "two"
+    one.mkdir()
+    two.mkdir()
+    a = one / "report.txt"
+    b = two / "report.txt"
+    a.write_text("content a", encoding="utf-8")
+    b.write_text("content b", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="duplicate names"):
+        extract_metadata_for_files(
+            file_paths=[a, b],
+            schema=_schema(),
+            openai_client=MagicMock(),
+        )
+
+
+def _install_fake_pypdf(
+    monkeypatch: pytest.MonkeyPatch,
+    pages_by_path: Dict[str, List[str]],
+) -> None:
     """Inject a minimal fake ``pypdf`` module into sys.modules.
 
     ``pages_by_path`` maps the absolute path string of each PDF to the list
@@ -230,7 +313,10 @@ def _install_fake_pypdf(monkeypatch: pytest.MonkeyPatch, pages_by_path: Dict[str
 def test_extract_metadata_reads_pdf(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     pdf = tmp_path / "report.pdf"
     pdf.write_bytes(b"%PDF-stub")
-    _install_fake_pypdf(monkeypatch, {str(pdf): ["Cover: AAPL FY2024", "Body text that's long"]})
+    _install_fake_pypdf(
+        monkeypatch,
+        {str(pdf): ["Cover: AAPL FY2024", "Body text that's long"]},
+    )
 
     captured_prompts: List[str] = []
 
@@ -238,7 +324,9 @@ def test_extract_metadata_reads_pdf(tmp_path: Path, monkeypatch: pytest.MonkeyPa
         captured_prompts.append(messages[-1]["content"])
         completion = MagicMock()
         completion.choices = [MagicMock()]
-        completion.choices[0].message.content = json.dumps({"ticker": "AAPL", "year": 2024})
+        completion.choices[0].message.content = json.dumps(
+            {"ticker": "AAPL", "year": 2024}
+        )
         return completion
 
     client = MagicMock()
@@ -258,12 +346,21 @@ def test_extract_metadata_reads_pdf(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     assert "Body text that's long" in captured_prompts[0]
 
 
-def test_extract_metadata_respects_max_pages(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_extract_metadata_respects_max_pages(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     pdf = tmp_path / "report.pdf"
     pdf.write_bytes(b"%PDF-stub")
     _install_fake_pypdf(
         monkeypatch,
-        {str(pdf): ["FIRST PAGE ONLY", "SECRET FROM PAGE TWO", "MORE SECRETS FROM PAGE THREE"]},
+        {
+            str(pdf): [
+                "FIRST PAGE ONLY",
+                "SECRET FROM PAGE TWO",
+                "MORE SECRETS FROM PAGE THREE",
+            ]
+        },
     )
 
     captured_prompts: List[str] = []
@@ -294,7 +391,10 @@ def test_extract_metadata_respects_max_pages(tmp_path: Path, monkeypatch: pytest
     assert "MORE SECRETS FROM PAGE THREE" not in prompt
 
 
-def test_extract_metadata_raises_when_pypdf_missing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_extract_metadata_raises_when_pypdf_missing(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     pdf = tmp_path / "no_pypdf.pdf"
     pdf.write_bytes(b"%PDF-stub")
 
@@ -359,6 +459,7 @@ def _make_fileset_client(
         def extract_metadata(  # type: ignore[override]
             self, file_set_id, file_paths, **kwargs
         ):
+            capture["extraction_kwargs"] = kwargs
             return dict(extracted)
 
         def _upload_with_transfer_manager(  # type: ignore[override]
@@ -399,6 +500,12 @@ def test_upload_files_auto_extract_merges_with_user_metadata(tmp_path: Path) -> 
         "a.txt": {"ticker": "OVERRIDE", "year": 2024},
         "b.txt": {"ticker": "MSFT", "year": 2023},
     }
+    assert captured["extraction_kwargs"] == {
+        "model": "gpt-4.1-mini",
+        "max_chars": 20_000,
+        "max_pages": None,
+        "max_workers": 10,
+    }
 
 
 def test_upload_files_auto_extract_without_user_metadata(tmp_path: Path) -> None:
@@ -419,3 +526,32 @@ def test_upload_files_auto_extract_without_user_metadata(tmp_path: Path) -> None
     )
 
     assert captured["metadata"] == {"a.txt": {"ticker": "AAPL"}}
+
+
+def test_upload_files_auto_extract_passes_tuning_options(tmp_path: Path) -> None:
+    f = tmp_path / "a.txt"
+    f.write_text("content", encoding="utf-8")
+
+    captured: Dict[str, Any] = {}
+    client = _make_fileset_client(
+        schema=_schema(),
+        extracted={"a.txt": {"ticker": "AAPL"}},
+        capture=captured,
+    )
+
+    client.upload_files(
+        file_set_id="fs-1",
+        file_paths=[f],
+        auto_extract_metadata=True,
+        extraction_model="gpt-test",
+        extraction_max_chars=1234,
+        extraction_max_pages=1,
+        extraction_max_workers=2,
+    )
+
+    assert captured["extraction_kwargs"] == {
+        "model": "gpt-test",
+        "max_chars": 1234,
+        "max_pages": 1,
+        "max_workers": 2,
+    }
