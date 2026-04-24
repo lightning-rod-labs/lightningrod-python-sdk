@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.temporal_constraint import TemporalConstraint
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
@@ -36,7 +37,11 @@ class QdrantRAGLabeler:
         extraction_model (ModelConfig | None | Unset): LLM model for structured label extraction. Defaults to
             gemini-2.5-flash.
         top_k (int | Unset): Number of chunks to retrieve Default: 5.
-        temporal_direction (None | str | Unset): 'before' or 'after' relative to seed date, or None for no filter.
+        temporal_constraint (None | TemporalConstraint | Unset): Filter chunks by timestamp relative to
+            seed_creation_date. BEFORE: timestamp <= seed_ts (historical context, no lookahead). AFTER: timestamp > seed_ts
+            (future docs for resolution). EQUAL: timestamp == seed_ts. NEXT_DOCUMENT: chunks at the nearest timestamp >
+            seed_ts (single-doc). PREVIOUS_DOCUMENT: chunks at the nearest timestamp < seed_ts (single-doc). None = no
+            temporal filter.
         payload_filters (None | QdrantRAGLabelerPayloadFiltersType0 | Unset): Payload filters as {payload_key: meta_key}
             mapping.
         confidence_threshold (float | Unset): Minimum confidence threshold for including labels. Default: 0.9.
@@ -55,7 +60,7 @@ class QdrantRAGLabeler:
     index_chunk_overlap: int | Unset = 150
     extraction_model: ModelConfig | None | Unset = UNSET
     top_k: int | Unset = 5
-    temporal_direction: None | str | Unset = UNSET
+    temporal_constraint: None | TemporalConstraint | Unset = UNSET
     payload_filters: None | QdrantRAGLabelerPayloadFiltersType0 | Unset = UNSET
     confidence_threshold: float | Unset = 0.9
     answer_type: (
@@ -111,11 +116,13 @@ class QdrantRAGLabeler:
 
         top_k = self.top_k
 
-        temporal_direction: None | str | Unset
-        if isinstance(self.temporal_direction, Unset):
-            temporal_direction = UNSET
+        temporal_constraint: None | str | Unset
+        if isinstance(self.temporal_constraint, Unset):
+            temporal_constraint = UNSET
+        elif isinstance(self.temporal_constraint, TemporalConstraint):
+            temporal_constraint = self.temporal_constraint.value
         else:
-            temporal_direction = self.temporal_direction
+            temporal_constraint = self.temporal_constraint
 
         payload_filters: dict[str, Any] | None | Unset
         if isinstance(self.payload_filters, Unset):
@@ -168,8 +175,8 @@ class QdrantRAGLabeler:
             field_dict["extraction_model"] = extraction_model
         if top_k is not UNSET:
             field_dict["top_k"] = top_k
-        if temporal_direction is not UNSET:
-            field_dict["temporal_direction"] = temporal_direction
+        if temporal_constraint is not UNSET:
+            field_dict["temporal_constraint"] = temporal_constraint
         if payload_filters is not UNSET:
             field_dict["payload_filters"] = payload_filters
         if confidence_threshold is not UNSET:
@@ -243,14 +250,22 @@ class QdrantRAGLabeler:
 
         top_k = d.pop("top_k", UNSET)
 
-        def _parse_temporal_direction(data: object) -> None | str | Unset:
+        def _parse_temporal_constraint(data: object) -> None | TemporalConstraint | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
-            return cast(None | str | Unset, data)
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                temporal_constraint_type_0 = TemporalConstraint(data)
 
-        temporal_direction = _parse_temporal_direction(d.pop("temporal_direction", UNSET))
+                return temporal_constraint_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | TemporalConstraint | Unset, data)
+
+        temporal_constraint = _parse_temporal_constraint(d.pop("temporal_constraint", UNSET))
 
         def _parse_payload_filters(data: object) -> None | QdrantRAGLabelerPayloadFiltersType0 | Unset:
             if data is None:
@@ -354,7 +369,7 @@ class QdrantRAGLabeler:
             index_chunk_overlap=index_chunk_overlap,
             extraction_model=extraction_model,
             top_k=top_k,
-            temporal_direction=temporal_direction,
+            temporal_constraint=temporal_constraint,
             payload_filters=payload_filters,
             confidence_threshold=confidence_threshold,
             answer_type=answer_type,
