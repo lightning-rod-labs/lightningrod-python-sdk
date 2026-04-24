@@ -48,30 +48,33 @@ pipeline = QuestionPipeline(
 )
 ```
 
-## FileSetContextGenerator
+## QdrantContextGenerator
 
-Retrieves context from documents in a FileSet. Use when your seeds come from a FileSet and you want to enrich questions with related documents (e.g. earlier quarterly reports from the same company). Add to `context_generators` in `QuestionPipeline`.
+Retrieves context from documents in a FileSet via **vector search**. Builds a Qdrant index on first use (chunking + embedding with `BAAI/bge-small-en-v1.5`), then retrieves the top-k most semantically relevant chunks per question. Use when your seeds come from a FileSet and you want to enrich questions with passages that may be scattered across many documents. Add to `context_generators` in `QuestionPipeline`.
 
-| Parameter              | Type               | Required | Default       | Description                                                                      |
-| ---------------------- | ------------------ | -------- | ------------- | -------------------------------------------------------------------------------- |
-| `file_set_id`          | str                | Yes      | —             | FileSet ID to query                                                              |
-| `metadata_filter_keys` | list\[str]         | No       | —             | Keys from seed's file metadata for dynamic filtering (e.g. `["ticker"]`)         |
-| `metadata_filter`      | str                | No       | —             | Static AIP-160 metadata filter (combined with dynamic via AND)                   |
-| `temporal_constraint`  | TemporalConstraint | No       | —             | `BEFORE` for docs on or before seed date (no lookahead); `AFTER` for future docs |
-| `date_metadata_key`    | str                | No       | `"file_date"` | Metadata key storing unix timestamp for temporal filtering                       |
+| Parameter             | Type                | Required | Default                 | Description                                                                                           |
+| --------------------- | ------------------- | -------- | ----------------------- | ----------------------------------------------------------------------------------------------------- |
+| `file_set_id`         | str                 | Yes\*    | —                       | FileSet ID to load the Qdrant collection from (\*or `collection_name` for direct injection)           |
+| `top_k`               | int                 | No       | 5                       | Number of chunks to retrieve                                                                          |
+| `temporal_direction`  | str                 | No       | —                       | `"before"` (timestamp ≤ seed date, includes seed's doc) or `"after"` (timestamp > seed date)          |
+| `payload_filters`     | dict\[str, str]     | No       | —                       | `{qdrant_payload_key: sample_meta_key}` — values pulled from the sample's metadata at query time      |
+| `index_chunk_size`    | int                 | No       | 1500                    | Chunk size used when building the backing Qdrant index                                                |
+| `index_chunk_overlap` | int                 | No       | 150                     | Chunk overlap used when building the backing Qdrant index                                             |
+| `embedding_model`     | str                 | No       | `"BAAI/bge-small-en-v1.5"` | FastEmbed model name for query embedding                                                           |
 
 ```python
-from lightningrod import FileSetContextGenerator, FileSetSeedGenerator, TemporalConstraint
+from lightningrod import QdrantContextGenerator, FileSetSeedGenerator
 
 pipeline = QuestionPipeline(
     seed_generator=FileSetSeedGenerator(file_set_id="..."),
     question_generator=...,
     labeler=...,
     context_generators=[
-        FileSetContextGenerator(
+        QdrantContextGenerator(
             file_set_id="...",
-            metadata_filter_keys=["ticker"],
-            temporal_constraint=TemporalConstraint.BEFORE,
+            payload_filters={"ticker": "ticker"},  # restrict retrieval to same ticker
+            temporal_direction="before",           # historical context, no lookahead
+            top_k=5,
         ),
     ],
 )
@@ -79,9 +82,9 @@ pipeline = QuestionPipeline(
 
 ## FileSetDocumentContextGenerator
 
-Resolves a **single document** from a FileSet by temporal ordering, downloads its full text, and appends it as context. Optionally processes the document through an LLM before injection. Add to `context_generators` in `QuestionPipeline`.
+Resolves a **single document** from a FileSet by temporal ordering, downloads its full text, and appends it as context. No vector search — picks the one document whose chronological position matches `temporal_constraint`. Optionally processes the document through an LLM before injection. Add to `context_generators` in `QuestionPipeline`.
 
-Use this instead of `FileSetContextGenerator` when you want the complete text of one document rather than RAG-retrieved chunks from multiple documents.
+Use this instead of `QdrantContextGenerator` when you want the complete text of one document rather than RAG-retrieved chunks from multiple documents.
 
 | Parameter | Type | Required | Default | Description |
 | ----------------------- | ------------------- | -------- | ------- | ------------------------------------------------------------------- |
@@ -110,30 +113,33 @@ pipeline = QuestionPipeline(
 )
 ```
 
-## FileSetRAGLabeler
+## QdrantRAGLabeler
 
-Resolves questions by searching a FileSet for answers. Use when your seeds come from a FileSet and the answer may appear in later documents (e.g. forward-looking questions resolved by future quarterly reports).
+Resolves questions by **vector-searching** a FileSet for answer evidence and using an LLM to extract a structured label from the retrieved chunks. Use when your seeds come from a FileSet and the answer may appear in chunks scattered across multiple documents (e.g. forward-looking questions resolved by future quarterly reports).
 
-| Parameter              | Type               | Required | Default       | Description                                                        |
-| ---------------------- | ------------------ | -------- | ------------- | ------------------------------------------------------------------ |
-| `file_set_id`          | str                | Yes      | —             | FileSet ID to query                                                |
-| `answer_type`          | AnswerType         | No       | —             | Expected answer type (guides the labeler)                          |
-| `metadata_filter_keys` | list\[str]         | No       | —             | Keys from seed's file metadata for dynamic filtering               |
-| `metadata_filter`      | str                | No       | —             | Static AIP-160 metadata filter                                     |
-| `temporal_constraint`  | TemporalConstraint | No       | —             | `AFTER` for resolution docs (future); `BEFORE` for historical only |
-| `confidence_threshold` | float              | No       | 0.9           | Minimum confidence to include a question                           |
-| `date_metadata_key`    | str                | No       | `"file_date"` | Metadata key for temporal filtering                                |
+| Parameter              | Type              | Required | Default                    | Description                                                                              |
+| ---------------------- | ----------------- | -------- | -------------------------- | ---------------------------------------------------------------------------------------- |
+| `file_set_id`          | str               | Yes\*    | —                          | FileSet ID to load the Qdrant collection from (\*or `collection_name`)                   |
+| `answer_type`          | AnswerType        | No       | —                          | Expected answer type (guides the labeler)                                                |
+| `payload_filters`      | dict\[str, str]   | No       | —                          | `{qdrant_payload_key: sample_meta_key}` mapping                                          |
+| `temporal_direction`   | str               | No       | —                          | `"before"` or `"after"` relative to the seed date                                        |
+| `confidence_threshold` | float             | No       | 0.9                        | Minimum confidence to include a question                                                 |
+| `top_k`                | int               | No       | 5                          | Number of chunks to retrieve                                                             |
+| `extraction_model`     | ModelConfig \| None | No     | gemini-2.5-flash           | LLM used for structured label extraction                                                 |
+| `index_chunk_size`     | int               | No       | 1500                       | Chunk size used when building the backing Qdrant index                                   |
+| `index_chunk_overlap`  | int               | No       | 150                        | Chunk overlap used when building the backing Qdrant index                                |
+| `embedding_model`      | str               | No       | `"BAAI/bge-small-en-v1.5"` | FastEmbed model name for query embedding                                                 |
 
 ```python
-from lightningrod import BinaryAnswerType, FileSetRAGLabeler, FileSetSeedGenerator, TemporalConstraint
+from lightningrod import BinaryAnswerType, QdrantRAGLabeler, FileSetSeedGenerator
 
 pipeline = QuestionPipeline(
     seed_generator=FileSetSeedGenerator(file_set_id="..."),
     question_generator=...,
-    labeler=FileSetRAGLabeler(
+    labeler=QdrantRAGLabeler(
         file_set_id="...",
-        metadata_filter_keys=["ticker"],
-        temporal_constraint=TemporalConstraint.AFTER,
+        payload_filters={"ticker": "ticker"},
+        temporal_direction="after",       # resolve from future docs
         confidence_threshold=0.7,
         answer_type=BinaryAnswerType(),
     ),
@@ -142,7 +148,7 @@ pipeline = QuestionPipeline(
 
 ## FileSetDocumentLabeler
 
-Resolves a **single document** from a FileSet by temporal ordering, downloads its full text, and uses an LLM to extract a structured label. Use this instead of `FileSetRAGLabeler` when you want to label from the full content of a specific document rather than RAG-retrieved chunks.
+Resolves a **single document** from a FileSet by temporal ordering, downloads its full text, and uses an LLM to extract a structured label. No vector search — picks the one document whose chronological position matches `temporal_constraint`. Use this instead of `QdrantRAGLabeler` when you want to label from the full content of a specific document rather than RAG-retrieved chunks.
 
 | Parameter | Type | Required | Default | Description |
 | ----------------------- | ------------------- | -------- | ------- | ------------------------------------------------------------------- |
@@ -177,7 +183,7 @@ pipeline = QuestionPipeline(
 
 ## TemporalConstraint
 
-Enum used by `FileSetContextGenerator`, `FileSetRAGLabeler`, `FileSetDocumentContextGenerator`, and `FileSetDocumentLabeler` to filter documents by date relative to the seed:
+Enum used by `FileSetDocumentContextGenerator` and `FileSetDocumentLabeler` to pick the single document resolved relative to the seed. (The Qdrant transforms use a separate `temporal_direction` string — `"before"` / `"after"` — instead.)
 
 | Value | Description |
 | ------------------- | ------------------------------------------------------------------ |
