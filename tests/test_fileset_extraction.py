@@ -622,6 +622,87 @@ def test_extract_metadata_drops_null_values(tmp_path: Path) -> None:
     assert result == {"partial.txt": {"year": 2024}}
 
 
+def test_extract_metadata_skips_fields_already_in_existing_metadata(
+    tmp_path: Path,
+) -> None:
+    f = tmp_path / "a.txt"
+    f.write_text("Apple Q1 2024 report", encoding="utf-8")
+
+    captured: Dict[str, Any] = {}
+
+    def _create(*, model, messages, response_format):  # noqa: ARG001
+        captured["prompt"] = messages[-1]["content"]
+        captured["json_schema"] = response_format["json_schema"]["schema"]
+        completion = MagicMock()
+        completion.choices = [MagicMock()]
+        # Model returns only the 'year' field that was actually requested.
+        completion.choices[0].message.content = json.dumps({"year": 2024})
+        return completion
+
+    client = MagicMock()
+    client.chat.completions.create.side_effect = _create
+
+    result = extract_metadata_for_files(
+        file_paths=[f],
+        schema=_schema(),
+        api_key="sk-test",
+        base_url="https://api.example.com",
+        existing_metadata={"a.txt": {"ticker": "AAPL"}},
+        openai_client=client,
+    )
+
+    # Only the gap field is in the result; the user-supplied ticker isn't echoed back.
+    assert result == {"a.txt": {"year": 2024}}
+    # The schema sent to the model omits the supplied field entirely.
+    assert "ticker" not in captured["json_schema"]["properties"]
+    assert "year" in captured["json_schema"]["properties"]
+    # The prompt should not list the supplied field as something to extract.
+    assert "ticker" not in captured["prompt"]
+
+
+def test_extract_metadata_short_circuits_when_all_fields_supplied(
+    tmp_path: Path,
+) -> None:
+    f = tmp_path / "a.txt"
+    f.write_text("ignored", encoding="utf-8")
+
+    client = MagicMock()
+
+    result = extract_metadata_for_files(
+        file_paths=[f],
+        schema=_schema(),
+        api_key="sk-test",
+        base_url="https://api.example.com",
+        existing_metadata={"a.txt": {"ticker": "AAPL", "year": 2024}},
+        openai_client=client,
+    )
+
+    assert result == {}
+    client.chat.completions.create.assert_not_called()
+
+
+def test_extract_metadata_existing_null_does_not_skip(tmp_path: Path) -> None:
+    """If the caller maps a field to None it means 'I don't know', so the
+    model should still be asked to fill it in."""
+    f = tmp_path / "a.txt"
+    f.write_text("Apple 2024", encoding="utf-8")
+
+    client = _make_openai_stub({
+        "a.txt": {"ticker": "AAPL", "year": 2024},
+    })
+
+    result = extract_metadata_for_files(
+        file_paths=[f],
+        schema=_schema(),
+        api_key="sk-test",
+        base_url="https://api.example.com",
+        existing_metadata={"a.txt": {"ticker": None}},
+        openai_client=client,
+    )
+
+    assert result == {"a.txt": {"ticker": "AAPL", "year": 2024}}
+
+
 # ---------------------------------------------------------------------------
 # FileSetsClient integration: auto_extract_metadata flag merge + schema check.
 # ---------------------------------------------------------------------------
@@ -698,6 +779,7 @@ def test_upload_files_auto_extract_merges_with_user_metadata(tmp_path: Path) -> 
         "max_pages": None,
         "max_workers": 10,
         "use_vision": False,
+        "existing_metadata": {"a.txt": {"ticker": "OVERRIDE"}},
     }
 
 
@@ -748,4 +830,46 @@ def test_upload_files_auto_extract_passes_tuning_options(tmp_path: Path) -> None
         "max_pages": 1,
         "max_workers": 2,
         "use_vision": False,
+        "existing_metadata": None,
+    }
+
+
+def test_upload_files_auto_extract_partial_user_metadata_fills_gaps(
+    tmp_path: Path,
+) -> None:
+    """User supplies category for each file; LLM extracts the year. Verify
+    upload_files forwards the user metadata as existing_metadata and merges
+    the gap-fill result."""
+    a = tmp_path / "a.txt"
+    b = tmp_path / "b.txt"
+    a.write_text("a", encoding="utf-8")
+    b.write_text("b", encoding="utf-8")
+
+    captured: Dict[str, Any] = {}
+    client = _make_fileset_client(
+        schema=_schema(),
+        # The fake extractor returns only the gap field per file.
+        extracted={
+            "a.txt": {"year": 2024},
+            "b.txt": {"year": 2023},
+        },
+        capture=captured,
+    )
+
+    user_md = {
+        "a.txt": {"ticker": "AAPL"},
+        "b.txt": {"ticker": "MSFT"},
+    }
+
+    client.upload_files(
+        file_set_id="fs-1",
+        file_paths=[a, b],
+        metadata=user_md,
+        auto_extract_metadata=True,
+    )
+
+    assert captured["extraction_kwargs"]["existing_metadata"] == user_md
+    assert captured["metadata"] == {
+        "a.txt": {"ticker": "AAPL", "year": 2024},
+        "b.txt": {"ticker": "MSFT", "year": 2023},
     }

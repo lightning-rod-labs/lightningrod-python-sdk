@@ -13,7 +13,7 @@ import io
 import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 from lightningrod._generated.models.metadata_field_type import MetadataFieldType
 from lightningrod._generated.types import Unset
@@ -248,11 +248,22 @@ def _images_for_vision(
     return []
 
 
-def _build_json_schema(schema: Any) -> Dict[str, Any]:
-    """Translate a FileSet metadata schema into an OpenAI-compatible JSON schema."""
+def _build_json_schema(
+    schema: Any,
+    skip_fields: Optional[Iterable[str]] = None,
+) -> Dict[str, Any]:
+    """Translate a FileSet metadata schema into an OpenAI-compatible JSON schema.
+
+    ``skip_fields`` omits the named fields from the output schema - used when
+    the caller has already supplied a value for those fields and the LLM
+    shouldn't bother re-extracting them.
+    """
+    skip: set = set(skip_fields) if skip_fields else set()
     properties: Dict[str, Any] = {}
     required: List[str] = []
     for field in _schema_fields(schema):
+        if field.name in skip:
+            continue
         ftype = field.field_type
         if ftype == MetadataFieldType.NUMBER:
             json_type = "number"
@@ -304,9 +315,16 @@ def _coerce_value(value: Any, ftype: MetadataFieldType) -> Any:
     return str(value)
 
 
-def _coerce_result(raw: Dict[str, Any], schema: Any) -> Dict[str, Any]:
+def _coerce_result(
+    raw: Dict[str, Any],
+    schema: Any,
+    skip_fields: Optional[Iterable[str]] = None,
+) -> Dict[str, Any]:
+    skip: set = set(skip_fields) if skip_fields else set()
     out: Dict[str, Any] = {}
     for field in _schema_fields(schema):
+        if field.name in skip:
+            continue
         if field.name in raw:
             coerced = _coerce_value(raw[field.name], field.field_type)
             if coerced is not None:
@@ -314,9 +332,15 @@ def _coerce_result(raw: Dict[str, Any], schema: Any) -> Dict[str, Any]:
     return out
 
 
-def _describe_fields(schema: Any) -> str:
+def _describe_fields(
+    schema: Any,
+    skip_fields: Optional[Iterable[str]] = None,
+) -> str:
+    skip: set = set(skip_fields) if skip_fields else set()
     field_lines: List[str] = []
     for field in _schema_fields(schema):
+        if field.name in skip:
+            continue
         hint = field.extraction_hint if _is_set(getattr(field, "extraction_hint", None)) else ""
         desc = field.description if _is_set(getattr(field, "description", None)) else ""
         parts = [f"- {field.name} ({field.field_type.value})"]
@@ -328,10 +352,15 @@ def _describe_fields(schema: Any) -> str:
     return "\n".join(field_lines) if field_lines else "(no fields)"
 
 
-def _build_prompt(text: str, schema: Any, filename: str) -> str:
+def _build_prompt(
+    text: str,
+    schema: Any,
+    filename: str,
+    skip_fields: Optional[Iterable[str]] = None,
+) -> str:
     return (
         f"Extract metadata for the file named '{filename}'.\n\n"
-        f"Fields to extract:\n{_describe_fields(schema)}\n\n"
+        f"Fields to extract:\n{_describe_fields(schema, skip_fields)}\n\n"
         "If a value is not present in the document, return null for that field. "
         "Return a JSON object matching the provided schema.\n\n"
         "Document contents:\n"
@@ -339,18 +368,28 @@ def _build_prompt(text: str, schema: Any, filename: str) -> str:
     )
 
 
-def _build_vision_prompt(schema: Any, filename: str, n_images: int) -> str:
+def _build_vision_prompt(
+    schema: Any,
+    filename: str,
+    n_images: int,
+    skip_fields: Optional[Iterable[str]] = None,
+) -> str:
     unit = "page" if n_images == 1 else "pages"
     return (
         f"Extract metadata for the file named '{filename}'.\n\n"
         f"You are shown {n_images} {unit} of the document as image(s).\n\n"
-        f"Fields to extract:\n{_describe_fields(schema)}\n\n"
+        f"Fields to extract:\n{_describe_fields(schema, skip_fields)}\n\n"
         "If a value is not visible in the provided page(s), return null for that field. "
         "Return a JSON object matching the provided schema."
     )
 
 
-def _build_messages_text(text: str, schema: Any, filename: str) -> List[Dict[str, Any]]:
+def _build_messages_text(
+    text: str,
+    schema: Any,
+    filename: str,
+    skip_fields: Optional[Iterable[str]] = None,
+) -> List[Dict[str, Any]]:
     return [
         {
             "role": "system",
@@ -359,7 +398,7 @@ def _build_messages_text(text: str, schema: Any, filename: str) -> List[Dict[str
                 "Respond with a single JSON object matching the schema."
             ),
         },
-        {"role": "user", "content": _build_prompt(text, schema, filename)},
+        {"role": "user", "content": _build_prompt(text, schema, filename, skip_fields)},
     ]
 
 
@@ -367,9 +406,13 @@ def _build_messages_vision(
     images: List[Tuple[bytes, str]],
     schema: Any,
     filename: str,
+    skip_fields: Optional[Iterable[str]] = None,
 ) -> List[Dict[str, Any]]:
     parts: List[Dict[str, Any]] = [
-        {"type": "text", "text": _build_vision_prompt(schema, filename, len(images))},
+        {
+            "type": "text",
+            "text": _build_vision_prompt(schema, filename, len(images), skip_fields),
+        },
     ]
     for image_bytes, mime in images:
         b64 = base64.b64encode(image_bytes).decode("ascii")
@@ -393,27 +436,33 @@ def _extract_one(
     client: Any,
     path: Path,
     schema: Any,
-    json_schema: Dict[str, Any],
     model: str,
     max_chars: int,
     max_pages: Optional[int],
     use_vision: bool,
+    skip_fields: Optional[Iterable[str]] = None,
 ) -> Optional[Dict[str, Any]]:
+    json_schema = _build_json_schema(schema, skip_fields=skip_fields)
+    # If every schema field was supplied by the caller, there's nothing to
+    # ask the model about.
+    if not json_schema.get("properties"):
+        return None
+
     if use_vision and path.suffix.lower() in IMAGE_SUFFIXES:
         images = _images_for_vision(path, max_pages)
         if not images:
             return None
-        messages = _build_messages_vision(images, schema, path.name)
+        messages = _build_messages_vision(images, schema, path.name, skip_fields)
     elif use_vision and path.suffix.lower() in PDF_SUFFIXES:
         images = _images_for_vision(path, max_pages)
         if not images:
             return None
-        messages = _build_messages_vision(images, schema, path.name)
+        messages = _build_messages_vision(images, schema, path.name, skip_fields)
     else:
         text = _read_file_for_extraction(path, max_chars, max_pages)
         if text is None:
             return None
-        messages = _build_messages_text(text, schema, path.name)
+        messages = _build_messages_text(text, schema, path.name, skip_fields)
 
     response = client.chat.completions.create(
         model=model,
@@ -433,7 +482,7 @@ def _extract_one(
     parsed = json.loads(content)
     if not isinstance(parsed, dict):
         return None
-    return _coerce_result(parsed, schema)
+    return _coerce_result(parsed, schema, skip_fields)
 
 
 def extract_metadata_for_files(
@@ -447,6 +496,7 @@ def extract_metadata_for_files(
     max_pages: Optional[int] = None,
     max_workers: int = 10,
     use_vision: bool = False,
+    existing_metadata: Optional[Dict[str, Dict[str, Any]]] = None,
     openai_client: Any = None,
 ) -> Dict[str, Dict[str, Any]]:
     """Extract per-file metadata from a list of files using an LLM.
@@ -481,12 +531,19 @@ def extract_metadata_for_files(
             files to a vision model instead of extracting text. Requires
             ``pypdfium2`` and ``pillow`` (for PDFs); installed by the
             ``extract`` extra.
+        existing_metadata: Optional mapping of ``filename -> {field: value}``
+            for fields the caller has already supplied. For each file, those
+            fields are omitted from the model's schema and prompt, so the
+            LLM only fills in the gaps. If every schema field is already
+            supplied for a file, the LLM isn't called for that file at all.
         openai_client: Optional pre-configured client (primarily for testing).
             If provided, ``api_key``/``base_url`` are ignored.
 
     Returns:
         Mapping of ``filename`` -> extracted metadata dict. Files that failed
-        extraction or whose type is not supported are omitted.
+        extraction or whose type is not supported are omitted. Only the
+        fields the LLM was asked about appear in each entry; any
+        ``existing_metadata`` values are not echoed back.
     """
     _validate_extraction_options(max_chars, max_pages, max_workers)
 
@@ -548,14 +605,23 @@ def extract_metadata_for_files(
             base_url=f"{base_url.rstrip('/')}/openai",
         )
 
-    json_schema = _build_json_schema(schema)
+    schema_field_names = {f.name for f in _schema_fields(schema)}
+    existing = existing_metadata or {}
 
     results: Dict[str, Dict[str, Any]] = {}
 
     def _task(path: Path) -> Optional[Dict[str, Any]]:
+        provided = existing.get(_metadata_key(path), {})
+        # Only count keys the caller actually filled in (a None means "I don't
+        # know" so let the model take a shot).
+        skip_fields = {
+            name for name, value in provided.items()
+            if name in schema_field_names and value is not None
+        }
         return _extract_one(
-            openai_client, path, schema, json_schema,
+            openai_client, path, schema,
             model, max_chars, max_pages, use_vision,
+            skip_fields=skip_fields if skip_fields else None,
         )
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:

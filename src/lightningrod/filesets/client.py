@@ -290,6 +290,7 @@ class FileSetsClient:
         max_pages: Optional[int] = None,
         max_workers: int = 10,
         use_vision: bool = False,
+        existing_metadata: Optional[Dict[str, Dict[str, Any]]] = None,
     ) -> Dict[str, Dict[str, Any]]:
         """Extract per-file metadata using an LLM, guided by the FileSet's schema.
 
@@ -323,6 +324,12 @@ class FileSetsClient:
             max_workers: Parallelism for per-file LLM calls.
             use_vision: If True, use a vision model on rendered PDF pages
                 and image files instead of extracting text.
+            existing_metadata: Optional ``filename -> {field: value}`` map of
+                metadata the caller has already supplied. Those fields are
+                omitted from the LLM prompt/schema for that file - useful for
+                e.g. providing ``category`` manually while still letting the
+                model auto-extract ``date``. The returned dict only contains
+                the fields the LLM was asked about.
 
         Returns:
             Mapping of ``filename`` -> extracted metadata dict. Files that
@@ -352,6 +359,7 @@ class FileSetsClient:
             max_pages=max_pages,
             max_workers=max_workers,
             use_vision=use_vision,
+            existing_metadata=existing_metadata,
         )
 
     def upload_files(
@@ -396,8 +404,11 @@ class FileSetsClient:
                           Manager batch upload.
             auto_extract_metadata: If True, use an LLM to auto-extract metadata
                           for each file based on the FileSet's metadata schema
-                          (see :meth:`extract_metadata`). Any values supplied
-                          via ``metadata`` take precedence over extracted ones.
+                          (see :meth:`extract_metadata`). Fields the caller
+                          already supplied via ``metadata`` are skipped during
+                          extraction (the LLM only fills in the gaps), and
+                          any user-supplied values still take precedence on
+                          the off chance the model returns the same key.
             extraction_max_pages: Only applies when ``auto_extract_metadata=True``.
                           For PDFs, read only the first N pages during
                           extraction (e.g. ``extraction_max_pages=1`` for
@@ -459,6 +470,7 @@ class FileSetsClient:
                     else extraction_max_workers
                 ),
                 use_vision=extraction_use_vision,
+                existing_metadata=metadata,
             )
             if metadata:
                 merged: Dict[str, Dict[str, Any]] = {
