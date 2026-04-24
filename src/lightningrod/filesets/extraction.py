@@ -8,10 +8,12 @@ schema for each file. The returned dict matches the shape
 
 from __future__ import annotations
 
+import base64
+import io
 import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from lightningrod._generated.models.metadata_field_type import MetadataFieldType
 from lightningrod._generated.types import Unset
@@ -30,9 +32,17 @@ TEXT_SUFFIXES = {
     ".log",
 }
 PDF_SUFFIXES = {".pdf"}
+IMAGE_SUFFIXES = {
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+    ".gif": "image/gif",
+}
 
 DEFAULT_MODEL = "gpt-4.1-mini"
 DEFAULT_MAX_CHARS = 20_000
+DEFAULT_RENDER_SCALE = 2.0
 
 
 def _is_set(value: Any) -> bool:
@@ -64,9 +74,13 @@ def _metadata_key(path: Path) -> str:
     return path.name
 
 
-def _is_supported_path(path: Path) -> bool:
+def _is_supported_path(path: Path, *, use_vision: bool = False) -> bool:
     suffix = path.suffix.lower()
-    return suffix in TEXT_SUFFIXES or suffix in PDF_SUFFIXES
+    if suffix in TEXT_SUFFIXES or suffix in PDF_SUFFIXES:
+        return True
+    if use_vision and suffix in IMAGE_SUFFIXES:
+        return True
+    return False
 
 
 def _validate_unique_metadata_keys(paths: List[Path]) -> None:
@@ -165,6 +179,75 @@ def _read_file_for_extraction(
     return None
 
 
+def _render_pdf_pages_as_images(
+    path: Path,
+    max_pages: Optional[int],
+    scale: float = DEFAULT_RENDER_SCALE,
+) -> List[Tuple[bytes, str]]:
+    """Render PDF pages to PNG bytes using pypdfium2 + Pillow.
+
+    Returns a list of ``(png_bytes, mime_type)``, one per rendered page.
+    Honors ``max_pages`` (first N pages). Returns ``[]`` if the PDF can't
+    be opened.
+    """
+    import pypdfium2 as pdfium  # eager ImportError is checked upstream
+
+    try:
+        pdf = pdfium.PdfDocument(str(path))
+    except Exception:
+        return []
+
+    n_pages = len(pdf)
+    if max_pages is not None:
+        n_pages = min(n_pages, max_pages)
+
+    out: List[Tuple[bytes, str]] = []
+    try:
+        for i in range(n_pages):
+            page = pdf[i]
+            bitmap = page.render(scale=scale)
+            pil_image = bitmap.to_pil()
+            buf = io.BytesIO()
+            pil_image.save(buf, format="PNG")
+            out.append((buf.getvalue(), "image/png"))
+    finally:
+        try:
+            pdf.close()
+        except Exception:
+            pass
+    return out
+
+
+def _read_image_file(path: Path) -> Optional[Tuple[bytes, str]]:
+    """Read a supported image file as ``(bytes, mime_type)``."""
+    mime = IMAGE_SUFFIXES.get(path.suffix.lower())
+    if mime is None:
+        return None
+    try:
+        data = path.read_bytes()
+    except OSError:
+        return None
+    return (data, mime)
+
+
+def _images_for_vision(
+    path: Path,
+    max_pages: Optional[int],
+) -> List[Tuple[bytes, str]]:
+    """Produce the list of images to feed the vision model for this file.
+
+    PDFs are rendered page-by-page; supported image files pass through as a
+    single-element list. Returns ``[]`` for unsupported types.
+    """
+    suffix = path.suffix.lower()
+    if suffix in PDF_SUFFIXES:
+        return _render_pdf_pages_as_images(path, max_pages)
+    if suffix in IMAGE_SUFFIXES:
+        img = _read_image_file(path)
+        return [img] if img is not None else []
+    return []
+
+
 def _build_json_schema(schema: Any) -> Dict[str, Any]:
     """Translate a FileSet metadata schema into an OpenAI-compatible JSON schema."""
     properties: Dict[str, Any] = {}
@@ -231,8 +314,8 @@ def _coerce_result(raw: Dict[str, Any], schema: Any) -> Dict[str, Any]:
     return out
 
 
-def _build_prompt(text: str, schema: Any, filename: str) -> str:
-    field_lines = []
+def _describe_fields(schema: Any) -> str:
+    field_lines: List[str] = []
     for field in _schema_fields(schema):
         hint = field.extraction_hint if _is_set(getattr(field, "extraction_hint", None)) else ""
         desc = field.description if _is_set(getattr(field, "description", None)) else ""
@@ -242,15 +325,68 @@ def _build_prompt(text: str, schema: Any, filename: str) -> str:
         if hint:
             parts.append(f"hint: {hint}")
         field_lines.append("; ".join(parts))
-    fields_block = "\n".join(field_lines) if field_lines else "(no fields)"
+    return "\n".join(field_lines) if field_lines else "(no fields)"
+
+
+def _build_prompt(text: str, schema: Any, filename: str) -> str:
     return (
         f"Extract metadata for the file named '{filename}'.\n\n"
-        f"Fields to extract:\n{fields_block}\n\n"
+        f"Fields to extract:\n{_describe_fields(schema)}\n\n"
         "If a value is not present in the document, return null for that field. "
         "Return a JSON object matching the provided schema.\n\n"
         "Document contents:\n"
         f"---\n{text}\n---"
     )
+
+
+def _build_vision_prompt(schema: Any, filename: str, n_images: int) -> str:
+    unit = "page" if n_images == 1 else "pages"
+    return (
+        f"Extract metadata for the file named '{filename}'.\n\n"
+        f"You are shown {n_images} {unit} of the document as image(s).\n\n"
+        f"Fields to extract:\n{_describe_fields(schema)}\n\n"
+        "If a value is not visible in the provided page(s), return null for that field. "
+        "Return a JSON object matching the provided schema."
+    )
+
+
+def _build_messages_text(text: str, schema: Any, filename: str) -> List[Dict[str, Any]]:
+    return [
+        {
+            "role": "system",
+            "content": (
+                "You extract structured metadata from documents. "
+                "Respond with a single JSON object matching the schema."
+            ),
+        },
+        {"role": "user", "content": _build_prompt(text, schema, filename)},
+    ]
+
+
+def _build_messages_vision(
+    images: List[Tuple[bytes, str]],
+    schema: Any,
+    filename: str,
+) -> List[Dict[str, Any]]:
+    parts: List[Dict[str, Any]] = [
+        {"type": "text", "text": _build_vision_prompt(schema, filename, len(images))},
+    ]
+    for image_bytes, mime in images:
+        b64 = base64.b64encode(image_bytes).decode("ascii")
+        parts.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:{mime};base64,{b64}"},
+        })
+    return [
+        {
+            "role": "system",
+            "content": (
+                "You extract structured metadata from document images. "
+                "Respond with a single JSON object matching the schema."
+            ),
+        },
+        {"role": "user", "content": parts},
+    ]
 
 
 def _extract_one(
@@ -261,23 +397,27 @@ def _extract_one(
     model: str,
     max_chars: int,
     max_pages: Optional[int],
+    use_vision: bool,
 ) -> Optional[Dict[str, Any]]:
-    text = _read_file_for_extraction(path, max_chars, max_pages)
-    if text is None:
-        return None
+    if use_vision and path.suffix.lower() in IMAGE_SUFFIXES:
+        images = _images_for_vision(path, max_pages)
+        if not images:
+            return None
+        messages = _build_messages_vision(images, schema, path.name)
+    elif use_vision and path.suffix.lower() in PDF_SUFFIXES:
+        images = _images_for_vision(path, max_pages)
+        if not images:
+            return None
+        messages = _build_messages_vision(images, schema, path.name)
+    else:
+        text = _read_file_for_extraction(path, max_chars, max_pages)
+        if text is None:
+            return None
+        messages = _build_messages_text(text, schema, path.name)
 
     response = client.chat.completions.create(
         model=model,
-        messages=[
-            {
-                "role": "system",
-                "content": (
-                    "You extract structured metadata from documents. "
-                    "Respond with a single JSON object matching the schema."
-                ),
-            },
-            {"role": "user", "content": _build_prompt(text, schema, path.name)},
-        ],
+        messages=messages,
         response_format={
             "type": "json_schema",
             "json_schema": {
@@ -306,12 +446,18 @@ def extract_metadata_for_files(
     max_chars: int = DEFAULT_MAX_CHARS,
     max_pages: Optional[int] = None,
     max_workers: int = 10,
+    use_vision: bool = False,
     openai_client: Any = None,
 ) -> Dict[str, Dict[str, Any]]:
     """Extract per-file metadata from a list of files using an LLM.
 
     Supports plain-text files (``.txt``, ``.md``, ``.csv``, ``.json``,
     ``.html``, ``.htm``, ``.xml``, ``.yaml``, ``.yml``, ``.log``) and PDFs.
+    With ``use_vision=True``, PDFs are rendered to images and sent to a
+    vision model (useful for scanned docs, complex layouts, or when the
+    metadata lives in charts/figures), and image files
+    (``.png``, ``.jpg``, ``.jpeg``, ``.webp``, ``.gif``) become supported
+    inputs.
 
     Args:
         file_paths: Files to extract metadata from.
@@ -324,12 +470,17 @@ def extract_metadata_for_files(
         base_url: LightningRod API base URL (e.g. the SDK client's ``base_url``).
             Required unless ``openai_client`` is provided. The OpenAI proxy is
             reached at ``{base_url}/openai``.
-        model: Model id to call. Defaults to ``gpt-4.1-mini``.
+        model: Model id to call. Defaults to ``gpt-4.1-mini`` (supports vision).
         max_chars: Max characters of file text to include in the prompt.
-        max_pages: For PDFs, only read the first N pages. Ignored for
-            plain-text files. Useful when the metadata lives on e.g. a
-            cover page and later pages would waste context.
+            Ignored in vision mode.
+        max_pages: For PDFs, only read/render the first N pages. Ignored for
+            plain-text and (non-PDF) image files. Useful when the metadata
+            lives on e.g. a cover page and later pages would waste context.
         max_workers: Parallelism for per-file LLM calls.
+        use_vision: If True, send PDFs (as rendered page images) and image
+            files to a vision model instead of extracting text. Requires
+            ``pypdfium2`` and ``pillow`` (for PDFs); installed by the
+            ``extract`` extra.
         openai_client: Optional pre-configured client (primarily for testing).
             If provided, ``api_key``/``base_url`` are ignored.
 
@@ -345,19 +496,39 @@ def extract_metadata_for_files(
     paths = [Path(p) for p in file_paths]
     if not paths:
         return {}
-    supported_paths = [path for path in paths if _is_supported_path(path)]
+    supported_paths = [path for path in paths if _is_supported_path(path, use_vision=use_vision)]
     if not supported_paths:
         return {}
     _validate_unique_metadata_keys(supported_paths)
 
     has_pdf = any(p.suffix.lower() in PDF_SUFFIXES for p in supported_paths)
-    if has_pdf:
+
+    # Only require pypdf when PDFs will go through the text path.
+    if has_pdf and not use_vision:
         try:
-            import pypdf  # noqa: F401  (checked eagerly for a clear error)
+            import pypdf  # noqa: F401
         except ImportError:
             raise ImportError(
-                "pypdf is required to extract metadata from PDF files. "
-                "Install with: pip install 'lightningrod-ai[extract]' or pip install pypdf"
+                "pypdf is required to extract text from PDF files. "
+                "Install with: pip install 'lightningrod-ai[extract]' or pip install pypdf. "
+                "Alternatively, pass use_vision=True to send PDFs to a vision model."
+            )
+
+    # Vision path needs pypdfium2+Pillow for PDFs; image files don't need any lib.
+    if use_vision and has_pdf:
+        try:
+            import pypdfium2  # noqa: F401
+        except ImportError:
+            raise ImportError(
+                "pypdfium2 is required to render PDFs for vision extraction. "
+                "Install with: pip install 'lightningrod-ai[extract]' or pip install pypdfium2"
+            )
+        try:
+            import PIL  # noqa: F401
+        except ImportError:
+            raise ImportError(
+                "Pillow is required to render PDFs for vision extraction. "
+                "Install with: pip install 'lightningrod-ai[extract]' or pip install pillow"
             )
 
     if openai_client is None:
@@ -383,7 +554,8 @@ def extract_metadata_for_files(
 
     def _task(path: Path) -> Optional[Dict[str, Any]]:
         return _extract_one(
-            openai_client, path, schema, json_schema, model, max_chars, max_pages
+            openai_client, path, schema, json_schema,
+            model, max_chars, max_pages, use_vision,
         )
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:

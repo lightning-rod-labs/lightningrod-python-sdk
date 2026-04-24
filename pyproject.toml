@@ -40,6 +40,8 @@ transfer = [
 extract = [
     "openai>=1.0.0",
     "pypdf>=4.0.0",
+    "pypdfium2>=4.0.0",
+    "pillow>=10.0.0",
 ]
 
 [tool.setuptools]

@@ -289,6 +289,7 @@ class FileSetsClient:
         max_chars: int = DEFAULT_MAX_CHARS,
         max_pages: Optional[int] = None,
         max_workers: int = 10,
+        use_vision: bool = False,
     ) -> Dict[str, Dict[str, Any]]:
         """Extract per-file metadata using an LLM, guided by the FileSet's schema.
 
@@ -300,11 +301,14 @@ class FileSetsClient:
 
         Supports plain-text files (``.txt``, ``.md``, ``.csv``, ``.json``,
         ``.html``, ``.htm``, ``.xml``, ``.yaml``, ``.yml``, ``.log``) and
-        PDFs. Unsupported files are silently skipped.
+        PDFs. With ``use_vision=True``, PDFs are rendered to images and sent
+        to a vision model, and image files (``.png``, ``.jpg``, ``.jpeg``,
+        ``.webp``, ``.gif``) also become supported. Unsupported files are
+        silently skipped.
 
         Requires the ``extract`` optional dependency
         (``pip install 'lightningrod-ai[extract]'``), which bundles
-        ``openai`` and ``pypdf``.
+        ``openai``, ``pypdf``, ``pypdfium2``, and ``pillow``.
 
         Args:
             file_set_id: The ID of the FileSet whose metadata schema should
@@ -312,10 +316,13 @@ class FileSetsClient:
             file_paths: Files to extract metadata from.
             model: Model id to call (defaults to ``gpt-4.1-mini``).
             max_chars: Max characters of file text to include in the prompt.
-            max_pages: For PDFs, only read the first N pages (e.g.
-                ``max_pages=1`` for cover-page-only extraction). Ignored
-                for plain-text files.
+                Ignored in vision mode.
+            max_pages: For PDFs, only read/render the first N pages (e.g.
+                ``max_pages=1`` for cover-page-only extraction). Ignored for
+                plain-text and (non-PDF) image files.
             max_workers: Parallelism for per-file LLM calls.
+            use_vision: If True, use a vision model on rendered PDF pages
+                and image files instead of extracting text.
 
         Returns:
             Mapping of ``filename`` -> extracted metadata dict. Files that
@@ -344,6 +351,7 @@ class FileSetsClient:
             max_chars=max_chars,
             max_pages=max_pages,
             max_workers=max_workers,
+            use_vision=use_vision,
         )
 
     def upload_files(
@@ -359,6 +367,7 @@ class FileSetsClient:
         extraction_model: str = DEFAULT_MODEL,
         extraction_max_chars: int = DEFAULT_MAX_CHARS,
         extraction_max_workers: Optional[int] = None,
+        extraction_use_vision: bool = False,
     ) -> UploadResult:
         """Upload files to a FileSet with optional metadata.
 
@@ -400,6 +409,11 @@ class FileSetsClient:
             extraction_max_workers: Only applies when ``auto_extract_metadata=True``.
                           Parallelism for per-file extraction calls. Defaults
                           to ``max_workers``.
+            extraction_use_vision: Only applies when ``auto_extract_metadata=True``.
+                          Send PDFs (rendered to images) and image files to
+                          a vision model instead of extracting text. Enables
+                          metadata extraction from scanned PDFs, image-only
+                          documents, and complex layouts.
 
         Returns:
             UploadResult with counts of succeeded/failed uploads and error messages
@@ -444,6 +458,7 @@ class FileSetsClient:
                     if extraction_max_workers is None
                     else extraction_max_workers
                 ),
+                use_vision=extraction_use_vision,
             )
             if metadata:
                 merged: Dict[str, Dict[str, Any]] = {
@@ -543,6 +558,7 @@ class FileSetsClient:
         extraction_model: str = DEFAULT_MODEL,
         extraction_max_chars: int = DEFAULT_MAX_CHARS,
         extraction_max_workers: Optional[int] = None,
+        extraction_use_vision: bool = False,
     ) -> UploadResult:
         """Upload all files from a directory to a FileSet.
 
@@ -570,6 +586,9 @@ class FileSetsClient:
             extraction_max_workers: Only applies when ``auto_extract_metadata=True``.
                           Parallelism for per-file extraction calls. Defaults
                           to ``max_workers``.
+            extraction_use_vision: Only applies when ``auto_extract_metadata=True``.
+                          Send PDFs (rendered to images) and image files to
+                          a vision model instead of extracting text.
 
         Returns:
             UploadResult with counts of succeeded/failed uploads and error messages
@@ -632,4 +651,5 @@ class FileSetsClient:
             extraction_model=extraction_model,
             extraction_max_chars=extraction_max_chars,
             extraction_max_workers=extraction_max_workers,
+            extraction_use_vision=extraction_use_vision,
         )

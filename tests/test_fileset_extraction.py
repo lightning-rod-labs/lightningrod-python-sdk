@@ -21,6 +21,7 @@ from lightningrod.filesets.extraction import (
     _build_json_schema,
     _coerce_value,
     _read_file_for_extraction,
+    _read_image_file,
     _read_text_for_extraction,
     extract_metadata_for_files,
 )
@@ -411,6 +412,197 @@ def test_extract_metadata_raises_when_pypdf_missing(
         )
 
 
+# ---------------------------------------------------------------------------
+# Vision path
+# ---------------------------------------------------------------------------
+
+
+def _install_fake_vision_deps(
+    monkeypatch: pytest.MonkeyPatch,
+    pdf_page_tokens: Dict[str, List[str]],
+) -> None:
+    """Inject just enough of pypdfium2 + PIL into sys.modules that
+    ``_render_pdf_pages_as_images`` runs. Each call writes a bytes payload
+    that encodes the page's identifying token so tests can verify which
+    pages were sent."""
+
+    class _FakeBitmap:
+        def __init__(self, token: str) -> None:
+            self._token = token
+
+        def to_pil(self) -> "_FakePilImage":
+            return _FakePilImage(self._token)
+
+    class _FakePage:
+        def __init__(self, token: str) -> None:
+            self._token = token
+
+        def render(self, scale: float) -> _FakeBitmap:  # noqa: ARG002
+            return _FakeBitmap(self._token)
+
+    class _FakePdfDocument:
+        def __init__(self, path: str) -> None:
+            if path not in pdf_page_tokens:
+                raise FileNotFoundError(path)
+            self._tokens = pdf_page_tokens[path]
+
+        def __len__(self) -> int:
+            return len(self._tokens)
+
+        def __getitem__(self, i: int) -> _FakePage:
+            return _FakePage(self._tokens[i])
+
+        def close(self) -> None:
+            return None
+
+    class _FakePilImage:
+        def __init__(self, token: str) -> None:
+            self._token = token
+
+        def save(self, buf: Any, format: str) -> None:  # noqa: A002
+            buf.write(f"PNG::{self._token}".encode("utf-8"))
+
+    pdfium_mod = types.ModuleType("pypdfium2")
+    pdfium_mod.PdfDocument = _FakePdfDocument  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "pypdfium2", pdfium_mod)
+
+    pil_mod = types.ModuleType("PIL")
+    monkeypatch.setitem(sys.modules, "PIL", pil_mod)
+
+
+def _decode_image_url_part(part: Dict[str, Any]) -> str:
+    """Return the raw payload bytes decoded from a data: URL image_url part."""
+    import base64 as _b64
+
+    url = part["image_url"]["url"]
+    assert url.startswith("data:image/"), url
+    _, _, b64 = url.partition("base64,")
+    return _b64.b64decode(b64).decode("utf-8", errors="replace")
+
+
+def test_extract_metadata_vision_sends_rendered_pdf_pages(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pdf = tmp_path / "scan.pdf"
+    pdf.write_bytes(b"%PDF-stub")
+    _install_fake_vision_deps(
+        monkeypatch, {str(pdf): ["COVER", "BODY-1", "BODY-2"]}
+    )
+
+    sent_messages: List[List[Dict[str, Any]]] = []
+
+    def _create(*, model, messages, response_format):  # noqa: ARG001
+        sent_messages.append(messages)
+        completion = MagicMock()
+        completion.choices = [MagicMock()]
+        completion.choices[0].message.content = json.dumps({"ticker": "AAPL"})
+        return completion
+
+    client = MagicMock()
+    client.chat.completions.create.side_effect = _create
+
+    result = extract_metadata_for_files(
+        file_paths=[pdf],
+        schema=_schema(),
+        api_key="sk-test",
+        base_url="https://api.example.com",
+        use_vision=True,
+        max_pages=1,
+        openai_client=client,
+    )
+
+    assert result == {"scan.pdf": {"ticker": "AAPL"}}
+    user_content = sent_messages[0][-1]["content"]
+    assert isinstance(user_content, list)
+    image_parts = [p for p in user_content if p.get("type") == "image_url"]
+    assert len(image_parts) == 1  # max_pages=1
+    assert _decode_image_url_part(image_parts[0]) == "PNG::COVER"
+
+
+def test_extract_metadata_vision_handles_image_files(tmp_path: Path) -> None:
+    img = tmp_path / "label.png"
+    img.write_bytes(b"PNG_RAW_BYTES")
+
+    sent_messages: List[List[Dict[str, Any]]] = []
+
+    def _create(*, model, messages, response_format):  # noqa: ARG001
+        sent_messages.append(messages)
+        completion = MagicMock()
+        completion.choices = [MagicMock()]
+        completion.choices[0].message.content = json.dumps({"ticker": "TSLA"})
+        return completion
+
+    client = MagicMock()
+    client.chat.completions.create.side_effect = _create
+
+    result = extract_metadata_for_files(
+        file_paths=[img],
+        schema=_schema(),
+        api_key="sk-test",
+        base_url="https://api.example.com",
+        use_vision=True,
+        openai_client=client,
+    )
+
+    assert result == {"label.png": {"ticker": "TSLA"}}
+    user_content = sent_messages[0][-1]["content"]
+    image_parts = [p for p in user_content if p.get("type") == "image_url"]
+    assert len(image_parts) == 1
+    assert image_parts[0]["image_url"]["url"].startswith("data:image/png;base64,")
+    assert _decode_image_url_part(image_parts[0]) == "PNG_RAW_BYTES"
+
+
+def test_extract_metadata_vision_skips_images_without_flag(tmp_path: Path) -> None:
+    """Without use_vision=True, .png files should be skipped entirely."""
+    img = tmp_path / "label.png"
+    img.write_bytes(b"binary")
+
+    client = MagicMock()
+
+    result = extract_metadata_for_files(
+        file_paths=[img],
+        schema=_schema(),
+        api_key="sk-test",
+        base_url="https://api.example.com",
+        openai_client=client,
+    )
+
+    assert result == {}
+    client.chat.completions.create.assert_not_called()
+
+
+def test_extract_metadata_vision_raises_without_pypdfium2(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pdf = tmp_path / "scan.pdf"
+    pdf.write_bytes(b"%PDF-stub")
+    monkeypatch.setitem(sys.modules, "pypdfium2", None)
+
+    with pytest.raises(ImportError, match="pypdfium2 is required"):
+        extract_metadata_for_files(
+            file_paths=[pdf],
+            schema=_schema(),
+            api_key="sk-test",
+            base_url="https://api.example.com",
+            use_vision=True,
+            openai_client=MagicMock(),
+        )
+
+
+def test_read_image_file_returns_bytes_and_mime(tmp_path: Path) -> None:
+    png = tmp_path / "a.png"
+    png.write_bytes(b"\x89PNG\r\n\x1a\n")
+    assert _read_image_file(png) == (b"\x89PNG\r\n\x1a\n", "image/png")
+
+    jpg = tmp_path / "a.jpg"
+    jpg.write_bytes(b"\xff\xd8\xff")
+    assert _read_image_file(jpg) == (b"\xff\xd8\xff", "image/jpeg")
+
+    mystery = tmp_path / "a.xyz"
+    mystery.write_bytes(b"nope")
+    assert _read_image_file(mystery) is None
+
+
 def test_extract_metadata_drops_null_values(tmp_path: Path) -> None:
     f = tmp_path / "partial.txt"
     f.write_text("no ticker here", encoding="utf-8")
@@ -505,6 +697,7 @@ def test_upload_files_auto_extract_merges_with_user_metadata(tmp_path: Path) -> 
         "max_chars": 20_000,
         "max_pages": None,
         "max_workers": 10,
+        "use_vision": False,
     }
 
 
@@ -554,4 +747,5 @@ def test_upload_files_auto_extract_passes_tuning_options(tmp_path: Path) -> None
         "max_chars": 1234,
         "max_pages": 1,
         "max_workers": 2,
+        "use_vision": False,
     }
