@@ -1,1 +1,0 @@
-Great, the test run of 10 questions looks good! The questions are well-formed and the labels look accurate. Let's scale this up to 50,000 questions with full news context enrichment and web search labeling. Run it now — I want the full dataset ready by tomorrow.
