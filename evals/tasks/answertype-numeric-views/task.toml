@@ -1,0 +1,20 @@
+[task]
+name = "lightningrod-evals/answertype-numeric-views"
+description = "Test whether agent pushes back on raw numeric prediction and recommends normalization"
+keywords = ["answer-type", "reasoning", "numeric", "normalization"]
+
+[agent]
+timeout_sec = 300
+
+[verifier]
+timeout_sec = 120
+
+[verifier.env]
+ANTHROPIC_API_KEY = "${ANTHROPIC_API_KEY:-notset}"
+
+[environment]
+allow_internet = true
+memory_mb = 4096
+
+[environment.env]
+ANTHROPIC_API_KEY = "${ANTHROPIC_API_KEY:-notset}"

@@ -1,0 +1,1 @@
+I want to predict whether modern startups will successfully raise a Series A round. Continue working on startup_success.ipynb.

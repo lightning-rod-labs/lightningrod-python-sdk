@@ -1,0 +1,20 @@
+[task]
+name = "lightningrod-evals/datasource-github-stars"
+description = "Test whether agent recommends BigQuery over news for structured GitHub/HN data"
+keywords = ["datasource", "reasoning", "bigquery"]
+
+[agent]
+timeout_sec = 300
+
+[verifier]
+timeout_sec = 120
+
+[verifier.env]
+ANTHROPIC_API_KEY = "${ANTHROPIC_API_KEY:-notset}"
+
+[environment]
+allow_internet = true
+memory_mb = 4096
+
+[environment.env]
+ANTHROPIC_API_KEY = "${ANTHROPIC_API_KEY:-notset}"
