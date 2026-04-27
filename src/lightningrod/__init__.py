@@ -13,6 +13,10 @@ from lightningrod.utils.models import open_router_model
 from lightningrod.utils.examples import binary_example, continuous_example, multiple_choice_example
 from lightningrod.training import prepare_for_training, FilterParams, DedupParams, SplitParams
 from lightningrod.training.client import GRPOTrainingConfig, SFTTrainingConfig, TrainingMethodConfig
+from lightningrod._display import (
+    display_lint_overview,
+    display_lint_detailed,
+)
 from lightningrod._generated.models import (
     TransformJob,
     TransformJobStatus,
@@ -75,6 +79,8 @@ __all__ = [
     "FreeResponseAnswerType",
     "SampleDataset",
     "DocumentContext",
+    "display_lint_overview",
+    "display_lint_detailed",
     "FileSetDocumentContextGenerator",
     "FileSetDocumentLabeler",
     "FileSetSeedGenerator",

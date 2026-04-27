@@ -7,19 +7,28 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.http_validation_error import HTTPValidationError
-from ...models.upload_credentials_response import UploadCredentialsResponse
-from ...types import Response
+from ...models.list_dataset_linter_runs_response import ListDatasetLinterRunsResponse
+from ...types import UNSET, Response, Unset
 
 
 def _get_kwargs(
-    file_set_id: str,
+    dataset_id: str,
+    *,
+    limit: int | Unset = 20,
 ) -> dict[str, Any]:
 
+    params: dict[str, Any] = {}
+
+    params["limit"] = limit
+
+    params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
+
     _kwargs: dict[str, Any] = {
-        "method": "post",
-        "url": "/filesets/{file_set_id}/upload-credentials".format(
-            file_set_id=quote(str(file_set_id), safe=""),
+        "method": "get",
+        "url": "/dataset-linter/datasets/{dataset_id}/linter-runs".format(
+            dataset_id=quote(str(dataset_id), safe=""),
         ),
+        "params": params,
     }
 
     return _kwargs
@@ -27,9 +36,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> HTTPValidationError | UploadCredentialsResponse | None:
+) -> HTTPValidationError | ListDatasetLinterRunsResponse | None:
     if response.status_code == 200:
-        response_200 = UploadCredentialsResponse.from_dict(response.json())
+        response_200 = ListDatasetLinterRunsResponse.from_dict(response.json())
 
         return response_200
 
@@ -46,7 +55,7 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[HTTPValidationError | UploadCredentialsResponse]:
+) -> Response[HTTPValidationError | ListDatasetLinterRunsResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -56,29 +65,30 @@ def _build_response(
 
 
 def sync_detailed(
-    file_set_id: str,
+    dataset_id: str,
     *,
     client: AuthenticatedClient,
-) -> Response[HTTPValidationError | UploadCredentialsResponse]:
-    """Generate Upload Credentials
+    limit: int | Unset = 20,
+) -> Response[HTTPValidationError | ListDatasetLinterRunsResponse]:
+    """List Runs For Dataset
 
-     Generate short-lived, write-only credentials for uploading files via GCS Transfer Manager.
-
-    Returns an OAuth2 token scoped to only create objects in this fileset's folder.
+     List past linter runs for a dataset
 
     Args:
-        file_set_id (str):
+        dataset_id (str):
+        limit (int | Unset):  Default: 20.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | UploadCredentialsResponse]
+        Response[HTTPValidationError | ListDatasetLinterRunsResponse]
     """
 
     kwargs = _get_kwargs(
-        file_set_id=file_set_id,
+        dataset_id=dataset_id,
+        limit=limit,
     )
 
     response = client.get_httpx_client().request(
@@ -89,57 +99,59 @@ def sync_detailed(
 
 
 def sync(
-    file_set_id: str,
+    dataset_id: str,
     *,
     client: AuthenticatedClient,
-) -> HTTPValidationError | UploadCredentialsResponse | None:
-    """Generate Upload Credentials
+    limit: int | Unset = 20,
+) -> HTTPValidationError | ListDatasetLinterRunsResponse | None:
+    """List Runs For Dataset
 
-     Generate short-lived, write-only credentials for uploading files via GCS Transfer Manager.
-
-    Returns an OAuth2 token scoped to only create objects in this fileset's folder.
+     List past linter runs for a dataset
 
     Args:
-        file_set_id (str):
+        dataset_id (str):
+        limit (int | Unset):  Default: 20.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | UploadCredentialsResponse
+        HTTPValidationError | ListDatasetLinterRunsResponse
     """
 
     return sync_detailed(
-        file_set_id=file_set_id,
+        dataset_id=dataset_id,
         client=client,
+        limit=limit,
     ).parsed
 
 
 async def asyncio_detailed(
-    file_set_id: str,
+    dataset_id: str,
     *,
     client: AuthenticatedClient,
-) -> Response[HTTPValidationError | UploadCredentialsResponse]:
-    """Generate Upload Credentials
+    limit: int | Unset = 20,
+) -> Response[HTTPValidationError | ListDatasetLinterRunsResponse]:
+    """List Runs For Dataset
 
-     Generate short-lived, write-only credentials for uploading files via GCS Transfer Manager.
-
-    Returns an OAuth2 token scoped to only create objects in this fileset's folder.
+     List past linter runs for a dataset
 
     Args:
-        file_set_id (str):
+        dataset_id (str):
+        limit (int | Unset):  Default: 20.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | UploadCredentialsResponse]
+        Response[HTTPValidationError | ListDatasetLinterRunsResponse]
     """
 
     kwargs = _get_kwargs(
-        file_set_id=file_set_id,
+        dataset_id=dataset_id,
+        limit=limit,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -148,30 +160,31 @@ async def asyncio_detailed(
 
 
 async def asyncio(
-    file_set_id: str,
+    dataset_id: str,
     *,
     client: AuthenticatedClient,
-) -> HTTPValidationError | UploadCredentialsResponse | None:
-    """Generate Upload Credentials
+    limit: int | Unset = 20,
+) -> HTTPValidationError | ListDatasetLinterRunsResponse | None:
+    """List Runs For Dataset
 
-     Generate short-lived, write-only credentials for uploading files via GCS Transfer Manager.
-
-    Returns an OAuth2 token scoped to only create objects in this fileset's folder.
+     List past linter runs for a dataset
 
     Args:
-        file_set_id (str):
+        dataset_id (str):
+        limit (int | Unset):  Default: 20.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | UploadCredentialsResponse
+        HTTPValidationError | ListDatasetLinterRunsResponse
     """
 
     return (
         await asyncio_detailed(
-            file_set_id=file_set_id,
+            dataset_id=dataset_id,
             client=client,
+            limit=limit,
         )
     ).parsed

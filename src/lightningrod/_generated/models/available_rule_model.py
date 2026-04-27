@@ -6,29 +6,51 @@ from typing import Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="EvalJobMetricsType0")
+T = TypeVar("T", bound="AvailableRuleModel")
 
 
 @_attrs_define
-class EvalJobMetricsType0:
-    """ """
+class AvailableRuleModel:
+    """
+    Attributes:
+        name (str):
+        default_severity (str):
+    """
 
+    name: str
+    default_severity: str
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        name = self.name
+
+        default_severity = self.default_severity
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
+        field_dict.update(
+            {
+                "name": name,
+                "default_severity": default_severity,
+            }
+        )
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        eval_job_metrics_type_0 = cls()
+        name = d.pop("name")
 
-        eval_job_metrics_type_0.additional_properties = d
-        return eval_job_metrics_type_0
+        default_severity = d.pop("default_severity")
+
+        available_rule_model = cls(
+            name=name,
+            default_severity=default_severity,
+        )
+
+        available_rule_model.additional_properties = d
+        return available_rule_model
 
     @property
     def additional_keys(self) -> list[str]:

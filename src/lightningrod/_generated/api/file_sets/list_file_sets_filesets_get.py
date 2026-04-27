@@ -14,6 +14,7 @@ def _get_kwargs(
     *,
     include_public: bool | Unset = False,
 ) -> dict[str, Any]:
+
     params: dict[str, Any] = {}
 
     params["include_public"] = include_public

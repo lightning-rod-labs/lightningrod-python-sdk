@@ -6,14 +6,14 @@ from typing import Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="TrainingJobModelIdByStepType0")
+T = TypeVar("T", bound="RunSummaryBySeverity")
 
 
 @_attrs_define
-class TrainingJobModelIdByStepType0:
+class RunSummaryBySeverity:
     """ """
 
-    additional_properties: dict[str, str] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, int] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
 
@@ -25,19 +25,19 @@ class TrainingJobModelIdByStepType0:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        training_job_model_id_by_step_type_0 = cls()
+        run_summary_by_severity = cls()
 
-        training_job_model_id_by_step_type_0.additional_properties = d
-        return training_job_model_id_by_step_type_0
+        run_summary_by_severity.additional_properties = d
+        return run_summary_by_severity
 
     @property
     def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
-    def __getitem__(self, key: str) -> str:
+    def __getitem__(self, key: str) -> int:
         return self.additional_properties[key]
 
-    def __setitem__(self, key: str, value: str) -> None:
+    def __setitem__(self, key: str, value: int) -> None:
         self.additional_properties[key] = value
 
     def __delitem__(self, key: str) -> None:

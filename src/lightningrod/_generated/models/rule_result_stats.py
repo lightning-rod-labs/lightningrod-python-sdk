@@ -6,14 +6,14 @@ from typing import Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="TrainingJobModelIdByStepType0")
+T = TypeVar("T", bound="RuleResultStats")
 
 
 @_attrs_define
-class TrainingJobModelIdByStepType0:
+class RuleResultStats:
     """ """
 
-    additional_properties: dict[str, str] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
 
@@ -25,19 +25,19 @@ class TrainingJobModelIdByStepType0:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        training_job_model_id_by_step_type_0 = cls()
+        rule_result_stats = cls()
 
-        training_job_model_id_by_step_type_0.additional_properties = d
-        return training_job_model_id_by_step_type_0
+        rule_result_stats.additional_properties = d
+        return rule_result_stats
 
     @property
     def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
-    def __getitem__(self, key: str) -> str:
+    def __getitem__(self, key: str) -> Any:
         return self.additional_properties[key]
 
-    def __setitem__(self, key: str, value: str) -> None:
+    def __setitem__(self, key: str, value: Any) -> None:
         self.additional_properties[key] = value
 
     def __delitem__(self, key: str) -> None:
