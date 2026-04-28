@@ -75,7 +75,7 @@ pipeline = QuestionPipeline(
     renderer=QuestionRenderer(answer_type=binary),
 )
 
-dataset = lr.transforms.run(pipeline, max_questions=100)
+dataset = lr.transforms.run(pipeline, max_seeds=100)
 rows = dataset.flattened()
 ```
 

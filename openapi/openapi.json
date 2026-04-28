@@ -2501,7 +2501,7 @@
             ],
             "title": "Input Dataset Id"
           },
-          "max_questions": {
+          "max_seeds": {
             "anyOf": [
               {
                 "type": "integer"
@@ -2510,7 +2510,7 @@
                 "type": "null"
               }
             ],
-            "title": "Max Questions"
+            "title": "Max Seeds"
           },
           "max_cost_dollars": {
             "anyOf": [
@@ -2688,7 +2688,7 @@
           "config": {
             "$ref": "#/components/schemas/CreateTransformConfig"
           },
-          "max_questions": {
+          "max_seeds": {
             "anyOf": [
               {
                 "type": "integer"
@@ -2697,7 +2697,7 @@
                 "type": "null"
               }
             ],
-            "title": "Max Questions"
+            "title": "Max Seeds"
           }
         },
         "type": "object",
@@ -5764,7 +5764,8 @@
           }
         },
         "type": "object",
-        "title": "QuestionPipeline"
+        "title": "QuestionPipeline",
+        "description": "Serializable config for a question-generation pipeline.\n\nQuestionPipeline configs are expanded into ordered stage configs at run time.\nThey are not executable Transform wrappers."
       },
       "QuestionRenderer": {
         "properties": {
