@@ -59,7 +59,7 @@ from lightningrod._generated.models import (
     WebSearchContextGenerator,
 )
 
-__version__ = "0.1.24"
+__version__ = "0.1.25"
 __all__ = [
     "preprocessing",
     "training",

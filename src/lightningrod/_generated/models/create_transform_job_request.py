@@ -40,7 +40,7 @@ class CreateTransformJobRequest:
             QdrantContextGenerator | QdrantRAGLabeler | QuestionAndLabelGenerator | QuestionGenerator | QuestionPipeline |
             QuestionRenderer | TopicTreeSeedGenerator | WebSearchContextGenerator | WebSearchLabeler):
         input_dataset_id (None | str | Unset):
-        max_questions (int | None | Unset):
+        max_seeds (int | None | Unset):
         max_cost_dollars (float | None | Unset):
         cache_enabled (bool | Unset):  Default: True.
         configuration_id (None | str | Unset):
@@ -67,7 +67,7 @@ class CreateTransformJobRequest:
         | WebSearchLabeler
     )
     input_dataset_id: None | str | Unset = UNSET
-    max_questions: int | None | Unset = UNSET
+    max_seeds: int | None | Unset = UNSET
     max_cost_dollars: float | None | Unset = UNSET
     cache_enabled: bool | Unset = True
     configuration_id: None | str | Unset = UNSET
@@ -134,11 +134,11 @@ class CreateTransformJobRequest:
         else:
             input_dataset_id = self.input_dataset_id
 
-        max_questions: int | None | Unset
-        if isinstance(self.max_questions, Unset):
-            max_questions = UNSET
+        max_seeds: int | None | Unset
+        if isinstance(self.max_seeds, Unset):
+            max_seeds = UNSET
         else:
-            max_questions = self.max_questions
+            max_seeds = self.max_seeds
 
         max_cost_dollars: float | None | Unset
         if isinstance(self.max_cost_dollars, Unset):
@@ -169,8 +169,8 @@ class CreateTransformJobRequest:
         )
         if input_dataset_id is not UNSET:
             field_dict["input_dataset_id"] = input_dataset_id
-        if max_questions is not UNSET:
-            field_dict["max_questions"] = max_questions
+        if max_seeds is not UNSET:
+            field_dict["max_seeds"] = max_seeds
         if max_cost_dollars is not UNSET:
             field_dict["max_cost_dollars"] = max_cost_dollars
         if cache_enabled is not UNSET:
@@ -370,14 +370,14 @@ class CreateTransformJobRequest:
 
         input_dataset_id = _parse_input_dataset_id(d.pop("input_dataset_id", UNSET))
 
-        def _parse_max_questions(data: object) -> int | None | Unset:
+        def _parse_max_seeds(data: object) -> int | None | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
             return cast(int | None | Unset, data)
 
-        max_questions = _parse_max_questions(d.pop("max_questions", UNSET))
+        max_seeds = _parse_max_seeds(d.pop("max_seeds", UNSET))
 
         def _parse_max_cost_dollars(data: object) -> float | None | Unset:
             if data is None:
@@ -411,7 +411,7 @@ class CreateTransformJobRequest:
         create_transform_job_request = cls(
             config=config,
             input_dataset_id=input_dataset_id,
-            max_questions=max_questions,
+            max_seeds=max_seeds,
             max_cost_dollars=max_cost_dollars,
             cache_enabled=cache_enabled,
             configuration_id=configuration_id,

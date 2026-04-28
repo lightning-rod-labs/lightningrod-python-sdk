@@ -129,7 +129,7 @@ context_pipeline = QuestionPipeline(
     renderer=QuestionRenderer(answer_type=BinaryAnswerType(), template=render_template),
 )
 
-rendered = lr.transforms.run(context_pipeline, input_dataset=dataset.id, max_questions=6000)
+rendered = lr.transforms.run(context_pipeline, input_dataset=dataset.id, max_seeds=6000)
 ```
 
 ### Step 5: Split and Train

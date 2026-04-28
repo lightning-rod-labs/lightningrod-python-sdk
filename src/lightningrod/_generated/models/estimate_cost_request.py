@@ -39,7 +39,7 @@ class EstimateCostRequest:
             ForwardLookingQuestionGenerator | GdeltSeedGenerator | KeyDeduplication | NewsSeedGenerator |
             QdrantContextGenerator | QdrantRAGLabeler | QuestionAndLabelGenerator | QuestionGenerator | QuestionPipeline |
             QuestionRenderer | TopicTreeSeedGenerator | WebSearchContextGenerator | WebSearchLabeler):
-        max_questions (int | None | Unset):
+        max_seeds (int | None | Unset):
     """
 
     config: (
@@ -61,7 +61,7 @@ class EstimateCostRequest:
         | WebSearchContextGenerator
         | WebSearchLabeler
     )
-    max_questions: int | None | Unset = UNSET
+    max_seeds: int | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -118,11 +118,11 @@ class EstimateCostRequest:
         else:
             config = self.config.to_dict()
 
-        max_questions: int | None | Unset
-        if isinstance(self.max_questions, Unset):
-            max_questions = UNSET
+        max_seeds: int | None | Unset
+        if isinstance(self.max_seeds, Unset):
+            max_seeds = UNSET
         else:
-            max_questions = self.max_questions
+            max_seeds = self.max_seeds
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -131,8 +131,8 @@ class EstimateCostRequest:
                 "config": config,
             }
         )
-        if max_questions is not UNSET:
-            field_dict["max_questions"] = max_questions
+        if max_seeds is not UNSET:
+            field_dict["max_seeds"] = max_seeds
 
         return field_dict
 
@@ -315,18 +315,18 @@ class EstimateCostRequest:
 
         config = _parse_config(d.pop("config"))
 
-        def _parse_max_questions(data: object) -> int | None | Unset:
+        def _parse_max_seeds(data: object) -> int | None | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
             return cast(int | None | Unset, data)
 
-        max_questions = _parse_max_questions(d.pop("max_questions", UNSET))
+        max_seeds = _parse_max_seeds(d.pop("max_seeds", UNSET))
 
         estimate_cost_request = cls(
             config=config,
-            max_questions=max_questions,
+            max_seeds=max_seeds,
         )
 
         estimate_cost_request.additional_properties = d

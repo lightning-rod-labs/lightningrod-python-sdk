@@ -38,28 +38,32 @@ T = TypeVar("T", bound="QuestionPipeline")
 
 @_attrs_define
 class QuestionPipeline:
-    """
-    Attributes:
-        config_type (Literal['QUESTION_PIPELINE'] | Unset): Type of transform configuration Default:
-            'QUESTION_PIPELINE'.
-        seed_generator (BigQuerySeedGenerator | CsvSeedGenerator | FileSetSeedGenerator | GdeltSeedGenerator |
-            MockTransformConfig | NewsSeedGenerator | None | TopicTreeSeedGenerator | Unset): Configuration for seed
-            generation
-        question_generator (ForwardLookingQuestionGenerator | MockTransformConfig | None | QuestionAndLabelGenerator |
-            QuestionGenerator | TemplateQuestionGenerator | Unset): Configuration for question generation
-        deduplication (KeyDeduplication | MockTransformConfig | None | Unset): Deduplication config. Set to
-            KeyDeduplication() to enable exact/fuzzy dedup on question fields.
-        labeler (FileSetDocumentLabeler | MockTransformConfig | None | QdrantRAGLabeler | Unset | WebSearchLabeler):
-            Configuration for labeling. Not needed when using QuestionAndLabelGenerator.
-        context_generators (list[FileSetDocumentContextGenerator | MockTransformConfig | NewsContextGenerator |
-            QdrantContextGenerator | WebSearchContextGenerator] | None | Unset): Optional list of context generators to run
-            before rendering
-        renderer (MockTransformConfig | None | QuestionRenderer | Unset): Optional configuration for rendering the final
-            prompt
-        rollout_generator (MockTransformConfig | None | RolloutGenerator | Unset): Optional configuration for generating
-            rollouts from multiple models
-        scorer (MockTransformConfig | None | RolloutScorer | Unset): Optional configuration for scoring rollouts against
-            ground truth
+    """Serializable config for a question-generation pipeline.
+
+    QuestionPipeline configs are expanded into ordered stage configs at run time.
+    They are not executable Transform wrappers.
+
+        Attributes:
+            config_type (Literal['QUESTION_PIPELINE'] | Unset): Type of transform configuration Default:
+                'QUESTION_PIPELINE'.
+            seed_generator (BigQuerySeedGenerator | CsvSeedGenerator | FileSetSeedGenerator | GdeltSeedGenerator |
+                MockTransformConfig | NewsSeedGenerator | None | TopicTreeSeedGenerator | Unset): Configuration for seed
+                generation
+            question_generator (ForwardLookingQuestionGenerator | MockTransformConfig | None | QuestionAndLabelGenerator |
+                QuestionGenerator | TemplateQuestionGenerator | Unset): Configuration for question generation
+            deduplication (KeyDeduplication | MockTransformConfig | None | Unset): Deduplication config. Set to
+                KeyDeduplication() to enable exact/fuzzy dedup on question fields.
+            labeler (FileSetDocumentLabeler | MockTransformConfig | None | QdrantRAGLabeler | Unset | WebSearchLabeler):
+                Configuration for labeling. Not needed when using QuestionAndLabelGenerator.
+            context_generators (list[FileSetDocumentContextGenerator | MockTransformConfig | NewsContextGenerator |
+                QdrantContextGenerator | WebSearchContextGenerator] | None | Unset): Optional list of context generators to run
+                before rendering
+            renderer (MockTransformConfig | None | QuestionRenderer | Unset): Optional configuration for rendering the final
+                prompt
+            rollout_generator (MockTransformConfig | None | RolloutGenerator | Unset): Optional configuration for generating
+                rollouts from multiple models
+            scorer (MockTransformConfig | None | RolloutScorer | Unset): Optional configuration for scoring rollouts against
+                ground truth
     """
 
     config_type: Literal["QUESTION_PIPELINE"] | Unset = "QUESTION_PIPELINE"
