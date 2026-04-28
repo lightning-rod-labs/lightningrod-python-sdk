@@ -48,14 +48,14 @@ labeler = lr.WebSearchLabeler(answer_type=binary_answer)
 
 # Run pipeline
 pipeline = lr.QuestionPipeline(seed_generator=seeds, question_generator=questioner, labeler=labeler)
-dataset = client.transforms.run(pipeline, max_questions=1000)
+dataset = client.transforms.run(pipeline, max_seeds=1000)
 ```
 
 ## Running the Pipeline
 
-- **`lr.transforms.run(config, input_dataset=None, max_questions=None, max_cost_dollars=None, name=None, detach=False)`** — Submit and wait for completion. Returns a `Dataset`.
-- **`lr.transforms.submit(config, input_dataset=None, max_questions=None, max_cost_dollars=None, name=None)`** — Submit without waiting. Returns a `TransformJob`.
-- **`lr.transforms.estimate_cost(config, max_questions=None)`** — Estimate cost in dollars before running.
+- **`lr.transforms.run(config, input_dataset=None, max_seeds=None, max_cost_dollars=None, name=None, detach=False)`** — Submit and wait for completion. Returns a `Dataset`.
+- **`lr.transforms.submit(config, input_dataset=None, max_seeds=None, max_cost_dollars=None, name=None)`** — Submit without waiting. Returns a `TransformJob`.
+- **`lr.transforms.estimate_cost(config, max_seeds=None)`** — Estimate cost in dollars before running.
 
 Use `detach=True` for long-running jobs so the job continues even if your local process exits.
 
