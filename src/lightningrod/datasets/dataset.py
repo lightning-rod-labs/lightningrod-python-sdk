@@ -71,6 +71,18 @@ class SampleDataset:
             multiple_choice_options=self.multiple_choice_options,
         )
 
+    def exclude(self, sample_ids: List[str]) -> "SampleDataset":
+        excluded_ids = set(sample_ids)
+        samples = [sample for sample in self.samples() if sample.id not in excluded_ids]
+        return SampleDataset(
+            id=self.id,
+            num_rows=len(samples),
+            datasets_client=self._datasets_client,
+            samples=samples,
+            prompt_template=self.prompt_template,
+            multiple_choice_options=self.multiple_choice_options,
+        )
+
     def preview_prompts(
         self,
         include_assistant: bool = False,
@@ -304,3 +316,6 @@ class AsyncDataset:
 
     def subset(self, sample_ids: List[str]) -> "AsyncDataset":
         return AsyncDataset(self._sync_dataset.subset(sample_ids))
+
+    def exclude(self, sample_ids: List[str]) -> "AsyncDataset":
+        return AsyncDataset(self._sync_dataset.exclude(sample_ids))

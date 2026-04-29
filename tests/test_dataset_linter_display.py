@@ -4,7 +4,11 @@ from datetime import datetime, timezone
 
 from rich.console import Console
 
-from lightningrod import display_lint_overview, display_lint_detailed
+from lightningrod import (
+    display_lint_overview,
+    display_lint_detailed,
+    get_lint_affected_sample_ids,
+)
 from lightningrod._generated.models import (
     DatasetLinterRunResponse,
     LinterIssue,
@@ -89,10 +93,49 @@ def test_dataset_linter_display_helpers_are_importable_from_top_level(capsys) ->
 
     display_lint_overview(run)
     display_lint_detailed(run)
+    get_lint_affected_sample_ids(run)
 
     captured = capsys.readouterr()
     assert "Dataset Linter: COMPLETED" in captured.out
     assert "Dataset Linter Details" in captured.out
+
+
+def test_get_lint_affected_sample_ids_defaults_to_warning_and_error() -> None:
+    run = _run()
+    run.rules = [
+        RuleResult(
+            name="mixed_rule",
+            issues=[
+                LinterIssue(
+                    rule="mixed_rule",
+                    severity=Severity.INFO,
+                    message="info issue",
+                    affected_sample_ids=["info-sample"],
+                ),
+                LinterIssue(
+                    rule="mixed_rule",
+                    severity=Severity.WARNING,
+                    message="warning issue",
+                    affected_sample_ids=["sample-1", "sample-2"],
+                ),
+                LinterIssue(
+                    rule="mixed_rule",
+                    severity=Severity.ERROR,
+                    message="error issue",
+                    affected_sample_ids=["sample-2", "sample-3"],
+                ),
+            ],
+        )
+    ]
+
+    assert get_lint_affected_sample_ids(run) == ["sample-1", "sample-2", "sample-3"]
+
+
+def test_get_lint_affected_sample_ids_accepts_custom_severities() -> None:
+    run = _run()
+
+    assert get_lint_affected_sample_ids(run, severities=(Severity.ERROR,)) == ["sample-1", "sample-2"]
+    assert get_lint_affected_sample_ids(run, severities=(Severity.INFO,)) == []
 
 
 def test_dataset_linter_details_display_includes_issue_details() -> None:
