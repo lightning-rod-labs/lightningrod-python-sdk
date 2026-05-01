@@ -18,7 +18,6 @@ def _get_kwargs(
     status: None | TransformJobStatus | Unset = UNSET,
     configuration_id: None | str | Unset = UNSET,
 ) -> dict[str, Any]:
-
     params: dict[str, Any] = {}
 
     params["limit"] = limit
