@@ -14,7 +14,6 @@ from ...types import Response
 def _get_kwargs(
     file_set_id: str,
 ) -> dict[str, Any]:
-
     _kwargs: dict[str, Any] = {
         "method": "post",
         "url": "/filesets/{file_set_id}/upload-credentials".format(

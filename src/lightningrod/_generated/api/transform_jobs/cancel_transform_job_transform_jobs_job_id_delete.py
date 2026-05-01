@@ -13,7 +13,6 @@ from ...types import Response
 def _get_kwargs(
     job_id: str,
 ) -> dict[str, Any]:
-
     _kwargs: dict[str, Any] = {
         "method": "delete",
         "url": "/transform-jobs/{job_id}".format(
