@@ -7,7 +7,7 @@ and returns train/test SampleDatasets.
 import random
 from dataclasses import dataclass, field
 from datetime import date, datetime
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Union, cast
 
 if TYPE_CHECKING:
     from lightningrod.datasets.dataset import SampleDataset
@@ -28,6 +28,7 @@ AnswerType = Union[BinaryAnswerType, ContinuousAnswerType, MultipleChoiceAnswerT
 DaysToResolutionRange = Optional[tuple[Optional[int], Optional[int]]]
 
 TrainingSample = dict[str, Any]
+PrepareReportFormat = Literal["auto", "rich", "text"]
 
 _USE_DEFAULT = object()
 
@@ -910,7 +911,7 @@ def _build_report(
 
 
 def _print_report(report: PrepareReport, verbose: bool) -> None:
-    """Print the report to stdout and raise if unhealthy (non-notebook path)."""
+    """Print the report to stdout."""
     stats = report.stats
     if verbose:
         print(f"[prepare_for_training] Starting with {stats.total} samples")
@@ -955,7 +956,7 @@ def _print_report(report: PrepareReport, verbose: bool) -> None:
             lines.append(issue.message)
             if issue.tips:
                 lines.append("Tips:\n" + "\n".join(f"  - {t}" for t in issue.tips))
-        raise ValueError("\n\n".join(lines))
+        print("\n\n".join(lines))
 
 
 def prepare_for_training(
@@ -965,6 +966,7 @@ def prepare_for_training(
     dedup: DedupParams | None = cast(Any, _USE_DEFAULT),
     split: SplitParams | None = cast(Any, _USE_DEFAULT),
     verbose: bool = True,
+    report_format: PrepareReportFormat = "auto",
 ) -> tuple["SampleDataset", "SampleDataset"]:
     """Prepare a dataset for model training: filter, deduplicate, split into train/test.
 
@@ -981,6 +983,9 @@ def prepare_for_training(
         split: Controls train/test split strategy, size, and leakage filtering. See :class:`SplitParams`.
             Omit to use defaults; pass ``None`` to skip splitting (all samples in train, empty test).
         verbose: When True, print step-by-step stats.
+        report_format: Controls how the preparation report is printed. ``"auto"`` uses
+            Rich in notebooks and plain text elsewhere; pass ``"rich"`` or ``"text"``
+            to override that choice.
 
     Returns:
         (train_dataset, test_dataset): SampleDatasets ready for training/eval.
@@ -1018,7 +1023,9 @@ def prepare_for_training(
 
     report = _build_report(stats, split=split_params, filter=filter_params)
     from lightningrod._display import _is_notebook, display_prepare_report
-    if _is_notebook():
+    if report_format not in ("auto", "rich", "text"):
+        raise ValueError("report_format must be one of: 'auto', 'rich', 'text'")
+    if report_format == "rich" or (report_format == "auto" and _is_notebook()):
         display_prepare_report(report, verbose=verbose)
     else:
         _print_report(report, verbose=verbose)
