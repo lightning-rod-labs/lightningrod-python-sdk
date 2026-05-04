@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from io import BytesIO
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 import httpx
@@ -31,6 +33,9 @@ from lightningrod.training.client import (
     sample_dataset_to_config,
 )
 from lightningrod.datasets.dataset import SampleDataset
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 def _safe_filename(value: str) -> str:
@@ -106,7 +111,7 @@ class EvalsClient:
         paths: dict[str, Path] = {}
         with httpx.Client() as http_client:
             for model_id, download in downloads.items():
-                suffix = Path(urlparse(download.download_url).path).suffix or ".jsonl"
+                suffix = Path(urlparse(download.download_url).path).suffix or ".parquet"
                 path = (
                     output_path
                     / f"{_safe_filename(eval_id)}_{_safe_filename(model_id)}{suffix}"
@@ -121,6 +126,31 @@ class EvalsClient:
                 paths[model_id] = path
 
         return paths
+
+    def load_results(
+        self,
+        eval_id: str,
+        *,
+        timeout: float = 1800.0,
+    ) -> dict[str, "pd.DataFrame"]:
+        """Load eval rollout parquet files as pandas DataFrames by model id."""
+        try:
+            import pandas as pd
+        except ImportError as exc:
+            raise ImportError(
+                "pandas is required to load eval results as DataFrames. "
+                "Install it with `pip install pandas`."
+            ) from exc
+
+        downloads = self.get_results(eval_id).results.additional_properties
+        dataframes: dict[str, pd.DataFrame] = {}
+        with httpx.Client() as http_client:
+            for model_id, download in downloads.items():
+                response = http_client.get(download.download_url, timeout=timeout)
+                response.raise_for_status()
+                dataframes[model_id] = pd.read_parquet(BytesIO(response.content))
+
+        return dataframes
 
     def run(
         self,
