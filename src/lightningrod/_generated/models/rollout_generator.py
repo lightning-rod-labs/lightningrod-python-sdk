@@ -24,6 +24,9 @@ class RolloutGenerator:
         prompt_template (None | str | Unset): Prompt template with {column} placeholders. If None, uses sample.prompt
         input_columns (list[str] | Unset): Columns to substitute into template (from meta)
         output_schema (Any | None | Unset): Pydantic model for structured output
+        max_samples (int | None | Unset): Max samples to generate rollouts for. Remaining samples pass through
+            unchanged.
+        seed (int | Unset): Random seed for sample selection when max_samples is set Default: 42.
     """
 
     models: list[ModelConfig]
@@ -31,6 +34,8 @@ class RolloutGenerator:
     prompt_template: None | str | Unset = UNSET
     input_columns: list[str] | Unset = UNSET
     output_schema: Any | None | Unset = UNSET
+    max_samples: int | None | Unset = UNSET
+    seed: int | Unset = 42
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -57,6 +62,14 @@ class RolloutGenerator:
         else:
             output_schema = self.output_schema
 
+        max_samples: int | None | Unset
+        if isinstance(self.max_samples, Unset):
+            max_samples = UNSET
+        else:
+            max_samples = self.max_samples
+
+        seed = self.seed
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -72,6 +85,10 @@ class RolloutGenerator:
             field_dict["input_columns"] = input_columns
         if output_schema is not UNSET:
             field_dict["output_schema"] = output_schema
+        if max_samples is not UNSET:
+            field_dict["max_samples"] = max_samples
+        if seed is not UNSET:
+            field_dict["seed"] = seed
 
         return field_dict
 
@@ -111,12 +128,25 @@ class RolloutGenerator:
 
         output_schema = _parse_output_schema(d.pop("output_schema", UNSET))
 
+        def _parse_max_samples(data: object) -> int | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(int | None | Unset, data)
+
+        max_samples = _parse_max_samples(d.pop("max_samples", UNSET))
+
+        seed = d.pop("seed", UNSET)
+
         rollout_generator = cls(
             models=models,
             config_type=config_type,
             prompt_template=prompt_template,
             input_columns=input_columns,
             output_schema=output_schema,
+            max_samples=max_samples,
+            seed=seed,
         )
 
         rollout_generator.additional_properties = d

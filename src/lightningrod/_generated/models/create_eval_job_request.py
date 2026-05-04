@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -10,6 +10,7 @@ from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.eval_model import EvalModel
+    from ..models.reasoning_comparison_options import ReasoningComparisonOptions
     from ..models.sample_dataset_config import SampleDatasetConfig
 
 
@@ -44,14 +45,18 @@ class CreateEvalJobRequest:
             cut"}'
         models (list[EvalModel]):
         temperature (float | Unset):  Default: 0.0.
+        reasoning_comparison (None | ReasoningComparisonOptions | Unset):
     """
 
     dataset: SampleDatasetConfig
     models: list[EvalModel]
     temperature: float | Unset = 0.0
+    reasoning_comparison: None | ReasoningComparisonOptions | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.reasoning_comparison_options import ReasoningComparisonOptions
+
         dataset = self.dataset.to_dict()
 
         models = []
@@ -60,6 +65,14 @@ class CreateEvalJobRequest:
             models.append(models_item)
 
         temperature = self.temperature
+
+        reasoning_comparison: dict[str, Any] | None | Unset
+        if isinstance(self.reasoning_comparison, Unset):
+            reasoning_comparison = UNSET
+        elif isinstance(self.reasoning_comparison, ReasoningComparisonOptions):
+            reasoning_comparison = self.reasoning_comparison.to_dict()
+        else:
+            reasoning_comparison = self.reasoning_comparison
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -71,12 +84,15 @@ class CreateEvalJobRequest:
         )
         if temperature is not UNSET:
             field_dict["temperature"] = temperature
+        if reasoning_comparison is not UNSET:
+            field_dict["reasoning_comparison"] = reasoning_comparison
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.eval_model import EvalModel
+        from ..models.reasoning_comparison_options import ReasoningComparisonOptions
         from ..models.sample_dataset_config import SampleDatasetConfig
 
         d = dict(src_dict)
@@ -91,10 +107,28 @@ class CreateEvalJobRequest:
 
         temperature = d.pop("temperature", UNSET)
 
+        def _parse_reasoning_comparison(data: object) -> None | ReasoningComparisonOptions | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                reasoning_comparison_type_0 = ReasoningComparisonOptions.from_dict(data)
+
+                return reasoning_comparison_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | ReasoningComparisonOptions | Unset, data)
+
+        reasoning_comparison = _parse_reasoning_comparison(d.pop("reasoning_comparison", UNSET))
+
         create_eval_job_request = cls(
             dataset=dataset,
             models=models,
             temperature=temperature,
+            reasoning_comparison=reasoning_comparison,
         )
 
         create_eval_job_request.additional_properties = d

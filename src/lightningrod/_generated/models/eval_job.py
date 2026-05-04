@@ -14,6 +14,7 @@ from ..types import UNSET, Unset
 if TYPE_CHECKING:
     from ..models.eval_config import EvalConfig
     from ..models.eval_job_metrics_type_0 import EvalJobMetricsType0
+    from ..models.eval_job_reasoning_comparison_report_type_0 import EvalJobReasoningComparisonReportType0
 
 
 T = TypeVar("T", bound="EvalJob")
@@ -33,6 +34,8 @@ class EvalJob:
         current_step (int | None | Unset):
         total_steps (int | None | Unset):
         metrics (EvalJobMetricsType0 | None | Unset):
+        result_model_ids (list[str] | None | Unset):
+        reasoning_comparison_report (EvalJobReasoningComparisonReportType0 | None | Unset):
         error_message (None | str | Unset):
     """
 
@@ -46,11 +49,14 @@ class EvalJob:
     current_step: int | None | Unset = UNSET
     total_steps: int | None | Unset = UNSET
     metrics: EvalJobMetricsType0 | None | Unset = UNSET
+    result_model_ids: list[str] | None | Unset = UNSET
+    reasoning_comparison_report: EvalJobReasoningComparisonReportType0 | None | Unset = UNSET
     error_message: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.eval_job_metrics_type_0 import EvalJobMetricsType0
+        from ..models.eval_job_reasoning_comparison_report_type_0 import EvalJobReasoningComparisonReportType0
 
         id = self.id
 
@@ -90,6 +96,23 @@ class EvalJob:
         else:
             metrics = self.metrics
 
+        result_model_ids: list[str] | None | Unset
+        if isinstance(self.result_model_ids, Unset):
+            result_model_ids = UNSET
+        elif isinstance(self.result_model_ids, list):
+            result_model_ids = self.result_model_ids
+
+        else:
+            result_model_ids = self.result_model_ids
+
+        reasoning_comparison_report: dict[str, Any] | None | Unset
+        if isinstance(self.reasoning_comparison_report, Unset):
+            reasoning_comparison_report = UNSET
+        elif isinstance(self.reasoning_comparison_report, EvalJobReasoningComparisonReportType0):
+            reasoning_comparison_report = self.reasoning_comparison_report.to_dict()
+        else:
+            reasoning_comparison_report = self.reasoning_comparison_report
+
         error_message: None | str | Unset
         if isinstance(self.error_message, Unset):
             error_message = UNSET
@@ -116,6 +139,10 @@ class EvalJob:
             field_dict["total_steps"] = total_steps
         if metrics is not UNSET:
             field_dict["metrics"] = metrics
+        if result_model_ids is not UNSET:
+            field_dict["result_model_ids"] = result_model_ids
+        if reasoning_comparison_report is not UNSET:
+            field_dict["reasoning_comparison_report"] = reasoning_comparison_report
         if error_message is not UNSET:
             field_dict["error_message"] = error_message
 
@@ -125,6 +152,7 @@ class EvalJob:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.eval_config import EvalConfig
         from ..models.eval_job_metrics_type_0 import EvalJobMetricsType0
+        from ..models.eval_job_reasoning_comparison_report_type_0 import EvalJobReasoningComparisonReportType0
 
         d = dict(src_dict)
         id = d.pop("id")
@@ -183,6 +211,40 @@ class EvalJob:
 
         metrics = _parse_metrics(d.pop("metrics", UNSET))
 
+        def _parse_result_model_ids(data: object) -> list[str] | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                result_model_ids_type_0 = cast(list[str], data)
+
+                return result_model_ids_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(list[str] | None | Unset, data)
+
+        result_model_ids = _parse_result_model_ids(d.pop("result_model_ids", UNSET))
+
+        def _parse_reasoning_comparison_report(data: object) -> EvalJobReasoningComparisonReportType0 | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                reasoning_comparison_report_type_0 = EvalJobReasoningComparisonReportType0.from_dict(data)
+
+                return reasoning_comparison_report_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(EvalJobReasoningComparisonReportType0 | None | Unset, data)
+
+        reasoning_comparison_report = _parse_reasoning_comparison_report(d.pop("reasoning_comparison_report", UNSET))
+
         def _parse_error_message(data: object) -> None | str | Unset:
             if data is None:
                 return data
@@ -203,6 +265,8 @@ class EvalJob:
             current_step=current_step,
             total_steps=total_steps,
             metrics=metrics,
+            result_model_ids=result_model_ids,
+            reasoning_comparison_report=reasoning_comparison_report,
             error_message=error_message,
         )
 

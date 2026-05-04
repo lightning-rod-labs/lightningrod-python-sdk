@@ -7,13 +7,13 @@ from lightningrod._generated.api.evaluations import (
     list_eval_jobs_evaluations_get,
 )
 from lightningrod._generated.client import AuthenticatedClient
-from lightningrod._generated.models import EvalModel
+from lightningrod._generated.models import EvalModel, ReasoningComparisonOptions
 from lightningrod._generated.models.create_eval_job_request import CreateEvalJobRequest
 from lightningrod._generated.models.eval_job import EvalJob
 from lightningrod._generated.models.eval_job_list_response import EvalJobListResponse
 from lightningrod._generated.models.eval_job_status import EvalJobStatus
 from lightningrod._generated.models.training_job import TrainingJob
-from lightningrod._generated.types import Unset
+from lightningrod._generated.types import UNSET, Unset
 from lightningrod._errors import handle_response_error
 from lightningrod.training.client import (
     SFTTrainingConfig,
@@ -31,11 +31,14 @@ class EvalsClient:
         self,
         dataset: SampleDataset,
         models: list[EvalModel],
+        *,
+        reasoning_comparison: ReasoningComparisonOptions | None | Unset = UNSET,
     ) -> EvalJob:
         dataset_config = sample_dataset_to_config(dataset)
         body = CreateEvalJobRequest(
             models=models,
             dataset=dataset_config,
+            reasoning_comparison=reasoning_comparison,
         )
         response = create_eval_job_evaluations_post.sync_detailed(
             client=self._client,
@@ -67,13 +70,19 @@ class EvalsClient:
         self,
         dataset: SampleDataset,
         models: list[EvalModel],
+        *,
+        reasoning_comparison: ReasoningComparisonOptions | None | Unset = UNSET,
     ) -> EvalJob:
         """Create an eval job, poll until completion, and show live progress in notebooks.
 
         For the usual base-vs-fine-tuned benchmark after GRPO training, use
         :meth:`run_from_training_job` instead; it fills in models from the training config and job.
         """
-        eval_job = self.create(models=models, dataset=dataset)
+        eval_job = self.create(
+            models=models,
+            dataset=dataset,
+            reasoning_comparison=reasoning_comparison,
+        )
 
         if eval_job.status == EvalJobStatus.FAILED:
             error_msg = (
@@ -100,12 +109,15 @@ class EvalsClient:
         dataset: SampleDataset,
         *,
         extra_models: list[EvalModel] | None = None,
+        reasoning_comparison_sample_size: int = 0,
     ) -> EvalJob:
         """Like :meth:`run` but builds the model list from training state.
 
         The benchmark includes two models, in order: the **base** checkpoint
         (``config.base_model_id``) and the **fine-tuned** model (``job.model_id``). Use
         ``extra_models`` only for additional models (e.g. third-party baselines).
+        Set ``reasoning_comparison_sample_size`` to compare base vs. fine-tuned reasoning.
+        Set ``reasoning_comparison_sample_size`` to 0 to disable reasoning comparison.
 
         Raises:
             NotImplementedError: If ``config`` is :class:`~lightningrod.training.client.SFTTrainingConfig`
@@ -132,4 +144,16 @@ class EvalsClient:
         if extra_models:
             models.extend(extra_models)
 
-        return self.run(dataset, models)
+        reasoning_options: ReasoningComparisonOptions | Unset = UNSET
+        if reasoning_comparison_sample_size > 0:
+            reasoning_options = ReasoningComparisonOptions(
+                base_model_id=config.base_model_id,
+                trained_model_id=finetuned_id,
+                n=reasoning_comparison_sample_size,
+            )
+
+        return self.run(
+            dataset,
+            models,
+            reasoning_comparison=reasoning_options,
+        )

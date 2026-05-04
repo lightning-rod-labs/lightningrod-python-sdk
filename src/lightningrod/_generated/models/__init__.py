@@ -1,6 +1,7 @@
 """Contains all the data models used in inputs/outputs"""
 
 from .answer_parser_type import AnswerParserType
+from .available_rule_model import AvailableRuleModel
 from .balance_response import BalanceResponse
 from .batch_upload_request import BatchUploadRequest
 from .batch_upload_response import BatchUploadResponse
@@ -25,6 +26,10 @@ from .create_file_upload_response_metadata_type_0 import CreateFileUploadRespons
 from .create_training_job_request import CreateTrainingJobRequest
 from .create_transform_job_request import CreateTransformJobRequest
 from .csv_seed_generator import CsvSeedGenerator
+from .dataset_linter_run_list_item import DatasetLinterRunListItem
+from .dataset_linter_run_request import DatasetLinterRunRequest
+from .dataset_linter_run_response import DatasetLinterRunResponse
+from .dataset_linter_run_status import DatasetLinterRunStatus
 from .dataset_metadata import DatasetMetadata
 from .document_context import DocumentContext
 from .estimate_cost_request import EstimateCostRequest
@@ -35,8 +40,12 @@ from .eval_config import EvalConfig
 from .eval_job import EvalJob
 from .eval_job_list_response import EvalJobListResponse
 from .eval_job_metrics_type_0 import EvalJobMetricsType0
+from .eval_job_reasoning_comparison_report_type_0 import EvalJobReasoningComparisonReportType0
 from .eval_job_status import EvalJobStatus
 from .eval_model import EvalModel
+from .eval_model_result_download import EvalModelResultDownload
+from .eval_results_download_response import EvalResultsDownloadResponse
+from .eval_results_download_response_results import EvalResultsDownloadResponseResults
 from .event_usage_summary import EventUsageSummary
 from .file_set import FileSet
 from .file_set_document_context_generator import FileSetDocumentContextGenerator
@@ -56,8 +65,12 @@ from .job_usage_by_step_type_0 import JobUsageByStepType0
 from .key_deduplication import KeyDeduplication
 from .key_match_config import KeyMatchConfig
 from .label import Label
+from .linter_issue import LinterIssue
+from .linter_issue_meta import LinterIssueMeta
+from .list_dataset_linter_runs_response import ListDatasetLinterRunsResponse
 from .list_datasets_response import ListDatasetsResponse
 from .list_file_sets_response import ListFileSetsResponse
+from .list_rules_response import ListRulesResponse
 from .list_transform_jobs_response import ListTransformJobsResponse
 from .llm_model_usage_summary import LLMModelUsageSummary
 from .metadata_field_definition import MetadataFieldDefinition
@@ -91,6 +104,7 @@ from .question_generator import QuestionGenerator
 from .question_pipeline import QuestionPipeline
 from .question_renderer import QuestionRenderer
 from .rag_context import RAGContext
+from .reasoning_comparison_options import ReasoningComparisonOptions
 from .response_message import ResponseMessage
 from .reward_function_type import RewardFunctionType
 from .rollout import Rollout
@@ -98,10 +112,16 @@ from .rollout_generator import RolloutGenerator
 from .rollout_parsed_output_type_0 import RolloutParsedOutputType0
 from .rollout_scorer import RolloutScorer
 from .rollout_scorer_multiple_choice_options_type_0 import RolloutScorerMultipleChoiceOptionsType0
+from .rule_result import RuleResult
+from .rule_result_stats import RuleResultStats
+from .run_summary import RunSummary
+from .run_summary_by_rule import RunSummaryByRule
+from .run_summary_by_severity import RunSummaryBySeverity
 from .sample import Sample
 from .sample_dataset_config import SampleDatasetConfig
 from .sample_meta import SampleMeta
 from .seed import Seed
+from .severity import Severity
 from .sft_training_config import SFTTrainingConfig
 from .step_cost_breakdown import StepCostBreakdown
 from .template_question_generator import TemplateQuestionGenerator
@@ -132,6 +152,7 @@ from .web_search_labeler import WebSearchLabeler
 
 __all__ = (
     "AnswerParserType",
+    "AvailableRuleModel",
     "BalanceResponse",
     "BatchUploadRequest",
     "BatchUploadResponse",
@@ -156,6 +177,10 @@ __all__ = (
     "CreateTrainingJobRequest",
     "CreateTransformJobRequest",
     "CsvSeedGenerator",
+    "DatasetLinterRunListItem",
+    "DatasetLinterRunRequest",
+    "DatasetLinterRunResponse",
+    "DatasetLinterRunStatus",
     "DatasetMetadata",
     "DocumentContext",
     "EstimateCostRequest",
@@ -166,8 +191,12 @@ __all__ = (
     "EvalJob",
     "EvalJobListResponse",
     "EvalJobMetricsType0",
+    "EvalJobReasoningComparisonReportType0",
     "EvalJobStatus",
     "EvalModel",
+    "EvalModelResultDownload",
+    "EvalResultsDownloadResponse",
+    "EvalResultsDownloadResponseResults",
     "EventUsageSummary",
     "FileSet",
     "FileSetDocumentContextGenerator",
@@ -187,8 +216,12 @@ __all__ = (
     "KeyDeduplication",
     "KeyMatchConfig",
     "Label",
+    "LinterIssue",
+    "LinterIssueMeta",
+    "ListDatasetLinterRunsResponse",
     "ListDatasetsResponse",
     "ListFileSetsResponse",
+    "ListRulesResponse",
     "ListTransformJobsResponse",
     "LLMModelUsageSummary",
     "MetadataFieldDefinition",
@@ -220,6 +253,7 @@ __all__ = (
     "QuestionPipeline",
     "QuestionRenderer",
     "RAGContext",
+    "ReasoningComparisonOptions",
     "ResponseMessage",
     "RewardFunctionType",
     "Rollout",
@@ -227,10 +261,16 @@ __all__ = (
     "RolloutParsedOutputType0",
     "RolloutScorer",
     "RolloutScorerMultipleChoiceOptionsType0",
+    "RuleResult",
+    "RuleResultStats",
+    "RunSummary",
+    "RunSummaryByRule",
+    "RunSummaryBySeverity",
     "Sample",
     "SampleDatasetConfig",
     "SampleMeta",
     "Seed",
+    "Severity",
     "SFTTrainingConfig",
     "StepCostBreakdown",
     "TemplateQuestionGenerator",
