@@ -1,13 +1,23 @@
 from __future__ import annotations
 
+from pathlib import Path
+from urllib.parse import urlparse
+
+import httpx
+
 from lightningrod._display import _is_notebook, display_error, run_eval_live_display
 from lightningrod._generated.api.evaluations import (
     create_eval_job_evaluations_post,
+    get_eval_results_evaluations_eval_id_results_get,
     get_eval_job_evaluations_eval_id_get,
     list_eval_jobs_evaluations_get,
 )
 from lightningrod._generated.client import AuthenticatedClient
-from lightningrod._generated.models import EvalModel, ReasoningComparisonOptions
+from lightningrod._generated.models import (
+    EvalModel,
+    EvalResultsDownloadResponse,
+    ReasoningComparisonOptions,
+)
 from lightningrod._generated.models.create_eval_job_request import CreateEvalJobRequest
 from lightningrod._generated.models.eval_job import EvalJob
 from lightningrod._generated.models.eval_job_list_response import EvalJobListResponse
@@ -21,6 +31,13 @@ from lightningrod.training.client import (
     sample_dataset_to_config,
 )
 from lightningrod.datasets.dataset import SampleDataset
+
+
+def _safe_filename(value: str) -> str:
+    return (
+        "".join(c if c.isalnum() or c in "._-" else "_" for c in value).strip("_")
+        or "results"
+    )
 
 
 class EvalsClient:
@@ -65,6 +82,45 @@ class EvalsClient:
             limit=limit,
         )
         return handle_response_error(response, "list eval jobs")
+
+    def get_results(self, eval_id: str) -> EvalResultsDownloadResponse:
+        """Get signed download URLs for eval rollout results."""
+        response = get_eval_results_evaluations_eval_id_results_get.sync_detailed(
+            eval_id=eval_id,
+            client=self._client,
+        )
+        return handle_response_error(response, "get eval results")
+
+    def download_results(
+        self,
+        eval_id: str,
+        output_dir: str | Path = ".",
+        *,
+        timeout: float = 1800.0,
+    ) -> dict[str, Path]:
+        """Download eval rollout result files and return paths by model id."""
+        downloads = self.get_results(eval_id).results.additional_properties
+        output_path = Path(output_dir)
+        output_path.mkdir(parents=True, exist_ok=True)
+
+        paths: dict[str, Path] = {}
+        with httpx.Client() as http_client:
+            for model_id, download in downloads.items():
+                suffix = Path(urlparse(download.download_url).path).suffix or ".jsonl"
+                path = (
+                    output_path
+                    / f"{_safe_filename(eval_id)}_{_safe_filename(model_id)}{suffix}"
+                )
+                with http_client.stream(
+                    "GET", download.download_url, timeout=timeout
+                ) as response:
+                    response.raise_for_status()
+                    with path.open("wb") as file:
+                        for chunk in response.iter_bytes():
+                            file.write(chunk)
+                paths[model_id] = path
+
+        return paths
 
     def run(
         self,
