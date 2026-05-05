@@ -23,6 +23,11 @@ class FileSetSeedGenerator:
         chunk_overlap (int | Unset): Number of overlapping characters between consecutive chunks Default: 200.
         metadata_filters (list[str] | None | Unset): Optional list of metadata filters to select which files to process.
             Files matching ANY filter will be included. (e.g., ["ticker='AAL'", "ticker='MSFT'"])
+        summarization_instructions (None | str | Unset): If set, each chunk is summarized by an LLM before being emitted
+            as seed_text. This prompt is used as the system instruction, and the chunk text is supplied in a generic user
+            message. The summary replaces seed_text; the raw chunk is kept in Sample.meta['original_chunk_text'].
+        summarization_model (str | Unset): OpenRouter model used for chunk summarization (only used when
+            summarization_prompt is set). Default: 'google/gemini-3-flash-preview'.
     """
 
     file_set_id: str
@@ -30,6 +35,8 @@ class FileSetSeedGenerator:
     chunk_size: int | Unset = 4000
     chunk_overlap: int | Unset = 200
     metadata_filters: list[str] | None | Unset = UNSET
+    summarization_instructions: None | str | Unset = UNSET
+    summarization_model: str | Unset = "google/gemini-3-flash-preview"
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -50,6 +57,14 @@ class FileSetSeedGenerator:
         else:
             metadata_filters = self.metadata_filters
 
+        summarization_instructions: None | str | Unset
+        if isinstance(self.summarization_instructions, Unset):
+            summarization_instructions = UNSET
+        else:
+            summarization_instructions = self.summarization_instructions
+
+        summarization_model = self.summarization_model
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -65,6 +80,10 @@ class FileSetSeedGenerator:
             field_dict["chunk_overlap"] = chunk_overlap
         if metadata_filters is not UNSET:
             field_dict["metadata_filters"] = metadata_filters
+        if summarization_instructions is not UNSET:
+            field_dict["summarization_instructions"] = summarization_instructions
+        if summarization_model is not UNSET:
+            field_dict["summarization_model"] = summarization_model
 
         return field_dict
 
@@ -98,12 +117,25 @@ class FileSetSeedGenerator:
 
         metadata_filters = _parse_metadata_filters(d.pop("metadata_filters", UNSET))
 
+        def _parse_summarization_instructions(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        summarization_instructions = _parse_summarization_instructions(d.pop("summarization_instructions", UNSET))
+
+        summarization_model = d.pop("summarization_model", UNSET)
+
         file_set_seed_generator = cls(
             file_set_id=file_set_id,
             config_type=config_type,
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
             metadata_filters=metadata_filters,
+            summarization_instructions=summarization_instructions,
+            summarization_model=summarization_model,
         )
 
         file_set_seed_generator.additional_properties = d

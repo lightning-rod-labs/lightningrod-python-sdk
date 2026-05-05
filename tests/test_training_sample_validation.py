@@ -11,7 +11,9 @@ from lightningrod.datasets.dataset import SampleDataset
 from lightningrod.training.samples import (
     DedupParams,
     FilterParams,
+    PrepareStats,
     SplitParams,
+    filter_samples,
     prepare_for_training,
     to_record,
 )
@@ -31,6 +33,21 @@ def _dataset(samples: list[Sample]) -> SampleDataset:
         datasets_client=_DummyDatasetsClient(),
         samples=samples,
     )
+
+
+def test_dataset_exclude_returns_dataset_without_matching_samples() -> None:
+    dataset = _dataset([
+        Sample(id="keep-1"),
+        Sample(id="drop-1"),
+        Sample(id="keep-2"),
+    ])
+
+    filtered = dataset.exclude(["drop-1", "unknown"])
+
+    assert filtered.id == dataset.id
+    assert filtered.num_rows == 2
+    assert filtered.sample_ids == ["keep-1", "keep-2"]
+    assert [sample.id for sample in filtered.samples()] == ["keep-1", "keep-2"]
 
 
 def test_create_sample_requires_answer_type_when_label_provided() -> None:
@@ -85,7 +102,9 @@ def test_filter_samples_drops_empty_label_value_and_counts_stat() -> None:
     assert stats.filter_kept == 0
 
 
-def test_prepare_for_training_raises_when_all_samples_dropped_for_bad_labels() -> None:
+def test_prepare_for_training_reports_but_does_not_raise_when_all_samples_dropped_for_bad_labels(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     bad = Sample(
         id="s-bad-binary",
         is_valid=True,
@@ -94,8 +113,37 @@ def test_prepare_for_training_raises_when_all_samples_dropped_for_bad_labels() -
     )
     dataset = _dataset([bad])
 
-    with pytest.raises(ValueError, match="Unhealthy split"):
-        prepare_for_training(dataset, verbose=False)
+    train, test = prepare_for_training(dataset, verbose=False, report_format="text")
+
+    assert train.num_rows == 0
+    assert test.num_rows == 0
+    assert "Unhealthy split" in capsys.readouterr().out
+
+
+def test_prepare_for_training_allows_rich_report_override(monkeypatch: pytest.MonkeyPatch) -> None:
+    import lightningrod.training.samples as samples_mod
+    import lightningrod._display as display_mod
+
+    called = False
+
+    def fake_display_prepare_report(report: object, verbose: bool = True) -> None:
+        nonlocal called
+        called = True
+
+    sample = Sample(
+        id="s-ok",
+        is_valid=True,
+        seed=Seed(seed_text="seed"),
+        label=Label(label="yes", label_confidence=1.0, answer_type="binary"),
+    )
+    dataset = _dataset([sample])
+
+    monkeypatch.setattr(samples_mod, "_print_report", lambda report, verbose: None)
+    monkeypatch.setattr(display_mod, "display_prepare_report", fake_display_prepare_report)
+
+    prepare_for_training(dataset, split=None, verbose=False, report_format="rich")
+
+    assert called
 
 
 def test_to_record_raises_clear_error_for_missing_answer_type() -> None:

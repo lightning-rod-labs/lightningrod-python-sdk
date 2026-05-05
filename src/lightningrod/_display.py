@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import math
 from typing import Any, Callable, Optional
 
@@ -37,6 +38,105 @@ def _format_duration(seconds: float) -> str:
     minutes = int(seconds // 60)
     secs = int(seconds % 60)
     return f"{minutes}m {secs}s"
+
+
+def _format_linter_duration(milliseconds: Any) -> str:
+    if not _is_set(milliseconds):
+        return "-"
+    if milliseconds < 1000:
+        return f"{milliseconds}ms"
+    return f"{milliseconds / 1000:.1f}s"
+
+
+def _format_linter_datetime(value: Any) -> str:
+    if not _is_set(value):
+        return "-"
+    return value.isoformat() if hasattr(value, "isoformat") else str(value)
+
+
+def _linter_status_style(status: str) -> str:
+    return {
+        "COMPLETED": "bold bright_green",
+        "FAILED": "bold bright_red",
+        "RUNNING": "bold bright_blue",
+        "PENDING": "bold yellow",
+    }.get(status.upper(), "bold")
+
+
+def _linter_severity_style(severity: str) -> str:
+    return {
+        "error": "bold bright_red",
+        "warning": "bold yellow",
+        "info": "bright_blue",
+    }.get(severity.lower(), "dim")
+
+
+def _linter_severity_order(item: tuple[str, int]) -> tuple[int, str]:
+    return ({"error": 0, "warning": 1, "info": 2}.get(item[0].lower(), 99), item[0])
+
+
+def _linter_severity_rank(severity: str) -> int:
+    return {"error": 0, "warning": 1, "info": 2}.get(severity.lower(), 99)
+
+
+def _linter_count_map(value: Any) -> dict[str, int]:
+    if not _is_set(value):
+        return {}
+    if hasattr(value, "additional_properties"):
+        return dict(value.additional_properties)
+    if isinstance(value, dict):
+        return value
+    return {}
+
+
+def _linter_rule_issue_count(rule: Any) -> int:
+    return len(rule.issues) if _is_set(rule.issues) else 0
+
+
+def _linter_rule_severity_counts(rule: Any) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    if not _is_set(rule.issues):
+        return counts
+    for issue in rule.issues:
+        severity = getattr(issue.severity, "value", issue.severity)
+        severity = str(severity)
+        counts[severity] = counts.get(severity, 0) + 1
+    return counts
+
+
+def _linter_rule_sort_key(rule: Any) -> tuple[int, int, str]:
+    counts = _linter_rule_severity_counts(rule)
+    highest_severity = min((_linter_severity_rank(severity) for severity in counts), default=99)
+    return (highest_severity, -_linter_rule_issue_count(rule), rule.name)
+
+
+def _linter_issue_sort_key(issue: Any) -> tuple[int, int, str]:
+    severity = str(getattr(issue.severity, "value", issue.severity))
+    affected_count = len(issue.affected_sample_ids) if _is_set(issue.affected_sample_ids) else 0
+    return (_linter_severity_rank(severity), -affected_count, issue.message)
+
+
+def _format_linter_counts(counts: dict[str, int]) -> Text:
+    if not counts:
+        return Text("0", style="dim")
+    text = Text()
+    for index, (name, count) in enumerate(sorted(counts.items(), key=_linter_severity_order)):
+        if index:
+            text.append(", ")
+        text.append(f"{name}: {count}", style=_linter_severity_style(name))
+    return text
+
+
+def _format_linter_value(value: Any, max_length: int = 120) -> str:
+    if not _is_set(value):
+        return "-"
+    if hasattr(value, "to_dict"):
+        value = value.to_dict()
+    if isinstance(value, (dict, list)):
+        formatted = json.dumps(value, default=str, sort_keys=True)
+    else:
+        formatted = str(value)
+    return formatted if len(formatted) <= max_length else formatted[: max_length - 3] + "..."
 
 
 def _build_cost_lines(job: TrainingJob | EvalJob) -> list[RenderableType]:
@@ -697,6 +797,176 @@ def display_prepare_report(report: Any, verbose: bool = True) -> None:
                     renderables.append(Text(f"    • {tip}"))
 
     console.print(Panel(Group(*renderables), border_style=border, padding=(1, 2)))
+
+
+def build_dataset_linter_run_overview(run: Any) -> RenderableType:
+    status = str(run.status)
+    total_issues = 0
+    severity_counts: dict[str, int] = {}
+    rule_counts: dict[str, int] = {}
+
+    if _is_set(run.summary):
+        total_issues = run.summary.total_issues
+        severity_counts = _linter_count_map(run.summary.by_severity)
+        rule_counts = _linter_count_map(run.summary.by_rule)
+    elif _is_set(run.rules):
+        for rule in run.rules:
+            count = _linter_rule_issue_count(rule)
+            total_issues += count
+            rule_counts[rule.name] = count
+            for severity, severity_count in _linter_rule_severity_counts(rule).items():
+                severity_counts[severity] = severity_counts.get(severity, 0) + severity_count
+
+    border = "bright_green" if status.upper() == "COMPLETED" and total_issues == 0 else "yellow"
+    if status.upper() == "FAILED" or _is_set(run.error_message):
+        border = "bright_red"
+
+    renderables: list[RenderableType] = [
+        _safe_markup(f"[{_linter_status_style(status)}]>> Dataset Linter: {escape(status)}[/{_linter_status_style(status)}]"),
+        Text(""),
+        _safe_markup(f"  [bold]Run ID:[/bold]      {escape(run.id)}"),
+        _safe_markup(f"  [bold]Dataset:[/bold]     {escape(run.dataset_id)}"),
+        _safe_markup(f"  [bold]Created:[/bold]     {_format_linter_datetime(run.created_at)}"),
+        _safe_markup(f"  [bold]Updated:[/bold]     {_format_linter_datetime(run.updated_at)}"),
+        _safe_markup(f"  [bold]Sample size:[/bold] {run.sample_size if run.sample_size is not None else 'default'}"),
+        Text(""),
+        _safe_markup(f"  [bold]Issues:[/bold]      {total_issues}"),
+    ]
+
+    if severity_counts:
+        renderables.append(Text("  Severity:    ") + _format_linter_counts(severity_counts))
+
+    if _is_set(run.error_message):
+        renderables.append(Text(""))
+        renderables.append(Text(str(run.error_message), style="bold bright_red"))
+
+    if rule_counts or _is_set(run.rules):
+        table = Table(show_header=True, header_style="bold cyan", expand=True)
+        table.add_column("Rule", style="bold")
+        table.add_column("Issues", justify="right")
+        table.add_column("Severity")
+        table.add_column("Duration", justify="right")
+
+        rules_by_name = {rule.name: rule for rule in run.rules} if _is_set(run.rules) else {}
+        names = list(rule_counts.keys()) or list(rules_by_name.keys())
+        for name in sorted(names, key=lambda item: (-rule_counts.get(item, 0), item)):
+            rule = rules_by_name.get(name)
+            count = rule_counts.get(name, _linter_rule_issue_count(rule) if rule is not None else 0)
+            counts = _linter_rule_severity_counts(rule) if rule is not None else {}
+            table.add_row(
+                name,
+                Text(str(count), style="bold bright_red" if count else "dim"),
+                _format_linter_counts(counts),
+                _format_linter_duration(rule.duration_ms) if rule is not None else "-",
+            )
+        renderables.append(Text(""))
+        renderables.append(table)
+
+    return Panel(Group(*renderables), border_style=border, padding=(1, 2))
+
+
+def build_dataset_linter_run_details(run: Any, max_sample_ids: int = 10) -> RenderableType:
+    renderables: list[RenderableType] = [
+        _safe_markup(f"[{_linter_status_style(str(run.status))}]>> Dataset Linter Details[/{_linter_status_style(str(run.status))}]"),
+        Text(""),
+        _safe_markup(f"  [bold]Run ID:[/bold]  {escape(run.id)}"),
+        _safe_markup(f"  [bold]Dataset:[/bold] {escape(run.dataset_id)}"),
+    ]
+
+    if not _is_set(run.rules):
+        renderables.append(Text(""))
+        renderables.append(Text("No per-rule results were returned for this run.", style="dim italic"))
+        return Panel(Group(*renderables), border_style="yellow", padding=(1, 2))
+
+    for rule in sorted(run.rules, key=_linter_rule_sort_key):
+        issue_count = _linter_rule_issue_count(rule)
+        renderables.append(Text(""))
+        renderables.append(_safe_markup(
+            f"[bold cyan]{escape(rule.name)}[/bold cyan] "
+            f"[dim]({_format_linter_duration(rule.duration_ms)}, {issue_count} issue{'s' if issue_count != 1 else ''})[/dim]"
+        ))
+
+        if _is_set(rule.stats) and rule.stats.additional_properties:
+            stats_table = Table(show_header=False, expand=True, box=None, padding=(0, 1))
+            stats_table.add_column("Metric", style="dim")
+            stats_table.add_column("Value")
+            for key, value in sorted(rule.stats.additional_properties.items()):
+                stats_table.add_row(str(key), _format_linter_value(value))
+            renderables.append(stats_table)
+
+        if not _is_set(rule.issues) or not rule.issues:
+            renderables.append(Text("  No issues.", style="dim"))
+            continue
+
+        for index, issue in enumerate(sorted(rule.issues, key=_linter_issue_sort_key), start=1):
+            severity = str(getattr(issue.severity, "value", issue.severity))
+            affected_count = len(issue.affected_sample_ids) if _is_set(issue.affected_sample_ids) else 0
+            if affected_count:
+                sample_ids = issue.affected_sample_ids[:max_sample_ids]
+                affected = "\n".join(sample_ids)
+                if affected_count > max_sample_ids:
+                    affected += f"\n+{affected_count - max_sample_ids} more"
+            else:
+                affected = "-"
+
+            renderables.append(Text(""))
+            header = Text(f"  Issue {index}: ", style="bold")
+            header.append(severity, style=_linter_severity_style(severity))
+            renderables.append(header)
+            renderables.append(Text(f"    Message: {issue.message}", overflow="fold", no_wrap=False))
+            renderables.append(Text(f"    Affected samples: {affected}"))
+            if _is_set(issue.meta):
+                renderables.append(Text(f"    Meta: {_format_linter_value(issue.meta, max_length=500)}"))
+            if _is_set(issue.tip):
+                renderables.append(Text(f"    Tip: {issue.tip}"))
+
+    return Panel(Group(*renderables), border_style="cyan", padding=(1, 2))
+
+
+def display_lint_overview(run: Any) -> None:
+    Console().print(build_dataset_linter_run_overview(run))
+
+
+def display_lint_detailed(run: Any, max_sample_ids: int = 10) -> None:
+    Console().print(build_dataset_linter_run_details(run, max_sample_ids=max_sample_ids))
+
+
+def run_dataset_linter_live_display(
+    poll_callback: Callable[[], Any],
+    poll_interval: float = 15,
+    initial_run: Any = None,
+) -> None:
+    import time
+
+    console = Console()
+    active_statuses = {"PENDING", "QUEUED", "STARTING", "RUNNING", "IN_PROGRESS"}
+
+    if _is_notebook():
+        from IPython.display import clear_output
+        if initial_run is not None:
+            console.print(build_dataset_linter_run_overview(initial_run))
+        run = poll_callback()
+        while str(run.status).upper() in active_statuses:
+            clear_output(wait=True)
+            console.print(build_dataset_linter_run_overview(run))
+            time.sleep(poll_interval)
+            run = poll_callback()
+        clear_output(wait=True)
+        console.print(build_dataset_linter_run_overview(run))
+    else:
+        from rich.live import Live
+        with Live(
+            build_dataset_linter_run_overview(initial_run),
+            console=console,
+            refresh_per_second=1,
+            transient=True,
+        ) as live:
+            run = poll_callback()
+            while str(run.status).upper() in active_statuses:
+                live.update(build_dataset_linter_run_overview(run))
+                time.sleep(poll_interval)
+                run = poll_callback()
+            live.update(build_dataset_linter_run_overview(run))
 
 
 def display_warning(message: str, title: str = "Warning", job: Any = None) -> None:

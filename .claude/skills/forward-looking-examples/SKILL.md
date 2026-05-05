@@ -47,7 +47,7 @@ config = GRPOTrainingConfig(
 
 Binary questions, news seeds, 14-day interval matching tournament cadence.
 
-> **Source**: `lightningrod-python-sdk/notebooks/fine_tuning/01_golf_forecasting.ipynb` (demo, max_questions=100), `llm_forecasting/notebooks/golf/golf.ipynb` (production, 10000)
+> **Source**: `lightningrod-python-sdk/notebooks/fine_tuning/01_golf_forecasting.ipynb` (demo, max_seeds=20), `llm_forecasting/notebooks/golf/golf.ipynb` (production, 2000)
 
 ```python
 instructions = """
@@ -95,9 +95,9 @@ pipeline = QuestionPipeline(
     labeler=WebSearchLabeler(answer_type=BinaryAnswerType()),
 )
 
-# 10,000 is a good default — some get filtered, and you want a few thousand for training.
-# Use max_questions=100 to test the pipeline first.
-dataset = lr.transforms.run(pipeline, max_questions=10000, name="Golf forecasting")
+# 2,000 is a good default — at questions_per_seed=5 that yields ~10,000 questions before filtering.
+# Use max_seeds=20 to test the pipeline first.
+dataset = lr.transforms.run(pipeline, max_seeds=2000, name="Golf forecasting")
 ```
 
 ```python
@@ -121,7 +121,7 @@ train_dataset, test_dataset = filter_and_split(
 
 Weekly intervals, high questions_per_seed (20) for a narrow domain.
 
-> **Source**: `lightningrod-python-sdk/notebooks/fine_tuning/02_trump_forecasting.ipynb` (demo, max_questions=500), `llm_forecasting/notebooks/e2e/wwtd_2025.ipynb` (production)
+> **Source**: `lightningrod-python-sdk/notebooks/fine_tuning/02_trump_forecasting.ipynb` (demo, max_seeds=25), `llm_forecasting/notebooks/e2e/wwtd_2025.ipynb` (production)
 
 ```python
 instructions = """
@@ -245,7 +245,7 @@ pipeline = QuestionPipeline(
     labeler=WebSearchLabeler(answer_type=BinaryAnswerType()),
 )
 
-dataset = lr.transforms.run(pipeline, max_questions=10000, name="Military strikes forecasting")
+dataset = lr.transforms.run(pipeline, max_seeds=2000, name="Military strikes forecasting")
 ```
 
 ```python
@@ -336,7 +336,7 @@ pipeline = QuestionPipeline(
     renderer=QuestionRenderer(answer_type=answer_type),
 )
 
-dataset = lr.transforms.run(pipeline, max_questions=9000)
+dataset = lr.transforms.run(pipeline, max_seeds=1800)
 ```
 
 **Training**: `gpt-oss-120b`, `num_rollouts=4` (sufficient for large general dataset), `training_steps=160`.
@@ -387,7 +387,7 @@ pipeline = QuestionPipeline(
     ),
 )
 
-dataset = lr.transforms.run(pipeline, max_questions=3000)
+dataset = lr.transforms.run(pipeline, max_seeds=600)
 
 # Phase 2: Label via FileSetRAGLabeler with TemporalConstraint.AFTER
 # This ensures only documents published AFTER the question's seed date are used for labeling,

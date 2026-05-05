@@ -1477,6 +1477,199 @@
           }
         }
       }
+    },
+    "/dataset-linter/rules": {
+      "get": {
+        "tags": [
+          "Dataset Linter"
+        ],
+        "summary": "List Rules",
+        "description": "List available linter rules",
+        "operationId": "list_rules_dataset_linter_rules_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListRulesResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/dataset-linter/datasets/{dataset_id}/lint": {
+      "post": {
+        "tags": [
+          "Dataset Linter"
+        ],
+        "summary": "Run Lint",
+        "description": "Run the dataset linter synchronously and return its results",
+        "operationId": "run_lint_dataset_linter_datasets__dataset_id__lint_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Dataset Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DatasetLinterRunRequest",
+                "default": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetLinterRunResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataset-linter/datasets/{dataset_id}/linter-runs": {
+      "get": {
+        "tags": [
+          "Dataset Linter"
+        ],
+        "summary": "List Runs For Dataset",
+        "description": "List past linter runs for a dataset",
+        "operationId": "list_runs_for_dataset_dataset_linter_datasets__dataset_id__linter_runs_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Dataset Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListDatasetLinterRunsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataset-linter/linter-runs/{run_id}": {
+      "get": {
+        "tags": [
+          "Dataset Linter"
+        ],
+        "summary": "Get Linter Run",
+        "description": "Fetch a single past linter run by ID",
+        "operationId": "get_linter_run_dataset_linter_linter_runs__run_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetLinterRunResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1491,6 +1684,24 @@
           "continuous_value_only"
         ],
         "title": "AnswerParserType"
+      },
+      "AvailableRuleModel": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "default_severity": {
+            "type": "string",
+            "title": "Default Severity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "default_severity"
+        ],
+        "title": "AvailableRuleModel"
       },
       "BalanceResponse": {
         "properties": {
@@ -2501,7 +2712,7 @@
             ],
             "title": "Input Dataset Id"
           },
-          "max_questions": {
+          "max_seeds": {
             "anyOf": [
               {
                 "type": "integer"
@@ -2510,7 +2721,7 @@
                 "type": "null"
               }
             ],
-            "title": "Max Questions"
+            "title": "Max Seeds"
           },
           "max_cost_dollars": {
             "anyOf": [
@@ -2624,6 +2835,188 @@
         ],
         "title": "CsvSeedGenerator"
       },
+      "DatasetLinterRunListItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DatasetLinterRunStatus"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "total_issues": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Issues"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "dataset_id",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "DatasetLinterRunListItem"
+      },
+      "DatasetLinterRunRequest": {
+        "properties": {
+          "rules": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rules",
+            "description": "Subset of rule names to run. Defaults to all registered rules."
+          },
+          "random_sample_size": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Random Sample Size",
+            "description": "How many randomly-selected samples to lint for probabilistic rules. Defaults to an internal constant."
+          }
+        },
+        "type": "object",
+        "title": "DatasetLinterRunRequest"
+      },
+      "DatasetLinterRunResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DatasetLinterRunStatus"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "rules_requested": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Rules Requested"
+          },
+          "sample_size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sample Size"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RunSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/RuleResult"
+            },
+            "type": "array",
+            "title": "Rules",
+            "default": []
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "dataset_id",
+          "status",
+          "rules_requested",
+          "sample_size",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "DatasetLinterRunResponse"
+      },
+      "DatasetLinterRunStatus": {
+        "type": "string",
+        "enum": [
+          "RUNNING",
+          "COMPLETED",
+          "FAILED"
+        ],
+        "title": "DatasetLinterRunStatus"
+      },
       "DatasetMetadata": {
         "properties": {
           "id": {
@@ -2688,7 +3081,7 @@
           "config": {
             "$ref": "#/components/schemas/CreateTransformConfig"
           },
-          "max_questions": {
+          "max_seeds": {
             "anyOf": [
               {
                 "type": "integer"
@@ -2697,7 +3090,7 @@
                 "type": "null"
               }
             ],
-            "title": "Max Questions"
+            "title": "Max Seeds"
           }
         },
         "type": "object",
@@ -3368,6 +3761,24 @@
             ],
             "title": "Metadata Filters",
             "description": "Optional list of metadata filters to select which files to process. Files matching ANY filter will be included. (e.g., [\"ticker='AAL'\", \"ticker='MSFT'\"])"
+          },
+          "summarization_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summarization Instructions",
+            "description": "If set, each chunk is summarized by an LLM before being emitted as seed_text. This prompt is used as the system instruction, and the chunk text is supplied in a generic user message. The summary replaces seed_text; the raw chunk is kept in Sample.meta['original_chunk_text']."
+          },
+          "summarization_model": {
+            "type": "string",
+            "title": "Summarization Model",
+            "description": "OpenRouter model used for chunk summarization (only used when summarization_prompt is set).",
+            "default": "google/gemini-3-flash-preview"
           }
         },
         "type": "object",
@@ -4053,6 +4464,69 @@
         ],
         "title": "Label"
       },
+      "LinterIssue": {
+        "properties": {
+          "rule": {
+            "type": "string",
+            "title": "Rule"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/Severity"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "tip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tip"
+          },
+          "affected_sample_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Affected Sample Ids",
+            "default": []
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Meta",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "required": [
+          "rule",
+          "severity",
+          "message"
+        ],
+        "title": "LinterIssue"
+      },
+      "ListDatasetLinterRunsResponse": {
+        "properties": {
+          "runs": {
+            "items": {
+              "$ref": "#/components/schemas/DatasetLinterRunListItem"
+            },
+            "type": "array",
+            "title": "Runs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "runs"
+        ],
+        "title": "ListDatasetLinterRunsResponse"
+      },
       "ListDatasetsResponse": {
         "properties": {
           "datasets": {
@@ -4105,6 +4579,22 @@
           "file_sets"
         ],
         "title": "ListFileSetsResponse"
+      },
+      "ListRulesResponse": {
+        "properties": {
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/AvailableRuleModel"
+            },
+            "type": "array",
+            "title": "Rules"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rules"
+        ],
+        "title": "ListRulesResponse"
       },
       "ListTransformJobsResponse": {
         "properties": {
@@ -5764,7 +6254,8 @@
           }
         },
         "type": "object",
-        "title": "QuestionPipeline"
+        "title": "QuestionPipeline",
+        "description": "Serializable config for a question-generation pipeline.\n\nQuestionPipeline configs are expanded into ordered stage configs at run time.\nThey are not executable Transform wrappers."
       },
       "QuestionRenderer": {
         "properties": {
@@ -6069,6 +6560,67 @@
           "answer_type"
         ],
         "title": "RolloutScorer"
+      },
+      "RuleResult": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "stats": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Stats",
+            "default": {}
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/LinterIssue"
+            },
+            "type": "array",
+            "title": "Issues",
+            "default": []
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "RuleResult"
+      },
+      "RunSummary": {
+        "properties": {
+          "total_issues": {
+            "type": "integer",
+            "title": "Total Issues"
+          },
+          "by_severity": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "By Severity"
+          },
+          "by_rule": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "By Rule"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_issues",
+          "by_severity",
+          "by_rule"
+        ],
+        "title": "RunSummary"
       },
       "SFTTrainingConfig": {
         "properties": {
@@ -6421,6 +6973,15 @@
           "seed_text"
         ],
         "title": "Seed"
+      },
+      "Severity": {
+        "type": "string",
+        "enum": [
+          "info",
+          "warning",
+          "error"
+        ],
+        "title": "Severity"
       },
       "StepCostBreakdown": {
         "properties": {

@@ -38,6 +38,7 @@ test pytest:
 
 build:
 	@echo "Building distribution packages..."
+	@rm -rf build/
 	@python -m build
 
 publish-new-version: 

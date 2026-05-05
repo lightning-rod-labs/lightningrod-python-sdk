@@ -133,7 +133,7 @@ pipeline = QuestionPipeline(
     scorer=scorer,
 )
 
-dataset = lr.transforms.run(pipeline, max_questions=20)
+dataset = lr.transforms.run(pipeline, max_seeds=20)
 samples = dataset.download()
 ```
 

@@ -43,7 +43,7 @@ labeler = lr.WebSearchLabeler(answer_type=binary_answer)
 
 # Run pipeline
 pipeline = lr.QuestionPipeline(seed_generator=seeds, question_generator=questioner, labeler=labeler)
-dataset = client.transforms.run(pipeline, max_questions=1000)
+dataset = client.transforms.run(pipeline, max_seeds=1000)
 ```
 
 The pipeline fetches news seeds, generates forecasting questions, labels them via web search, and returns a dataset.

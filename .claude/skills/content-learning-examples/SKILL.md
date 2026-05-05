@@ -214,7 +214,7 @@ pipeline = QuestionPipeline(
     ),
 )
 
-dataset = lr.transforms.run(pipeline, max_questions=12000, name="Medical nutrition Q&A")
+dataset = lr.transforms.run(pipeline, max_seeds=4000, name="Medical nutrition Q&A")
 ```
 
 ### Step 3: Filter and Format for SFT
