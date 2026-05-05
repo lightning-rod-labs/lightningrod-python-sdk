@@ -1,3 +1,8 @@
+---
+name: tabular-examples
+description: Production example for tabular data processing -- supply chain shock detection with create_sample(), TemplateQuestionGenerator, NewsContextGenerator, QuestionRenderer. Use when mapping structured data (CSV, BigQuery, API results) to Sample() fields.
+---
+
 # Tabular Data Processing Examples
 
 This is the least structured pattern — every dataset is different. The supply chain example below is a well-documented walkthrough of one common case (time-series with computed labels), but you'll need to adapt it. Tabular data can be twisted many ways to produce a result, and not all of them make sense. When in doubt, check with the user.

@@ -44,28 +44,31 @@ class DatasetSamplesClient:
     def __init__(self, client: AuthenticatedClient):
         self._client: AuthenticatedClient = client
     
-    def list(self, dataset_id: str) -> List[Sample]:
+    def list(self, dataset_id: str, limit: Optional[int] = None) -> List[Sample]:
         samples: List[Sample] = []
         cursor: Optional[str] = None
-        
+
         while True:
+            req_limit = min(100, limit - len(samples)) if limit is not None else 100
             response = get_dataset_samples_datasets_dataset_id_samples_get.sync_detailed(
                 dataset_id=dataset_id,
                 client=self._client,
-                limit=100,
+                limit=req_limit,
                 cursor=cursor,
             )
-            
+
             parsed = handle_response_error(response, "fetch samples")
-            
+
             samples.extend(parsed.samples)
-            
+
+            if limit is not None and len(samples) >= limit:
+                return samples[:limit]
             if not parsed.has_more:
                 break
             if isinstance(parsed.next_cursor, Unset) or parsed.next_cursor is None:
                 break
             cursor = str(parsed.next_cursor)
-        
+
         return samples
     
     def upload(

@@ -60,13 +60,13 @@ See [Seed Generators](dataset-generation/seed-generators.md#topictreeseedgenerat
 
 ### New: `FileSetDocumentContextGenerator`
 
-A new context generator that resolves a **single document** by temporal ordering, downloads its full text, and appends it as context. Supports optional LLM processing before injection and a character limit. Use this instead of `FileSetContextGenerator` when you want the complete text of one specific document rather than RAG chunks from multiple documents.
+A new context generator that resolves a **single document** by temporal ordering, downloads its full text, and appends it as context. Supports optional LLM processing before injection and a character limit. Use this instead of `QdrantContextGenerator` when you want the complete text of one specific document rather than RAG chunks from multiple documents.
 
 See [Labeling and Context](dataset-generation/labeling-and-context.md#filesetdocumentcontextgenerator).
 
 ### New: `FileSetDocumentLabeler`
 
-A new labeler that resolves a **single document** by temporal ordering and uses an LLM to extract a structured label from its full text. Use this instead of `FileSetRAGLabeler` when labeling from the complete content of one document (e.g. Federal Reserve Beige Book reports).
+A new labeler that resolves a **single document** by temporal ordering and uses an LLM to extract a structured label from its full text. Use this instead of `QdrantRAGLabeler` when labeling from the complete content of one document (e.g. Federal Reserve Beige Book reports).
 
 See [Labeling and Context](dataset-generation/labeling-and-context.md#filesetdocumentlabeler).
 

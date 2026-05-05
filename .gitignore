@@ -27,7 +27,6 @@ env/
 .venv/
 
 # IDEs
-.vscode/
 .idea/
 *.swp
 *.swo
@@ -38,17 +37,21 @@ env/
 .coverage
 htmlcov/
 jobs/
+evals/results.tsv
 userland/
 
 # Developer files
 .env
 test_sdk.py
 notebooks/**/lightningrod-python-sdk/
+agent-experiments/
+userland/
+
+# Pipeline output cache
+.lr_cache/
+
+# Pipeline output cache
+.lr_cache/
 
 # Misc
 .DS_Store
-
-# Experiments
-military_strikes_middle_east/
-hn_github_stars/
-userland/

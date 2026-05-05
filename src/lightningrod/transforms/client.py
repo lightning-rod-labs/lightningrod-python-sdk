@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 from lightningrod._display import _is_notebook, display_error, display_warning, run_live_display
 from lightningrod._generated.models import (
@@ -41,8 +41,50 @@ from lightningrod._generated.client import AuthenticatedClient
 from lightningrod.datasets.client import DatasetSamplesClient
 from lightningrod._generated.types import UNSET, Unset
 from lightningrod._errors import handle_response_error
+from lightningrod.datasets.client import DatasetSamplesClient
 
 TransformConfig = Union[FileSetDocumentContextGenerator, FileSetDocumentLabeler, FileSetSeedGenerator, ForwardLookingQuestionGenerator, GdeltSeedGenerator, NewsSeedGenerator, QuestionAndLabelGenerator, QuestionGenerator, QuestionPipeline, QuestionRenderer, WebSearchLabeler, WebSearchContextGenerator, QdrantContextGenerator, QdrantRAGLabeler]
+
+
+def _fetch_error_details_from_samples(
+    job: TransformJob,
+    samples_client: DatasetSamplesClient,
+    jobs_client: "TransformJobsClient",
+) -> List[str]:
+    details: List[str] = []
+    if "rejection_error_messages" in job.additional_properties:
+        msgs = job.additional_properties["rejection_error_messages"]
+        if isinstance(msgs, list):
+            for m in msgs:
+                if isinstance(m, str) and m.strip():
+                    details.append(m.strip())
+        if details:
+            return details
+    metrics = jobs_client.get_metrics(job.id)
+    if metrics:
+        for step in metrics.steps:
+            if (step.rejected_count > 0 or step.error_count > 0) and step.summary and step.summary.strip():
+                details.append(step.summary.strip())
+        if details:
+            return details
+    if not job.output_dataset_id:
+        return []
+    try:
+        samples = samples_client.list(job.output_dataset_id, limit=10)
+    except Exception:
+        return []
+    seen: set[str] = set()
+    for sample in samples:
+        msg = None
+        if not isinstance(sample.meta, Unset) and sample.meta is not None and "error_message" in sample.meta:
+            msg = sample.meta["error_message"]
+        elif "error_message" in sample.additional_properties:
+            msg = sample.additional_properties["error_message"]
+        if msg and isinstance(msg, str) and msg.strip() and msg not in seen:
+            seen.add(msg)
+            details.append(msg.strip())
+    return details
+
 
 class TransformJobsClient:
     def __init__(self, client: AuthenticatedClient):
@@ -128,7 +170,10 @@ class TransformsClient:
 
         if job.status == TransformJobStatus.FAILED:
             error_msg = job.error_message if (not isinstance(job.error_message, Unset) and job.error_message) else "Unknown error"
-            display_error(error_msg, title="Job Failed", job=job)
+            error_details = _fetch_error_details_from_samples(
+                job, self._dataset_samples_client, self.jobs
+            )
+            display_error(error_msg, title="Job Failed", job=job, error_details=error_details)
 
             # No need to raise an exception in the notebook, as we display the error using display_error
             if not _is_notebook():

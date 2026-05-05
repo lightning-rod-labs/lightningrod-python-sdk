@@ -26,7 +26,7 @@ class LightningRod:
     
     def __init__(
         self,
-        api_key: str,
+        api_key: str = config.get_config_value("LIGHTNINGROD_API_KEY"),
         base_url: str = "https://api.lightningrod.ai/api/public/v1"
     ):
 
