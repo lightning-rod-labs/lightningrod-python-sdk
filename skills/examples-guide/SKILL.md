@@ -27,10 +27,11 @@ Train a model to reason within a domain and/or learn to predict outcomes. Forwar
 2. Generate forward-looking questions
 3. Resolve labels (web search, RAG, or pre-computed)
 4. Add context (optional)
-5. Split temporally, train with GRPO
+5. Lint the generated dataset, split temporally, train with GRPO
 
 **Watch for**:
 
+- Lint the full dataset before splitting — catches duplicates, missing fields, and label issues that filtering misses. Linting runs server-side on the whole dataset
 - Always split temporally — shuffling leaks future info
 - No sample's close date past the first test prediction date
 - Spot-check questions for sense and unambiguous resolution criteria
@@ -62,6 +63,7 @@ Two starting points depending on what you have:
 - From documents: use `QuestionAndLabelGenerator`, not `WebSearchLabeler` — answers are in the documents
 - From topics: `WebSearchLabeler` is correct — the web is the knowledge source
 - Quality filter always. `FilterCriteria`, score cutoffs, or agreement checks
+- Lint the dataset before splitting — catches duplicates and malformed samples that quality filters miss
 - No reward signal for free-response yet → GRPO doesn't apply
 
 **Examples**: See `content-learning-examples` skill
@@ -90,6 +92,7 @@ Map structured data to `Sample()` fields, fill in what's missing, optionally enr
 - `prediction_date` must be BEFORE the outcome
 - **Split carefully.** For forecasting data, split on time — train on past, test on future. If data has multiple entities (countries, stocks), ensure no entity's test samples overlap temporally with its training samples. For non-forecasting tabular data (e.g., ad persuasion, survey responses), temporal splits may not apply — but ensure no content leakage between train and test (e.g., if multiple questions reference the same ad, keep all of that ad's questions in the same split). Shuffling is fine when there's no temporal structure.
 - Validate 10-20 samples manually before scaling
+- Lint the dataset before splitting — tabular mappings often produce duplicates from overlapping time windows or missing fields from incomplete row mappings
 
 **Examples**: See `tabular-examples` skill
 
@@ -191,3 +194,5 @@ If eval scores are poor, check whether the answer type was a contributing factor
 | Numeric predictions are wildly off scale | No normalization applied | Apply log-transform or percentile normalization |
 | Low labeling confidence in dataset stats | Answer type too hard for web search to resolve | Simplify to binary or reframe the question |
 | Model barely beats baseline despite good data volume | Noisy labels from numeric/free-response | Reframe as binary threshold question |
+
+If the table above doesn't explain poor results, use **reasoning comparison** to see how the base and fine-tuned models actually think. Run eval with `reasoning_comparison_sample_size=20` — this produces side-by-side reasoning traces showing where the fine-tuned model reasons differently (better or worse) than the base model. See `forward-looking-examples` skill for the code pattern.

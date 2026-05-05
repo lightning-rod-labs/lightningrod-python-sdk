@@ -102,3 +102,70 @@ eval_job = lr.evals.run_from_training_job(training_config, job, test_dataset)
 ```
 
 See [Evaluation](../fine-tuning/evaluation.md) for eval options.
+
+## Linting
+
+Validate dataset quality before training with the dataset linter. Access via `lr.datasets.linter`.
+
+### list_rules
+
+List all available lint rules:
+
+```python
+rules = lr.datasets.linter.list_rules()
+```
+
+### run
+
+Run the linter on a dataset. Polls until completion and shows live progress in notebooks:
+
+```python
+result = lr.datasets.linter.run(dataset.id)
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `dataset_id` | `str` | — | Dataset ID to lint |
+| `rules` | `list[str] \| None` | `None` | Specific rule IDs to run (all rules if `None`) |
+| `random_sample_size` | `int \| None` | `None` | Lint a random subset of samples instead of the full dataset |
+| `poll_interval` | `float` | `15` | Seconds between status polls |
+
+### get_run
+
+Fetch a previous linter run by ID:
+
+```python
+run = lr.datasets.linter.get_run(run_id)
+```
+
+### list_runs
+
+List linter runs for a dataset:
+
+```python
+runs = lr.datasets.linter.list_runs(dataset.id, limit=20)
+```
+
+### Display helpers
+
+Pretty-print linter results with the top-level display functions:
+
+```python
+from lightningrod import display_lint_overview, display_lint_detailed
+
+display_lint_overview(result)     # summary table
+display_lint_detailed(result)     # full issue breakdown with sample IDs
+```
+
+### Extracting affected samples
+
+Get the sample IDs flagged by the linter to filter or inspect them:
+
+```python
+from lightningrod import get_lint_affected_sample_ids
+
+bad_ids = get_lint_affected_sample_ids(result)
+clean_dataset = dataset.subset([s.id for s in dataset.samples() if s.id not in set(bad_ids)])
+```
+
+`get_lint_affected_sample_ids` accepts an optional `severities` parameter (defaults to `WARNING` and `ERROR`).

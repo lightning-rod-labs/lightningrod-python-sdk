@@ -46,6 +46,22 @@ Iterate: if validity is low or labels look wrong, adjust pipeline config and rer
 2. Confirm validity and spot-check quality in code or notebook output.
 3. Call `estimate_cost` for the target scale, then run the larger job.
 
+## Before splitting (lint the full dataset)
+
+Run the dataset linter on the generated dataset before splitting or training. Linting runs server-side on the whole dataset — it catches structural issues that pipeline verification and filtering don't check (duplicate samples, missing required fields, label inconsistencies). This is useful even outside training workflows as a dataset health check.
+
+```python
+from lightningrod import display_lint_overview, get_lint_affected_sample_ids
+
+lint_result = lr.datasets.linter.run(dataset.id)
+display_lint_overview(lint_result)
+
+bad_ids = get_lint_affected_sample_ids(lint_result)
+if bad_ids:
+    clean_ids = [s.id for s in dataset.samples() if s.id not in set(bad_ids)]
+    dataset = dataset.subset(clean_ids)
+```
+
 ## Why
 
 - Cheap seeds-only runs catch SQL/ingestion errors before the full pipeline.

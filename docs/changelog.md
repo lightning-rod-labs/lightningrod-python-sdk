@@ -4,6 +4,26 @@ icon: clock-rotate-left
 
 # Changelog
 
+## v0.1.23 — May 2026
+
+### New: Dataset linting API
+
+Validate dataset quality before training with `lr.datasets.linter`. Run all rules or a specific subset on any dataset, with live progress display in notebooks. Use `display_lint_overview` and `display_lint_detailed` to inspect results, and `get_lint_affected_sample_ids` to extract flagged sample IDs for filtering.
+
+See [Datasets — Linting](dataset-generation/datasets.md#linting).
+
+### New: Reasoning comparison for evals
+
+Compare the reasoning quality of two models side-by-side using an LLM judge during evaluation. Pass `ReasoningComparisonOptions` to `lr.evals.run` or `lr.evals.create`, or use the `reasoning_comparison_sample_size` shorthand on `run_from_training_job`. The judge model, sample count, and instructions are all configurable.
+
+See [Evaluation — Reasoning Comparison](fine-tuning/evaluation.md#reasoning-comparison).
+
+### New: Eval result download and loading
+
+Download per-model eval rollout results as Parquet files with `lr.evals.download_results`, or load them directly into pandas DataFrames with `lr.evals.load_results`.
+
+See [Evaluation — Downloading Results](fine-tuning/evaluation.md#downloading-results).
+
 ## v0.1.22 — April 2026
 
 ### Breaking: training config split (GRPO vs SFT)

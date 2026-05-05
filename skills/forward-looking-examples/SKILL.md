@@ -10,7 +10,7 @@ description: Production examples for forward-looking (GRPO) training -- golf, Tr
 ## Common Structure
 
 ```
-Seeds → ForwardLookingQuestionGenerator → Labels → Context (optional) → Train (GRPO)
+Seeds → ForwardLookingQuestionGenerator → Labels → Context (optional) → Lint → Split → Train (GRPO)
 ```
 
 ```python
@@ -19,7 +19,7 @@ from lightningrod import (
     LightningRod, GRPOTrainingConfig, BinaryAnswerType,
     NewsSeedGenerator, ForwardLookingQuestionGenerator,
     NewsContextGenerator, WebSearchLabeler, QuestionPipeline,
-    filter_and_split,
+    filter_and_split, display_lint_overview, get_lint_affected_sample_ids,
 )
 lr = LightningRod(api_key=api_key)
 ```
@@ -37,6 +37,18 @@ config = GRPOTrainingConfig(
     max_response_length=16384,
     learning_rate=4e-5,
 )
+```
+
+**Lint the dataset** — run on the full generated dataset before splitting. Linting runs server-side on the whole dataset, not on local subsets:
+
+```python
+lint_result = lr.datasets.linter.run(dataset.id)
+display_lint_overview(lint_result)
+
+bad_ids = get_lint_affected_sample_ids(lint_result)
+if bad_ids:
+    clean_ids = [s.id for s in dataset.samples() if s.id not in set(bad_ids)]
+    dataset = dataset.subset(clean_ids)
 ```
 
 ---
@@ -271,6 +283,14 @@ eval_job = lr.evals.run_from_training_job(
     test_dataset,
     extra_models=[EvalModel(model_id="openai/gpt-5", label="GPT-5")],
 )
+
+# Optional: if eval scores are disappointing, re-run with reasoning comparison
+# to see HOW the base and fine-tuned models reason differently:
+# eval_job = lr.evals.run_from_training_job(
+#     config, job, test_dataset,
+#     reasoning_comparison_sample_size=20,
+# )
+# eval_job.reasoning_comparison_report
 ```
 
 ---
