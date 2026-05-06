@@ -7,12 +7,17 @@ AI-powered forecasting dataset generation platform.
 from lightningrod.client import LightningRod
 from lightningrod.filesets.client import UploadResult
 from lightningrod.datasets.dataset import SampleDataset, AsyncDataset
+from lightningrod.datasets.linting import get_lint_affected_sample_ids
 from lightningrod import preprocessing, training, utils
 from lightningrod.utils.sample import create_sample
 from lightningrod.utils.models import open_router_model
 from lightningrod.utils.examples import binary_example, continuous_example, multiple_choice_example
 from lightningrod.training import prepare_for_training, FilterParams, DedupParams, SplitParams
 from lightningrod.training.client import GRPOTrainingConfig, SFTTrainingConfig, TrainingMethodConfig
+from lightningrod._display import (
+    display_lint_overview,
+    display_lint_detailed,
+)
 from lightningrod._generated.models import (
     TransformJob,
     TransformJobStatus,
@@ -59,7 +64,7 @@ from lightningrod._generated.models import (
     WebSearchContextGenerator,
 )
 
-__version__ = "0.1.26"
+__version__ = "0.1.27"
 __all__ = [
     "preprocessing",
     "training",
@@ -75,6 +80,9 @@ __all__ = [
     "FreeResponseAnswerType",
     "SampleDataset",
     "DocumentContext",
+    "display_lint_overview",
+    "display_lint_detailed",
+    "get_lint_affected_sample_ids",
     "FileSetDocumentContextGenerator",
     "FileSetDocumentLabeler",
     "FileSetSeedGenerator",

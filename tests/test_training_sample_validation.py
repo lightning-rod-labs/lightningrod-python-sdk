@@ -35,6 +35,21 @@ def _dataset(samples: list[Sample]) -> SampleDataset:
     )
 
 
+def test_dataset_exclude_returns_dataset_without_matching_samples() -> None:
+    dataset = _dataset([
+        Sample(id="keep-1"),
+        Sample(id="drop-1"),
+        Sample(id="keep-2"),
+    ])
+
+    filtered = dataset.exclude(["drop-1", "unknown"])
+
+    assert filtered.id == dataset.id
+    assert filtered.num_rows == 2
+    assert filtered.sample_ids == ["keep-1", "keep-2"]
+    assert [sample.id for sample in filtered.samples()] == ["keep-1", "keep-2"]
+
+
 def test_create_sample_requires_answer_type_when_label_provided() -> None:
     with pytest.raises(ValueError, match="answer_type is required when label is provided"):
         create_sample("seed", label="yes")
