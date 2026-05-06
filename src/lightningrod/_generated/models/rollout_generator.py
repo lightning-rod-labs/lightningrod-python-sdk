@@ -24,9 +24,9 @@ class RolloutGenerator:
         prompt_template (None | str | Unset): Prompt template with {column} placeholders. If None, uses sample.prompt
         input_columns (list[str] | Unset): Columns to substitute into template (from meta)
         output_schema (Any | None | Unset): Pydantic model for structured output
-        max_samples (int | None | Unset): Max samples to generate rollouts for. Remaining samples pass through
-            unchanged.
-        seed (int | Unset): Random seed for sample selection when max_samples is set Default: 42.
+        sample_percentage (float | None | Unset): Fraction of samples to generate rollouts for (e.g. 0.15 = 15%).
+            Unselected samples pass through unchanged.
+        seed (int | Unset): Random seed for reproducible sample selection when sample_percentage is set Default: 42.
     """
 
     models: list[ModelConfig]
@@ -34,7 +34,7 @@ class RolloutGenerator:
     prompt_template: None | str | Unset = UNSET
     input_columns: list[str] | Unset = UNSET
     output_schema: Any | None | Unset = UNSET
-    max_samples: int | None | Unset = UNSET
+    sample_percentage: float | None | Unset = UNSET
     seed: int | Unset = 42
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -62,11 +62,11 @@ class RolloutGenerator:
         else:
             output_schema = self.output_schema
 
-        max_samples: int | None | Unset
-        if isinstance(self.max_samples, Unset):
-            max_samples = UNSET
+        sample_percentage: float | None | Unset
+        if isinstance(self.sample_percentage, Unset):
+            sample_percentage = UNSET
         else:
-            max_samples = self.max_samples
+            sample_percentage = self.sample_percentage
 
         seed = self.seed
 
@@ -85,8 +85,8 @@ class RolloutGenerator:
             field_dict["input_columns"] = input_columns
         if output_schema is not UNSET:
             field_dict["output_schema"] = output_schema
-        if max_samples is not UNSET:
-            field_dict["max_samples"] = max_samples
+        if sample_percentage is not UNSET:
+            field_dict["sample_percentage"] = sample_percentage
         if seed is not UNSET:
             field_dict["seed"] = seed
 
@@ -128,14 +128,14 @@ class RolloutGenerator:
 
         output_schema = _parse_output_schema(d.pop("output_schema", UNSET))
 
-        def _parse_max_samples(data: object) -> int | None | Unset:
+        def _parse_sample_percentage(data: object) -> float | None | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
-            return cast(int | None | Unset, data)
+            return cast(float | None | Unset, data)
 
-        max_samples = _parse_max_samples(d.pop("max_samples", UNSET))
+        sample_percentage = _parse_sample_percentage(d.pop("sample_percentage", UNSET))
 
         seed = d.pop("seed", UNSET)
 
@@ -145,7 +145,7 @@ class RolloutGenerator:
             prompt_template=prompt_template,
             input_columns=input_columns,
             output_schema=output_schema,
-            max_samples=max_samples,
+            sample_percentage=sample_percentage,
             seed=seed,
         )
 

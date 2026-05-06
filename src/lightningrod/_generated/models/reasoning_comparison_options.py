@@ -15,26 +15,26 @@ T = TypeVar("T", bound="ReasoningComparisonOptions")
 class ReasoningComparisonOptions:
     """
     Attributes:
-        base_model_id (str):
-        trained_model_id (str):
-        comparison_model_id (str | Unset):  Default: 'openai/gpt-4.1'.
+        model_a_id (str):
+        model_b_id (str):
+        judge_model_id (str | Unset):  Default: 'anthropic/claude-sonnet-4.6'.
         n (int | Unset): Number of sample pairs to compare Default: 10.
-        instructions (str | Unset):  Default: 'Compare the reasoning quality of the base model vs. the trained model.'.
+        instructions (str | Unset):  Default: 'Compare the reasoning quality of the two models.'.
     """
 
-    base_model_id: str
-    trained_model_id: str
-    comparison_model_id: str | Unset = "openai/gpt-4.1"
+    model_a_id: str
+    model_b_id: str
+    judge_model_id: str | Unset = "anthropic/claude-sonnet-4.6"
     n: int | Unset = 10
-    instructions: str | Unset = "Compare the reasoning quality of the base model vs. the trained model."
+    instructions: str | Unset = "Compare the reasoning quality of the two models."
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        base_model_id = self.base_model_id
+        model_a_id = self.model_a_id
 
-        trained_model_id = self.trained_model_id
+        model_b_id = self.model_b_id
 
-        comparison_model_id = self.comparison_model_id
+        judge_model_id = self.judge_model_id
 
         n = self.n
 
@@ -44,12 +44,12 @@ class ReasoningComparisonOptions:
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "base_model_id": base_model_id,
-                "trained_model_id": trained_model_id,
+                "model_a_id": model_a_id,
+                "model_b_id": model_b_id,
             }
         )
-        if comparison_model_id is not UNSET:
-            field_dict["comparison_model_id"] = comparison_model_id
+        if judge_model_id is not UNSET:
+            field_dict["judge_model_id"] = judge_model_id
         if n is not UNSET:
             field_dict["n"] = n
         if instructions is not UNSET:
@@ -60,20 +60,20 @@ class ReasoningComparisonOptions:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        base_model_id = d.pop("base_model_id")
+        model_a_id = d.pop("model_a_id")
 
-        trained_model_id = d.pop("trained_model_id")
+        model_b_id = d.pop("model_b_id")
 
-        comparison_model_id = d.pop("comparison_model_id", UNSET)
+        judge_model_id = d.pop("judge_model_id", UNSET)
 
         n = d.pop("n", UNSET)
 
         instructions = d.pop("instructions", UNSET)
 
         reasoning_comparison_options = cls(
-            base_model_id=base_model_id,
-            trained_model_id=trained_model_id,
-            comparison_model_id=comparison_model_id,
+            model_a_id=model_a_id,
+            model_b_id=model_b_id,
+            judge_model_id=judge_model_id,
             n=n,
             instructions=instructions,
         )

@@ -233,8 +233,8 @@ class EvalsClient:
         reasoning_options: ReasoningComparisonOptions | Unset = UNSET
         if reasoning_comparison_sample_size > 0:
             reasoning_options = ReasoningComparisonOptions(
-                base_model_id=config.base_model_id,
-                trained_model_id=finetuned_id,
+                model_a_id=config.base_model_id,
+                model_b_id=finetuned_id,
                 n=reasoning_comparison_sample_size,
             )
 

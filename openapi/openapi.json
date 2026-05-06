@@ -6475,18 +6475,18 @@
       },
       "ReasoningComparisonOptions": {
         "properties": {
-          "base_model_id": {
+          "model_a_id": {
             "type": "string",
-            "title": "Base Model Id"
+            "title": "Model A Id"
           },
-          "trained_model_id": {
+          "model_b_id": {
             "type": "string",
-            "title": "Trained Model Id"
+            "title": "Model B Id"
           },
-          "comparison_model_id": {
+          "judge_model_id": {
             "type": "string",
-            "title": "Comparison Model Id",
-            "default": "openai/gpt-4.1"
+            "title": "Judge Model Id",
+            "default": "anthropic/claude-sonnet-4.6"
           },
           "n": {
             "type": "integer",
@@ -6498,13 +6498,13 @@
           "instructions": {
             "type": "string",
             "title": "Instructions",
-            "default": "Compare the reasoning quality of the base model vs. the trained model."
+            "default": "Compare the reasoning quality of the two models."
           }
         },
         "type": "object",
         "required": [
-          "base_model_id",
-          "trained_model_id"
+          "model_a_id",
+          "model_b_id"
         ],
         "title": "ReasoningComparisonOptions"
       },
@@ -6653,22 +6653,24 @@
             "title": "Output Schema",
             "description": "Pydantic model for structured output"
           },
-          "max_samples": {
+          "sample_percentage": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "number",
+                "maximum": 1.0,
+                "exclusiveMinimum": 0.0
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Max Samples",
-            "description": "Max samples to generate rollouts for. Remaining samples pass through unchanged."
+            "title": "Sample Percentage",
+            "description": "Fraction of samples to generate rollouts for (e.g. 0.15 = 15%). Unselected samples pass through unchanged."
           },
           "seed": {
             "type": "integer",
             "title": "Seed",
-            "description": "Random seed for sample selection when max_samples is set",
+            "description": "Random seed for reproducible sample selection when sample_percentage is set",
             "default": 42
           }
         },
