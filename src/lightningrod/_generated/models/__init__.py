@@ -40,8 +40,12 @@ from .eval_config import EvalConfig
 from .eval_job import EvalJob
 from .eval_job_list_response import EvalJobListResponse
 from .eval_job_metrics_type_0 import EvalJobMetricsType0
+from .eval_job_reasoning_comparison_report_type_0 import EvalJobReasoningComparisonReportType0
 from .eval_job_status import EvalJobStatus
 from .eval_model import EvalModel
+from .eval_model_result_download import EvalModelResultDownload
+from .eval_results_download_response import EvalResultsDownloadResponse
+from .eval_results_download_response_results import EvalResultsDownloadResponseResults
 from .event_usage_summary import EventUsageSummary
 from .file_set import FileSet
 from .file_set_document_context_generator import FileSetDocumentContextGenerator
@@ -100,6 +104,7 @@ from .question_generator import QuestionGenerator
 from .question_pipeline import QuestionPipeline
 from .question_renderer import QuestionRenderer
 from .rag_context import RAGContext
+from .reasoning_comparison_options import ReasoningComparisonOptions
 from .response_message import ResponseMessage
 from .reward_function_type import RewardFunctionType
 from .rollout import Rollout
@@ -186,8 +191,12 @@ __all__ = (
     "EvalJob",
     "EvalJobListResponse",
     "EvalJobMetricsType0",
+    "EvalJobReasoningComparisonReportType0",
     "EvalJobStatus",
     "EvalModel",
+    "EvalModelResultDownload",
+    "EvalResultsDownloadResponse",
+    "EvalResultsDownloadResponseResults",
     "EventUsageSummary",
     "FileSet",
     "FileSetDocumentContextGenerator",
@@ -244,6 +253,7 @@ __all__ = (
     "QuestionPipeline",
     "QuestionRenderer",
     "RAGContext",
+    "ReasoningComparisonOptions",
     "ResponseMessage",
     "RewardFunctionType",
     "Rollout",

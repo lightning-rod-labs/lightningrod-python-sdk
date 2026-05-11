@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -10,6 +10,7 @@ from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.eval_model import EvalModel
+    from ..models.reasoning_comparison_options import ReasoningComparisonOptions
     from ..models.sample_dataset_config import SampleDatasetConfig
 
 
@@ -47,6 +48,7 @@ class EvalConfig:
         temperature (float | Unset):  Default: 0.0.
         max_tokens (int | Unset):  Default: 8192.
         max_concurrent (int | Unset):  Default: 50.
+        reasoning_comparison (None | ReasoningComparisonOptions | Unset):
         modal_use_ephemeral_app (bool | Unset):  Default: False.
     """
 
@@ -56,10 +58,13 @@ class EvalConfig:
     temperature: float | Unset = 0.0
     max_tokens: int | Unset = 8192
     max_concurrent: int | Unset = 50
+    reasoning_comparison: None | ReasoningComparisonOptions | Unset = UNSET
     modal_use_ephemeral_app: bool | Unset = False
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.reasoning_comparison_options import ReasoningComparisonOptions
+
         organization_id = self.organization_id
 
         models = []
@@ -74,6 +79,14 @@ class EvalConfig:
         max_tokens = self.max_tokens
 
         max_concurrent = self.max_concurrent
+
+        reasoning_comparison: dict[str, Any] | None | Unset
+        if isinstance(self.reasoning_comparison, Unset):
+            reasoning_comparison = UNSET
+        elif isinstance(self.reasoning_comparison, ReasoningComparisonOptions):
+            reasoning_comparison = self.reasoning_comparison.to_dict()
+        else:
+            reasoning_comparison = self.reasoning_comparison
 
         modal_use_ephemeral_app = self.modal_use_ephemeral_app
 
@@ -92,6 +105,8 @@ class EvalConfig:
             field_dict["max_tokens"] = max_tokens
         if max_concurrent is not UNSET:
             field_dict["max_concurrent"] = max_concurrent
+        if reasoning_comparison is not UNSET:
+            field_dict["reasoning_comparison"] = reasoning_comparison
         if modal_use_ephemeral_app is not UNSET:
             field_dict["modal_use_ephemeral_app"] = modal_use_ephemeral_app
 
@@ -100,6 +115,7 @@ class EvalConfig:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.eval_model import EvalModel
+        from ..models.reasoning_comparison_options import ReasoningComparisonOptions
         from ..models.sample_dataset_config import SampleDatasetConfig
 
         d = dict(src_dict)
@@ -120,6 +136,23 @@ class EvalConfig:
 
         max_concurrent = d.pop("max_concurrent", UNSET)
 
+        def _parse_reasoning_comparison(data: object) -> None | ReasoningComparisonOptions | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                reasoning_comparison_type_0 = ReasoningComparisonOptions.from_dict(data)
+
+                return reasoning_comparison_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | ReasoningComparisonOptions | Unset, data)
+
+        reasoning_comparison = _parse_reasoning_comparison(d.pop("reasoning_comparison", UNSET))
+
         modal_use_ephemeral_app = d.pop("modal_use_ephemeral_app", UNSET)
 
         eval_config = cls(
@@ -129,6 +162,7 @@ class EvalConfig:
             temperature=temperature,
             max_tokens=max_tokens,
             max_concurrent=max_concurrent,
+            reasoning_comparison=reasoning_comparison,
             modal_use_ephemeral_app=modal_use_ephemeral_app,
         )
 

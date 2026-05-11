@@ -147,6 +147,31 @@ def _build_cost_lines(job: TrainingJob | EvalJob) -> list[RenderableType]:
         lines.append(_safe_markup(f"  [bold]Cost:[/bold]  ${job.cost_dollars:.2f}"))
     return lines
 
+
+def _build_reasoning_comparison_report(report: Any) -> list[RenderableType]:
+    if not _is_set(report):
+        return []
+
+    if hasattr(report, "to_dict"):
+        data = report.to_dict()
+    elif isinstance(report, dict):
+        data = report
+    else:
+        data = {"report": report}
+
+    if not data:
+        return []
+
+    completion = data.get("completion") or data.get("completion_message")
+    if not completion:
+        return []
+
+    return [
+        _safe_markup("[bold]Reasoning comparison analysis[/bold]"),
+        Text(str(completion)),
+    ]
+
+
 def _build_transform_cost_lines(job: TransformJob) -> list[RenderableType]:
     if not _is_set(job.usage):
         return []
@@ -534,6 +559,12 @@ def print_eval(job: EvalJob) -> None:
             else:
                 for k, v in props.items():
                     renderables.append(_safe_markup(f"  [bold]{k}:[/bold] {v}"))
+            renderables.append(Text(""))
+        reasoning_report = _build_reasoning_comparison_report(
+            job.reasoning_comparison_report
+        )
+        if reasoning_report:
+            renderables.extend(reasoning_report)
             renderables.append(Text(""))
         if job.status == EvalJobStatus.FAILED and _is_set(job.error_message):
             renderables.append(_safe_markup(f"  [bold]Error:[/bold] {job.error_message}"))

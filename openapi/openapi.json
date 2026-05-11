@@ -1228,6 +1228,54 @@
         }
       }
     },
+    "/evaluations/{eval_id}/results": {
+      "get": {
+        "tags": [
+          "Evaluations"
+        ],
+        "summary": "Get Eval Results",
+        "description": "Get signed download URLs for eval inference results",
+        "operationId": "get_eval_results_evaluations__eval_id__results_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "eval_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Eval Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvalResultsDownloadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/filesets/": {
       "post": {
         "tags": [
@@ -2430,6 +2478,16 @@
             "type": "number",
             "title": "Temperature",
             "default": 0.0
+          },
+          "reasoning_comparison": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReasoningComparisonOptions"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -3256,6 +3314,16 @@
             "title": "Max Concurrent",
             "default": 50
           },
+          "reasoning_comparison": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReasoningComparisonOptions"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "modal_use_ephemeral_app": {
             "type": "boolean",
             "title": "Modal Use Ephemeral App",
@@ -3330,6 +3398,32 @@
               }
             ],
             "title": "Metrics"
+          },
+          "result_model_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Model Ids"
+          },
+          "reasoning_comparison_report": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Comparison Report"
           },
           "error_message": {
             "anyOf": [
@@ -3418,6 +3512,41 @@
           "model_id"
         ],
         "title": "EvalModel"
+      },
+      "EvalModelResultDownload": {
+        "properties": {
+          "download_url": {
+            "type": "string",
+            "title": "Download Url"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "download_url",
+          "expires_at"
+        ],
+        "title": "EvalModelResultDownload"
+      },
+      "EvalResultsDownloadResponse": {
+        "properties": {
+          "results": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/EvalModelResultDownload"
+            },
+            "type": "object",
+            "title": "Results"
+          }
+        },
+        "type": "object",
+        "required": [
+          "results"
+        ],
+        "title": "EvalResultsDownloadResponse"
       },
       "EventUsageSummary": {
         "properties": {
@@ -6344,6 +6473,41 @@
         ],
         "title": "RAGContext"
       },
+      "ReasoningComparisonOptions": {
+        "properties": {
+          "model_a_id": {
+            "type": "string",
+            "title": "Model A Id"
+          },
+          "model_b_id": {
+            "type": "string",
+            "title": "Model B Id"
+          },
+          "judge_model_id": {
+            "type": "string",
+            "title": "Judge Model Id",
+            "default": "anthropic/claude-sonnet-4.6"
+          },
+          "n": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "N",
+            "description": "Number of sample pairs to compare",
+            "default": 10
+          },
+          "instructions": {
+            "type": "string",
+            "title": "Instructions",
+            "default": "Compare the reasoning quality of the two models."
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_a_id",
+          "model_b_id"
+        ],
+        "title": "ReasoningComparisonOptions"
+      },
       "ResponseMessage": {
         "properties": {
           "role": {
@@ -6488,6 +6652,26 @@
             ],
             "title": "Output Schema",
             "description": "Pydantic model for structured output"
+          },
+          "sample_percentage": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sample Percentage",
+            "description": "Fraction of samples to generate rollouts for (e.g. 0.15 = 15%). Unselected samples pass through unchanged."
+          },
+          "seed": {
+            "type": "integer",
+            "title": "Seed",
+            "description": "Random seed for reproducible sample selection when sample_percentage is set",
+            "default": 42
           }
         },
         "type": "object",

@@ -24,6 +24,9 @@ class RolloutGenerator:
         prompt_template (None | str | Unset): Prompt template with {column} placeholders. If None, uses sample.prompt
         input_columns (list[str] | Unset): Columns to substitute into template (from meta)
         output_schema (Any | None | Unset): Pydantic model for structured output
+        sample_percentage (float | None | Unset): Fraction of samples to generate rollouts for (e.g. 0.15 = 15%).
+            Unselected samples pass through unchanged.
+        seed (int | Unset): Random seed for reproducible sample selection when sample_percentage is set Default: 42.
     """
 
     models: list[ModelConfig]
@@ -31,6 +34,8 @@ class RolloutGenerator:
     prompt_template: None | str | Unset = UNSET
     input_columns: list[str] | Unset = UNSET
     output_schema: Any | None | Unset = UNSET
+    sample_percentage: float | None | Unset = UNSET
+    seed: int | Unset = 42
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -57,6 +62,14 @@ class RolloutGenerator:
         else:
             output_schema = self.output_schema
 
+        sample_percentage: float | None | Unset
+        if isinstance(self.sample_percentage, Unset):
+            sample_percentage = UNSET
+        else:
+            sample_percentage = self.sample_percentage
+
+        seed = self.seed
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -72,6 +85,10 @@ class RolloutGenerator:
             field_dict["input_columns"] = input_columns
         if output_schema is not UNSET:
             field_dict["output_schema"] = output_schema
+        if sample_percentage is not UNSET:
+            field_dict["sample_percentage"] = sample_percentage
+        if seed is not UNSET:
+            field_dict["seed"] = seed
 
         return field_dict
 
@@ -111,12 +128,25 @@ class RolloutGenerator:
 
         output_schema = _parse_output_schema(d.pop("output_schema", UNSET))
 
+        def _parse_sample_percentage(data: object) -> float | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(float | None | Unset, data)
+
+        sample_percentage = _parse_sample_percentage(d.pop("sample_percentage", UNSET))
+
+        seed = d.pop("seed", UNSET)
+
         rollout_generator = cls(
             models=models,
             config_type=config_type,
             prompt_template=prompt_template,
             input_columns=input_columns,
             output_schema=output_schema,
+            sample_percentage=sample_percentage,
+            seed=seed,
         )
 
         rollout_generator.additional_properties = d
