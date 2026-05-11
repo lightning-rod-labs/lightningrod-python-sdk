@@ -61,6 +61,8 @@ from lightningrod._generated.models import (
     TopicTreeSeedGenerator,
     CsvSeedGenerator,
     EvalModel,
+    EvalResultsDownloadResponse,
+    ReasoningComparisonOptions,
     WebSearchContextGenerator,
 )
 
@@ -129,5 +131,7 @@ __all__ = [
     "TopicTreeSeedGenerator",
     "CsvSeedGenerator",
     "EvalModel",
+    "EvalResultsDownloadResponse",
+    "ReasoningComparisonOptions",
     "WebSearchContextGenerator",
 ]

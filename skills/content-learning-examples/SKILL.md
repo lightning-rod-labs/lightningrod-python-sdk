@@ -110,6 +110,12 @@ After `dataset = lr.transforms.run(...)`, prepare a train split and run **hosted
 ```python
 from lightningrod import prepare_for_training, FilterParams, SplitParams, SFTTrainingConfig
 
+# Lint the full dataset before splitting
+from lightningrod import display_lint_overview, get_lint_affected_sample_ids
+
+lint_result = lr.datasets.linter.run(dataset.id)
+display_lint_overview(lint_result)
+
 train_dataset, test_dataset = prepare_for_training(
     dataset,
     filter=FilterParams(),
@@ -253,4 +259,5 @@ for s in dataset.download():
 - From topics: `WebSearchLabeler` is correct — the web provides answers for topic-generated questions
 - **Quality filter always.** `FilterCriteria(min_score=0.7)`, score cutoffs, or agreement checks
 - **System prompt matters.** Shapes persona and gets baked into training data
+- **Lint before splitting.** Run the dataset linter on the full generated dataset before splitting or training — it catches structural issues (duplicates, missing fields) that quality filters don't check for
 - **Match `questions_per_seed` to density:** topic tree nodes → 10, doc chunks (4000) → 3, doc chunks (2000) → 2, short text → 1

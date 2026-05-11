@@ -171,4 +171,6 @@ test_set = [s for s in full_dataset if s["prediction_date"] >= test_date_cutoff]
 
 **Validate first.** Check 10-20 samples: label correct? prediction_date < resolution_date? Enough context to reason?
 
+**Lint before splitting.** Run the dataset linter on the full generated dataset before splitting or training. Linting runs server-side on the whole dataset. Tabular data is especially prone to duplicates from overlapping time windows or missing fields from incomplete row mappings.
+
 **`binary_log_score` for imbalanced data.** Penalizes confident wrong predictions harder. Model can't just predict the majority class.

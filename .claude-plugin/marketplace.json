@@ -1,0 +1,11 @@
+{
+  "name": "Lightning Rod AI",
+  "description": "Official plugins for the Lightning Rod SDK",
+  "plugins": [
+    {
+      "name": "lightningrod",
+      "description": "Forecasting dataset generation and model fine-tuning skills",
+      "path": ".."
+    }
+  ]
+}
