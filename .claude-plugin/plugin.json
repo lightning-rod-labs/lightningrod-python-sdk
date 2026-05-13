@@ -1,8 +1,8 @@
 {
-  "name": "lightningrod",
-  "description": "Lightning Rod SDK — forecasting dataset generation and model fine-tuning skills",
+  "name": "lightningrod-python-sdk",
+  "description": "Lightningrod Python SDK — forecasting dataset generation and model fine-tuning skills",
   "version": "1.0.0",
   "author": {
-    "name": "Lightning Rod AI"
+    "name": "Lightningrod Labs"
   }
 }

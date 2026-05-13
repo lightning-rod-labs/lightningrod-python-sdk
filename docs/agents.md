@@ -10,7 +10,7 @@ The Lightning Rod SDK ships with **skills** — structured knowledge files that 
 
 | Skill | What it teaches |
 |-------|----------------|
-| `lightningrod-assistant` | End-to-end orchestration skill — flow, communication style, answer-type selection, hard constraints. Mirrors the Claude Code `lightningrod-assistant` agent so non-Claude-Code agents (Hermes, OpenClaw, Codex) get the same behavior. |
+| `lightningrod-assistant` | End-to-end orchestration skill — flow, communication style, answer-type selection, hard constraints. Mirrors the Claude Code `lightningrod-assistant` agent so non-Claude-Code agents (Hermes, OpenClaw, Codex) get a similar behavior. |
 | `examples-guide` | Decision tree: forward-looking (GRPO) vs content learning (SFT) vs tabular. Starting point for new projects. |
 | `forward-looking-examples` | Production GRPO configs: golf, Trump policy, military strikes, Foresight/GDELT, FileSet RAG. |
 | `content-learning-examples` | SFT patterns: TopicTree + WebSearch, FileSet + QuestionAndLabel. |
@@ -27,44 +27,11 @@ The Lightning Rod SDK ships with **skills** — structured knowledge files that 
 The easiest way to use Lightning Rod skills in a separate project is via the Claude Code plugin system:
 
 ```
-/plugin marketplace add lightningrodai/lightningrod-python-sdk
-/plugin install lightningrod
+/plugin marketplace add lightning-rod-labs/lightningrod-python-sdk
+/plugin install lightningrod-python-sdk
 ```
 
-This installs all skills and the `lightningrod-assistant` agent into your project. Skills are namespaced as `/lightningrod:skill-name`.
-
-### Hermes
-
-Hermes discovers skills from the top-level `skills/` directory automatically via tap:
-
-```bash
-hermes tap lightningrod-python-sdk
-```
-
-This registers all Lightning Rod skills. They'll be available in your Hermes agent sessions.
-
-### OpenClaw
-
-Point OpenClaw at the skills directory:
-
-```bash
-openclaw skills add /path/to/lightningrod-python-sdk/skills
-```
-
-Or add individual skills:
-
-```bash
-openclaw skills add /path/to/lightningrod-python-sdk/skills/examples-guide
-```
-
-### Codex and other agents
-
-Copy or symlink the `skills/` directory (or individual skill folders) into your agent's skill/knowledge directory. Each skill is a self-contained `SKILL.md` file with YAML frontmatter — any agent that can read markdown instructions can use them.
-
-```bash
-# Example: symlink into a generic agent's knowledge directory
-ln -s /path/to/lightningrod-python-sdk/skills /path/to/your-agent/knowledge/lightningrod
-```
+This installs all skills and the `lightningrod-assistant` agent into your project. Skills are namespaced under the `lightningrod-python-sdk` plugin.
 
 ## Documentation MCP Server
 
@@ -88,10 +55,6 @@ Add it to your `~/.claude.json` (or project-level `.mcp.json`):
 ```
 
 The `lightningrod-assistant` agent shipped via the plugin already wires this in — you only need the config above if you're using the SDK without the plugin.
-
-### Claude Desktop / Cursor / Windsurf
-
-In the app's MCP settings, add a new server with type **HTTP** (or **Streamable HTTP**) pointing at `https://docs.lightningrod.ai/~gitbook/mcp`.
 
 ### Other agents
 

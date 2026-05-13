@@ -5,7 +5,7 @@
 * [Introduction](introduction.md)
 * [Quickstart](quickstart.md)
 * [Examples](examples.md)
-* [Using with AI Agents](agents.md)
+* [AI Agents](agents.md)
 * [Changelog](changelog.md)
 
 ## Forecasting
