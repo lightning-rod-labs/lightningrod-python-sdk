@@ -1,6 +1,6 @@
 ---
-
-## icon: robot
+icon: robot
+---
 
 # Using Lightning Rod with AI Agents
 
