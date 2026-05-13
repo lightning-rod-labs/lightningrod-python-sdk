@@ -8,6 +8,8 @@ Create and manage LoRA fine-tuning jobs on Lightning Rod datasets. Access via `l
 
 Training jobs use one of two configuration types: **GRPO** (reinforcement-style training for forecasting) or **SFT** (supervised fine-tuning on labeled question–answer pairs). Pass the matching SDK config class; the API stores a discriminated config on the job. When you read `job.config` from `get` or `list`, it is a generated `GRPOTrainingConfig` or `SFTTrainingConfig` from the API (not the thin SDK wrapper classes).
 
+Before starting a training job, prepare your generated dataset with [`prepare_for_training`](data-preparation.md). This filters invalid samples, deduplicates, and creates the training-ready `train_dataset` you pass to `lr.training.estimate_cost(...)`, `lr.training.create(...)`, or `lr.training.run(...)`.
+
 ## GRPOTrainingConfig
 
 Use for forward-looking / GRPO training. Configure base model, training steps, and optional LoRA parameters:

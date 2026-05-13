@@ -7,7 +7,7 @@
   },
   "plugins": [
     {
-      "name": "sdk",
+      "name": "lightningrod-python-sdk",
       "description": "Forecasting dataset generation and model fine-tuning skills",
       "source": "."
     }
