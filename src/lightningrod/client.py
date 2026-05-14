@@ -29,12 +29,11 @@ class LightningRod:
         api_key: str | None = None,
         base_url: str = "https://api.lightningrod.ai/api/public/v1"
     ):
+        # Resolve credentials lazily (at instantiation, not at import time) so a
+        # missing key doesn't blow up `import lightningrod`.
         if api_key is None:
             api_key = config.get_config_value("LIGHTNINGROD_API_KEY")
 
-        # Allow overriding the base url from the environment variables.
-        # This is only used for local development, 
-        # so that we don't have to pass this variable in on the public notebook examples.
         base_url = config.get_config_value("LIGHTNINGROD_BASE_URL", base_url)
 
         self.api_key: str = api_key
