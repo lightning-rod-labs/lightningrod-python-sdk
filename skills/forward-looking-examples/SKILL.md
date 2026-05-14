@@ -281,7 +281,8 @@ eval_job = lr.evals.run_from_training_job(
     config,
     job,
     test_dataset,
-    extra_models=[EvalModel(model_id="openai/gpt-5", label="GPT-5")],
+    # Frontier benchmark — always included by default (see lightningrod-assistant).
+    extra_models=[EvalModel(model_id="openai/gpt-5.5", label="GPT-5.5")],
 )
 
 # Optional: if eval scores are disappointing, re-run with reasoning comparison

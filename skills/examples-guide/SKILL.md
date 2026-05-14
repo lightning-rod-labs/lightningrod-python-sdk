@@ -19,7 +19,7 @@ Train a model to reason within a domain and/or learn to predict outcomes. Forwar
 
 **Why RL**: The model explores reasoning strategies and gets rewarded for calibration. It discovers causal reasoning training data doesn't explicitly teach. SFT memorizes; GRPO generalizes.
 
-**Default model**: `openai/gpt-oss-120b` | **Benchmark**: `openai/gpt-5`
+**Default model**: `openai/gpt-oss-120b` | **Frontier benchmark (always included)**: `openai/gpt-5.5`
 
 **Common steps**:
 
@@ -84,7 +84,7 @@ Map structured data to `Sample()` fields, fill in what's missing, optionally enr
 - Have questions + labels, need context → map both, add `NewsContextGenerator`
 - Have questions, need labels → map questions, add `WebSearchLabeler`
 
-**Default model**: `openai/gpt-oss-120b` | **Benchmark**: `openai/gpt-5`
+**Default model**: `openai/gpt-oss-120b` | **Frontier benchmark (always included)**: `openai/gpt-5.5`
 
 **Watch for**:
 

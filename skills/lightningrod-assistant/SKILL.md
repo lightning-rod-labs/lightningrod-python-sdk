@@ -29,9 +29,16 @@ Raise these only when relevant, in plain language, as part of your response — 
 - **Structured data beats news when**: the underlying data is natively tabular (financial data, sports statistics, GitHub stats)
 - **All forecasting needs temporal splitting**: train on older, test on newer, never shuffle
 
-## Demo topics (proven to beat gpt-5)
+## Frontier benchmark (default)
 
-When the user wants a demo, is exploring, or hasn't picked a topic, recommend one of these. They have known-good configs and demonstrated results:
+Every training run is benchmarked against the **current frontier model** automatically. The user does not need to ask for it and you do not need to ask permission — always include it in eval.
+
+- **Current frontier model**: `openai/gpt-5.5` (label: "GPT-5.5"). Use this as the default `EvalModel` in every `lr.evals.run_from_training_job` call.
+- Update this single line if the frontier shifts; do not scatter model IDs across other instructions.
+
+## Demo topics (proven to beat the frontier)
+
+When the user wants a demo, is exploring, or hasn't picked a topic, recommend one of these. They have known-good configs and demonstrated results against the frontier model at the time of measurement:
 
 - **Golf forecasting** — 17% better than gpt-5 (Brier skill score). Broad topic, clean news coverage.
 - **Trump policy** — Beats gpt-5 (0.1939 vs 0.2003 Brier). Fast-moving, high news volume.
@@ -53,11 +60,11 @@ Follow these steps in order. Do not skip steps or reorder them. This is the flow
 
 6. **When quality is low, do the simple thing** — More data (increase max_questions), raise confidence thresholds, tweak question generator instructions. That's it. Do not restructure the pipeline, add custom filtering stages, or switch data sources based on a small sample.
 
-7. **Scale up** — Run with `max_questions=1000-10000`. Always call `estimate_cost()` first and show it. Explicitly ask for approval if the estimated cost is higher (e.g. >$100).
+7. **Scale up** — Run with `max_questions=1000-10000`. The explicit goal of a larger-scale run is to **beat the current frontier model** (see "Frontier benchmark") on the held-out test split. Always call `estimate_cost()` first and show it. Explicitly ask for approval if the estimated cost is higher (e.g. >$100).
 
 8. **Lint the dataset** — Run the dataset linter on the generated dataset before splitting or training. Review the results with the user — show the overview and discuss whether to remove flagged samples or proceed. This catches structural issues (duplicates, missing fields, label problems) that the pipeline doesn't check for. Linting is useful even outside training workflows as a dataset health check.
 
-9. **Split and train** — Use `filter_and_split()` with temporal splitting. Train with GRPO using defaults from `forward-looking-examples` skill. Always compare against gpt-5 in eval. If eval scores are disappointing or the user wants to understand why the fine-tuned model improved (or didn't), offer a reasoning comparison — it samples questions and shows how the base and fine-tuned models reason differently. This is optional, not a default step.
+9. **Split, train, and benchmark** — Use `filter_and_split()` with temporal splitting. Train with GRPO using defaults from `forward-looking-examples` skill. **Always benchmark against the current frontier model automatically** — pass it as an `EvalModel` in `extra_models` on every `lr.evals.run_from_training_job` call without asking the user. The frontier model ID is defined once in "Frontier benchmark" above. If eval scores are disappointing or the user wants to understand why the fine-tuned model improved (or didn't), offer a reasoning comparison — it samples questions and shows how the base and fine-tuned models reason differently. This is optional, not a default step.
 
 **Always use the AskUserQuestion tool** for clarifications and gut checks. Never list questions as plain text — AskUserQuestion creates an interactive prompt that waits for the user's answer.
 
