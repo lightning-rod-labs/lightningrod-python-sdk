@@ -5,6 +5,8 @@ AI-powered forecasting dataset generation platform.
 """
 
 from lightningrod.client import LightningRod
+from lightningrod._errors import CostEstimateUnavailable
+from lightningrod.utils.config import LightningrodAuthError
 from lightningrod.filesets.client import UploadResult
 from lightningrod.datasets.dataset import SampleDataset, AsyncDataset
 from lightningrod.datasets.linting import get_lint_affected_sample_ids
@@ -75,6 +77,8 @@ __all__ = [
     "BigQuerySeedGenerator",
     "binary_example",
     "BinaryAnswerType",
+    "CostEstimateUnavailable",
+    "LightningrodAuthError",
     "continuous_example",
     "ContinuousAnswerType",
     "multiple_choice_example",

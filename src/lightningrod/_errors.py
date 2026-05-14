@@ -9,6 +9,24 @@ from lightningrod._generated.types import Response
 T = TypeVar("T")
 
 
+class CostEstimateUnavailable(RuntimeError):
+    """Raised when the cost-estimation endpoint cannot produce an estimate.
+
+    Surfaces server-side 5xx errors (e.g. the known FileSetDocumentLabeler /
+    FileSetDocumentContextGenerator pipeline shape) as a typed signal so callers
+    can fall back deterministically instead of retrying a flaky endpoint.
+
+    Attributes:
+        reason: human-readable description of why the estimate is unavailable.
+        status_code: HTTP status returned by the cost endpoint, if any.
+    """
+
+    def __init__(self, reason: str, status_code: int | None = None):
+        super().__init__(reason)
+        self.reason = reason
+        self.status_code = status_code
+
+
 def extract_error_message(response: Response[Any], operation: str) -> str:
     """
     Extract a detailed error message from a Response object.
