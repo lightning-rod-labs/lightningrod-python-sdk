@@ -54,7 +54,7 @@ for q in questions:
 
 ### API reference
 
-See the [API docs](https://dashboard.lightningrod.ai/public/docs#tag/openai-compatible/post/openai/chat/completions) for full details on parameters (temperature, max_tokens, etc.).
+See the [API docs](https://docs.lightningrod.ai/rest-api#post-openai-chat-completions) for full details on parameters (temperature, max_tokens, etc.).
 
 ## Try it
 
