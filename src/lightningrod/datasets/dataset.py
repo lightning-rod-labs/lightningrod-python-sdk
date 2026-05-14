@@ -1,5 +1,6 @@
 from typing import List, Optional, Dict, Any, TYPE_CHECKING
 import asyncio
+import warnings
 
 from lightningrod._generated.models.sample import Sample
 
@@ -149,27 +150,22 @@ class SampleDataset:
         return self.samples()
 
     def flattened(self) -> List[Dict[str, Any]]:
-        """
-        Convert all samples to a list of dictionaries.
-        Automatically downloads the samples if they haven't been downloaded yet.
-        
-        Handles different question types (Question, ForwardLookingQuestion) and
-        extracts relevant fields from labels, seeds, and prompts.
-        
-        Returns:
-            List of dictionaries, each representing a sample row
-        
-        Example:
-            >>> lr = LightningRod(api_key="your-api-key")
-            >>> config = QuestionPipeline(...)
-            >>> dataset = lr.transforms.run(config)
-            >>> rows = dataset.flattened()
-            >>> import pandas as pd
-            >>> df = pd.DataFrame(rows)
-        """
-        from lightningrod.training.samples import to_record
+        """Deprecated. Use `lightningrod.display.flatten_samples(dataset.samples())`.
 
-        return [to_record(s) for s in self.samples()]
+        The flat-dict representation is a display helper, not a stable
+        data-access contract. For programmatic access use the typed `Sample`
+        attributes returned by `samples()` / `download()`.
+        """
+        warnings.warn(
+            "SampleDataset.flattened() is deprecated and will be removed in a "
+            "future release. Use `lightningrod.display.flatten_samples(dataset.samples())` "
+            "for display, or the typed Sample attributes for data access.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        from lightningrod.display import flatten_samples
+
+        return flatten_samples(self.samples())
 
     def valid_count(self) -> int:
         """
@@ -269,26 +265,14 @@ class AsyncDataset:
         return await asyncio.to_thread(self._sync_dataset.to_samples)
 
     async def flattened(self) -> List[Dict[str, Any]]:
-        """
-        Convert all samples to a list of dictionaries.
-        Automatically downloads the samples if they haven't been downloaded yet.
-
-        All operations are run in a thread pool to avoid blocking the event loop.
-
-        Handles different question types (Question, ForwardLookingQuestion) and
-        extracts relevant fields from labels, seeds, and prompts.
-
-        Returns:
-            List of dictionaries, each representing a sample row
-
-        Example:
-            >>> lr = AsyncLightningRod(api_key="your-api-key")
-            >>> config = QuestionPipeline(...)
-            >>> dataset = await lr.transforms.run(config)
-            >>> rows = await dataset.flattened()
-            >>> import pandas as pd
-            >>> df = pd.DataFrame(rows)
-        """
+        """Deprecated. Use `lightningrod.display.flatten_samples(await dataset.to_samples())`."""
+        warnings.warn(
+            "AsyncDataset.flattened() is deprecated and will be removed in a "
+            "future release. Use `lightningrod.display.flatten_samples(await dataset.to_samples())` "
+            "for display, or the typed Sample attributes for data access.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return await asyncio.to_thread(self._sync_dataset.flattened)
 
     async def valid_count(self) -> int:

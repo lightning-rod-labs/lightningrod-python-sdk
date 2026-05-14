@@ -794,7 +794,7 @@ def _build_report(
             tips=[
                 "Ensure your question generator sets prediction_date on every sample.",
                 "Check that the sort_key passed to SplitParams can extract a valid date from each sample.",
-                "Inspect a few samples with dataset.flattened() to confirm prediction_date is populated.",
+                "Inspect a few samples with lr.display.flatten_samples(dataset.samples()) to confirm prediction_date is populated.",
             ],
         ))
 
@@ -841,7 +841,7 @@ def _build_report(
                 "For binary tasks, use yes/no (or true/false, 1/0). For continuous, use a numeric string. "
                 "For multiple choice or free response, use a non-empty string.",
                 "Ensure every sample has a label and answer_type set consistently with your labeler output.",
-                "Inspect filtered-out samples with dataset.flattened() and compare label strings to answer_type.",
+                "Inspect filtered-out samples with lr.display.flatten_samples(dataset.samples()) and compare label strings to answer_type.",
             ],
         ))
 
@@ -857,7 +857,7 @@ def _build_report(
             tips=[
                 "Add more examples and bad_examples to guide the question generator toward more sensible questions.",
                 "Check the labeler configuration — if WebSearchLabeler can't find resolution info, samples are marked invalid.",
-                "Inspect a few invalid samples with dataset.flattened() to identify patterns.",
+                "Inspect a few invalid samples with lr.display.flatten_samples(dataset.samples()) to identify patterns.",
             ],
         ))
 
