@@ -84,6 +84,26 @@ Pick **one** answer type and use it for all example questions. Do not mix answer
 
 **Do not label examples with the answer type.** Don't write "### 1. Continuous — price move" — just write the questions naturally. Labeling each example with its type turns the list into a taxonomy exercise instead of a gut check on question quality.
 
+## Question wording
+
+Questions describe a **real-world outcome**, not what a specific document or article will say. The pipeline (temporal constraint, labeler, resolution document) is what binds a question to evidence — that machinery belongs in the *pipeline configuration*, never in the question text.
+
+This is the single most common framing mistake. Look at the production examples for the right shape:
+
+- ✅ "Will Scottie Scheffler win the 2025 Masters?"
+- ✅ "Will Trump impose 25% tariffs on all goods from Canada by February 1, 2025?"
+- ✅ "Will manufacturing activity in the St. Louis district improve over the next quarter?"
+
+Compare to the wrong shape, which references the data source as the resolution mechanism:
+
+- ❌ "Will manufacturing activity in the St. Louis district improve **in the next Beige Book release**?"
+- ❌ "Will **the next ESPN article report** that Scheffler won the Masters?"
+- ❌ "Will **the next earnings call mention** layoffs?"
+
+The "in the next X" or "according to X" framing leaks the pipeline structure into the question, makes the resolution criterion fuzzy ("improve" *relative to what*?), and trains the model to forecast text rather than reality. The temporal horizon belongs in the question as a calendar concept ("over the next quarter", "by February 1, 2025", "in 2025") or it belongs implicitly in the pipeline (FileSetDocumentLabeler + `TemporalConstraint.NEXT_DOCUMENT` resolves against the next document without the question naming it).
+
+When the user's seed data is a periodic publication (Beige Book, earnings calls, central bank statements, FOMC minutes), this is the most tempting trap. Resist it: the question is about the *world*, the document is just how you label it.
+
 ## Hard constraints
 
 These are not suggestions. Do not violate them.
@@ -92,8 +112,10 @@ These are not suggestions. Do not violate them.
 2. **Never invent custom filtering or preprocessing.** Use `filter_and_split()` with its built-in parameters. Do not write custom code to pre-filter seeds, post-filter questions, or add pipeline stages that don't exist in the production examples.
 3. **Never change pipeline structure after seeing <50 samples.** You need volume to judge quality. Tweak instructions, not architecture.
 4. **Never estimate costs yourself.** Always call `lr.training.estimate_cost()` and `lr.transforms.estimate_cost()`. Never say "this should cost about $X" based on your own math.
+   - Exception: if the call raises `CostEstimateUnavailable` (known for some pipeline shapes — see "Known gotchas"), tell the user the estimator is unavailable and proceed only with explicit approval.
 5. **Never ask users to narrow their topic.** "Pick a specific type of fuel" or "choose between crude oil and natural gas" is wrong. Keep it broad. The model learns from diverse examples.
 6. **Never present data source options as a menu.** You are the expert — you choose the data source and explain why.
+7. **Never anchor question text to the data source.** Don't write "...in the next Beige Book release?" or "...according to the next earnings call?". Questions describe real-world outcomes; the pipeline resolves them. See "Question wording".
 
 ## Domain vocabulary
 
@@ -225,7 +247,11 @@ Use the `mcp__lightningrod-docs__search-docs` tool to look up SDK documentation 
 
 ## Reference notebooks
 
-Read these only when writing code and you need a specific API pattern or parameter:
+**At the start of every task, scan this list for a notebook that matches the user's use case** (same data source, same pipeline shape, same domain). If one matches, read it and **mirror it closely** — pipeline composition, transform params, and especially prompt content (`instructions`, `examples`, `bad_examples`, render templates) should track the notebook verbatim unless the user asks for a change. Notebooks are canonical; skill snippets are condensed and may lag. When a notebook and a skill conflict, the notebook wins.
+
+Do not invent embellishments on top of a matching reference (extra topic biases, expanded example lists, additional constraints, new verb vocabularies). If a reference notebook covers the use case, deviation needs an explicit reason from the user.
+
+Read these when writing code and you need a specific API pattern, parameter, or canonical prompt content:
 
 - `notebooks/getting_started/00_quickstart.ipynb` — basic workflow
 - `notebooks/getting_started/01_news_datasource.ipynb` — news seeds
