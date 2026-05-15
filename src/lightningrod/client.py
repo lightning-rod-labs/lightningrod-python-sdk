@@ -26,9 +26,11 @@ class LightningRod:
     
     def __init__(
         self,
-        api_key: str = config.get_config_value("LIGHTNINGROD_API_KEY"),
+        api_key: str | None = None,
         base_url: str = "https://api.lightningrod.ai/api/public/v1"
     ):
+        if api_key is None:
+            api_key = config.get_config_value("LIGHTNINGROD_API_KEY")
 
         # Allow overriding the base url from the environment variables.
         # This is only used for local development, 
