@@ -21,7 +21,13 @@ from lightningrod._generated.api.file_sets import (
     generate_batch_upload_urls_filesets_file_set_id_upload_folder_post,
 )
 from lightningrod._generated.client import AuthenticatedClient
+from lightningrod._generated.types import Unset
 from lightningrod._errors import handle_response_error
+from lightningrod.filesets.extraction import (
+    DEFAULT_MAX_CHARS,
+    DEFAULT_MODEL,
+    extract_metadata_for_files,
+)
 
 
 @dataclass
@@ -274,6 +280,88 @@ class FileSetsClient:
 
         return UploadResult(succeeded=succeeded, failed=failed, errors=errors)
 
+    def extract_metadata(
+        self,
+        file_set_id: str,
+        file_paths: List[Union[str, Path]],
+        *,
+        model: str = DEFAULT_MODEL,
+        max_chars: int = DEFAULT_MAX_CHARS,
+        max_pages: Optional[int] = None,
+        max_workers: int = 10,
+        use_vision: bool = False,
+        existing_metadata: Optional[Dict[str, Dict[str, Any]]] = None,
+    ) -> Dict[str, Dict[str, Any]]:
+        """Extract per-file metadata using an LLM, guided by the FileSet's schema.
+
+        Fetches the FileSet's metadata schema (set at
+        :meth:`FileSetsClient.create`) and, for each supplied file, asks an
+        LLM to extract values for every field. The returned dict is in the
+        shape :meth:`upload_files` expects for its ``metadata`` argument, so
+        callers can inspect or edit it before uploading.
+
+        Supports plain-text files (``.txt``, ``.md``, ``.csv``, ``.json``,
+        ``.html``, ``.htm``, ``.xml``, ``.yaml``, ``.yml``, ``.log``) and
+        PDFs. With ``use_vision=True``, PDFs are rendered to images and sent
+        to a vision model, and image files (``.png``, ``.jpg``, ``.jpeg``,
+        ``.webp``, ``.gif``) also become supported. Unsupported files are
+        silently skipped.
+
+        Requires the ``extract`` optional dependency
+        (``pip install 'lightningrod-ai[extract]'``), which bundles
+        ``openai``, ``pypdf``, ``pypdfium2``, and ``pillow``.
+
+        Args:
+            file_set_id: The ID of the FileSet whose metadata schema should
+                guide extraction.
+            file_paths: Files to extract metadata from.
+            model: Model id to call (defaults to ``gpt-4.1-mini``).
+            max_chars: Max characters of file text to include in the prompt.
+                Ignored in vision mode.
+            max_pages: For PDFs, only read/render the first N pages (e.g.
+                ``max_pages=1`` for cover-page-only extraction). Ignored for
+                plain-text and (non-PDF) image files.
+            max_workers: Parallelism for per-file LLM calls.
+            use_vision: If True, use a vision model on rendered PDF pages
+                and image files instead of extracting text.
+            existing_metadata: Optional ``filename -> {field: value}`` map of
+                metadata the caller has already supplied. Those fields are
+                omitted from the LLM prompt/schema for that file - useful for
+                e.g. providing ``category`` manually while still letting the
+                model auto-extract ``date``. The returned dict only contains
+                the fields the LLM was asked about.
+
+        Returns:
+            Mapping of ``filename`` -> extracted metadata dict. Files that
+            failed extraction or whose type is not supported are omitted.
+
+        Raises:
+            ValueError: If the FileSet has no metadata schema defined.
+        """
+        file_set = self.get(file_set_id)
+        schema = file_set.metadata_schema
+        if schema is None or isinstance(schema, Unset):
+            raise ValueError(
+                f"FileSet '{file_set_id}' has no metadata schema. "
+                "Create the FileSet with a metadata_schema to use auto-extraction."
+            )
+
+        token = self._client.token
+        base_url = self._client._base_url
+
+        return extract_metadata_for_files(
+            file_paths=file_paths,
+            schema=schema,
+            api_key=token,
+            base_url=base_url,
+            model=model,
+            max_chars=max_chars,
+            max_pages=max_pages,
+            max_workers=max_workers,
+            use_vision=use_vision,
+            existing_metadata=existing_metadata,
+        )
+
     def upload_files(
         self,
         file_set_id: str,
@@ -282,6 +370,12 @@ class FileSetsClient:
         max_workers: int = 10,
         use_transfer_manager: bool = True,
         show_progress: bool = False,
+        auto_extract_metadata: bool = False,
+        extraction_max_pages: Optional[int] = None,
+        extraction_model: str = DEFAULT_MODEL,
+        extraction_max_chars: int = DEFAULT_MAX_CHARS,
+        extraction_max_workers: Optional[int] = None,
+        extraction_use_vision: bool = False,
     ) -> UploadResult:
         """Upload files to a FileSet with optional metadata.
 
@@ -308,6 +402,29 @@ class FileSetsClient:
                           Requires google-cloud-storage. Note: progress mode
                           uploads files individually rather than using Transfer
                           Manager batch upload.
+            auto_extract_metadata: If True, use an LLM to auto-extract metadata
+                          for each file based on the FileSet's metadata schema
+                          (see :meth:`extract_metadata`). Fields the caller
+                          already supplied via ``metadata`` are skipped during
+                          extraction (the LLM only fills in the gaps), and
+                          any user-supplied values still take precedence on
+                          the off chance the model returns the same key.
+            extraction_max_pages: Only applies when ``auto_extract_metadata=True``.
+                          For PDFs, read only the first N pages during
+                          extraction (e.g. ``extraction_max_pages=1`` for
+                          cover-page-only extraction). Ignored for text files.
+            extraction_model: Only applies when ``auto_extract_metadata=True``.
+                          Model id to use for extraction.
+            extraction_max_chars: Only applies when ``auto_extract_metadata=True``.
+                          Max characters of file text to include in each prompt.
+            extraction_max_workers: Only applies when ``auto_extract_metadata=True``.
+                          Parallelism for per-file extraction calls. Defaults
+                          to ``max_workers``.
+            extraction_use_vision: Only applies when ``auto_extract_metadata=True``.
+                          Send PDFs (rendered to images) and image files to
+                          a vision model instead of extracting text. Enables
+                          metadata extraction from scanned PDFs, image-only
+                          documents, and complex layouts.
 
         Returns:
             UploadResult with counts of succeeded/failed uploads and error messages
@@ -328,9 +445,42 @@ class FileSetsClient:
                     "report_q2.pdf": {"ticker": "AAPL", "quarter": "Q2 2024"},
                 }
             )
+
+            # Auto-extract metadata via LLM using the fileset's schema
+            result = lr.filesets.upload_files(
+                fileset.id,
+                ["report_q1.txt", "report_q2.txt"],
+                auto_extract_metadata=True,
+            )
         """
         # Convert paths to Path objects
         paths = [Path(p) for p in file_paths]
+
+        # Auto-extract metadata if requested; user-supplied values win on conflict.
+        if auto_extract_metadata:
+            extracted = self.extract_metadata(
+                file_set_id,
+                paths,
+                model=extraction_model,
+                max_chars=extraction_max_chars,
+                max_pages=extraction_max_pages,
+                max_workers=(
+                    max_workers
+                    if extraction_max_workers is None
+                    else extraction_max_workers
+                ),
+                use_vision=extraction_use_vision,
+                existing_metadata=metadata,
+            )
+            if metadata:
+                merged: Dict[str, Dict[str, Any]] = {
+                    fn: dict(meta) for fn, meta in extracted.items()
+                }
+                for fn, meta in metadata.items():
+                    merged.setdefault(fn, {}).update(meta)
+                metadata = merged
+            else:
+                metadata = extracted
 
         # Use progress bar if requested (takes priority over transfer manager)
         if show_progress:
@@ -415,6 +565,12 @@ class FileSetsClient:
         max_workers: int = 10,
         use_transfer_manager: bool = True,
         show_progress: bool = False,
+        auto_extract_metadata: bool = False,
+        extraction_max_pages: Optional[int] = None,
+        extraction_model: str = DEFAULT_MODEL,
+        extraction_max_chars: int = DEFAULT_MAX_CHARS,
+        extraction_max_workers: Optional[int] = None,
+        extraction_use_vision: bool = False,
     ) -> UploadResult:
         """Upload all files from a directory to a FileSet.
 
@@ -428,6 +584,23 @@ class FileSetsClient:
             use_transfer_manager: If True (default), use GCS Transfer Manager for
                                   efficient uploads. Requires google-cloud-storage.
             show_progress: If True, display a progress bar during upload.
+            auto_extract_metadata: If True, use an LLM to auto-extract metadata
+                          for each file based on the FileSet's metadata schema.
+                          If ``metadata_fn`` is also provided, its values take
+                          precedence over extracted ones.
+            extraction_max_pages: Only applies when ``auto_extract_metadata=True``.
+                          For PDFs, read only the first N pages during
+                          extraction. Ignored for text files.
+            extraction_model: Only applies when ``auto_extract_metadata=True``.
+                          Model id to use for extraction.
+            extraction_max_chars: Only applies when ``auto_extract_metadata=True``.
+                          Max characters of file text to include in each prompt.
+            extraction_max_workers: Only applies when ``auto_extract_metadata=True``.
+                          Parallelism for per-file extraction calls. Defaults
+                          to ``max_workers``.
+            extraction_use_vision: Only applies when ``auto_extract_metadata=True``.
+                          Send PDFs (rendered to images) and image files to
+                          a vision model instead of extracting text.
 
         Returns:
             UploadResult with counts of succeeded/failed uploads and error messages
@@ -485,4 +658,10 @@ class FileSetsClient:
             max_workers=max_workers,
             use_transfer_manager=use_transfer_manager,
             show_progress=show_progress,
+            auto_extract_metadata=auto_extract_metadata,
+            extraction_max_pages=extraction_max_pages,
+            extraction_model=extraction_model,
+            extraction_max_chars=extraction_max_chars,
+            extraction_max_workers=extraction_max_workers,
+            extraction_use_vision=extraction_use_vision,
         )
