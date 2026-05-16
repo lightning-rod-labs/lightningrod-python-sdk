@@ -112,6 +112,42 @@ result = lr.filesets.upload_files(
 )
 ```
 
+### Visual document seed summaries
+
+Use this for image-heavy PDFs, exported decks, and page images where plain text extraction misses charts or visual layout. It creates page-level executive seed summaries, not raw OCR.
+
+```python
+import os
+from openai import OpenAI
+
+from lightningrod.preprocessing.visual_documents import convert_visual_document_to_text_pages
+
+vision_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
+conversion = convert_visual_document_to_text_pages(
+    "reports/q1_board_deck.pdf",
+    openai_client=vision_client,
+    metadata={
+        "file_date": "2025-03-31",
+        "company_name": "ExampleCo",
+        "doc_type": "board_deck",
+    },
+)
+
+print(conversion.file_paths)
+print(conversion.upload_metadata())
+
+upload = lr.filesets.upload_files(
+    fileset.id,
+    conversion.file_paths,
+    metadata=conversion.upload_metadata(),
+)
+
+print(upload.succeeded)
+```
+
+Install with `pip install "lightningrod-ai[visual]"`. OpenRouter-compatible clients work too by passing an `OpenAI(base_url=..., api_key=...)` client and the model name. The SDK only converts files; upload stays with `upload_files()`. Generated filenames include a short source hash so duplicate source basenames do not collide during upload.
+
 ### upload_directory() — Upload all files from a directory
 
 ```python
