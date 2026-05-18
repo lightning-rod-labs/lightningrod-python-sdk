@@ -1,11 +1,58 @@
 import json
 import os
+import random
+import ssl
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import requests
+
+
+_TRANSIENT_UPLOAD_RETRIES = 3
+_TRANSIENT_BACKOFF_BASE = 0.5  # seconds
+
+
+def _is_transient_upload_error(exc: BaseException) -> bool:
+    """Heuristic: should this upload error be retried?
+
+    Covers SSL handshake errors, connection resets, timeouts, and HTTP 5xx
+    raised by google-cloud-storage / requests / urllib3 / httpx. We deliberately
+    err toward retrying — false positives just cost a few seconds; false
+    negatives mean the agent has to add ad-hoc retry logic.
+    """
+    if isinstance(exc, (ssl.SSLError, TimeoutError, ConnectionError)):
+        return True
+    name = type(exc).__name__
+    if name in {"SSLError", "ConnectionError", "ReadTimeoutError", "Timeout",
+                "ConnectTimeout", "ChunkedEncodingError", "ProtocolError",
+                "RemoteDisconnected", "ServiceUnavailable", "InternalServerError",
+                "GatewayTimeout", "BadGateway"}:
+        return True
+    status = getattr(exc, "status_code", None) or getattr(exc, "code", None)
+    if isinstance(status, int) and 500 <= status < 600:
+        return True
+    return False
+
+
+def _retry_transient(fn: Callable[[], Any], *, label: str = "upload",
+                     attempts: int = _TRANSIENT_UPLOAD_RETRIES) -> Any:
+    """Run `fn` with bounded exponential backoff on transient errors."""
+    last: Optional[BaseException] = None
+    for attempt in range(1, attempts + 1):
+        try:
+            return fn()
+        except Exception as exc:
+            if attempt == attempts or not _is_transient_upload_error(exc):
+                raise
+            last = exc
+            sleep_for = _TRANSIENT_BACKOFF_BASE * (2 ** (attempt - 1))
+            sleep_for += random.uniform(0, sleep_for * 0.25)
+            time.sleep(sleep_for)
+    # unreachable — loop either returns or re-raises
+    raise last  # type: ignore[misc]
 
 from lightningrod._generated.models import (
     FileSet,
@@ -187,9 +234,12 @@ class FileSetsClient:
                     fn: {k: (v.isoformat() if hasattr(v, 'isoformat') else v) for k, v in meta.items()}
                     for fn, meta in metadata.items()
                 }
-                manifest_blob.upload_from_string(
-                    json.dumps(manifest_data),
-                    content_type="application/json"
+                _retry_transient(
+                    lambda: manifest_blob.upload_from_string(
+                        json.dumps(manifest_data),
+                        content_type="application/json",
+                    ),
+                    label="upload _manifest.json",
                 )
             except Exception as e:
                 errors.append(f"_manifest.json: {e}")
@@ -234,7 +284,10 @@ class FileSetsClient:
 
         def upload_single(path: Path) -> None:
             blob = bucket.blob(f"{creds.folder}{path.name}")
-            blob.upload_from_filename(str(path))
+            _retry_transient(
+                lambda: blob.upload_from_filename(str(path)),
+                label=f"upload {path.name}",
+            )
 
         print(f"Uploading {total} files...")
 
@@ -271,9 +324,12 @@ class FileSetsClient:
                     fn: {k: (v.isoformat() if hasattr(v, 'isoformat') else v) for k, v in meta.items()}
                     for fn, meta in metadata.items()
                 }
-                manifest_blob.upload_from_string(
-                    json.dumps(manifest_data),
-                    content_type="application/json"
+                _retry_transient(
+                    lambda: manifest_blob.upload_from_string(
+                        json.dumps(manifest_data),
+                        content_type="application/json",
+                    ),
+                    label="upload _manifest.json",
                 )
             except Exception as e:
                 errors.append(f"_manifest.json: {e}")
@@ -519,8 +575,12 @@ class FileSetsClient:
             with open(path, "rb") as f:
                 content = f.read()
             headers = {"Content-Type": "application/octet-stream"}
-            response = requests.put(url, data=content, headers=headers)
-            response.raise_for_status()
+
+            def _put():
+                response = requests.put(url, data=content, headers=headers)
+                response.raise_for_status()
+
+            _retry_transient(_put, label=f"upload {path.name}")
 
         # Upload files in parallel
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -549,8 +609,12 @@ class FileSetsClient:
 
                     manifest_content = json.dumps(manifest_data).encode("utf-8")
                     headers = {"Content-Type": "application/json"}
-                    response = requests.put(manifest_url, data=manifest_content, headers=headers)
-                    response.raise_for_status()
+
+                    def _put_manifest():
+                        response = requests.put(manifest_url, data=manifest_content, headers=headers)
+                        response.raise_for_status()
+
+                    _retry_transient(_put_manifest, label="upload _manifest.json")
                 except Exception as e:
                     errors.append(f"_manifest.json: {e}")
 

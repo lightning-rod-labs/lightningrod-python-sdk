@@ -1,4 +1,4 @@
-from .config import get_config_value
+from .config import get_config_value, LightningrodAuthError
 from .sample import create_sample
 from .tabular import flatten, flatten_dict
 from .metrics import (
@@ -21,6 +21,7 @@ __all__ = [
     "flatten",
     "flatten_dict",
     "get_config_value",
+    "LightningrodAuthError",
     "multiple_choice_example",
     "open_router_model",
 ]

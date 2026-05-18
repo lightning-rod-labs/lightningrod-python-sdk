@@ -17,6 +17,7 @@ skills:
   - custom-dataset-seeds
   - public-dataset-exploration
   - transform-pipeline-verification
+  - experiment-tracking
 ---
 
 <!-- Mirror of skills/lightningrod-assistant/SKILL.md (Hermes/OpenClaw/Codex-compatible). Keep in sync. -->
@@ -44,9 +45,16 @@ Raise these only when relevant, in plain language, as part of your response — 
 - **Structured data beats news when**: the underlying data is natively tabular (financial data, sports statistics, GitHub stats)
 - **All forecasting needs temporal splitting**: train on older, test on newer, never shuffle
 
-## Demo topics (proven to beat gpt-5)
+## Frontier benchmark (default)
 
-When the user wants a demo, is exploring, or hasn't picked a topic, recommend one of these. They have known-good configs and demonstrated results:
+Every training run is benchmarked against the **current frontier model** automatically. The user does not need to ask for it and you do not need to ask permission — always include it in eval.
+
+- **Current frontier model**: `openai/gpt-5.5` (label: "GPT-5.5"). Use this as the default `EvalModel` in every `lr.evals.run_from_training_job` call.
+- Update this single line if the frontier shifts; do not scatter model IDs across other instructions.
+
+## Demo topics (proven to beat the frontier)
+
+When the user wants a demo, is exploring, or hasn't picked a topic, recommend one of these. They have known-good configs and demonstrated results against the frontier model at the time of measurement:
 
 - **Golf forecasting** — 17% better than gpt-5 (Brier skill score). Broad topic, clean news coverage.
 - **Trump policy** — Beats gpt-5 (0.1939 vs 0.2003 Brier). Fast-moving, high news volume.
@@ -68,11 +76,11 @@ Follow these steps in order. Do not skip steps or reorder them. This is the flow
 
 6. **When quality is low, do the simple thing** — More data (increase max_questions), raise confidence thresholds, tweak question generator instructions. That's it. Do not restructure the pipeline, add custom filtering stages, or switch data sources based on a small sample.
 
-7. **Scale up** — Run with `max_questions=1000-10000`. Always call `estimate_cost()` first and show it. Explicitly ask for approval if the estimated cost is higher (e.g. >$100).
+7. **Scale up** — Run with `max_questions=1000-10000`. The explicit goal of a larger-scale run is to **beat the current frontier model** (see "Frontier benchmark") on the held-out test split. Always call `estimate_cost()` first and show it. Explicitly ask for approval if the estimated cost is higher (e.g. >$100). From this point on, all training runs follow the `experiment-tracking` skill — one notebook per experiment under `./userland/<project>/experiments/`, indexed in `./userland/<project>/experiments.md`.
 
 8. **Lint the dataset** — Run the dataset linter on the generated dataset before splitting or training. Review the results with the user — show the overview and discuss whether to remove flagged samples or proceed. This catches structural issues (duplicates, missing fields, label problems) that the pipeline doesn't check for. Linting is useful even outside training workflows as a dataset health check.
 
-9. **Split and train** — Use `filter_and_split()` with temporal splitting. Train with GRPO using defaults from `forward-looking-examples` skill. Always compare against gpt-5 in eval. If eval scores are disappointing or the user wants to understand why the fine-tuned model improved (or didn't), offer a reasoning comparison — it samples questions and shows how the base and fine-tuned models reason differently. This is optional, not a default step.
+9. **Split, train, and benchmark** — Use `filter_and_split()` with temporal splitting. Each training run is its own **experiment**: follow the `experiment-tracking` skill to create a new `exp_NNN_<slug>.ipynb` whenever the tracked config differs from the previous run, and update `experiments.md`. Train with GRPO using defaults from `forward-looking-examples` skill. **Always benchmark against the current frontier model automatically** — pass it as an `EvalModel` in `extra_models` on every `lr.evals.run_from_training_job` call without asking the user. The frontier model ID is defined once in "Frontier benchmark" above. If eval scores are disappointing or the user wants to understand why the fine-tuned model improved (or didn't), offer a reasoning comparison — it samples questions and shows how the base and fine-tuned models reason differently. This is optional, not a default step.
 
 **Always use the AskUserQuestion tool** for clarifications and gut checks. Never list questions as plain text — AskUserQuestion creates an interactive prompt that waits for the user's answer.
 
@@ -92,6 +100,26 @@ Pick **one** answer type and use it for all example questions. Do not mix answer
 
 **Do not label examples with the answer type.** Don't write "### 1. Continuous — price move" — just write the questions naturally. Labeling each example with its type turns the list into a taxonomy exercise instead of a gut check on question quality.
 
+## Question wording
+
+Questions describe a **real-world outcome**, not what a specific document or article will say. The pipeline (temporal constraint, labeler, resolution document) is what binds a question to evidence — that machinery belongs in the *pipeline configuration*, never in the question text.
+
+This is the single most common framing mistake. Look at the production examples for the right shape:
+
+- ✅ "Will Scottie Scheffler win the 2025 Masters?"
+- ✅ "Will Trump impose 25% tariffs on all goods from Canada by February 1, 2025?"
+- ✅ "Will manufacturing activity in the St. Louis district improve over the next quarter?"
+
+Compare to the wrong shape, which references the data source as the resolution mechanism:
+
+- ❌ "Will manufacturing activity in the St. Louis district improve **in the next Beige Book release**?"
+- ❌ "Will **the next ESPN article report** that Scheffler won the Masters?"
+- ❌ "Will **the next earnings call mention** layoffs?"
+
+The "in the next X" or "according to X" framing leaks the pipeline structure into the question, makes the resolution criterion fuzzy ("improve" *relative to what*?), and trains the model to forecast text rather than reality. The temporal horizon belongs in the question as a calendar concept ("over the next quarter", "by February 1, 2025", "in 2025") or it belongs implicitly in the pipeline (FileSetDocumentLabeler + `TemporalConstraint.NEXT_DOCUMENT` resolves against the next document without the question naming it).
+
+When the user's seed data is a periodic publication (Beige Book, earnings calls, central bank statements, FOMC minutes), this is the most tempting trap. Resist it: the question is about the *world*, the document is just how you label it.
+
 ## Hard constraints
 
 These are not suggestions. Do not violate them.
@@ -100,8 +128,10 @@ These are not suggestions. Do not violate them.
 2. **Never invent custom filtering or preprocessing.** Use `filter_and_split()` with its built-in parameters. Do not write custom code to pre-filter seeds, post-filter questions, or add pipeline stages that don't exist in the production examples.
 3. **Never change pipeline structure after seeing <50 samples.** You need volume to judge quality. Tweak instructions, not architecture.
 4. **Never estimate costs yourself.** Always call `lr.training.estimate_cost()` and `lr.transforms.estimate_cost()`. Never say "this should cost about $X" based on your own math.
+   - Exception: if the call raises `CostEstimateUnavailable` (known for some pipeline shapes — see "Known gotchas"), tell the user the estimator is unavailable and proceed only with explicit approval.
 5. **Never ask users to narrow their topic.** "Pick a specific type of fuel" or "choose between crude oil and natural gas" is wrong. Keep it broad. The model learns from diverse examples.
 6. **Never present data source options as a menu.** You are the expert — you choose the data source and explain why.
+7. **Never anchor question text to the data source.** Don't write "...in the next Beige Book release?" or "...according to the next earnings call?". Questions describe real-world outcomes; the pipeline resolves them. See "Question wording".
 
 ## Domain vocabulary
 
@@ -139,8 +169,19 @@ Before running any Python or notebook cell, establish the environment *once*:
 1. **Detect the project venv.** Check for `./venv/bin/python` or `./.venv/bin/python` in the working directory. If present, use that absolute path (call it `$PY`) for every Python and pip call — never bare `python` or `pip`. If missing, stop and tell the user to run `make setup` (or the equivalent for their project) before continuing.
 2. **Sanity-check imports in one shot.** Run `$PY -c "import lightningrod, nbformat, IPython, dotenv, openai"` (add any other deps the task needs). If anything fails, install *all* likely-missing deps in a single foreground `$PY -m pip install ...` call. Do not install packages reactively one `ModuleNotFoundError` at a time.
 3. **Never run pip in the background.** Installs must complete before the next command — otherwise later commands race the install and fail spuriously.
-4. **Notebook execution.** Do not shell out to `jupyter nbconvert --execute`. Either use `$PY -m jupyter execute <notebook>` (after confirming jupyter is importable in step 2), or extract cell source and run via `$PY -c`. Prefer the cell-by-cell pattern from "One step at a time" — executing whole notebooks hides which cell failed.
-5. **`lightningrod` is an editable install in the SDK repo.** Never `pip install lightningrod-ai` inside `lightningrod-python-sdk/userland/...` — it would shadow the local source. If the import fails here, the venv path is wrong, not the package.
+4. **Notebook execution.** Do not shell out to `jupyter nbconvert --execute`. Use `$PY -m jupyter execute <notebook>` (after confirming jupyter is importable in step 2) — executing whole notebooks at once hides which cell failed, so prefer the cell-by-cell pattern from "One step at a time".
+5. **Never run multi-line code via `$PY -c "..."`.** `python -c` blocks are write-once: they don't end up in the notebook, so the user can't see, re-run, or edit what executed. Add a cell with NotebookEdit, then execute the notebook so the artifact reflects what ran. The only acceptable `$PY -c` uses are trivial one-liners (import probe, `$PY --version`, dependency check). If you find yourself typing a multi-line script into `-c`, stop and put it in a cell instead.
+6. **`lightningrod` is an editable install in the SDK repo.** Never `pip install lightningrod-ai` inside `lightningrod-python-sdk/userland/...` — it would shadow the local source. If the import fails here, the venv path is wrong, not the package.
+
+## Known gotchas
+
+These are SDK behaviors that have bitten previous sessions. Reach for the documented workaround instead of inventing your own:
+
+- **`lr.transforms.estimate_cost()` raises `CostEstimateUnavailable` for some pipeline shapes.** Notably `FileSetDocumentLabeler` / `FileSetDocumentContextGenerator`. Don't retry — catch the exception, tell the user the estimator is unavailable for this pipeline, show a heuristic (or the published cost from the closest reference notebook), and ask for explicit approval before scaling.
+- **Missing `LIGHTNINGROD_API_KEY` now raises `LightningrodAuthError` immediately in non-TTY contexts** (it no longer hangs on getpass). The SDK autoloads a project-local `.env` on first import — add the key there for the user's repo, or export it in the shell. Disable autoload with `LIGHTNINGROD_DISABLE_DOTENV=1`.
+- **Transient SSL / connection errors on `filesets.files.upload` are now retried inside the SDK** (3 attempts, exponential backoff). Don't wrap upload calls in your own retry loop or add ad-hoc "skip if config.json exists" idempotency guards — let the SDK handle it and only intervene if it still fails after retries.
+- **`SampleDataset.flattened()` is deprecated.** Use typed `Sample` attributes (e.g. `sample.label.label_confidence`, `sample.question.question_text`) for data access. If you genuinely need a flat dict for display or a DataFrame, call `lightningrod.display.flatten_samples(dataset.samples())` — explicit, framed as a display helper, not a data primitive.
+- **No `FileSet.delete()` exists yet.** If you create a FileSet by mistake, it lingers. Be deliberate about naming and creation; don't create disposable FileSets during exploration.
 
 ## How you work
 
@@ -153,7 +194,7 @@ Before running any Python or notebook cell, establish the environment *once*:
 - **Handoff only for external setup.** If the user needs to do something you can't (install credentials, log in to a service, grant permissions), explain exactly how to do it step by step, then ask them to let you know once it's done so you can resume. Frame it as: "Here's what you need to do: [steps]. Let me know when that's complete and I'll continue from here."
 - **One step at a time.** Build the pipeline cell by cell, not all at once. Write a cell, run it yourself, check the output, and confirm it looks right before writing the next cell. Same for questions, labels, training, and eval. Never write all cells upfront without executing — that skips the verification loop.
 - **Never run notebooks in the background.** Each cell should run in the foreground so you and the user can inspect the output together. If a step takes a while (like training), tell the user and wait — do not batch it with other steps. Pip installs also run in the foreground (see "Environment setup").
-- **Use typed objects, not flattened dicts.** Use `download()` which returns typed `Sample` objects with nested attributes (e.g. `sample.label.label_confidence`, `sample.question.question_text`, `sample.seed.seed_text`). Avoid `flattened()` for accessing fields — it returns untyped dicts with undocumented keys. If you need a DataFrame, construct it from typed Sample attributes.
+- **Use typed objects, not flattened dicts.** Use `download()` / `samples()` which return typed `Sample` objects with nested attributes (e.g. `sample.label.label_confidence`, `sample.question.question_text`, `sample.seed.seed_text`). The deprecated `dataset.flattened()` returns untyped dicts with undocumented keys — don't use it. If you genuinely need a flat representation for display, call `lightningrod.display.flatten_samples(dataset.samples())`.
 - **Recommend, don't menu.** When it comes to answer types, data sources, or training patterns, pick one and commit. Do not present multiple options side by side. One answer type per pipeline — mixing types adds complexity with marginal benefit at the start.
 
 ## Small-scale test review
@@ -222,7 +263,11 @@ Use the `mcp__lightningrod-docs__search-docs` tool to look up SDK documentation 
 
 ## Reference notebooks
 
-Read these only when writing code and you need a specific API pattern or parameter:
+**At the start of every task, scan this list for a notebook that matches the user's use case** (same data source, same pipeline shape, same domain). If one matches, read it and **mirror it closely** — pipeline composition, transform params, and especially prompt content (`instructions`, `examples`, `bad_examples`, render templates) should track the notebook verbatim unless the user asks for a change. Notebooks are canonical; skill snippets are condensed and may lag. When a notebook and a skill conflict, the notebook wins.
+
+Do not invent embellishments on top of a matching reference (extra topic biases, expanded example lists, additional constraints, new verb vocabularies). If a reference notebook covers the use case, deviation needs an explicit reason from the user.
+
+Read these when writing code and you need a specific API pattern, parameter, or canonical prompt content:
 
 - `notebooks/getting_started/00_quickstart.ipynb` — basic workflow
 - `notebooks/getting_started/01_news_datasource.ipynb` — news seeds

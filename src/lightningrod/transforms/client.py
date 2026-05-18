@@ -40,7 +40,7 @@ from lightningrod.datasets.dataset import SampleDataset
 from lightningrod._generated.client import AuthenticatedClient
 from lightningrod.datasets.client import DatasetSamplesClient
 from lightningrod._generated.types import UNSET, Unset
-from lightningrod._errors import handle_response_error
+from lightningrod._errors import handle_response_error, CostEstimateUnavailable
 from lightningrod.datasets.client import DatasetSamplesClient
 
 TransformConfig = Union[FileSetDocumentContextGenerator, FileSetDocumentLabeler, FileSetSeedGenerator, ForwardLookingQuestionGenerator, GdeltSeedGenerator, NewsSeedGenerator, QuestionAndLabelGenerator, QuestionGenerator, QuestionPipeline, QuestionRenderer, WebSearchLabeler, WebSearchContextGenerator, QdrantContextGenerator, QdrantRAGLabeler]
@@ -241,5 +241,19 @@ class TransformsClient:
                 max_seeds=max_seeds,
             ),
         )
+
+        # Surface 5xx as a typed signal — the estimator is known to fail for
+        # some pipeline shapes (e.g. FileSetDocumentLabeler / FileSetDocumentContextGenerator).
+        status = response.status_code
+        status_value = status.value if hasattr(status, "value") else status
+        if 500 <= status_value < 600:
+            body_preview = response.content.decode("utf-8", errors="ignore")[:300]
+            raise CostEstimateUnavailable(
+                f"Cost estimation endpoint returned HTTP {status_value}. "
+                f"This is a known gap for some pipeline shapes (e.g. FileSetDocumentLabeler). "
+                f"Proceed without an estimate or fall back to a heuristic. Body: {body_preview!r}",
+                status_code=status_value,
+            )
+
         parsed: EstimateCostResponse = handle_response_error(response, "estimate cost")
         return parsed.total_cost_dollars
