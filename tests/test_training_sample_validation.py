@@ -74,6 +74,51 @@ def test_prepare_for_training_fails_early_when_answer_type_missing() -> None:
         prepare_for_training(dataset, verbose=False)
 
 
+def _mc_sample(question_text: str, sample_id: str = "s-mc") -> Sample:
+    return Sample(
+        id=sample_id,
+        is_valid=True,
+        seed=Seed(seed_text="seed"),
+        question=ForwardLookingQuestion(
+            question_text=question_text,
+            date_close=datetime(2030, 1, 1),
+            event_date=datetime(2030, 1, 1),
+            resolution_criteria="resolves yes if...",
+        ),
+        label=Label(label="a", label_confidence=1.0, answer_type="multiple_choice"),
+    )
+
+
+def test_prepare_for_training_fails_when_mc_options_too_few() -> None:
+    bad = _mc_sample("Q? option_0: a option_1: b")
+    dataset = _dataset([bad])
+
+    with pytest.raises(ValueError, match="multiple_choice_options"):
+        prepare_for_training(dataset, verbose=False)
+
+
+def test_prepare_for_training_passes_with_mc_options_from_question_text() -> None:
+    good = _mc_sample("Q? option_0: a option_1: b option_2: c")
+    dataset = _dataset([good])
+
+    # Resolves 3 options from the question text → no validation error raised.
+    prepare_for_training(dataset, split=None, verbose=False)
+
+
+def test_prepare_for_training_mc_options_override_from_dataset() -> None:
+    # Sample text has only 2 options, but the dataset-wide override supplies a valid map.
+    sample = _mc_sample("Q? option_0: a option_1: b")
+    dataset = SampleDataset(
+        id="ds-test",
+        num_rows=1,
+        datasets_client=_DummyDatasetsClient(),
+        samples=[sample],
+        multiple_choice_options='{"option_0": "a", "option_1": "b", "option_2": "c"}',
+    )
+
+    prepare_for_training(dataset, split=None, verbose=False)
+
+
 def test_filter_samples_drops_bad_binary_label_and_counts_stat() -> None:
     bad = Sample(
         id="s-bad-binary",
