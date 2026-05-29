@@ -28,8 +28,11 @@ if TYPE_CHECKING:
 
 MIN_MULTIPLE_CHOICE_OPTIONS: int = 3
 
-# Matches "option_N: <text>" patterns embedded in question text (options end at next option_ or end of string)
-_OPTION_PATTERN = re.compile(r"option_(\d+):\s*(.+?)(?=\s*option_\d+:|$)", re.DOTALL)
+# Matches "option_N: <text>" patterns embedded in question text. Each option's value runs
+# to the next "option_N:" (optionally past a ";"/"," separator) or to the end of its line /
+# the string. MULTILINE (not DOTALL) stops a value at the line break, so a trailing block such
+# as "\n\nExample: <answer>{...}</answer>" is NOT absorbed into the last option's text.
+_OPTION_PATTERN = re.compile(r"option_(\d+):\s*(.+?)[;,\s]*(?=option_\d+:|$)", re.MULTILINE)
 
 
 class MultipleChoiceOptionsError(ValueError):
