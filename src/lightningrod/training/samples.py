@@ -22,6 +22,11 @@ from lightningrod._generated.models.rag_context import RAGContext
 from lightningrod._generated.models.sample import Sample
 from lightningrod._generated.models.sample_meta import SampleMeta
 from lightningrod._generated.types import Unset
+from lightningrod.training.multi_choice_options import (
+    MultipleChoiceOptionsError,
+    resolve_multiple_choice_options,
+    validate_multiple_choice_options,
+)
 
 AnswerType = Union[BinaryAnswerType, ContinuousAnswerType, MultipleChoiceAnswerType, FreeResponseAnswerType]
 
@@ -152,7 +157,11 @@ def _normalize_answer_type(answer_type: Any) -> str:
     return normalized
 
 
-def _validate_sample_for_training(sample: Sample, idx: int) -> Optional[str]:
+def _validate_sample_for_training(
+    sample: Sample,
+    idx: int,
+    multiple_choice_options_override: Optional[Union[dict[str, str], str]] = None,
+) -> Optional[str]:
     if sample.label is None or isinstance(sample.label, Unset):
         return None
 
@@ -167,13 +176,27 @@ def _validate_sample_for_training(sample: Sample, idx: int) -> Optional[str]:
     except Exception as e:
         return f"Sample {sample.id or idx} has invalid answer type: {e}"
 
+    # Mirror the backend's MC option check so failures surface before job submission.
+    if answer_type == "multiple_choice":
+        resolved = resolve_multiple_choice_options(
+            sample, explicit_options=multiple_choice_options_override
+        )
+        try:
+            validate_multiple_choice_options(resolved)
+        except MultipleChoiceOptionsError as e:
+            return f"Sample {sample.id or idx} has invalid multiple_choice_options: {e}"
+
     return None
 
 
-def _validate_samples_for_training(samples: list[Sample], max_issues: int = 10) -> None:
+def _validate_samples_for_training(
+    samples: list[Sample],
+    max_issues: int = 10,
+    multiple_choice_options_override: Optional[Union[dict[str, str], str]] = None,
+) -> None:
     issues: list[str] = []
     for idx, sample in enumerate(samples):
-        issue = _validate_sample_for_training(sample, idx)
+        issue = _validate_sample_for_training(sample, idx, multiple_choice_options_override)
         if issue:
             issues.append(issue)
             if len(issues) >= max_issues:
@@ -598,6 +621,7 @@ def to_training_record(
     answer_type: AnswerType,
     prompt_template: str | None = None,
     include_assistant: bool = False,
+    multiple_choice_options_override: Optional[Union[dict[str, str], str]] = None,
 ) -> TrainingSample:
     row: TrainingSample = {
         "sample_id": sample.id,
@@ -614,6 +638,17 @@ def to_training_record(
     elif isinstance(answer_type, MultipleChoiceAnswerType):
         row["answer_type"] = "multiple_choice"
         row["reward_function_type"] = "multi_choice_log_score"
+        # Make MC rows self-describing: resolve per-sample options (meta / question text),
+        # honoring a dataset-wide override, mirroring the backend training renderer.
+        at_options = answer_type.multiple_choice_options
+        at_options = at_options.to_dict() if hasattr(at_options, "to_dict") else None
+        options = resolve_multiple_choice_options(
+            sample,
+            explicit_options=multiple_choice_options_override,
+            answer_type_options=at_options,
+        )
+        if options is not None:
+            row["multiple_choice_options"] = options
     elif isinstance(answer_type, FreeResponseAnswerType):
         row["answer_type"] = "free_response"
         row["reward_function_type"] = ""
@@ -1006,7 +1041,9 @@ def prepare_for_training(
         split_params = split
 
     samples = dataset.samples()
-    _validate_samples_for_training(samples)
+    _validate_samples_for_training(
+        samples, multiple_choice_options_override=dataset.multiple_choice_options
+    )
     stats = PrepareStats(total=len(samples))
 
     filtered = filter_samples(samples, filter_params, stats=stats)

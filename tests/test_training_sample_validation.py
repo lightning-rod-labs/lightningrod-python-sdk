@@ -18,6 +18,7 @@ from lightningrod.training.samples import (
     to_record,
 )
 from lightningrod._generated.models.forward_looking_question import ForwardLookingQuestion
+from lightningrod.training.multi_choice_options import extract_options_from_question_text
 from lightningrod.utils.sample import create_sample
 
 
@@ -72,6 +73,51 @@ def test_prepare_for_training_fails_early_when_answer_type_missing() -> None:
 
     with pytest.raises(ValueError, match="has no answer type"):
         prepare_for_training(dataset, verbose=False)
+
+
+def _mc_sample(question_text: str, sample_id: str = "s-mc") -> Sample:
+    return Sample(
+        id=sample_id,
+        is_valid=True,
+        seed=Seed(seed_text="seed"),
+        question=ForwardLookingQuestion(
+            question_text=question_text,
+            date_close=datetime(2030, 1, 1),
+            event_date=datetime(2030, 1, 1),
+            resolution_criteria="resolves yes if...",
+        ),
+        label=Label(label="a", label_confidence=1.0, answer_type="multiple_choice"),
+    )
+
+
+def test_prepare_for_training_fails_when_mc_options_too_few() -> None:
+    bad = _mc_sample("Q? option_0: a option_1: b")
+    dataset = _dataset([bad])
+
+    with pytest.raises(ValueError, match="multiple_choice_options"):
+        prepare_for_training(dataset, verbose=False)
+
+
+def test_prepare_for_training_passes_with_mc_options_from_question_text() -> None:
+    good = _mc_sample("Q? option_0: a option_1: b option_2: c")
+    dataset = _dataset([good])
+
+    # Resolves 3 options from the question text → no validation error raised.
+    prepare_for_training(dataset, split=None, verbose=False)
+
+
+def test_prepare_for_training_mc_options_override_from_dataset() -> None:
+    # Sample text has only 2 options, but the dataset-wide override supplies a valid map.
+    sample = _mc_sample("Q? option_0: a option_1: b")
+    dataset = SampleDataset(
+        id="ds-test",
+        num_rows=1,
+        datasets_client=_DummyDatasetsClient(),
+        samples=[sample],
+        multiple_choice_options='{"option_0": "a", "option_1": "b", "option_2": "c"}',
+    )
+
+    prepare_for_training(dataset, split=None, verbose=False)
 
 
 def test_filter_samples_drops_bad_binary_label_and_counts_stat() -> None:
@@ -250,3 +296,61 @@ def test_to_record_normalizes_answer_type() -> None:
     record = to_record(sample)
     assert record["answer_type"] == "binary"
     assert record["label"] == 1
+
+
+# --- extract_options_from_question_text: cases derived from real production MC question text.
+# Keep in sync with tests/unit/v2/test_multi_choice_options.py in the backend repo. ---
+
+def test_extract_space_separated() -> None:
+    q = ("What will the approval rating be? option_0: 45% or lower option_1: 46% to 50% "
+         "option_2: 51% to 55% option_3: 56% or higher")
+    assert extract_options_from_question_text(q) == {
+        "option_0": "45% or lower",
+        "option_1": "46% to 50%",
+        "option_2": "51% to 55%",
+        "option_3": "56% or higher",
+    }
+
+
+def test_extract_semicolon_separated_strips_trailing_separator() -> None:
+    q = ("Who wins? option_0: Kamala Harris; option_1: Donald Trump; "
+         "option_2: Neither or a statistical tie (within +/- 3 points).")
+    assert extract_options_from_question_text(q) == {
+        "option_0": "Kamala Harris",
+        "option_1": "Donald Trump",
+        "option_2": "Neither or a statistical tie (within +/- 3 points).",
+    }
+
+
+def test_extract_comma_separated_keeps_internal_commas() -> None:
+    q = ("How many? option_0: Fewer than 1,000 structures, option_1: 1,000 to 5,000 structures, "
+         "option_2: More than 5,000 structures")
+    assert extract_options_from_question_text(q) == {
+        "option_0": "Fewer than 1,000 structures",
+        "option_1": "1,000 to 5,000 structures",
+        "option_2": "More than 5,000 structures",
+    }
+
+
+def test_extract_newline_separated() -> None:
+    q = "Range?\noption_0: Below $3,800.00\noption_1: $3,800.00 to $4,200.00\noption_2: $4,200.00 or higher"
+    assert extract_options_from_question_text(q) == {
+        "option_0": "Below $3,800.00",
+        "option_1": "$3,800.00 to $4,200.00",
+        "option_2": "$4,200.00 or higher",
+    }
+
+
+def test_extract_ignores_trailing_answer_format_block() -> None:
+    # Regression: the last option must NOT swallow the appended format instruction / JSON example.
+    q = ('Rate the risk. option_0: low option_1: medium option_2: high\n\n'
+         'Example: <answer>{"option_0": 0.25, "option_1": 0.50, "option_2": 0.25}</answer>')
+    assert extract_options_from_question_text(q) == {
+        "option_0": "low",
+        "option_1": "medium",
+        "option_2": "high",
+    }
+
+
+def test_extract_returns_empty_when_no_options() -> None:
+    assert extract_options_from_question_text("A plain question with no options.") == {}
