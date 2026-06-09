@@ -54,6 +54,30 @@ def _retry_transient(fn: Callable[[], Any], *, label: str = "upload",
     # unreachable — loop either returns or re-raises
     raise last  # type: ignore[misc]
 
+
+def _resolve_upload_targets(upload_response: Any) -> dict[str, dict]:
+    """Return {filename: {"url": str, "headers": dict}} from a batch-upload
+    response.
+
+    Prefers the provider-agnostic ``uploads`` field (filename -> {url, method,
+    headers}); the headers carry the Content-Type the URL was signed with, so a
+    plain PUT works against GCS or S3. Falls back to the legacy ``upload_urls``
+    map (assumes application/octet-stream) for older servers.
+    """
+    extra = getattr(upload_response, "additional_properties", {}) or {}
+    uploads = extra.get("uploads")
+    if uploads:
+        return {
+            name: {"url": t["url"], "headers": dict(t.get("headers") or {})}
+            for name, t in uploads.items()
+        }
+    legacy = upload_response.upload_urls.additional_properties
+    return {
+        name: {"url": url, "headers": {"Content-Type": "application/octet-stream"}}
+        for name, url in legacy.items()
+    }
+
+
 from lightningrod._generated.models import (
     FileSet,
     CreateFileSetRequest,
@@ -424,7 +448,7 @@ class FileSetsClient:
         file_paths: List[Union[str, Path]],
         metadata: Optional[Dict[str, Dict[str, Any]]] = None,
         max_workers: int = 10,
-        use_transfer_manager: bool = True,
+        use_transfer_manager: bool = False,
         show_progress: bool = False,
         auto_extract_metadata: bool = False,
         extraction_max_pages: Optional[int] = None,
@@ -439,9 +463,10 @@ class FileSetsClient:
         files to a FileSet, including getting signed URLs, uploading files in
         parallel, and uploading the metadata manifest.
 
-        By default, uses GCS Transfer Manager for efficient parallel uploads
-        that scale to 100k+ files. Falls back to signed URLs if google-cloud-storage
-        is not installed or if use_transfer_manager=False.
+        By default, uploads via pre-signed URLs returned by the server, which
+        works against any storage backend (GCS or S3) and needs no cloud SDK.
+        Set use_transfer_manager=True to opt into the GCS Transfer Manager path
+        (GCS only; requires google-cloud-storage) for very large batches.
 
         Args:
             file_set_id: The ID of the FileSet to upload to
@@ -451,9 +476,9 @@ class FileSetsClient:
                       the FileSet's metadata schema, plus an optional "file_date"
                       field (ISO format string or datetime).
             max_workers: Maximum number of parallel upload threads (default: 10)
-            use_transfer_manager: If True (default), use GCS Transfer Manager for
-                                  efficient uploads. Requires google-cloud-storage.
-                                  Set to False to use signed URLs instead.
+            use_transfer_manager: If True, use the GCS Transfer Manager
+                                  (GCS-only, requires google-cloud-storage).
+                                  Default False uses provider-agnostic signed URLs.
             show_progress: If True, display a progress bar during upload.
                           Requires google-cloud-storage. Note: progress mode
                           uploads files individually rather than using Transfer
@@ -558,26 +583,25 @@ class FileSetsClient:
                 # Fall back to signed URLs if google-cloud-storage not installed
                 pass
 
-        # Signed URL approach (fallback)
+        # Signed URL approach (default; provider-agnostic — works on GCS or S3)
         file_names = [p.name for p in paths]
 
-        # Get signed upload URLs
+        # Get signed upload targets (url + headers per file)
         upload_response = self.upload_folder(file_set_id, file_names)
-        urls = upload_response.upload_urls.additional_properties
+        targets = _resolve_upload_targets(upload_response)
 
         succeeded = 0
         failed = 0
         errors: List[str] = []
 
         def upload_single_file(path: Path) -> None:
-            """Upload a single file to its signed URL."""
-            url = urls[path.name]
+            """Upload a single file to its signed URL with the signed headers."""
+            target = targets[path.name]
             with open(path, "rb") as f:
                 content = f.read()
-            headers = {"Content-Type": "application/octet-stream"}
 
             def _put():
-                response = requests.put(url, data=content, headers=headers)
+                response = requests.put(target["url"], data=content, headers=target["headers"])
                 response.raise_for_status()
 
             _retry_transient(_put, label=f"upload {path.name}")
@@ -596,8 +620,8 @@ class FileSetsClient:
 
         # Upload metadata manifest if provided
         if metadata:
-            manifest_url = urls.get("_manifest.json")
-            if manifest_url:
+            manifest_target = targets.get("_manifest.json")
+            if manifest_target:
                 try:
                     # Convert any datetime objects to ISO format strings
                     manifest_data = {}
@@ -608,10 +632,13 @@ class FileSetsClient:
                         }
 
                     manifest_content = json.dumps(manifest_data).encode("utf-8")
-                    headers = {"Content-Type": "application/json"}
 
                     def _put_manifest():
-                        response = requests.put(manifest_url, data=manifest_content, headers=headers)
+                        response = requests.put(
+                            manifest_target["url"],
+                            data=manifest_content,
+                            headers=manifest_target["headers"],
+                        )
                         response.raise_for_status()
 
                     _retry_transient(_put_manifest, label="upload _manifest.json")
@@ -627,7 +654,7 @@ class FileSetsClient:
         pattern: str = "*",
         metadata_fn: Optional[Callable[[Path], Optional[Dict[str, Any]]]] = None,
         max_workers: int = 10,
-        use_transfer_manager: bool = True,
+        use_transfer_manager: bool = False,
         show_progress: bool = False,
         auto_extract_metadata: bool = False,
         extraction_max_pages: Optional[int] = None,
@@ -645,8 +672,9 @@ class FileSetsClient:
             metadata_fn: Optional function that takes a file path and returns
                         a metadata dict for that file, or None to skip metadata.
             max_workers: Maximum number of parallel upload threads (default: 10)
-            use_transfer_manager: If True (default), use GCS Transfer Manager for
-                                  efficient uploads. Requires google-cloud-storage.
+            use_transfer_manager: If True, use the GCS Transfer Manager (GCS-only,
+                                  requires google-cloud-storage); default False
+                                  uses provider-agnostic signed URLs.
             show_progress: If True, display a progress bar during upload.
             auto_extract_metadata: If True, use an LLM to auto-extract metadata
                           for each file based on the FileSet's metadata schema.
