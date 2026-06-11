@@ -5,6 +5,17 @@ AI-powered forecasting dataset generation platform.
 """
 
 from lightningrod.client import LightningRod
+from lightningrod.prediction import (
+    AnswerType,
+    ReasoningEffort,
+    BinaryPrediction,
+    ContinuousPrediction,
+    MultiChoicePrediction,
+    FreeResponsePrediction,
+    Source,
+    Usage,
+    PredictionResult,
+)
 from lightningrod._errors import CostEstimateUnavailable
 from lightningrod.utils.config import LightningrodAuthError
 from lightningrod.filesets.client import UploadResult
@@ -66,9 +77,11 @@ from lightningrod._generated.models import (
     EvalResultsDownloadResponse,
     ReasoningComparisonOptions,
     WebSearchContextGenerator,
+    EmbeddingDeduplication,
+    EmbeddingDeduplicationSynonyms,
 )
 
-__version__ = "0.1.27"
+__version__ = "0.2.0"
 __all__ = [
     "preprocessing",
     "training",
@@ -103,6 +116,15 @@ __all__ = [
     "GdeltSeedGenerator",
     "Label",
     "LightningRod",
+    "AnswerType",
+    "ReasoningEffort",
+    "BinaryPrediction",
+    "ContinuousPrediction",
+    "MultiChoicePrediction",
+    "FreeResponsePrediction",
+    "Source",
+    "Usage",
+    "PredictionResult",
     "ModelConfig",
     "ModelSourceType",
     "NewsContextGenerator",
@@ -139,4 +161,6 @@ __all__ = [
     "EvalResultsDownloadResponse",
     "ReasoningComparisonOptions",
     "WebSearchContextGenerator",
+    "EmbeddingDeduplication",
+    "EmbeddingDeduplicationSynonyms",
 ]
