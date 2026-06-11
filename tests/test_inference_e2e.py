@@ -1,0 +1,193 @@
+"""End-to-end inference tests against a real Lightning Rod server.
+
+These hit a live chat-completions endpoint and are skipped unless an API key
+is provided, so they never run in plain unit-test/CI contexts.
+
+Run against the local server with:
+
+    LIGHTNINGROD_E2E_API_KEY=sk_... \
+    LIGHTNINGROD_E2E_BASE_URL=http://localhost:8080/api/public/v1 \
+    pytest tests/test_inference_e2e.py -v
+
+`LIGHTNINGROD_E2E_BASE_URL` defaults to the local server. The model defaults
+to `foresight-v4` and can be overridden with `LIGHTNINGROD_E2E_MODEL`.
+"""
+
+import os
+
+import pytest
+
+from lightningrod import (
+    AnswerType,
+    BinaryPrediction,
+    ContinuousPrediction,
+    FreeResponsePrediction,
+    LightningRod,
+    MultiChoicePrediction,
+    PredictionResult,
+    ReasoningEffort,
+)
+
+pytest.importorskip("openai")
+
+API_KEY = os.environ.get("LIGHTNINGROD_E2E_API_KEY")
+BASE_URL = os.environ.get(
+    "LIGHTNINGROD_E2E_BASE_URL", "http://localhost:8080/api/public/v1"
+)
+MODEL = os.environ.get("LIGHTNINGROD_E2E_MODEL", "foresight-v4")
+
+pytestmark = pytest.mark.skipif(
+    not API_KEY,
+    reason="Set LIGHTNINGROD_E2E_API_KEY to run live inference tests.",
+)
+
+
+@pytest.fixture(scope="module")
+def client() -> LightningRod:
+    # Set the credentials/URL directly on the instance so the live server is
+    # used regardless of any LIGHTNINGROD_BASE_URL picked up from a local .env.
+    lr = LightningRod.__new__(LightningRod)
+    lr.api_key = API_KEY
+    lr.base_url = BASE_URL.rstrip("/")
+
+    # Connectivity probe — skip the whole module if the server is unreachable.
+    try:
+        lr.predict(MODEL, "ping", reasoning_effort="low")
+    except Exception as exc:  # noqa: BLE001 - surface as a skip, not a failure
+        pytest.skip(f"Live server at {BASE_URL} not reachable: {exc}")
+    return lr
+
+
+def _assert_common(result: PredictionResult) -> None:
+    assert isinstance(result, PredictionResult)
+    assert isinstance(result.content, str) and result.content
+    assert result.model
+    assert result.id
+    assert result.usage.total_tokens > 0
+    # inference_cost_usd and cost_usd are always present per the API contract.
+    assert result.usage.inference_cost_usd is not None
+    assert result.usage.cost_usd is not None
+
+
+def test_binary(client: LightningRod) -> None:
+    result = client.predict(
+        MODEL,
+        "Will it rain in Seattle tomorrow?",
+        answer_type="binary",
+        reasoning_effort="low",
+    )
+    _assert_common(result)
+    assert isinstance(result.binary, BinaryPrediction)
+    assert 0.0 <= result.binary.probability <= 1.0
+    assert "<answer>" in result.content
+    # Only the binary field is populated.
+    assert result.continuous is None
+    assert result.multiple_choice is None
+    assert result.free_response is None
+
+
+def test_binary_with_enums(client: LightningRod) -> None:
+    # Enum values should serialize and round-trip just like the string forms.
+    result = client.predict(
+        MODEL,
+        "Will the sun rise tomorrow?",
+        answer_type=AnswerType.BINARY,
+        reasoning_effort=ReasoningEffort.LOW,
+    )
+    _assert_common(result)
+    assert isinstance(result.binary, BinaryPrediction)
+
+
+def test_free_response(client: LightningRod) -> None:
+    result = client.predict(
+        MODEL,
+        "Name one US president.",
+        answer_type="free_response",
+        reasoning_effort="low",
+    )
+    _assert_common(result)
+    assert isinstance(result.free_response, FreeResponsePrediction)
+    assert result.free_response.text.strip()
+    assert result.binary is None
+
+
+def test_continuous(client: LightningRod) -> None:
+    result = client.predict(
+        MODEL,
+        "How many moons does Mars have?",
+        answer_type="continuous",
+        reasoning_effort="low",
+    )
+    _assert_common(result)
+    assert isinstance(result.continuous, ContinuousPrediction)
+    assert isinstance(result.continuous.mean, (int, float))
+    assert result.continuous.standard_deviation >= 0
+
+
+def test_multiple_choice(client: LightningRod) -> None:
+    result = client.predict(
+        MODEL,
+        "Is the sky blue, green, or red?",
+        answer_type="multiple_choice",
+        reasoning_effort="low",
+    )
+    _assert_common(result)
+    assert isinstance(result.multiple_choice, MultiChoicePrediction)
+    options = result.multiple_choice.options
+    probs = result.multiple_choice.probabilities
+    assert options and probs
+    # Probability keys should reference declared options.
+    assert set(probs).issubset(set(options))
+
+
+def test_auto_classifies_server_side(client: LightningRod) -> None:
+    result = client.predict(
+        MODEL,
+        "Will it rain in Seattle tomorrow?",
+        answer_type="auto",
+        reasoning_effort="low",
+    )
+    _assert_common(result)
+    # The server classifies the type, so exactly one prediction field is set.
+    populated = [
+        p
+        for p in (
+            result.binary,
+            result.continuous,
+            result.multiple_choice,
+            result.free_response,
+        )
+        if p is not None
+    ]
+    assert len(populated) == 1, f"expected one populated prediction, got {populated}"
+    # The classifier stage ran, so its cost is reported.
+    assert result.usage.classification_cost_usd is not None
+
+
+def test_no_answer_type_returns_prose(client: LightningRod) -> None:
+    result = client.predict(
+        MODEL,
+        "Say hello in one word.",
+        reasoning_effort="low",
+    )
+    _assert_common(result)
+    assert result.binary is None
+    assert result.continuous is None
+    assert result.multiple_choice is None
+    assert result.free_response is None
+
+
+def test_research_populates_sources(client: LightningRod) -> None:
+    result = client.predict(
+        MODEL,
+        "Will the Fed cut interest rates in 2026?",
+        answer_type="binary",
+        research=True,
+        reasoning_effort="low",
+    )
+    _assert_common(result)
+    assert isinstance(result.binary, BinaryPrediction)
+    assert result.sources, "expected url_citation sources when research is enabled"
+    for source in result.sources:
+        assert source.url
+    assert result.usage.research_cost_usd is not None
