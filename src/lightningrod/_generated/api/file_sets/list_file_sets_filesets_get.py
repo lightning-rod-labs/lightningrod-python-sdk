@@ -7,23 +7,13 @@ from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.http_validation_error import HTTPValidationError
 from ...models.list_file_sets_response import ListFileSetsResponse
-from ...types import UNSET, Response, Unset
+from ...types import Response
 
 
-def _get_kwargs(
-    *,
-    include_public: bool | Unset = False,
-) -> dict[str, Any]:
-    params: dict[str, Any] = {}
-
-    params["include_public"] = include_public
-
-    params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
-
+def _get_kwargs() -> dict[str, Any]:
     _kwargs: dict[str, Any] = {
         "method": "get",
         "url": "/filesets/",
-        "params": params,
     }
 
     return _kwargs
@@ -62,14 +52,10 @@ def _build_response(
 def sync_detailed(
     *,
     client: AuthenticatedClient,
-    include_public: bool | Unset = False,
 ) -> Response[HTTPValidationError | ListFileSetsResponse]:
     """List File Sets
 
-     List all FileSets for the organization, optionally including public filesets.
-
-    Args:
-        include_public (bool | Unset): Include public filesets Default: False.
+     List all FileSets for the organization.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -79,9 +65,7 @@ def sync_detailed(
         Response[HTTPValidationError | ListFileSetsResponse]
     """
 
-    kwargs = _get_kwargs(
-        include_public=include_public,
-    )
+    kwargs = _get_kwargs()
 
     response = client.get_httpx_client().request(
         **kwargs,
@@ -93,14 +77,10 @@ def sync_detailed(
 def sync(
     *,
     client: AuthenticatedClient,
-    include_public: bool | Unset = False,
 ) -> HTTPValidationError | ListFileSetsResponse | None:
     """List File Sets
 
-     List all FileSets for the organization, optionally including public filesets.
-
-    Args:
-        include_public (bool | Unset): Include public filesets Default: False.
+     List all FileSets for the organization.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -112,21 +92,16 @@ def sync(
 
     return sync_detailed(
         client=client,
-        include_public=include_public,
     ).parsed
 
 
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
-    include_public: bool | Unset = False,
 ) -> Response[HTTPValidationError | ListFileSetsResponse]:
     """List File Sets
 
-     List all FileSets for the organization, optionally including public filesets.
-
-    Args:
-        include_public (bool | Unset): Include public filesets Default: False.
+     List all FileSets for the organization.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -136,9 +111,7 @@ async def asyncio_detailed(
         Response[HTTPValidationError | ListFileSetsResponse]
     """
 
-    kwargs = _get_kwargs(
-        include_public=include_public,
-    )
+    kwargs = _get_kwargs()
 
     response = await client.get_async_httpx_client().request(**kwargs)
 
@@ -148,14 +121,10 @@ async def asyncio_detailed(
 async def asyncio(
     *,
     client: AuthenticatedClient,
-    include_public: bool | Unset = False,
 ) -> HTTPValidationError | ListFileSetsResponse | None:
     """List File Sets
 
-     List all FileSets for the organization, optionally including public filesets.
-
-    Args:
-        include_public (bool | Unset): Include public filesets Default: False.
+     List all FileSets for the organization.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -168,6 +137,5 @@ async def asyncio(
     return (
         await asyncio_detailed(
             client=client,
-            include_public=include_public,
         )
     ).parsed

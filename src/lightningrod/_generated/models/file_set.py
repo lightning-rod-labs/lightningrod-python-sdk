@@ -27,7 +27,6 @@ class FileSet:
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
         metadata_schema (FileSetMetadataSchema | None | Unset):
-        is_public (bool | Unset):  Default: False.
         cloud_storage_folder (None | str | Unset):
     """
 
@@ -37,7 +36,6 @@ class FileSet:
     created_at: datetime.datetime
     updated_at: datetime.datetime
     metadata_schema: FileSetMetadataSchema | None | Unset = UNSET
-    is_public: bool | Unset = False
     cloud_storage_folder: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -63,8 +61,6 @@ class FileSet:
         else:
             metadata_schema = self.metadata_schema
 
-        is_public = self.is_public
-
         cloud_storage_folder: None | str | Unset
         if isinstance(self.cloud_storage_folder, Unset):
             cloud_storage_folder = UNSET
@@ -84,8 +80,6 @@ class FileSet:
         )
         if metadata_schema is not UNSET:
             field_dict["metadata_schema"] = metadata_schema
-        if is_public is not UNSET:
-            field_dict["is_public"] = is_public
         if cloud_storage_folder is not UNSET:
             field_dict["cloud_storage_folder"] = cloud_storage_folder
 
@@ -128,8 +122,6 @@ class FileSet:
 
         metadata_schema = _parse_metadata_schema(d.pop("metadata_schema", UNSET))
 
-        is_public = d.pop("is_public", UNSET)
-
         def _parse_cloud_storage_folder(data: object) -> None | str | Unset:
             if data is None:
                 return data
@@ -146,7 +138,6 @@ class FileSet:
             created_at=created_at,
             updated_at=updated_at,
             metadata_schema=metadata_schema,
-            is_public=is_public,
             cloud_storage_folder=cloud_storage_folder,
         )
 
