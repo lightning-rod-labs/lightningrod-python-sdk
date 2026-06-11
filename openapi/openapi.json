@@ -1722,6 +1722,30 @@
   },
   "components": {
     "schemas": {
+      "AggregateContextGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "AGGREGATE_CONTEXT_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "AGGREGATE_CONTEXT_GENERATOR"
+          },
+          "context_generator_configs": {
+            "items": {
+              "$ref": "#/components/schemas/TransformConfig"
+            },
+            "type": "array",
+            "title": "Context Generator Configs",
+            "description": "Context-generator transform configs to run in parallel and combine"
+          }
+        },
+        "type": "object",
+        "required": [
+          "context_generator_configs"
+        ],
+        "title": "AggregateContextGenerator"
+      },
       "AnswerParserType": {
         "type": "string",
         "enum": [
@@ -1732,6 +1756,17 @@
           "continuous_value_only"
         ],
         "title": "AnswerParserType"
+      },
+      "AnswerTypeEnum": {
+        "type": "string",
+        "enum": [
+          "BINARY",
+          "MULTIPLE_CHOICE",
+          "CONTINUOUS",
+          "CONTINUOUS_VALUE_ONLY",
+          "FREE_RESPONSE"
+        ],
+        "title": "AnswerTypeEnum"
       },
       "AvailableRuleModel": {
         "properties": {
@@ -1926,7 +1961,8 @@
               }
             ],
             "title": "Temperature",
-            "description": "Sampling temperature between 0 and 2"
+            "description": "Sampling temperature between 0 and 2",
+            "default": 0.6
           },
           "max_tokens": {
             "anyOf": [
@@ -1951,6 +1987,42 @@
             ],
             "title": "Top P",
             "description": "Nucleus sampling parameter"
+          },
+          "top_k": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top K",
+            "description": "Number of top tokens to consider"
+          },
+          "min_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min P",
+            "description": "Minimum probability for a token to be considered"
+          },
+          "reasoning_effort": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Effort",
+            "description": "Reasoning effort: low, medium, or high"
           },
           "stream": {
             "anyOf": [
@@ -2007,6 +2079,37 @@
             ],
             "title": "Seed",
             "description": "Deterministic sampling seed"
+          },
+          "research": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "$ref": "#/components/schemas/ResearchOptions"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Research",
+            "description": "Opt-in: enrich the request with web research before forecasting. Pass `true` for default sources or an object to select sources. Each successful source is billed as a separate RESEARCH event."
+          },
+          "answer_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerTypeEnum"
+              },
+              {
+                "type": "string",
+                "const": "auto"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer Type",
+            "description": "Optional Lightning Rod extension that injects output-format guidance. Use one of: binary, multiple_choice, continuous, free_response, auto. `auto` classifies the user question before running inference."
           }
         },
         "type": "object",
@@ -2023,7 +2126,7 @@
                 "role": "user"
               }
             ],
-            "model": "foresight-v3"
+            "model": "foresight-v4"
           }
         ]
       },
@@ -2201,7 +2304,8 @@
               }
             ],
             "title": "Temperature",
-            "description": "Sampling temperature between 0 and 2"
+            "description": "Sampling temperature between 0 and 2",
+            "default": 0.6
           },
           "max_tokens": {
             "anyOf": [
@@ -2226,6 +2330,42 @@
             ],
             "title": "Top P",
             "description": "Nucleus sampling parameter"
+          },
+          "top_k": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top K",
+            "description": "Number of top tokens to consider"
+          },
+          "min_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min P",
+            "description": "Minimum probability for a token to be considered"
+          },
+          "reasoning_effort": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Effort",
+            "description": "Reasoning effort: low, medium, or high"
           },
           "stream": {
             "anyOf": [
@@ -2282,6 +2422,37 @@
             ],
             "title": "Seed",
             "description": "Deterministic sampling seed"
+          },
+          "research": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "$ref": "#/components/schemas/ResearchOptions"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Research",
+            "description": "Opt-in: enrich the request with web research before forecasting. Pass `true` for default sources or an object to select sources. Each successful source is billed as a separate RESEARCH event."
+          },
+          "answer_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerTypeEnum"
+              },
+              {
+                "type": "string",
+                "const": "auto"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer Type",
+            "description": "Optional Lightning Rod extension that injects output-format guidance. Use one of: binary, multiple_choice, continuous, free_response, auto. `auto` classifies the prompt before running inference."
           }
         },
         "type": "object",
@@ -2698,7 +2869,10 @@
             "$ref": "#/components/schemas/GdeltSeedGenerator"
           },
           {
-            "$ref": "#/components/schemas/KeyDeduplication"
+            "$ref": "#/components/schemas/FuzzyDeduplication"
+          },
+          {
+            "$ref": "#/components/schemas/EmbeddingDeduplication"
           },
           {
             "$ref": "#/components/schemas/NewsSeedGenerator"
@@ -2728,20 +2902,33 @@
             "$ref": "#/components/schemas/WebSearchContextGenerator"
           },
           {
+            "$ref": "#/components/schemas/PerplexityContextGenerator"
+          },
+          {
+            "$ref": "#/components/schemas/AggregateContextGenerator"
+          },
+          {
             "$ref": "#/components/schemas/WebSearchLabeler"
+          },
+          {
+            "$ref": "#/components/schemas/OpenRouterWebSearchLabeler"
           }
         ],
         "discriminator": {
           "propertyName": "config_type",
           "mapping": {
+            "AGGREGATE_CONTEXT_GENERATOR": "#/components/schemas/AggregateContextGenerator",
             "CSV_SEED_GENERATOR": "#/components/schemas/CsvSeedGenerator",
+            "EMBEDDING_DEDUPLICATION": "#/components/schemas/EmbeddingDeduplication",
             "FILESET_DOCUMENT_CONTEXT_GENERATOR": "#/components/schemas/FileSetDocumentContextGenerator",
             "FILESET_DOCUMENT_LABELER": "#/components/schemas/FileSetDocumentLabeler",
             "FILESET_SEED_GENERATOR": "#/components/schemas/FileSetSeedGenerator",
             "FORWARD_LOOKING_QUESTION_GENERATOR": "#/components/schemas/ForwardLookingQuestionGenerator",
+            "FUZZY_DEDUPLICATION": "#/components/schemas/FuzzyDeduplication",
             "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
-            "KEY_DEDUPLICATION": "#/components/schemas/KeyDeduplication",
             "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator",
+            "OPENROUTER_WEB_SEARCH_LABELER": "#/components/schemas/OpenRouterWebSearchLabeler",
+            "PERPLEXITY_CONTEXT_GENERATOR": "#/components/schemas/PerplexityContextGenerator",
             "QDRANT_CONTEXT_GENERATOR": "#/components/schemas/QdrantContextGenerator",
             "QDRANT_RAG_LABELER": "#/components/schemas/QdrantRAGLabeler",
             "QUESTION_AND_LABEL_GENERATOR": "#/components/schemas/QuestionAndLabelGenerator",
@@ -2796,6 +2983,10 @@
             "type": "boolean",
             "title": "Cache Enabled",
             "default": true
+          },
+          "llm_provider": {
+            "$ref": "#/components/schemas/LLMProvider",
+            "default": "auto"
           },
           "configuration_id": {
             "anyOf": [
@@ -3134,6 +3325,99 @@
         ],
         "title": "DocumentContext"
       },
+      "EmbeddingDeduplication": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "EMBEDDING_DEDUPLICATION",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "EMBEDDING_DEDUPLICATION"
+          },
+          "fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fields",
+            "description": "Fields to concatenate into the embedding input. Options: ['question_text', 'seed_text', 'seed_url', 'date_close', 'event_date', 'prediction_date', 'resolution_criteria', 'resolution_date', 'label']",
+            "default": [
+              "question_text"
+            ]
+          },
+          "key_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Key Fields",
+            "description": "Optional structured fields that must match exactly before two items are considered duplication candidates. With keys set, an embedding index is maintained per-key-bucket and only items sharing the same key tuple are compared. Recommended for forecasting questions: include date_close and/or event_date so questions about different dates can never be merged even if they're semantically similar. Options: ['question_text', 'seed_text', 'seed_url', 'date_close', 'event_date', 'prediction_date', 'resolution_criteria', 'resolution_date', 'label']",
+            "default": []
+          },
+          "similarity_threshold": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Similarity Threshold",
+            "description": "Cosine similarity at/above which two items are considered duplicates.",
+            "default": 0.92
+          },
+          "synonyms": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Synonyms",
+            "description": "Regex pattern -> replacement, applied case-insensitively before embedding. Use this to collapse domain-specific surface variants (tickers/abbreviations, agency names, verb synonyms) onto a single form. By far the biggest individual contributor to dedup quality on the eval (~+25% PR-AUC). Bad aliases can silently create false-positive duplicates, so review additions carefully."
+          },
+          "normalize_numbers": {
+            "type": "boolean",
+            "title": "Normalize Numbers",
+            "description": "Collapse number variants so '$40 billion' / '$40B' / '40,000,000,000' / 'half a million' all map to the same string. Marginal lift on its own but composes with synonyms; turn on whenever questions mention quantities.",
+            "default": false
+          },
+          "strip_patterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Strip Patterns",
+            "description": "Regexes deleted (replaced with '') from the text before embedding, applied in order. Use to drop domain boilerplate the caller wants ignored \u2014 e.g. leading question stems ('^(will|is) (the )?') or SEC-filing tickers ('(NASDAQ: IDCC)'). No defaults ship here; supply patterns for your corpus."
+          },
+          "embedding_model": {
+            "type": "string",
+            "title": "Embedding Model",
+            "description": "fastembed model name. Must be one of ALLOWED_EMBEDDING_MODELS \u2014 the set vetted on the dedup quality eval. Default BAAI/bge-small-en-v1.5 (lightweight, CPU-friendly).",
+            "default": "BAAI/bge-small-en-v1.5"
+          },
+          "max_elements": {
+            "type": "integer",
+            "title": "Max Elements",
+            "description": "hnswlib index capacity.",
+            "default": 1000000
+          },
+          "ef_construction": {
+            "type": "integer",
+            "title": "Ef Construction",
+            "description": "hnswlib construction-time ef parameter.",
+            "default": 200
+          },
+          "M": {
+            "type": "integer",
+            "title": "M",
+            "description": "hnswlib graph degree parameter.",
+            "default": 16
+          },
+          "ef_search": {
+            "type": "integer",
+            "title": "Ef Search",
+            "description": "hnswlib query-time ef parameter.",
+            "default": 64
+          }
+        },
+        "type": "object",
+        "title": "EmbeddingDeduplication"
+      },
       "EstimateCostRequest": {
         "properties": {
           "config": {
@@ -3149,6 +3433,10 @@
               }
             ],
             "title": "Max Seeds"
+          },
+          "llm_provider": {
+            "$ref": "#/components/schemas/LLMProvider",
+            "default": "auto"
           }
         },
         "type": "object",
@@ -4155,6 +4443,62 @@
         "type": "object",
         "title": "FreeResponseAnswerType"
       },
+      "FuzzyDeduplication": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "FUZZY_DEDUPLICATION",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "FUZZY_DEDUPLICATION"
+          },
+          "keys": {
+            "items": {
+              "$ref": "#/components/schemas/FuzzyMatchConfig"
+            },
+            "type": "array",
+            "title": "Keys",
+            "description": "Per-key match configuration. Each key can use exact or fuzzy matching independently.",
+            "default": [
+              {
+                "field": "question_text",
+                "similarity_threshold": 0.9
+              },
+              {
+                "field": "date_close"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "FuzzyDeduplication"
+      },
+      "FuzzyMatchConfig": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field",
+            "description": "Field to match on. Options: ['question_text', 'seed_text', 'seed_url', 'date_close', 'event_date', 'prediction_date', 'resolution_criteria', 'resolution_date', 'label']"
+          },
+          "similarity_threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Similarity Threshold",
+            "description": "If set, perform approximate (fuzzy) matching where the similarity between field values must meet or exceed this threshold (from 0.0 to 1.0, with 1.0 being identical and 0.0 completely dissimilar). If None, only exact matches are considered duplicates."
+          }
+        },
+        "type": "object",
+        "required": [
+          "field"
+        ],
+        "title": "FuzzyMatchConfig"
+      },
       "GRPOTrainingConfig": {
         "properties": {
           "training_type": {
@@ -4401,6 +4745,16 @@
             ],
             "title": "Estimated Cost Dollars"
           },
+          "llm_provider": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LLMProvider"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "pipeline_summary": {
             "anyOf": [
               {
@@ -4419,62 +4773,6 @@
         "type": "object",
         "title": "JobUsage",
         "description": "Aggregated usage statistics for a transform job with step breakdown."
-      },
-      "KeyDeduplication": {
-        "properties": {
-          "config_type": {
-            "type": "string",
-            "const": "KEY_DEDUPLICATION",
-            "title": "Config Type",
-            "description": "Type of transform configuration",
-            "default": "KEY_DEDUPLICATION"
-          },
-          "keys": {
-            "items": {
-              "$ref": "#/components/schemas/KeyMatchConfig"
-            },
-            "type": "array",
-            "title": "Keys",
-            "description": "Per-key match configuration. Each key can use exact or fuzzy matching independently.",
-            "default": [
-              {
-                "field": "question_text",
-                "similarity_threshold": 0.9
-              },
-              {
-                "field": "date_close"
-              }
-            ]
-          }
-        },
-        "type": "object",
-        "title": "KeyDeduplication"
-      },
-      "KeyMatchConfig": {
-        "properties": {
-          "field": {
-            "type": "string",
-            "title": "Field",
-            "description": "Field to match on. Options: ['question_text', 'seed_text', 'seed_url', 'date_close', 'event_date', 'prediction_date', 'resolution_criteria', 'resolution_date', 'label']"
-          },
-          "similarity_threshold": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Similarity Threshold",
-            "description": "If set, perform approximate (fuzzy) matching where the similarity between field values must meet or exceed this threshold (from 0.0 to 1.0, with 1.0 being identical and 0.0 completely dissimilar). If None, only exact matches are considered duplicates."
-          }
-        },
-        "type": "object",
-        "required": [
-          "field"
-        ],
-        "title": "KeyMatchConfig"
       },
       "LLMModelUsageSummary": {
         "properties": {
@@ -4507,6 +4805,14 @@
         "type": "object",
         "title": "LLMModelUsageSummary",
         "description": "Usage for a single LLM model."
+      },
+      "LLMProvider": {
+        "type": "string",
+        "enum": [
+          "auto",
+          "vertex_ai"
+        ],
+        "title": "LLMProvider"
       },
       "Label": {
         "properties": {
@@ -4870,131 +5176,6 @@
         ],
         "title": "MetadataFieldType"
       },
-      "MockTransformConfig": {
-        "properties": {
-          "config_type": {
-            "type": "string",
-            "const": "MOCK",
-            "title": "Config Type",
-            "default": "MOCK"
-          },
-          "num_seeds": {
-            "type": "integer",
-            "title": "Num Seeds",
-            "description": "Number of mock seeds to generate (0 = not a seed generator)",
-            "default": 0
-          },
-          "seed_text_template": {
-            "type": "string",
-            "title": "Seed Text Template",
-            "description": "Template for seed text",
-            "default": "Mock seed content {index}"
-          },
-          "delay_seconds": {
-            "type": "number",
-            "title": "Delay Seconds",
-            "description": "Simulated processing time per item",
-            "default": 0.1
-          },
-          "delay_variance": {
-            "type": "number",
-            "title": "Delay Variance",
-            "description": "Random variance (+/- seconds)",
-            "default": 0.05
-          },
-          "error_rate": {
-            "type": "number",
-            "maximum": 1.0,
-            "minimum": 0.0,
-            "title": "Error Rate",
-            "description": "Probability of error (0.0-1.0)",
-            "default": 0.01
-          },
-          "error_message": {
-            "type": "string",
-            "title": "Error Message",
-            "description": "Error message when error_rate triggers",
-            "default": "Mock error"
-          },
-          "expansion_factor": {
-            "type": "integer",
-            "minimum": 1.0,
-            "title": "Expansion Factor",
-            "description": "Outputs per input (1:N expansion)",
-            "default": 1
-          },
-          "filter_rate": {
-            "type": "number",
-            "maximum": 1.0,
-            "minimum": 0.0,
-            "title": "Filter Rate",
-            "description": "Probability of marking invalid",
-            "default": 0.0
-          },
-          "add_question": {
-            "type": "boolean",
-            "title": "Add Question",
-            "description": "Add a mock question to samples",
-            "default": false
-          },
-          "question_template": {
-            "type": "string",
-            "title": "Question Template",
-            "description": "Template for question text",
-            "default": "Mock question {index}?"
-          },
-          "metadata_additions": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Metadata Additions",
-            "description": "Added to sample.meta"
-          },
-          "estimated_input_tokens": {
-            "type": "integer",
-            "title": "Estimated Input Tokens",
-            "description": "Estimated input tokens per call",
-            "default": 0
-          },
-          "estimated_output_tokens": {
-            "type": "integer",
-            "title": "Estimated Output Tokens",
-            "description": "Estimated output tokens per call",
-            "default": 0
-          },
-          "estimated_model_name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Estimated Model Name",
-            "description": "Model name for cost estimation"
-          },
-          "simulated_cost_per_call": {
-            "type": "number",
-            "title": "Simulated Cost Per Call",
-            "description": "Simulated cost per call in dollars (records usage event when > 0)",
-            "default": 0.0
-          },
-          "random_seed": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Random Seed",
-            "description": "Seed for deterministic behavior"
-          }
-        },
-        "type": "object",
-        "title": "MockTransformConfig"
-      },
       "ModelConfig": {
         "properties": {
           "model_name": {
@@ -5112,6 +5293,39 @@
               }
             ],
             "title": "Reasoning Effort"
+          },
+          "top_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top P"
+          },
+          "top_k": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top K"
+          },
+          "min_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min P"
           },
           "is_reasoning_model": {
             "anyOf": [
@@ -5505,6 +5719,146 @@
         ],
         "title": "NewsSeedGenerator"
       },
+      "OpenRouterWebSearchLabeler": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "OPENROUTER_WEB_SEARCH_LABELER",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "OPENROUTER_WEB_SEARCH_LABELER"
+          },
+          "confidence_threshold": {
+            "type": "number",
+            "title": "Confidence Threshold",
+            "description": "Minimum confidence threshold for including questions",
+            "default": 0.9
+          },
+          "answer_type": {
+            "anyOf": [
+              {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BinaryAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MultipleChoiceAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ContinuousAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ContinuousValueOnlyAnswerType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FreeResponseAnswerType"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "answer_type",
+                  "mapping": {
+                    "BINARY": "#/components/schemas/BinaryAnswerType",
+                    "CONTINUOUS": "#/components/schemas/ContinuousAnswerType",
+                    "CONTINUOUS_VALUE_ONLY": "#/components/schemas/ContinuousValueOnlyAnswerType",
+                    "FREE_RESPONSE": "#/components/schemas/FreeResponseAnswerType",
+                    "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceAnswerType"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer Type",
+            "description": "The type of answer expected, used to guide the labeler"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "OpenRouter model slug to use for labeling. Defaults to Grok.",
+            "default": "x-ai/grok-4.20"
+          },
+          "engine": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "native",
+              "exa",
+              "firecrawl",
+              "parallel"
+            ],
+            "title": "Engine",
+            "description": "OpenRouter web-search engine: auto, native, exa, firecrawl, or parallel.",
+            "default": "auto"
+          },
+          "max_results": {
+            "type": "integer",
+            "maximum": 25.0,
+            "minimum": 1.0,
+            "title": "Max Results",
+            "description": "Maximum results per web-search call for supported engines.",
+            "default": 5
+          },
+          "max_total_results": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Total Results",
+            "description": "Maximum total results across all web-search calls in one model request.",
+            "default": 15
+          },
+          "search_context_size": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Search Context Size",
+            "description": "Amount of context to retrieve for engines that support it: low, medium, or high.",
+            "default": "medium"
+          },
+          "allowed_domains": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allowed Domains",
+            "description": "Optional domains to restrict web-search results to."
+          },
+          "excluded_domains": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Excluded Domains",
+            "description": "Optional domains to exclude from web-search results."
+          }
+        },
+        "type": "object",
+        "title": "OpenRouterWebSearchLabeler",
+        "description": "Configuration for labeling with OpenRouter's web-search server tool.\n\nUses OpenRouter's current `openrouter:web_search` server tool rather than\nGemini web-search grounding. The default model is Grok, but `model` can be\nany OpenRouter model that supports tool calling."
+      },
       "PaginatedSamplesResponse": {
         "properties": {
           "samples": {
@@ -5541,6 +5895,60 @@
           "total"
         ],
         "title": "PaginatedSamplesResponse"
+      },
+      "PerplexityContextGenerator": {
+        "properties": {
+          "config_type": {
+            "type": "string",
+            "const": "PERPLEXITY_CONTEXT_GENERATOR",
+            "title": "Config Type",
+            "description": "Type of transform configuration",
+            "default": "PERPLEXITY_CONTEXT_GENERATOR"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "Perplexity model to query",
+            "default": "sonar-pro"
+          },
+          "max_tokens": {
+            "type": "integer",
+            "title": "Max Tokens",
+            "description": "Max tokens for the Perplexity response",
+            "default": 2048
+          },
+          "temperature": {
+            "type": "number",
+            "title": "Temperature",
+            "description": "Sampling temperature",
+            "default": 0.2
+          },
+          "search_context_size": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Search Context Size",
+            "description": "Perplexity web search context size",
+            "default": "high"
+          },
+          "system_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Prompt",
+            "description": "Optional override for the research system prompt"
+          }
+        },
+        "type": "object",
+        "title": "PerplexityContextGenerator"
       },
       "PipelineMetricsResponse": {
         "properties": {
@@ -6149,9 +6557,6 @@
                   },
                   {
                     "$ref": "#/components/schemas/CsvSeedGenerator"
-                  },
-                  {
-                    "$ref": "#/components/schemas/MockTransformConfig"
                   }
                 ],
                 "discriminator": {
@@ -6161,7 +6566,6 @@
                     "CSV_SEED_GENERATOR": "#/components/schemas/CsvSeedGenerator",
                     "FILESET_SEED_GENERATOR": "#/components/schemas/FileSetSeedGenerator",
                     "GDELT_SEED_GENERATOR": "#/components/schemas/GdeltSeedGenerator",
-                    "MOCK": "#/components/schemas/MockTransformConfig",
                     "NEWS_SEED_GENERATOR": "#/components/schemas/NewsSeedGenerator",
                     "TOPIC_TREE_SEED_GENERATOR": "#/components/schemas/TopicTreeSeedGenerator"
                   }
@@ -6189,16 +6593,12 @@
                   },
                   {
                     "$ref": "#/components/schemas/TemplateQuestionGenerator"
-                  },
-                  {
-                    "$ref": "#/components/schemas/MockTransformConfig"
                   }
                 ],
                 "discriminator": {
                   "propertyName": "config_type",
                   "mapping": {
                     "FORWARD_LOOKING_QUESTION_GENERATOR": "#/components/schemas/ForwardLookingQuestionGenerator",
-                    "MOCK": "#/components/schemas/MockTransformConfig",
                     "QUESTION_AND_LABEL_GENERATOR": "#/components/schemas/QuestionAndLabelGenerator",
                     "QUESTION_GENERATOR": "#/components/schemas/QuestionGenerator",
                     "TEMPLATE_QUESTION_GENERATOR": "#/components/schemas/TemplateQuestionGenerator"
@@ -6215,28 +6615,17 @@
           "deduplication": {
             "anyOf": [
               {
-                "oneOf": [
-                  {
-                    "$ref": "#/components/schemas/KeyDeduplication"
-                  },
-                  {
-                    "$ref": "#/components/schemas/MockTransformConfig"
-                  }
-                ],
-                "discriminator": {
-                  "propertyName": "config_type",
-                  "mapping": {
-                    "KEY_DEDUPLICATION": "#/components/schemas/KeyDeduplication",
-                    "MOCK": "#/components/schemas/MockTransformConfig"
-                  }
-                }
+                "$ref": "#/components/schemas/FuzzyDeduplication"
+              },
+              {
+                "$ref": "#/components/schemas/EmbeddingDeduplication"
               },
               {
                 "type": "null"
               }
             ],
             "title": "Deduplication",
-            "description": "Deduplication config. Set to KeyDeduplication() to enable exact/fuzzy dedup on question fields."
+            "description": "Optional sample deduplication config. Deduplication is applied at the earliest stage possible, depending on the config used."
           },
           "labeler": {
             "anyOf": [
@@ -6246,20 +6635,20 @@
                     "$ref": "#/components/schemas/WebSearchLabeler"
                   },
                   {
+                    "$ref": "#/components/schemas/OpenRouterWebSearchLabeler"
+                  },
+                  {
                     "$ref": "#/components/schemas/QdrantRAGLabeler"
                   },
                   {
                     "$ref": "#/components/schemas/FileSetDocumentLabeler"
-                  },
-                  {
-                    "$ref": "#/components/schemas/MockTransformConfig"
                   }
                 ],
                 "discriminator": {
                   "propertyName": "config_type",
                   "mapping": {
                     "FILESET_DOCUMENT_LABELER": "#/components/schemas/FileSetDocumentLabeler",
-                    "MOCK": "#/components/schemas/MockTransformConfig",
+                    "OPENROUTER_WEB_SEARCH_LABELER": "#/components/schemas/OpenRouterWebSearchLabeler",
                     "QDRANT_RAG_LABELER": "#/components/schemas/QdrantRAGLabeler",
                     "WEB_SEARCH_LABELER": "#/components/schemas/WebSearchLabeler"
                   }
@@ -6290,7 +6679,10 @@
                       "$ref": "#/components/schemas/WebSearchContextGenerator"
                     },
                     {
-                      "$ref": "#/components/schemas/MockTransformConfig"
+                      "$ref": "#/components/schemas/PerplexityContextGenerator"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AggregateContextGenerator"
                     }
                   ]
                 },
@@ -6306,79 +6698,34 @@
           "renderer": {
             "anyOf": [
               {
-                "oneOf": [
-                  {
-                    "$ref": "#/components/schemas/QuestionRenderer"
-                  },
-                  {
-                    "$ref": "#/components/schemas/MockTransformConfig"
-                  }
-                ],
-                "discriminator": {
-                  "propertyName": "config_type",
-                  "mapping": {
-                    "MOCK": "#/components/schemas/MockTransformConfig",
-                    "QUESTION_RENDERER": "#/components/schemas/QuestionRenderer"
-                  }
-                }
+                "$ref": "#/components/schemas/QuestionRenderer"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Renderer",
             "description": "Optional configuration for rendering the final prompt"
           },
           "rollout_generator": {
             "anyOf": [
               {
-                "oneOf": [
-                  {
-                    "$ref": "#/components/schemas/RolloutGenerator"
-                  },
-                  {
-                    "$ref": "#/components/schemas/MockTransformConfig"
-                  }
-                ],
-                "discriminator": {
-                  "propertyName": "config_type",
-                  "mapping": {
-                    "MOCK": "#/components/schemas/MockTransformConfig",
-                    "ROLLOUT_GENERATOR": "#/components/schemas/RolloutGenerator"
-                  }
-                }
+                "$ref": "#/components/schemas/RolloutGenerator"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Rollout Generator",
             "description": "Optional configuration for generating rollouts from multiple models"
           },
           "scorer": {
             "anyOf": [
               {
-                "oneOf": [
-                  {
-                    "$ref": "#/components/schemas/RolloutScorer"
-                  },
-                  {
-                    "$ref": "#/components/schemas/MockTransformConfig"
-                  }
-                ],
-                "discriminator": {
-                  "propertyName": "config_type",
-                  "mapping": {
-                    "MOCK": "#/components/schemas/MockTransformConfig",
-                    "ROLLOUT_SCORER": "#/components/schemas/RolloutScorer"
-                  }
-                }
+                "$ref": "#/components/schemas/RolloutScorer"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Scorer",
             "description": "Optional configuration for scoring rollouts against ground truth"
           }
         },
@@ -6507,6 +6854,26 @@
           "model_b_id"
         ],
         "title": "ReasoningComparisonOptions"
+      },
+      "ResearchOptions": {
+        "properties": {
+          "sources": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "perplexity",
+                "news",
+                "google_search"
+              ]
+            },
+            "type": "array",
+            "title": "Sources",
+            "description": "Which research providers to query in parallel."
+          }
+        },
+        "type": "object",
+        "title": "ResearchOptions",
+        "description": "Opt-in research enrichment for forecasting requests.\n\nWhen set, the API fetches web-grounded context from the requested sources\nand injects it into the prompt before calling the model. Each successful\nsource produces a billable RESEARCH event."
       },
       "ResponseMessage": {
         "properties": {
@@ -6894,18 +7261,6 @@
             "description": "The frequency at which to save checkpoints, in training steps.",
             "default": 10
           },
-          "resume_from": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Resume From",
-            "description": "Resume training from a Tinker checkpoint path"
-          },
           "epochs": {
             "type": "integer",
             "title": "Epochs",
@@ -7062,6 +7417,22 @@
             "type": "boolean",
             "title": "Is Valid",
             "default": true
+          },
+          "is_complete": {
+            "type": "boolean",
+            "title": "Is Complete",
+            "default": true
+          },
+          "completed_step": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed Step"
           }
         },
         "type": "object",
@@ -7508,6 +7879,18 @@
         ],
         "title": "TrainingMetricSeries"
       },
+      "TransformConfig": {
+        "properties": {
+          "config_type": {
+            "$ref": "#/components/schemas/TransformType"
+          }
+        },
+        "type": "object",
+        "required": [
+          "config_type"
+        ],
+        "title": "TransformConfig"
+      },
       "TransformJob": {
         "properties": {
           "id": {
@@ -7729,6 +8112,7 @@
           "SCORE_FILTER",
           "FILTER_CRITERIA",
           "WEB_SEARCH_LABELER",
+          "OPENROUTER_WEB_SEARCH_LABELER",
           "NEWS_CONTEXT_GENERATOR",
           "PIPELINE",
           "QUESTION_PIPELINE",
@@ -7742,8 +8126,11 @@
           "FILESET_DOCUMENT_LABELER",
           "TOPIC_TREE_SEED_GENERATOR",
           "CSV_SEED_GENERATOR",
-          "KEY_DEDUPLICATION",
+          "FUZZY_DEDUPLICATION",
+          "EMBEDDING_DEDUPLICATION",
           "WEB_SEARCH_CONTEXT_GENERATOR",
+          "PERPLEXITY_CONTEXT_GENERATOR",
+          "AGGREGATE_CONTEXT_GENERATOR",
           "QDRANT_CONTEXT_GENERATOR",
           "QDRANT_RAG_LABELER",
           "MOCK"

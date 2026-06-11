@@ -1,6 +1,8 @@
 """Contains all the data models used in inputs/outputs"""
 
+from .aggregate_context_generator import AggregateContextGenerator
 from .answer_parser_type import AnswerParserType
+from .answer_type_enum import AnswerTypeEnum
 from .available_rule_model import AvailableRuleModel
 from .balance_response import BalanceResponse
 from .batch_upload_request import BatchUploadRequest
@@ -32,6 +34,8 @@ from .dataset_linter_run_response import DatasetLinterRunResponse
 from .dataset_linter_run_status import DatasetLinterRunStatus
 from .dataset_metadata import DatasetMetadata
 from .document_context import DocumentContext
+from .embedding_deduplication import EmbeddingDeduplication
+from .embedding_deduplication_synonyms import EmbeddingDeduplicationSynonyms
 from .estimate_cost_request import EstimateCostRequest
 from .estimate_cost_response import EstimateCostResponse
 from .estimate_training_cost_request import EstimateTrainingCostRequest
@@ -57,13 +61,13 @@ from .filter_criteria import FilterCriteria
 from .forward_looking_question import ForwardLookingQuestion
 from .forward_looking_question_generator import ForwardLookingQuestionGenerator
 from .free_response_answer_type import FreeResponseAnswerType
+from .fuzzy_deduplication import FuzzyDeduplication
+from .fuzzy_match_config import FuzzyMatchConfig
 from .gdelt_seed_generator import GdeltSeedGenerator
 from .grpo_training_config import GRPOTrainingConfig
 from .http_validation_error import HTTPValidationError
 from .job_usage import JobUsage
 from .job_usage_by_step_type_0 import JobUsageByStepType0
-from .key_deduplication import KeyDeduplication
-from .key_match_config import KeyMatchConfig
 from .label import Label
 from .linter_issue import LinterIssue
 from .linter_issue_meta import LinterIssueMeta
@@ -73,11 +77,10 @@ from .list_file_sets_response import ListFileSetsResponse
 from .list_rules_response import ListRulesResponse
 from .list_transform_jobs_response import ListTransformJobsResponse
 from .llm_model_usage_summary import LLMModelUsageSummary
+from .llm_provider import LLMProvider
 from .metadata_field_definition import MetadataFieldDefinition
 from .metadata_field_definition_input import MetadataFieldDefinitionInput
 from .metadata_field_type import MetadataFieldType
-from .mock_transform_config import MockTransformConfig
-from .mock_transform_config_metadata_additions import MockTransformConfigMetadataAdditions
 from .model_config import ModelConfig
 from .model_list_response import ModelListResponse
 from .model_object import ModelObject
@@ -90,7 +93,12 @@ from .multiple_choice_answer_type_multiple_choice_options_type_0 import (
 from .news_context import NewsContext
 from .news_context_generator import NewsContextGenerator
 from .news_seed_generator import NewsSeedGenerator
+from .open_router_web_search_labeler import OpenRouterWebSearchLabeler
+from .open_router_web_search_labeler_engine import OpenRouterWebSearchLabelerEngine
+from .open_router_web_search_labeler_search_context_size import OpenRouterWebSearchLabelerSearchContextSize
 from .paginated_samples_response import PaginatedSamplesResponse
+from .perplexity_context_generator import PerplexityContextGenerator
+from .perplexity_context_generator_search_context_size import PerplexityContextGeneratorSearchContextSize
 from .pipeline_metrics_response import PipelineMetricsResponse
 from .pipeline_step_summary import PipelineStepSummary
 from .pipeline_step_summary_rejection_reasons import PipelineStepSummaryRejectionReasons
@@ -105,6 +113,8 @@ from .question_pipeline import QuestionPipeline
 from .question_renderer import QuestionRenderer
 from .rag_context import RAGContext
 from .reasoning_comparison_options import ReasoningComparisonOptions
+from .research_options import ResearchOptions
+from .research_options_sources_item import ResearchOptionsSourcesItem
 from .response_message import ResponseMessage
 from .reward_function_type import RewardFunctionType
 from .rollout import Rollout
@@ -132,6 +142,7 @@ from .training_job_list_response import TrainingJobListResponse
 from .training_job_model_id_by_step_type_0 import TrainingJobModelIdByStepType0
 from .training_job_status import TrainingJobStatus
 from .training_metric_series import TrainingMetricSeries
+from .transform_config import TransformConfig
 from .transform_job import TransformJob
 from .transform_job_status import TransformJobStatus
 from .transform_step_metrics_response import TransformStepMetricsResponse
@@ -151,7 +162,9 @@ from .web_search_context_generator import WebSearchContextGenerator
 from .web_search_labeler import WebSearchLabeler
 
 __all__ = (
+    "AggregateContextGenerator",
     "AnswerParserType",
+    "AnswerTypeEnum",
     "AvailableRuleModel",
     "BalanceResponse",
     "BatchUploadRequest",
@@ -183,6 +196,8 @@ __all__ = (
     "DatasetLinterRunStatus",
     "DatasetMetadata",
     "DocumentContext",
+    "EmbeddingDeduplication",
+    "EmbeddingDeduplicationSynonyms",
     "EstimateCostRequest",
     "EstimateCostResponse",
     "EstimateTrainingCostRequest",
@@ -208,13 +223,13 @@ __all__ = (
     "ForwardLookingQuestion",
     "ForwardLookingQuestionGenerator",
     "FreeResponseAnswerType",
+    "FuzzyDeduplication",
+    "FuzzyMatchConfig",
     "GdeltSeedGenerator",
     "GRPOTrainingConfig",
     "HTTPValidationError",
     "JobUsage",
     "JobUsageByStepType0",
-    "KeyDeduplication",
-    "KeyMatchConfig",
     "Label",
     "LinterIssue",
     "LinterIssueMeta",
@@ -224,11 +239,10 @@ __all__ = (
     "ListRulesResponse",
     "ListTransformJobsResponse",
     "LLMModelUsageSummary",
+    "LLMProvider",
     "MetadataFieldDefinition",
     "MetadataFieldDefinitionInput",
     "MetadataFieldType",
-    "MockTransformConfig",
-    "MockTransformConfigMetadataAdditions",
     "ModelConfig",
     "ModelListResponse",
     "ModelObject",
@@ -239,7 +253,12 @@ __all__ = (
     "NewsContext",
     "NewsContextGenerator",
     "NewsSeedGenerator",
+    "OpenRouterWebSearchLabeler",
+    "OpenRouterWebSearchLabelerEngine",
+    "OpenRouterWebSearchLabelerSearchContextSize",
     "PaginatedSamplesResponse",
+    "PerplexityContextGenerator",
+    "PerplexityContextGeneratorSearchContextSize",
     "PipelineMetricsResponse",
     "PipelineStepSummary",
     "PipelineStepSummaryRejectionReasons",
@@ -254,6 +273,8 @@ __all__ = (
     "QuestionRenderer",
     "RAGContext",
     "ReasoningComparisonOptions",
+    "ResearchOptions",
+    "ResearchOptionsSourcesItem",
     "ResponseMessage",
     "RewardFunctionType",
     "Rollout",
@@ -281,6 +302,7 @@ __all__ = (
     "TrainingJobModelIdByStepType0",
     "TrainingJobStatus",
     "TrainingMetricSeries",
+    "TransformConfig",
     "TransformJob",
     "TransformJobStatus",
     "TransformStepMetricsResponse",

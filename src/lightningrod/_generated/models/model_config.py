@@ -28,6 +28,9 @@ class ModelConfig:
         is_lightningrod_model (bool | None | Unset):
         openrouter_provider (list[str] | None | Unset):
         reasoning_effort (None | str | Unset):
+        top_p (float | None | Unset):
+        top_k (int | None | Unset):
+        min_p (float | None | Unset):
         is_reasoning_model (bool | None | Unset):
         disable_reasoning (bool | Unset):  Default: False.
         use_pipeline_key (bool | Unset):  Default: False.
@@ -45,6 +48,9 @@ class ModelConfig:
     is_lightningrod_model: bool | None | Unset = UNSET
     openrouter_provider: list[str] | None | Unset = UNSET
     reasoning_effort: None | str | Unset = UNSET
+    top_p: float | None | Unset = UNSET
+    top_k: int | None | Unset = UNSET
+    min_p: float | None | Unset = UNSET
     is_reasoning_model: bool | None | Unset = UNSET
     disable_reasoning: bool | Unset = False
     use_pipeline_key: bool | Unset = False
@@ -116,6 +122,24 @@ class ModelConfig:
         else:
             reasoning_effort = self.reasoning_effort
 
+        top_p: float | None | Unset
+        if isinstance(self.top_p, Unset):
+            top_p = UNSET
+        else:
+            top_p = self.top_p
+
+        top_k: int | None | Unset
+        if isinstance(self.top_k, Unset):
+            top_k = UNSET
+        else:
+            top_k = self.top_k
+
+        min_p: float | None | Unset
+        if isinstance(self.min_p, Unset):
+            min_p = UNSET
+        else:
+            min_p = self.min_p
+
         is_reasoning_model: bool | None | Unset
         if isinstance(self.is_reasoning_model, Unset):
             is_reasoning_model = UNSET
@@ -153,6 +177,12 @@ class ModelConfig:
             field_dict["openrouter_provider"] = openrouter_provider
         if reasoning_effort is not UNSET:
             field_dict["reasoning_effort"] = reasoning_effort
+        if top_p is not UNSET:
+            field_dict["top_p"] = top_p
+        if top_k is not UNSET:
+            field_dict["top_k"] = top_k
+        if min_p is not UNSET:
+            field_dict["min_p"] = min_p
         if is_reasoning_model is not UNSET:
             field_dict["is_reasoning_model"] = is_reasoning_model
         if disable_reasoning is not UNSET:
@@ -265,6 +295,33 @@ class ModelConfig:
 
         reasoning_effort = _parse_reasoning_effort(d.pop("reasoning_effort", UNSET))
 
+        def _parse_top_p(data: object) -> float | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(float | None | Unset, data)
+
+        top_p = _parse_top_p(d.pop("top_p", UNSET))
+
+        def _parse_top_k(data: object) -> int | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(int | None | Unset, data)
+
+        top_k = _parse_top_k(d.pop("top_k", UNSET))
+
+        def _parse_min_p(data: object) -> float | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(float | None | Unset, data)
+
+        min_p = _parse_min_p(d.pop("min_p", UNSET))
+
         def _parse_is_reasoning_model(data: object) -> bool | None | Unset:
             if data is None:
                 return data
@@ -291,6 +348,9 @@ class ModelConfig:
             is_lightningrod_model=is_lightningrod_model,
             openrouter_provider=openrouter_provider,
             reasoning_effort=reasoning_effort,
+            top_p=top_p,
+            top_k=top_k,
+            min_p=min_p,
             is_reasoning_model=is_reasoning_model,
             disable_reasoning=disable_reasoning,
             use_pipeline_key=use_pipeline_key,
