@@ -99,6 +99,7 @@ We have example notebooks to help you get started. If you have trouble using the
 | Answer Types        | `notebooks/getting_started/04_answer_types.ipynb`                | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/04_answer_types.ipynb)                |
 | GRPO Training       | `notebooks/getting_started/05_grpo_training.ipynb`               | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/05_grpo_training.ipynb)               |
 | SFT Training        | `notebooks/getting_started/06_sft_training.ipynb`                | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/06_sft_training.ipynb)                |
+| Embedding Dedup     | `notebooks/getting_started/08_embedding_deduplication.ipynb`     | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/08_embedding_deduplication.ipynb)     |
 
 
 ### Custom Filesets
