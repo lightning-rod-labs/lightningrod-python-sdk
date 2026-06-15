@@ -32,7 +32,7 @@ The plugin adds the lightningrod-assistant agent plus skills for forecasting dat
 
 ### 2. Get your API key
 
-Sign up at [dashboard.lightningrod.ai](https://dashboard.lightningrod.ai/sign-up?redirect=/api) to get your API key and **$50 of free credits**.
+Sign up at [dashboard.lightningrod.ai](https://dashboard.lightningrod.ai/sign-up?redirect=/api) to get your API key.
 
 ```python
 lr = LightningRod(api_key="your-api-key")
