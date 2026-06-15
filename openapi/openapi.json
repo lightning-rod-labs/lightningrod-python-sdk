@@ -1327,25 +1327,11 @@
           "FileSets"
         ],
         "summary": "List File Sets",
-        "description": "List all FileSets for the organization, optionally including public filesets.",
+        "description": "List all FileSets for the organization.",
         "operationId": "list_file_sets_filesets__get",
         "security": [
           {
             "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "include_public",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "boolean",
-              "description": "Include public filesets",
-              "default": false,
-              "title": "Include Public"
-            },
-            "description": "Include public filesets"
           }
         ],
         "responses": {
@@ -3605,11 +3591,6 @@
                 "type": "null"
               }
             ]
-          },
-          "is_public": {
-            "type": "boolean",
-            "title": "Is Public",
-            "default": false
           },
           "cloud_storage_folder": {
             "anyOf": [
