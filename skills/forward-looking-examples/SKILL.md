@@ -18,7 +18,7 @@ from datetime import datetime
 from lightningrod import (
     LightningRod, GRPOTrainingConfig, BinaryAnswerType,
     NewsSeedGenerator, ForwardLookingQuestionGenerator,
-    WebSearchLabeler, QuestionPipeline,
+    NewsContextGenerator, WebSearchLabeler, QuestionPipeline,
     filter_and_split, display_lint_overview, get_lint_affected_sample_ids,
 )
 lr = LightningRod(api_key=api_key)
@@ -101,6 +101,9 @@ pipeline = QuestionPipeline(
         answer_type=BinaryAnswerType(),
         questions_per_seed=5,
     ),
+    context_generators=[
+        NewsContextGenerator(articles_per_query=3, num_search_queries=3, num_articles=5)
+    ],
     labeler=WebSearchLabeler(answer_type=BinaryAnswerType()),
 )
 
@@ -174,6 +177,9 @@ pipeline = QuestionPipeline(
         answer_type=BinaryAnswerType(),
         questions_per_seed=20,                  # narrow domain, many angles per article
     ),
+    context_generators=[
+        NewsContextGenerator(articles_per_query=3, num_search_queries=1, num_articles=5)
+    ],
     labeler=WebSearchLabeler(answer_type=BinaryAnswerType()),
 )
 ```
@@ -245,6 +251,9 @@ pipeline = QuestionPipeline(
         answer_type=BinaryAnswerType(),
         questions_per_seed=5,
     ),
+    context_generators=[
+        NewsContextGenerator(articles_per_query=3, num_search_queries=3, num_articles=5)
+    ],
     labeler=WebSearchLabeler(answer_type=BinaryAnswerType()),
 )
 
@@ -343,6 +352,7 @@ pipeline = QuestionPipeline(
         questions_per_seed=5,
         answer_type=answer_type,
     ),
+    context_generators=[NewsContextGenerator(num_articles=10)],
     labeler=WebSearchLabeler(answer_type=answer_type, confidence_threshold=0.9),
     renderer=QuestionRenderer(answer_type=answer_type),
 )

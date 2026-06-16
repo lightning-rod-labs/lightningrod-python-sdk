@@ -52,7 +52,7 @@ Follow these steps in order. Do not skip steps or reorder them. This is the flow
 
 2. **Pick one answer type and draft example questions** — First, commit to a single answer type based on the user's goal (see "Answer type selection" below). Then write 5-10 example forecasting questions *all using that answer type*. Show them. This is the most important step — it's how you confirm you understand the goal and how the user steers direction. Get feedback via AskUserQuestion before writing any code.
 
-3. **Build pipeline with strong defaults** — Use patterns from the `forward-looking-examples` skill. NewsSeedGenerator + ForwardLookingQuestionGenerator + WebSearchLabeler. Copy parameters from the closest matching production example (golf, Trump policy, military strikes). Use `questions_per_seed=5` as default. Use the user-approved example questions as `examples` and `bad_examples`.
+3. **Build pipeline with strong defaults** — Use patterns from the `forward-looking-examples` skill. NewsSeedGenerator + ForwardLookingQuestionGenerator + WebSearchLabeler + NewsContextGenerator. Copy parameters from the closest matching production example (golf, Trump policy, military strikes). Use `questions_per_seed=5` as default. Use the user-approved example questions as `examples` and `bad_examples`.
 
 4. **Initial test at adequate scale** — `max_questions=50` minimum. 10 questions from 1-2 seeds is not representative — you need enough volume to see diverse seeds and question variety. Run the pipeline, download results.
 
@@ -216,7 +216,7 @@ Use a clean format — markdown headers or a numbered list, not a raw dict dump.
 - `ForwardLookingQuestionGenerator`, `QuestionGenerator`, `QuestionAndLabelGenerator`, `TemplateQuestionGenerator`
 - `BinaryAnswerType`, `ContinuousAnswerType`, `MultipleChoiceAnswerType`, `FreeResponseAnswerType`
 - `WebSearchLabeler`, `QdrantRAGLabeler`, `FileSetDocumentLabeler`
-- `QdrantContextGenerator`, `FileSetDocumentContextGenerator`
+- `NewsContextGenerator`, `QdrantContextGenerator`, `FileSetDocumentContextGenerator`
 - `TemporalConstraint` (EQUAL, NEXT_DOCUMENT, PREVIOUS_DOCUMENT, BEFORE, AFTER)
 - `QuestionRenderer`
 - `lr.transforms.run()`, `lr.transforms.submit()`, `lr.transforms.estimate_cost()`

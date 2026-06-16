@@ -4,7 +4,7 @@ icon: tags
 
 # Labeling and Context
 
-Labeling resolves questions with ground truth; context enriches samples with relevant information, which leads to better results in training. This page covers the labeler, document context generators, and filter criteria you plug into `QuestionPipeline`.
+Labeling resolves questions with ground truth; context enriches samples with relevant information, which leads to better results in training. This page covers the labeler, context generators, and filter criteria you plug into `QuestionPipeline`.
 
 ## WebSearchLabeler
 
@@ -24,6 +24,29 @@ WebSearchLabeler(
 ```
 
 Omit `labeler` when using `QuestionAndLabelGenerator`, which produces labels synthetically.
+
+## NewsContextGenerator
+
+Enriches samples with relevant news articles. Add to `context_generators` in `QuestionPipeline`.
+
+| Parameter                  | Type | Required | Default | Description                     |
+| -------------------------- | ---- | -------- | ------- | ------------------------------- |
+| `num_search_queries`       | int  | No       | 5       | Search queries per question     |
+| `articles_per_query`       | int  | No       | 3       | Articles per search query       |
+| `num_articles`             | int  | No       | 10      | Max articles in final output    |
+| `relevance_threshold`      | int  | No       | 2       | Min relevance (1–6) to include  |
+| `min_articles`             | int  | No       | 6       | Minimum articles to ensure      |
+| `time_delta_days`          | int  | No       | 30      | Days to look back for news      |
+| `enable_relevance_ranking` | bool | No       | True    | Use LLM-based relevance ranking |
+
+```python
+pipeline = QuestionPipeline(
+    seed_generator=...,
+    question_generator=...,
+    labeler=...,
+    context_generators=[NewsContextGenerator(num_articles=15)],
+)
+```
 
 ## QdrantContextGenerator
 
@@ -220,5 +243,6 @@ pipeline = QuestionPipeline(
         filter_=FilterCriteria(rubric="...", min_score=0.7),
     ),
     labeler=WebSearchLabeler(answer_type=BinaryAnswerType()),
+    context_generators=[NewsContextGenerator(num_articles=10)],
 )
 ```

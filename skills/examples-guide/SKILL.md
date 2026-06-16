@@ -81,6 +81,7 @@ Map structured data to `Sample()` fields, fill in what's missing, optionally enr
 **Key challenge**: The mapping. Common scenarios:
 
 - Have outcomes, need questions → compute labels, use `TemplateQuestionGenerator`. Think about horizons: if starting from end dates, subtract the horizon to get `prediction_date` (used for context enrichment and temporal splits).
+- Have questions + labels, need context → map both, add `NewsContextGenerator`
 - Have questions, need labels → map questions, add `WebSearchLabeler`
 
 **Default model**: `openai/gpt-oss-120b` | **Frontier benchmark (always included)**: `openai/gpt-5.5`
@@ -97,9 +98,17 @@ Map structured data to `Sample()` fields, fill in what's missing, optionally enr
 
 ---
 
-## Context Enrichment (FileSets)
+## Context Enrichment (All Patterns)
 
-For FileSets, use a FileSet context generator with temporal constraints.
+```python
+# Defaults: 5 search queries/question, 3 articles/query, 10 kept after ranking
+NewsContextGenerator()
+
+# Lighter context (common in domain notebooks):
+NewsContextGenerator(num_search_queries=3, articles_per_query=3, num_articles=5)
+```
+
+For FileSets, use `FileSetContextGenerator` with temporal constraints.
 
 ---
 
