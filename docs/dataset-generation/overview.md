@@ -65,7 +65,7 @@ Use `detach=True` for long-running jobs so the job continues even if your local 
 - [Seed Generators](seed-generators.md) — News, GDELT, FileSet, FileSetQuery
 - [Question Generators](question-generators.md) — Question, ForwardLooking, QuestionAndLabel, Template
 - [Deduplication](deduplication.md) — KeyDeduplication, fuzzy and exact field matching
-- [Labeling and Context](labeling-and-context.md) — WebSearchLabeler, NewsContextGenerator
+- [Labeling and Context](labeling-and-context.md) — WebSearchLabeler and document context
 - [Rollouts & Scoring](rollouts-and-scoring.md) — QuestionRenderer, RolloutGenerator, RolloutScorer, model consensus analysis
 - [Answer Types](answer-types.md) — Binary, Continuous, MultipleChoice, FreeResponse
 - [Datasets](datasets.md) — Creating, fetching, and using datasets

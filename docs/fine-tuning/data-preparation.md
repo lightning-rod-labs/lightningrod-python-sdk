@@ -70,7 +70,7 @@ Controls how samples are divided into train and test sets.
 - **Prefer `"temporal"` split for forecasting** — It reflects real-world deployment where the model never sees future questions during training.
 - **Use `test_start` vs `test_size`** — Use `test_start` when you want the test set to cover a specific time window (e.g. a recent month); use `test_size` when you just want a fixed proportion.
 - **Use `days_to_resolution_range` to control difficulty** — Short horizons (e.g. `(7, 30)`) are easier; longer horizons (e.g. `(90, None)`) test genuine uncertainty.
-- **Set `drop_missing_context=True` only if your dataset was generated with `context_generators`** (e.g. `NewsContextGenerator`) in `QuestionPipeline`. Context is absent by default, so enabling this on a dataset without context will drop all samples. See [Labeling and Context](../dataset-generation/labeling-and-context.md).
+- **Set `drop_missing_context=True` only if your dataset was generated with `context_generators`** in `QuestionPipeline`. Context is absent by default, so enabling this on a dataset without context will drop all samples. See [Labeling and Context](../dataset-generation/labeling-and-context.md).
 - **Keep `filter_leaky_train=True`** (default) unless you intentionally want to test without temporal leak protection.
 - **Use `verbose=True` on first runs** to understand how many samples are dropped at each stage and why.
 

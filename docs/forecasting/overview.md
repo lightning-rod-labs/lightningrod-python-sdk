@@ -54,7 +54,7 @@ for q in questions:
 
 ### Lightning Rod parameters
 
-In addition to standard OpenAI fields (`temperature`, `max_tokens`, `top_p`, and [`reasoning_effort`](https://developers.openai.com/api/docs/guides/reasoning#get-started-with-reasoning)), the endpoint accepts two Lightning Rod-specific parameters: `answer_type` and `research`. With the OpenAI client, pass only those Lightning Rod-specific fields via `extra_body`.
+In addition to standard OpenAI fields (`temperature`, `max_tokens`, and `top_p`), the endpoint accepts two Lightning Rod-specific parameters: `answer_type` and `research`. With the OpenAI client, pass only those Lightning Rod-specific fields via `extra_body`.
 
 | Parameter | Values | Description |
 |-----------|--------|-------------|
@@ -65,7 +65,6 @@ In addition to standard OpenAI fields (`temperature`, `max_tokens`, `top_p`, and
 response = client.chat.completions.create(
     model="LightningRodLabs/foresight-v3",
     messages=[{"role": "user", "content": "Will the Fed cut rates by 25bp in March 2026?"}],
-    reasoning_effort="high",
     extra_body={
         "answer_type": "binary",
         "research": {"sources": ["perplexity", "news"]},

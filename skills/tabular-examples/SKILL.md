@@ -1,6 +1,6 @@
 ---
 name: tabular-examples
-description: Production example for tabular data processing -- supply chain shock detection with create_sample(), TemplateQuestionGenerator, NewsContextGenerator, QuestionRenderer. Use when mapping structured data (CSV, BigQuery, API results) to Sample() fields.
+description: Production example for tabular data processing -- supply chain shock detection with create_sample(), TemplateQuestionGenerator, and QuestionRenderer. Use when mapping structured data (CSV, BigQuery, API results) to Sample() fields.
 ---
 
 # Tabular Data Processing Examples
@@ -20,7 +20,6 @@ This is the least structured pattern — every dataset is different. The supply 
 Map structured data to `Sample()` fields, fill in what's missing:
 
 - **Have outcomes, need questions**: Compute labels, use `TemplateQuestionGenerator`
-- **Have questions + labels, need context**: Map both, add `NewsContextGenerator`
 - **Have questions, need labels**: Map questions, add `WebSearchLabeler`
 
 Key `Sample()` fields:
@@ -112,29 +111,24 @@ pipeline = QuestionPipeline(
 )
 ```
 
-### Step 4: Add News Context and Render (Optional)
+### Step 4: Render Prompts (Optional)
 
-Second pass on the uploaded dataset — adds news context and renders prompts:
+Second pass on the uploaded dataset — renders prompts:
 
 ```python
-from lightningrod import BinaryAnswerType, NewsContextGenerator, QuestionRenderer
+from lightningrod import BinaryAnswerType, QuestionRenderer
 
 render_template = """You are a supply chain analyst forecasting disruption shocks.
     QUESTION: {question_text}
     TODAY'S DATE: {question_date}
     RESOLUTION CRITERIA: {resolution_criteria}
-    CONTEXT: {context}
     ANSWER FORMAT: {answer_instructions}"""
 
-context_pipeline = QuestionPipeline(
-    context_generators=[NewsContextGenerator(
-        num_search_queries=3, articles_per_query=5, num_articles=10,
-        time_delta_days=30, enable_relevance_ranking=True,
-    )],
+render_pipeline = QuestionPipeline(
     renderer=QuestionRenderer(answer_type=BinaryAnswerType(), template=render_template),
 )
 
-rendered = lr.transforms.run(context_pipeline, input_dataset=dataset.id, max_seeds=6000)
+rendered = lr.transforms.run(render_pipeline, input_dataset=dataset.id, max_seeds=6000)
 ```
 
 ### Step 5: Split and Train

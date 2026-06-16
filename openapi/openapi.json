@@ -1998,18 +1998,6 @@
             "title": "Min P",
             "description": "Minimum probability for a token to be considered"
           },
-          "reasoning_effort": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Reasoning Effort",
-            "description": "Reasoning effort: low, medium, or high"
-          },
           "stream": {
             "anyOf": [
               {
@@ -2340,18 +2328,6 @@
             ],
             "title": "Min P",
             "description": "Minimum probability for a token to be considered"
-          },
-          "reasoning_effort": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Reasoning Effort",
-            "description": "Reasoning effort: low, medium, or high"
           },
           "stream": {
             "anyOf": [
@@ -2885,9 +2861,6 @@
             "$ref": "#/components/schemas/TopicTreeSeedGenerator"
           },
           {
-            "$ref": "#/components/schemas/WebSearchContextGenerator"
-          },
-          {
             "$ref": "#/components/schemas/PerplexityContextGenerator"
           },
           {
@@ -2922,7 +2895,6 @@
             "QUESTION_PIPELINE": "#/components/schemas/QuestionPipeline",
             "QUESTION_RENDERER": "#/components/schemas/QuestionRenderer",
             "TOPIC_TREE_SEED_GENERATOR": "#/components/schemas/TopicTreeSeedGenerator",
-            "WEB_SEARCH_CONTEXT_GENERATOR": "#/components/schemas/WebSearchContextGenerator",
             "WEB_SEARCH_LABELER": "#/components/schemas/WebSearchLabeler"
           }
         }
@@ -5264,17 +5236,6 @@
             ],
             "title": "Openrouter Provider"
           },
-          "reasoning_effort": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Reasoning Effort"
-          },
           "top_p": {
             "anyOf": [
               {
@@ -5528,85 +5489,6 @@
         ],
         "title": "NewsContext"
       },
-      "NewsContextGenerator": {
-        "properties": {
-          "config_type": {
-            "type": "string",
-            "const": "NEWS_CONTEXT_GENERATOR",
-            "title": "Config Type",
-            "description": "Type of transform configuration",
-            "default": "NEWS_CONTEXT_GENERATOR"
-          },
-          "num_search_queries": {
-            "type": "integer",
-            "title": "Num Search Queries",
-            "description": "Number of search queries to generate per question",
-            "default": 5
-          },
-          "articles_per_query": {
-            "type": "integer",
-            "title": "Articles Per Query",
-            "description": "Number of news articles to return per search query",
-            "default": 3
-          },
-          "num_articles": {
-            "type": "integer",
-            "title": "Num Articles",
-            "description": "Maximum number of news articles to include in final output",
-            "default": 10
-          },
-          "relevance_threshold": {
-            "type": "integer",
-            "title": "Relevance Threshold",
-            "description": "Minimum relevance rating (1-6 scale) to include article",
-            "default": 2
-          },
-          "min_articles": {
-            "type": "integer",
-            "title": "Min Articles",
-            "description": "Minimum number of articles to ensure",
-            "default": 6
-          },
-          "time_delta_days": {
-            "type": "integer",
-            "title": "Time Delta Days",
-            "description": "Number of days to look back for news articles",
-            "default": 30
-          },
-          "enable_relevance_ranking": {
-            "type": "boolean",
-            "title": "Enable Relevance Ranking",
-            "description": "Whether to perform LLM-based relevance ranking",
-            "default": true
-          },
-          "search_queries_column": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Search Queries Column",
-            "description": "Column name in sample.meta containing pre-generated search queries (list of strings). If provided, skips LLM query generation."
-          },
-          "search_query_instructions": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Search Query Instructions",
-            "description": "Optional guidance for the LLM step that generates multiple search queries for news retrieval, replaces the default instructions."
-          }
-        },
-        "type": "object",
-        "title": "NewsContextGenerator"
-      },
       "NewsSeedGenerator": {
         "properties": {
           "config_type": {
@@ -5764,12 +5646,11 @@
             "enum": [
               "auto",
               "native",
-              "exa",
               "firecrawl",
               "parallel"
             ],
             "title": "Engine",
-            "description": "OpenRouter web-search engine: auto, native, exa, firecrawl, or parallel.",
+            "description": "OpenRouter web-search engine: auto, native, firecrawl, or parallel.",
             "default": "auto"
           },
           "max_results": {
@@ -6648,16 +6529,10 @@
                 "items": {
                   "anyOf": [
                     {
-                      "$ref": "#/components/schemas/NewsContextGenerator"
-                    },
-                    {
                       "$ref": "#/components/schemas/QdrantContextGenerator"
                     },
                     {
                       "$ref": "#/components/schemas/FileSetDocumentContextGenerator"
-                    },
-                    {
-                      "$ref": "#/components/schemas/WebSearchContextGenerator"
                     },
                     {
                       "$ref": "#/components/schemas/PerplexityContextGenerator"
@@ -8319,85 +8194,6 @@
           "search_query"
         ],
         "title": "WebSearchContext"
-      },
-      "WebSearchContextGenerator": {
-        "properties": {
-          "config_type": {
-            "type": "string",
-            "const": "WEB_SEARCH_CONTEXT_GENERATOR",
-            "title": "Config Type",
-            "description": "Type of transform configuration",
-            "default": "WEB_SEARCH_CONTEXT_GENERATOR"
-          },
-          "num_search_queries": {
-            "type": "integer",
-            "title": "Num Search Queries",
-            "description": "Number of search queries to generate per question",
-            "default": 5
-          },
-          "results_per_query": {
-            "type": "integer",
-            "title": "Results Per Query",
-            "description": "Number of search results to return per query",
-            "default": 3
-          },
-          "num_results": {
-            "type": "integer",
-            "title": "Num Results",
-            "description": "Maximum number of search results to include in final output",
-            "default": 10
-          },
-          "relevance_threshold": {
-            "type": "integer",
-            "title": "Relevance Threshold",
-            "description": "Minimum relevance rating (1-6 scale) to include result",
-            "default": 2
-          },
-          "min_results": {
-            "type": "integer",
-            "title": "Min Results",
-            "description": "Minimum number of results to ensure",
-            "default": 6
-          },
-          "time_delta_days": {
-            "type": "integer",
-            "title": "Time Delta Days",
-            "description": "Number of days to look back for search results",
-            "default": 30
-          },
-          "enable_relevance_ranking": {
-            "type": "boolean",
-            "title": "Enable Relevance Ranking",
-            "description": "Whether to perform LLM-based relevance ranking",
-            "default": true
-          },
-          "search_queries_column": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Search Queries Column",
-            "description": "Column name in sample.meta containing pre-generated search queries (list of strings). If provided, skips LLM query generation."
-          },
-          "search_query_instructions": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Search Query Instructions",
-            "description": "Optional guidance for the LLM step that generates multiple search queries, replaces the default instructions."
-          }
-        },
-        "type": "object",
-        "title": "WebSearchContextGenerator"
       },
       "WebSearchLabeler": {
         "properties": {
