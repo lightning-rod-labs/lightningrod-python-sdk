@@ -52,7 +52,17 @@ class TestParseContinuous:
 
 
 class TestParseMultipleChoice:
-    def test_parses_options_and_probabilities(self) -> None:
+    def test_parses_label_keyed_answer(self) -> None:
+        # Current format: human-readable labels are the <answer> keys; no legend.
+        content = '<answer>{"Rate cut": 0.28, "Hold": 0.72}</answer>'
+        result = _parse_prediction(content, "multiple_choice")
+        assert result == MultiChoicePrediction(
+            options={"Rate cut": "Rate cut", "Hold": "Hold"},
+            probabilities={"Rate cut": 0.28, "Hold": 0.72},
+        )
+
+    def test_parses_legacy_options_and_probabilities(self) -> None:
+        # Backward compatibility: legacy two-tag <options>/<answer> with option_N keys.
         content = (
             '<options>{"option_0": "Rate cut", "option_1": "Hold"}</options>'
             '<answer>{"option_0": 0.28, "option_1": 0.72}</answer>'
@@ -63,12 +73,11 @@ class TestParseMultipleChoice:
             probabilities={"option_0": 0.28, "option_1": 0.72},
         )
 
-    def test_missing_options_returns_none(self) -> None:
-        content = '<answer>{"option_0": 0.28, "option_1": 0.72}</answer>'
-        assert _parse_prediction(content, "multiple_choice") is None
+    def test_non_dict_answer_returns_none(self) -> None:
+        assert _parse_prediction("<answer>0.5</answer>", "multiple_choice") is None
 
     def test_invalid_json_returns_none(self) -> None:
-        content = "<options>{bad}</options><answer>{bad}</answer>"
+        content = "<answer>{bad}</answer>"
         assert _parse_prediction(content, "multiple_choice") is None
 
 
@@ -91,6 +100,14 @@ class TestParseAuto:
         content = '<options>{"o": "A"}</options><answer>{"o": 1.0}</answer>'
         assert _parse_prediction(content, "auto") == MultiChoicePrediction(
             options={"o": "A"}, probabilities={"o": 1.0}
+        )
+
+    def test_auto_label_keyed_multiple_choice(self) -> None:
+        # Current format under auto: a dict of label -> probability, no legend.
+        content = '<answer>{"Cut": 0.6, "Hold": 0.4}</answer>'
+        assert _parse_prediction(content, "auto") == MultiChoicePrediction(
+            options={"Cut": "Cut", "Hold": "Hold"},
+            probabilities={"Cut": 0.6, "Hold": 0.4},
         )
 
     def test_auto_free_response_fallback(self) -> None:
