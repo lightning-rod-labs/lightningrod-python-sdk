@@ -54,11 +54,10 @@ for q in questions:
 
 ### Lightning Rod parameters
 
-In addition to the standard OpenAI fields (`temperature`, `max_tokens`, `top_p`, …), the endpoint accepts three Lightning Rod-specific parameters. With the OpenAI client they are passed via `extra_body`, since they are not part of the standard schema.
+In addition to standard OpenAI fields (`temperature`, `max_tokens`, `top_p`, and [`reasoning_effort`](https://developers.openai.com/api/docs/guides/reasoning#get-started-with-reasoning)), the endpoint accepts two Lightning Rod-specific parameters: `answer_type` and `research`. With the OpenAI client, pass only those Lightning Rod-specific fields via `extra_body`.
 
 | Parameter | Values | Description |
 |-----------|--------|-------------|
-| `reasoning_effort` | `"low"`, `"medium"` (default), `"high"` | How much the model reasons before answering. Higher effort spends more tokens for better-calibrated forecasts. |
 | `answer_type` | `"binary"`, `"multiple_choice"`, `"continuous"`, `"free_response"`, `"auto"` | Injects output-format guidance and appends a structured answer between `<answer></answer>` tags. `"auto"` classifies the question server-side first. Omit for prose only. |
 | `research` | `true`, or `{"sources": [...]}` | Opt-in web research before forecasting. `true` queries all sources (`perplexity`, `news`, `google_search`); pass an object to choose. Each source is billed as a separate research event. Omit or `false` to disable. |
 
@@ -66,8 +65,8 @@ In addition to the standard OpenAI fields (`temperature`, `max_tokens`, `top_p`,
 response = client.chat.completions.create(
     model="LightningRodLabs/foresight-v3",
     messages=[{"role": "user", "content": "Will the Fed cut rates by 25bp in March 2026?"}],
+    reasoning_effort="high",
     extra_body={
-        "reasoning_effort": "high",
         "answer_type": "binary",
         "research": {"sources": ["perplexity", "news"]},
     },
