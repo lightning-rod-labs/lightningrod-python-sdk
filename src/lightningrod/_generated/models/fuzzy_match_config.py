@@ -8,11 +8,11 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="KeyMatchConfig")
+T = TypeVar("T", bound="FuzzyMatchConfig")
 
 
 @_attrs_define
-class KeyMatchConfig:
+class FuzzyMatchConfig:
     """
     Attributes:
         field (str): Field to match on. Options: ['question_text', 'seed_text', 'seed_url', 'date_close', 'event_date',
@@ -61,13 +61,13 @@ class KeyMatchConfig:
 
         similarity_threshold = _parse_similarity_threshold(d.pop("similarity_threshold", UNSET))
 
-        key_match_config = cls(
+        fuzzy_match_config = cls(
             field=field,
             similarity_threshold=similarity_threshold,
         )
 
-        key_match_config.additional_properties = d
-        return key_match_config
+        fuzzy_match_config.additional_properties = d
+        return fuzzy_match_config
 
     @property
     def additional_keys(self) -> list[str]:

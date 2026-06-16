@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, TypeVar, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.llm_provider import LLMProvider
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
@@ -27,6 +28,7 @@ class JobUsage:
         max_cost_dollars (float | None | Unset):
         current_cost_dollars (float | None | Unset):
         estimated_cost_dollars (float | None | Unset):
+        llm_provider (LLMProvider | None | Unset):
         pipeline_summary (list[PipelineStepSummary] | None | Unset):
     """
 
@@ -35,6 +37,7 @@ class JobUsage:
     max_cost_dollars: float | None | Unset = UNSET
     current_cost_dollars: float | None | Unset = UNSET
     estimated_cost_dollars: float | None | Unset = UNSET
+    llm_provider: LLMProvider | None | Unset = UNSET
     pipeline_summary: list[PipelineStepSummary] | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -76,6 +79,14 @@ class JobUsage:
         else:
             estimated_cost_dollars = self.estimated_cost_dollars
 
+        llm_provider: None | str | Unset
+        if isinstance(self.llm_provider, Unset):
+            llm_provider = UNSET
+        elif isinstance(self.llm_provider, LLMProvider):
+            llm_provider = self.llm_provider.value
+        else:
+            llm_provider = self.llm_provider
+
         pipeline_summary: list[dict[str, Any]] | None | Unset
         if isinstance(self.pipeline_summary, Unset):
             pipeline_summary = UNSET
@@ -101,6 +112,8 @@ class JobUsage:
             field_dict["current_cost_dollars"] = current_cost_dollars
         if estimated_cost_dollars is not UNSET:
             field_dict["estimated_cost_dollars"] = estimated_cost_dollars
+        if llm_provider is not UNSET:
+            field_dict["llm_provider"] = llm_provider
         if pipeline_summary is not UNSET:
             field_dict["pipeline_summary"] = pipeline_summary
 
@@ -175,6 +188,23 @@ class JobUsage:
 
         estimated_cost_dollars = _parse_estimated_cost_dollars(d.pop("estimated_cost_dollars", UNSET))
 
+        def _parse_llm_provider(data: object) -> LLMProvider | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                llm_provider_type_0 = LLMProvider(data)
+
+                return llm_provider_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(LLMProvider | None | Unset, data)
+
+        llm_provider = _parse_llm_provider(d.pop("llm_provider", UNSET))
+
         def _parse_pipeline_summary(data: object) -> list[PipelineStepSummary] | None | Unset:
             if data is None:
                 return data
@@ -203,6 +233,7 @@ class JobUsage:
             max_cost_dollars=max_cost_dollars,
             current_cost_dollars=current_cost_dollars,
             estimated_cost_dollars=estimated_cost_dollars,
+            llm_provider=llm_provider,
             pipeline_summary=pipeline_summary,
         )
 

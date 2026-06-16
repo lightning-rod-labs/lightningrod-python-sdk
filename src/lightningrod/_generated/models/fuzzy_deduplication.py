@@ -9,24 +9,24 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.key_match_config import KeyMatchConfig
+    from ..models.fuzzy_match_config import FuzzyMatchConfig
 
 
-T = TypeVar("T", bound="KeyDeduplication")
+T = TypeVar("T", bound="FuzzyDeduplication")
 
 
 @_attrs_define
-class KeyDeduplication:
+class FuzzyDeduplication:
     """
     Attributes:
-        config_type (Literal['KEY_DEDUPLICATION'] | Unset): Type of transform configuration Default:
-            'KEY_DEDUPLICATION'.
-        keys (list[KeyMatchConfig] | Unset): Per-key match configuration. Each key can use exact or fuzzy matching
+        config_type (Literal['FUZZY_DEDUPLICATION'] | Unset): Type of transform configuration Default:
+            'FUZZY_DEDUPLICATION'.
+        keys (list[FuzzyMatchConfig] | Unset): Per-key match configuration. Each key can use exact or fuzzy matching
             independently.
     """
 
-    config_type: Literal["KEY_DEDUPLICATION"] | Unset = "KEY_DEDUPLICATION"
-    keys: list[KeyMatchConfig] | Unset = UNSET
+    config_type: Literal["FUZZY_DEDUPLICATION"] | Unset = "FUZZY_DEDUPLICATION"
+    keys: list[FuzzyMatchConfig] | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -51,29 +51,29 @@ class KeyDeduplication:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.key_match_config import KeyMatchConfig
+        from ..models.fuzzy_match_config import FuzzyMatchConfig
 
         d = dict(src_dict)
-        config_type = cast(Literal["KEY_DEDUPLICATION"] | Unset, d.pop("config_type", UNSET))
-        if config_type != "KEY_DEDUPLICATION" and not isinstance(config_type, Unset):
-            raise ValueError(f"config_type must match const 'KEY_DEDUPLICATION', got '{config_type}'")
+        config_type = cast(Literal["FUZZY_DEDUPLICATION"] | Unset, d.pop("config_type", UNSET))
+        if config_type != "FUZZY_DEDUPLICATION" and not isinstance(config_type, Unset):
+            raise ValueError(f"config_type must match const 'FUZZY_DEDUPLICATION', got '{config_type}'")
 
         _keys = d.pop("keys", UNSET)
-        keys: list[KeyMatchConfig] | Unset = UNSET
+        keys: list[FuzzyMatchConfig] | Unset = UNSET
         if _keys is not UNSET:
             keys = []
             for keys_item_data in _keys:
-                keys_item = KeyMatchConfig.from_dict(keys_item_data)
+                keys_item = FuzzyMatchConfig.from_dict(keys_item_data)
 
                 keys.append(keys_item)
 
-        key_deduplication = cls(
+        fuzzy_deduplication = cls(
             config_type=config_type,
             keys=keys,
         )
 
-        key_deduplication.additional_properties = d
-        return key_deduplication
+        fuzzy_deduplication.additional_properties = d
+        return fuzzy_deduplication
 
     @property
     def additional_keys(self) -> list[str]:

@@ -32,7 +32,7 @@ The plugin adds the lightningrod-assistant agent plus skills for forecasting dat
 
 ### 2. Get your API key
 
-Sign up at [dashboard.lightningrod.ai](https://dashboard.lightningrod.ai/sign-up?redirect=/api) to get your API key and **$50 of free credits**.
+Sign up at [dashboard.lightningrod.ai](https://dashboard.lightningrod.ai/sign-up?redirect=/api) to get your API key.
 
 ```python
 lr = LightningRod(api_key="your-api-key")
@@ -99,6 +99,7 @@ We have example notebooks to help you get started. If you have trouble using the
 | Answer Types        | `notebooks/getting_started/04_answer_types.ipynb`                | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/04_answer_types.ipynb)                |
 | GRPO Training       | `notebooks/getting_started/05_grpo_training.ipynb`               | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/05_grpo_training.ipynb)               |
 | SFT Training        | `notebooks/getting_started/06_sft_training.ipynb`                | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/06_sft_training.ipynb)                |
+| Embedding Dedup     | `notebooks/getting_started/08_embedding_deduplication.ipynb`     | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/getting_started/08_embedding_deduplication.ipynb)     |
 
 
 ### Custom Filesets

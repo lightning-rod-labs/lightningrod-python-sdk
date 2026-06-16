@@ -37,6 +37,8 @@ class Sample:
         rollouts (list[Rollout] | None | Unset):
         meta (SampleMeta | Unset):
         is_valid (bool | Unset):  Default: True.
+        is_complete (bool | Unset):  Default: True.
+        completed_step (int | None | Unset):
     """
 
     id: None | str | Unset = UNSET
@@ -48,6 +50,8 @@ class Sample:
     rollouts: list[Rollout] | None | Unset = UNSET
     meta: SampleMeta | Unset = UNSET
     is_valid: bool | Unset = True
+    is_complete: bool | Unset = True
+    completed_step: int | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -136,6 +140,14 @@ class Sample:
 
         is_valid = self.is_valid
 
+        is_complete = self.is_complete
+
+        completed_step: int | None | Unset
+        if isinstance(self.completed_step, Unset):
+            completed_step = UNSET
+        else:
+            completed_step = self.completed_step
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
@@ -157,6 +169,10 @@ class Sample:
             field_dict["meta"] = meta
         if is_valid is not UNSET:
             field_dict["is_valid"] = is_valid
+        if is_complete is not UNSET:
+            field_dict["is_complete"] = is_complete
+        if completed_step is not UNSET:
+            field_dict["completed_step"] = completed_step
 
         return field_dict
 
@@ -341,6 +357,17 @@ class Sample:
 
         is_valid = d.pop("is_valid", UNSET)
 
+        is_complete = d.pop("is_complete", UNSET)
+
+        def _parse_completed_step(data: object) -> int | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(int | None | Unset, data)
+
+        completed_step = _parse_completed_step(d.pop("completed_step", UNSET))
+
         sample = cls(
             id=id,
             seed=seed,
@@ -351,6 +378,8 @@ class Sample:
             rollouts=rollouts,
             meta=meta,
             is_valid=is_valid,
+            is_complete=is_complete,
+            completed_step=completed_step,
         )
 
         sample.additional_properties = d

@@ -52,7 +52,6 @@ class SFTTrainingConfig:
         adam_beta2 (float | None | Unset): Exponential decay rate for second-moment estimates (moving average of squared
             gradients)
         save_frequency (int | Unset): The frequency at which to save checkpoints, in training steps. Default: 10.
-        resume_from (None | str | Unset): Resume training from a Tinker checkpoint path
         epochs (int | Unset): Number of passes over the training data Default: 1.
         start_idx (int | None | Unset): Row index to skip at start; train_rows = train_rows[start_idx:]
     """
@@ -67,7 +66,6 @@ class SFTTrainingConfig:
     adam_beta1: float | None | Unset = UNSET
     adam_beta2: float | None | Unset = UNSET
     save_frequency: int | Unset = 10
-    resume_from: None | str | Unset = UNSET
     epochs: int | Unset = 1
     start_idx: int | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -113,12 +111,6 @@ class SFTTrainingConfig:
 
         save_frequency = self.save_frequency
 
-        resume_from: None | str | Unset
-        if isinstance(self.resume_from, Unset):
-            resume_from = UNSET
-        else:
-            resume_from = self.resume_from
-
         epochs = self.epochs
 
         start_idx: int | None | Unset
@@ -150,8 +142,6 @@ class SFTTrainingConfig:
             field_dict["adam_beta2"] = adam_beta2
         if save_frequency is not UNSET:
             field_dict["save_frequency"] = save_frequency
-        if resume_from is not UNSET:
-            field_dict["resume_from"] = resume_from
         if epochs is not UNSET:
             field_dict["epochs"] = epochs
         if start_idx is not UNSET:
@@ -221,15 +211,6 @@ class SFTTrainingConfig:
 
         save_frequency = d.pop("save_frequency", UNSET)
 
-        def _parse_resume_from(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        resume_from = _parse_resume_from(d.pop("resume_from", UNSET))
-
         epochs = d.pop("epochs", UNSET)
 
         def _parse_start_idx(data: object) -> int | None | Unset:
@@ -252,7 +233,6 @@ class SFTTrainingConfig:
             adam_beta1=adam_beta1,
             adam_beta2=adam_beta2,
             save_frequency=save_frequency,
-            resume_from=resume_from,
             epochs=epochs,
             start_idx=start_idx,
         )
