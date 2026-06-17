@@ -37,7 +37,6 @@ client = lr.LightningRod(api_key="your-api-key")
 
 ```python
 result = client.predict(
-    "foresight-v4",
     "Will the Fed cut rates by 25bp in March 2026?",
     answer_type="binary",
 )
@@ -90,7 +89,7 @@ eval_job = client.evals.run_from_training_job(train_config, training_job, test_d
 Your fine-tuned model is served through the same `predict()` API:
 
 ```python
-client.predict(training_job.model_id, "Will the Fed cut rates by 25bp in the next 3 months?")
+client.predict("Will the Fed cut rates by 25bp in the next 3 months?", model=training_job.model_id)
 ```
 
 Check the [API docs](https://docs.lightningrod.ai/forecasting/quickstart) for use with the OpenAI-compatible API.

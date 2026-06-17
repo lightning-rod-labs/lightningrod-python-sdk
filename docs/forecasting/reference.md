@@ -37,7 +37,6 @@ client = lr.LightningRod(api_key="your-api-key")
 
 # Note: requires installation of openai client (pip install openai)
 result = client.predict(
-    "foresight-v4",
     "Will the Fed cut rates by 25bp in March 2026?",
     answer_type="binary",
     research=["perplexity", "news"],
@@ -101,12 +100,12 @@ Use this path when you need multi-turn conversations, an existing OpenAI-compati
 
 ## Models
 
-Hosted Foresight models use short IDs in `predict()` and full provider IDs through the OpenAI-compatible endpoint:
+Both `predict()` and the OpenAI-compatible endpoint accept the same model IDs—either the short form or the full provider form. `predict()` defaults to the latest model (`LightningRodLabs/foresight-v4`) when `model` is omitted.
 
-| Model | `predict()` ID | OpenAI-compatible ID | Description |
-|-------|----------------|----------------------|-------------|
-| Foresight v4 | `foresight-v4` | `LightningRodLabs/foresight-v4` | **Latest** hosted forecasting model. Calibrated probabilities for forward-looking questions. Recommended for new projects. |
-| Foresight v3 | `foresight-v3` | `LightningRodLabs/foresight-v3` | Previous generation, still available for compatibility and benchmark comparisons. |
+| Model | Model ID | Description |
+|-------|----------|-------------|
+| Foresight v4 | `LightningRodLabs/foresight-v4` | **New** version of our frontier forecasting model. |
+| Foresight v3 | `LightningRodLabs/foresight-v3` |  |
 
 Foresight models are always available—no training or hosting setup required. Fine-tuned models you train on the [Platform](../platform/overview.md) are served through the same interface; pass the trained `model_id` to either `client.predict(...)` or `client.chat.completions.create(...)`. See [Inference](../platform/fine-tuning/inference.md) for their model IDs and availability.
 
@@ -116,8 +115,8 @@ Each call reports its cost on the response (`result.usage.cost_usd`), broken dow
 
 | Field                                | OpenAI chat/completions                                               | Predict helper                        | Description                                                                 |
 | ------------------------------------ | --------------------------------------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------- |
-| `model` / `model_id`                 | `model="LightningRodLabs/foresight-v4"`                               | first argument, e.g. `"foresight-v4"` | Model to query. Use the ID form for your usage path.                        |
-| `messages` / `prompt`                | `messages=[...]`                                                      | second argument, `prompt`             | Raw API accepts full chat history. `predict()` accepts one prompt string.   |
+| `model` / `model_id`                 | `model="LightningRodLabs/foresight-v4"`                               | `model="foresight-v4"` (optional)     | Model to query. Same IDs for both paths. `predict()` defaults to the latest model when omitted. |
+| `messages` / `prompt`                | `messages=[...]`                                                      | first argument, `prompt`              | Raw API accepts full chat history. `predict()` accepts one prompt string.   |
 | `system_prompt`                      | Add a `{"role": "system"}` message                                    | `system_prompt="..."`                 | Optional system instruction.                                                |
 | `answer_type`                        | `extra_body={"answer_type": "binary"}`                                | `answer_type="binary"`                | Requests a structured answer format.                                        |
 | `research`                           | `extra_body={"research": True}` or `{"research": {"sources": [...]}}` | `research=True` or `research=[...]`   | Opts into web research before forecasting.                                  |
@@ -148,7 +147,6 @@ With `predict()`, pass the list directly:
 
 ```python
 result = client.predict(
-    "foresight-v4",
     "Will the Fed cut rates by 25bp in March 2026?",
     research=["perplexity", "news"],
 )
@@ -187,7 +185,7 @@ At most one typed answer field is populated. If no `answer_type` is requested, a
 
 `Usage` includes `prompt_tokens`, `completion_tokens`, `total_tokens`, and cost fields: `cost_usd`, `inference_cost_usd`, `research_cost_usd`, and `classification_cost_usd` when applicable.
 
-> **Note:** `predict()` previously returned the raw content string. It now returns a `PredictionResult`; the raw string is available as `result.content`.
+> **Note:** `predict()` previously returned the raw content string and took the model as the required first argument. It now returns a `PredictionResult` (the raw string is available as `result.content`), takes `prompt` as the first argument, and the model is an optional `model=` keyword argument that defaults to the latest Foresight model.
 
 ## Raw OpenAI Response
 

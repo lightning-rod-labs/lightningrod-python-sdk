@@ -52,7 +52,7 @@ def client() -> LightningRod:
 
     # Connectivity probe — skip the whole module if the server is unreachable.
     try:
-        lr.predict(MODEL, "ping", reasoning_effort="low")
+        lr.predict("ping", model=MODEL, reasoning_effort="low")
     except Exception as exc:  # noqa: BLE001 - surface as a skip, not a failure
         pytest.skip(f"Live server at {BASE_URL} not reachable: {exc}")
     return lr
@@ -71,8 +71,8 @@ def _assert_common(result: PredictionResult) -> None:
 
 def test_binary(client: LightningRod) -> None:
     result = client.predict(
-        MODEL,
         "Will it rain in Seattle tomorrow?",
+        model=MODEL,
         answer_type="binary",
         reasoning_effort="low",
     )
@@ -89,8 +89,8 @@ def test_binary(client: LightningRod) -> None:
 def test_binary_with_enums(client: LightningRod) -> None:
     # Enum values should serialize and round-trip just like the string forms.
     result = client.predict(
-        MODEL,
         "Will the sun rise tomorrow?",
+        model=MODEL,
         answer_type=AnswerType.BINARY,
         reasoning_effort=ReasoningEffort.LOW,
     )
@@ -100,8 +100,8 @@ def test_binary_with_enums(client: LightningRod) -> None:
 
 def test_free_response(client: LightningRod) -> None:
     result = client.predict(
-        MODEL,
         "Name one US president.",
+        model=MODEL,
         answer_type="free_response",
         reasoning_effort="low",
     )
@@ -113,8 +113,8 @@ def test_free_response(client: LightningRod) -> None:
 
 def test_continuous(client: LightningRod) -> None:
     result = client.predict(
-        MODEL,
         "How many moons does Mars have?",
+        model=MODEL,
         answer_type="continuous",
         reasoning_effort="low",
     )
@@ -126,8 +126,8 @@ def test_continuous(client: LightningRod) -> None:
 
 def test_multiple_choice(client: LightningRod) -> None:
     result = client.predict(
-        MODEL,
         "Is the sky blue, green, or red?",
+        model=MODEL,
         answer_type="multiple_choice",
         reasoning_effort="low",
     )
@@ -142,8 +142,8 @@ def test_multiple_choice(client: LightningRod) -> None:
 
 def test_auto_classifies_server_side(client: LightningRod) -> None:
     result = client.predict(
-        MODEL,
         "Will it rain in Seattle tomorrow?",
+        model=MODEL,
         answer_type="auto",
         reasoning_effort="low",
     )
@@ -166,8 +166,8 @@ def test_auto_classifies_server_side(client: LightningRod) -> None:
 
 def test_no_answer_type_returns_prose(client: LightningRod) -> None:
     result = client.predict(
-        MODEL,
         "Say hello in one word.",
+        model=MODEL,
         reasoning_effort="low",
     )
     _assert_common(result)
@@ -179,8 +179,8 @@ def test_no_answer_type_returns_prose(client: LightningRod) -> None:
 
 def test_research_populates_sources(client: LightningRod) -> None:
     result = client.predict(
-        MODEL,
         "Will the Fed cut interest rates in 2026?",
+        model=MODEL,
         answer_type="binary",
         research=True,
         reasoning_effort="low",

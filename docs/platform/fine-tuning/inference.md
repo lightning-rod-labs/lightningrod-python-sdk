@@ -13,8 +13,8 @@ Your fine-tuned model is served through the same interface as the hosted [Foresi
 client = lr.LightningRod(api_key="your-api-key")
 
 result = client.predict(
-    job.model_id,
     "Will the Fed cut rates by 25bp in March 2026?",
+    model=job.model_id,
     answer_type="binary",
 )
 print(result.binary.probability)
@@ -24,8 +24,8 @@ print(result.binary.probability)
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `model_id` | str | — | Your trained model ID |
 | `prompt` | str | — | The question or prompt text |
+| `model` | str \| None | latest Foresight model | Model to query—pass your trained model ID here |
 | `answer_type` | str \| None | `None` | Structured answer format (`"binary"`, `"continuous"`, …) |
 | `research` | bool \| list \| None | `None` | Opt-in web research before forecasting |
 | `reasoning_effort` | str | `"medium"` | `"low"`, `"medium"`, or `"high"` |
