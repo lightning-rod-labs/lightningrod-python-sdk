@@ -1,55 +1,56 @@
 ---
-icon: book-open
+icon: bolt
+description: Lightning Rod's Foresight models return calibrated probability forecasts through an OpenAI-compatible API — and a platform to fine-tune your own forecasting models.
 ---
 
-# Quickstart
+![Calibrated forecasts from an API. Fine-tune your own.](.gitbook/assets/overview.png)
 
-Get from zero to a labeled forecasting dataset in a few minutes.
+## Introduction
 
-## 1. Install the SDK
-
-```bash
-pip install lightningrod-ai
-```
-
-## 2. Get your API key
-
-Sign up at [dashboard.lightningrod.ai](https://dashboard.lightningrod.ai/sign-up?redirect=/api) to get your API key.
-
-## 3. Generate your first dataset
+Lightning Rod's **Foresight** models return calibrated probability forecasts for any forward-looking question, through an OpenAI-compatible API. Ask a question, get a probability—no training and no dataset required.
 
 ```python
-import lightningrod as lr
+# pip install openai
+from openai import OpenAI
 
-client = lr.LightningRod(api_key="your-api-key")
-binary_answer = lr.BinaryAnswerType()
-
-# Get AI news to train a domain expert
-seeds = lr.NewsSeedGenerator(
-    start_date="2025-01-01",
-    end_date="2025-04-01",
-    search_query=["frontier AI model", "AI agents", "open source LLM", "AI research"],
+client = OpenAI(
+    api_key="your-api-key",
+    base_url="https://api.lightningrod.ai/api/public/v1/openai",
 )
 
-# Define the scope and style of the questions
-questioner = lr.ForwardLookingQuestionGenerator(
-    instructions="Write forward-looking, self-contained questions with explicit dates/entities.",
-    examples=["Will OpenAI publicly release GPT-5 by March 15, 2026?"],
-    answer_type=binary_answer,
+response = client.chat.completions.create(
+    model="LightningRodLabs/foresight-v4",
+    messages=[
+        {"role": "user", "content": "Will the Fed cut rates by 25bp in March 2026?"},
+    ],
+    extra_body={"answer_type": "binary"},
 )
-
-# Verify answers against live sources
-labeler = lr.WebSearchLabeler(answer_type=binary_answer)
-
-# Run pipeline
-pipeline = lr.QuestionPipeline(seed_generator=seeds, question_generator=questioner, labeler=labeler)
-dataset = client.transforms.run(pipeline, max_seeds=1000)
+print(response.choices[0].message.content) # e.g. "<answer>0.62</answer>\n..."
 ```
 
-The pipeline fetches news seeds, generates forecasting questions, labels them via web search, and returns a dataset.
+[**Get an API key →**](https://dashboard.lightningrod.ai/sign-up?redirect=/api)
 
-## Where to go next
+## Start forecasting
 
-* [Dataset Generation Overview](dataset-generation/overview.md) — Understand pipelines, seed generators, and question types
-* [Forecasting Overview](forecasting/overview.md) — Get probability estimates with foresight-v3 forecasting model
-* [Fine Tuning Overview](fine-tuning/overview.md) — Fine-tune models on your datasets (early access)
+* [Forecasting Reference](forecasting/reference.md) — models, usage paths, `answer_type`, `research`, and `reasoning_effort`
+* [Guides](forecasting/guides.md) — writing good questions and interpreting probabilities
+* [Recipes](forecasting/recipes.md) — Polymarket backtesting, model consensus, and more
+
+## Enterprise
+
+The hosted [Foresight](forecasting/reference.md) models answer forward-looking questions out of the box. When you need a model tailored to your domain, proprietary data, or internal workflows, Lightning Rod's enterprise platform helps your team build one.
+
+We work with teams to:
+
+- **Generate** labeled forecasting datasets from your own sources—news, documents, and custom data—through a configurable pipeline, with no manual question writing or labeling.
+- **Fine-tune** specialized models on those datasets.
+- **Evaluate** performance against held-out test sets.
+- **Serve** the resulting models through the same `lr.predict()` and OpenAI-compatible API as Foresight.
+
+[**Book a call →**](https://calendly.com/d/ctq4-7gd-nyq/lightning-rod-demo) to talk through your use case.
+
+See the [Platform Overview](platform/overview.md) to get started.
+
+## Research
+
+Lightning Rod is based on our research: [Future-as-Label: Scalable Supervision from Real-World Outcomes](https://arxiv.org/abs/2601.06336). We use this approach to generate the [Future-as-Label training dataset](https://huggingface.co/datasets/LightningRodLabs/future-as-label-paper-training-dataset) for our paper.

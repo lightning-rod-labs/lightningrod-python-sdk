@@ -5,7 +5,7 @@
 
 # Lightning Rod Python SDK [![Beta](https://img.shields.io/badge/beta-0.1.27-orange)](https://pypi.org/project/lightningrod-ai/0.1.27/)
 
-The Lightning Rod SDK provides a simple Python API for generating custom forecasting datasets to train your LLMs. Transform news articles, documents, and other real-world data into high-quality training samples automatically.
+Lightning Rod's **Foresight** models return calibrated probability forecasts for any forward-looking question, through an OpenAI-compatible API. Ask a question, get a probability — no training and no dataset required. The SDK also includes a platform to generate forecasting datasets and fine-tune your own models.
 
 Based on our research: [Future-as-Label: Scalable Supervision from Real-World Outcomes](https://arxiv.org/abs/2601.06336)
 
@@ -15,66 +15,85 @@ Documentation: [docs.lightningrod.ai](https://docs.lightningrod.ai/)
 
 ### 1. Install the SDK
 
-Install for as a Python library:
+Install as a Python library:
 
 ```bash
-pip install lightningrod-ai
+pip install lightningrod-ai openai
 ```
 
-Or install the Claude Code plugin for agentic use:
-
-```bash
-/plugin marketplace add lightning-rod-labs/lightningrod-python-sdk
-/plugin install lightningrod-python-sdk
-```
-
-The plugin adds the lightningrod-assistant agent plus skills for forecasting datasets, content-learning datasets, tabular data, BigQuery seeds, custom files, and transform verification.
+`lr.predict()` uses the `openai` package under the hood, so install both.
 
 ### 2. Get your API key
 
 Sign up at [dashboard.lightningrod.ai](https://dashboard.lightningrod.ai/sign-up?redirect=/api) to get your API key.
 
 ```python
-lr = LightningRod(api_key="your-api-key")
+import lightningrod as lr
+
+client = lr.LightningRod(api_key="your-api-key")
 ```
 
-Or export your API key in the shell before starting Claude Code session for agentic use:
+### 3. Get your first forecast ⚡
+
+```python
+result = client.predict(
+    "foresight-v4",
+    "Will the Fed cut rates by 25bp in March 2026?",
+    answer_type="binary",
+)
+print(result.binary.probability)  # e.g. 0.62
+```
+
+Add `research=True` to let the model gather live web evidence first, or `reasoning_effort="high"` for harder questions. `foresight-v4` is also served behind an [OpenAI-compatible API](https://docs.lightningrod.ai/forecasting/quickstart) for use with any OpenAI client or framework.
+
+## 🏗️ Platform: build your own forecasting model
+
+Need a model tuned to your domain? The platform turns raw sources into labeled datasets and fine-tunes models on them.
+
+Install the Claude Code plugin for agentic use:
 
 ```bash
-export LIGHTNINGROD_API_KEY="your-api-key
+/plugin marketplace add lightning-rod-labs/lightningrod-python-sdk
+/plugin install lightningrod-python-sdk
 ```
 
-### 3. Generate your first dataset
+The plugin adds the lightningrod-assistant agent plus skills for forecasting datasets, content-learning datasets, tabular data, BigQuery seeds, custom files, and transform verification. Export your API key before starting a Claude Code session:
 
-Generate **1000+ forecasting questions easily** - from raw sources to labeled dataset, automatically. ⚡
+```bash
+export LIGHTNINGROD_API_KEY="your-api-key"
+```
+
+### 1. Generate a dataset
+
+Generate **1000+ forecasting questions easily** — from raw sources to labeled dataset, automatically.
 
 ```python
 pipeline = QuestionPipeline(...)
-dataset = lr.transforms.run(pipeline)
+dataset = client.transforms.run(pipeline)
 ```
 
 **We use this to generate the [Future-as-Label training dataset](https://huggingface.co/datasets/LightningRodLabs/future-as-label-paper-training-dataset) for our research paper.**
 
-### 4. Train & eval a model on your dataset
+### 2. Train & eval a model on your dataset
 
-Training a custom model is as easy as plugging in the generated dataset in the previous step:
+Training a custom model is as easy as plugging in the generated dataset from the previous step:
 
 ```python
 train_dataset, test_dataset = prepare_for_training(dataset)
 train_config = GRPOTrainingConfig(base_model_id="openai/gpt-oss-120b")
-training_job = lr.training.run()
-eval_job = lr.evals.run_from_training_job(train_config, training_job, test_dataset)
+training_job = client.training.run()
+eval_job = client.evals.run_from_training_job(train_config, training_job, test_dataset)
 ```
 
-### 5. Inference
+### 3. Forecast with your model
 
-You can perform inference on your fine-tuned models or use our frontier forecasting models like [Foresight-v3](notebooks/evaluation/01_foresight_model.ipynb).
+Your fine-tuned model is served through the same `predict()` API:
 
 ```python
-lr.predict(training_job.model_id, "Will the Fed cut rates by 25hp in the next 3 months?")
+client.predict(training_job.model_id, "Will the Fed cut rates by 25bp in the next 3 months?")
 ```
 
-Check the [API docs](https://docs.lightningrod.ai/python-sdk/fine-tuning-beta/inference) for use with OpenAI compatible API.
+Check the [API docs](https://docs.lightningrod.ai/forecasting/quickstart) for use with the OpenAI-compatible API.
 
 ## ✨ Examples
 
@@ -128,7 +147,7 @@ We have example notebooks to help you get started. If you have trouble using the
 
 | Example Name            | Path                                                    | Google Colab Link                                                                                                                                                    |
 | ----------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Foresight-v3 Model      | `notebooks/evaluation/01_foresight_model.ipynb`         | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/01_foresight_model.ipynb)         |
+| Foresight-v4 Model      | `notebooks/evaluation/01_foresight_model.ipynb`         | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/01_foresight_model.ipynb)         |
 | Model Consensus         | `notebooks/evaluation/02_model_consensus.ipynb`         | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/02_model_consensus.ipynb)         |
 | Polymarket Backtesting  | `notebooks/evaluation/03_polymarket_backtesting.ipynb`  | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/03_polymarket_backtesting.ipynb)  |
 | Document Classification | `notebooks/evaluation/04_document_classification.ipynb` | [Open in Colab](https://colab.research.google.com/github/lightning-rod-labs/lightningrod-python-sdk/blob/main/notebooks/evaluation/04_document_classification.ipynb) |

@@ -1,8 +1,11 @@
 ---
 icon: sitemap
+description: Turn news, documents, and custom sources into labeled forecasting datasets through a configurable pipeline.
 ---
 
-![Training examples grounded in real outcomes](../.gitbook/assets/dataset-generation.png)
+![Training examples grounded in real outcomes](../../.gitbook/assets/dataset-generation.png)
+
+# Dataset Generation
 
 Dataset generation turns raw data into labeled forecasting samples through a configurable pipeline. You define the sources, question style, and labeling approach; the SDK handles the rest.
 

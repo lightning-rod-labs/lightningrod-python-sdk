@@ -3,3 +3,22 @@ root: ./
 structure:
   readme: ./introduction.md
   summary: ./SUMMARY.md
+
+redirects:
+  dataset-generation/overview: platform/dataset-generation/overview.md
+  dataset-generation/core-concepts: platform/dataset-generation/core-concepts.md
+  dataset-generation/seed-generators: platform/dataset-generation/seed-generators.md
+  dataset-generation/question-generators: platform/dataset-generation/question-generators.md
+  dataset-generation/deduplication: platform/dataset-generation/deduplication.md
+  dataset-generation/answer-types: platform/dataset-generation/answer-types.md
+  dataset-generation/labeling-and-context: platform/dataset-generation/labeling-and-context.md
+  dataset-generation/rollouts-and-scoring: platform/dataset-generation/rollouts-and-scoring.md
+  dataset-generation/datasets: platform/dataset-generation/datasets.md
+  dataset-generation/filesets: platform/dataset-generation/filesets.md
+  fine-tuning/overview: platform/fine-tuning/overview.md
+  fine-tuning/data-preparation: platform/fine-tuning/data-preparation.md
+  fine-tuning/training: platform/fine-tuning/training.md
+  fine-tuning/evaluation: platform/fine-tuning/evaluation.md
+  fine-tuning/inference: platform/fine-tuning/inference.md
+  agents: platform/agents.md
+  examples: platform/examples.md

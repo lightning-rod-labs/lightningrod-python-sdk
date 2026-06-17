@@ -1,12 +1,11 @@
 ---
 icon: graduation-cap
+description: Fine-tune LLMs on your Lightning Rod datasets with LoRA, then evaluate and serve them.
 ---
 
-# Training Overview
+# Fine-tuning Overview
 
 Fine-tune LLMs on your Lightning Rod datasets. The training API supports LoRA fine-tuning with configurable base models, training steps, batch size, and rank.
-
-> **Early Access** — The training API is in preview and not fully stable. [Join the early access waitlist](https://www.lightningrod.ai/training-waitlist) to get access and stay updated.
 
 ## Workflow
 

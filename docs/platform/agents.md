@@ -1,5 +1,6 @@
 ---
 icon: robot
+description: Use Lightning Rod from AI agents and Claude Code via the plugin, assistant agent, and skills.
 ---
 
 # Using Lightning Rod with AI Agents
