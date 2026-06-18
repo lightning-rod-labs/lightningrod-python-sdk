@@ -30,17 +30,6 @@ print(response.choices[0].message.content) # e.g. "<answer>0.62</answer>\n..."
 
 That `0.62` is a **calibrated probability**—a 62% chance, not a confidence score. `0.5` means genuinely uncertain. See [Guides](forecasting/guides.md) for how to write questions and read the numbers.
 
-Prefer to skip the tag parsing? `lr.predict()` returns the probability directly:
-
-```python
-# pip install lightningrod-ai openai
-import lightningrod as lr
-
-client = lr.LightningRod(api_key="your-api-key")
-result = client.predict("Will the Fed cut rates by 25bp in March 2026?", answer_type="binary")
-print(result.binary.probability)  # e.g. 0.62
-```
-
 [**Get an API key →**](https://dashboard.lightningrod.ai/sign-up?redirect=/api)
 
 ## Start forecasting
