@@ -10,7 +10,7 @@ Fine-tune LLMs on your Lightning Rod datasets. The training API supports LoRA fi
 ## Workflow
 
 1. **Generate Dataset** — Use the dataset generation pipeline to create labeled forecasting samples
-2. **Prepare Data** — Run `filter_and_split()` to filter, deduplicate, and split into train/test datasets
+2. **Prepare Data** — Run `prepare_for_training()` to filter, deduplicate, and split into train/test datasets
 3. **Configure Training** — Set base model, training steps, and optional LoRA parameters
 4. **Train** — Submit a training job and monitor progress
 5. **Evaluation** — Run evals against your test dataset
@@ -27,7 +27,7 @@ Fine-tune LLMs on your Lightning Rod datasets. The training API supports LoRA fi
 
 ## Next Steps
 
-- [Data Preparation](data-preparation.md) — Use `filter_and_split()` to get training-ready datasets
+- [Data Preparation](data-preparation.md) — Use `prepare_for_training()` to get training-ready datasets
 - [Training](training.md) — Configure and run training jobs
 - [Evaluation](evaluation.md) — Evaluate your trained model
 - [Inference](inference.md) — Use your trained model for predictions

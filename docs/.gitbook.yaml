@@ -1,7 +1,7 @@
 root: ./
 
 structure:
-  readme: ./introduction.md
+  readme: ./quickstart.md
   summary: ./SUMMARY.md
 
 redirects:

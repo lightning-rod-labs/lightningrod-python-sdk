@@ -28,7 +28,7 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-    model="LightningRodLabs/foresight-v4",            # model to query; same IDs as predict(), but the full provider form is required here
+    model="LightningRodLabs/foresight-v4",            # model to query; accepts short or full provider ID (full form shown here)
     messages=[                                        # full chat history; the system instruction is just a system-role message
         {"role": "system", "content": "Give calibrated forecasts and cite sources when research is used.",},
         {"role": "user", "content": "Will the Fed cut rates by 25bp in March 2026?"},
@@ -82,7 +82,7 @@ client = lr.LightningRod(api_key="your-api-key")
 # Note: requires installation of openai client (pip install openai)
 result = client.predict(
     "Will the Fed cut rates by 25bp in March 2026?",  # prompt: the question, sent as a single user message (first positional arg)
-    model="foresight-v4",                             # model to query; short or full provider ID. Optional—defaults to the latest Foresight model
+    model="LightningRodLabs/foresight-v4",            # model to query; short or full provider ID. Optional—defaults to the latest Foresight model
     system_prompt="Give calibrated forecasts and cite sources when research is used.",  # optional, prepended as a system message
     answer_type="binary",                             # structured answer format: "binary" | "multiple_choice" | "continuous" | "free_response" | "auto". Omit for prose only
     research=["perplexity", "news"],                  # web research: True for all sources, a list to select sources, or omit/False to disable

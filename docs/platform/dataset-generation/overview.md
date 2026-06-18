@@ -72,4 +72,4 @@ Use `detach=True` for long-running jobs so the job continues even if your local 
 - [Rollouts & Scoring](rollouts-and-scoring.md) — QuestionRenderer, RolloutGenerator, RolloutScorer, model consensus analysis
 - [Answer Types](answer-types.md) — Binary, Continuous, MultipleChoice, FreeResponse
 - [Datasets](datasets.md) — Creating, fetching, and using datasets
-- [Examples](examples.md) — Notebooks and tutorials
+- [Examples](../examples.md) — Notebooks and tutorials

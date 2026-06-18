@@ -23,7 +23,7 @@ response = client.chat.completions.create(
     messages=[
         {"role": "user", "content": "Will the Fed cut rates by 25bp in March 2026?"},
     ],
-    extra_body={"answer_type": "binary"},
+    extra_body={"answer_type": "auto"},  # let the server pick the structured format; or set "binary"/"continuous"/...
 )
 print(response.choices[0].message.content) # e.g. "<answer>0.62</answer>\n..."
 ```

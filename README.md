@@ -26,7 +26,7 @@ client = OpenAI(
 )
 
 completion = client.chat.completions.create(
-    model="foresight-v4",
+    model="LightningRodLabs/foresight-v4",
     messages=[
         {"role": "user", "content": "Will the Fed cut rates at its next meeting?"},
     ],
