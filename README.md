@@ -1,11 +1,10 @@
-<div align="center">
-<!-- Note: only an absolute image URL works on PyPi: https://pypi.org/project/lightningrod-ai -->
-  <img src="https://github.com/lightning-rod-labs/lightningrod-python-sdk/blob/main/docs/.gitbook/assets/forecasting.png?raw=true" alt="Lightning Rod Labs — Foresight" />
-</div>
+
 
 # Lightning Rod Python SDK
 
 **Foresight** returns a calibrated probability for any question about the future — through an OpenAI-compatible API. No fine-tuning, no setup. Ranked **#1 for forecasting accuracy on ProphetArena**.
+
+**Trusted for high-stakes predictions** by Numinous, Shore Capital Partners, Awardable (Tradewinds Solutions Marketplace), and ERIS Marketplace. Foresight processes **billions of tokens** and serves **100k+ inference requests every day**.
 
 [Documentation](https://docs.lightningrod.ai/) · [Get an API key](https://dashboard.lightningrod.ai/sign-up?redirect=/api) · [Research paper](https://arxiv.org/abs/2601.06336)
 
@@ -41,7 +40,7 @@ print(completion.choices[0].message.content)
 # e.g.: "... <answer>0.34</answer>"
 ```
 
-See the [forecasting reference](https://docs.lightningrod.ai/forecasting/reference) for answer types, research sources, and the full response shape.
+That `0.34` is a **calibrated probability** — a 34% chance, not a confidence score or a yes/no. `0.5` means genuinely uncertain, and across many ~0.7 forecasts roughly 70% should come true. See the [forecasting reference](https://docs.lightningrod.ai/forecasting/reference) for answer types, research sources, and the full response shape.
 
 ### Prefer an SDK helper?
 
@@ -63,9 +62,11 @@ result = client.predict(
 print(result.binary.probability)  # e.g. 0.62
 ```
 
-## 🏗️ Build your own forecasting model
+## 🏗️ Train an expert on your domain
 
 Need a model tuned to your domain? Our enterprise platform enables companies to turn raw sources into labeled datasets and fine-tunes models on them — served through the same API.
+
+[**📅 Book a call with us**](https://calendly.com/d/ctq4-7gd-nyq/lightning-rod-demo)
 
 ```python
 pipeline = QuestionPipeline(...)
@@ -86,3 +87,4 @@ We used this to generate the [Future-as-Label training dataset](https://huggingf
 - [Documentation](https://docs.lightningrod.ai/) — quickstart, guides, recipes, and the REST API reference
 - [Example notebooks](notebooks/) — forecasting, dataset generation, training, and evaluation (runnable in Colab)
 - [SDK API reference](API.md) — every class and method in this repo
+
