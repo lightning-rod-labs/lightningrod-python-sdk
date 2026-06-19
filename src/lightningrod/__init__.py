@@ -6,6 +6,7 @@ AI-powered forecasting dataset generation platform.
 
 from lightningrod.client import LightningRod
 from lightningrod.prediction import (
+    DEFAULT_MODEL,
     AnswerType,
     ReasoningEffort,
     BinaryPrediction,
@@ -116,6 +117,7 @@ __all__ = [
     "GdeltSeedGenerator",
     "Label",
     "LightningRod",
+    "DEFAULT_MODEL",
     "AnswerType",
     "ReasoningEffort",
     "BinaryPrediction",

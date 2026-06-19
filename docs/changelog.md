@@ -1,5 +1,6 @@
 ---
 icon: clock-rotate-left
+description: Notable changes to the Lightning Rod SDK and API.
 ---
 
 # Changelog
@@ -10,19 +11,19 @@ icon: clock-rotate-left
 
 Validate dataset quality before training with `lr.datasets.linter`. Run all rules or a specific subset on any dataset, with live progress display in notebooks. Use `display_lint_overview` and `display_lint_detailed` to inspect results, and `get_lint_affected_sample_ids` to extract flagged sample IDs for filtering.
 
-See [Datasets — Linting](dataset-generation/datasets.md#linting).
+See [Datasets — Linting](platform/dataset-generation/datasets.md#linting).
 
 ### New: Reasoning comparison for evals
 
 Compare the reasoning quality of two models side-by-side using an LLM judge during evaluation. Pass `ReasoningComparisonOptions` to `lr.evals.run` or `lr.evals.create`, or use the `reasoning_comparison_sample_size` shorthand on `run_from_training_job`. The judge model, sample count, and instructions are all configurable.
 
-See [Evaluation — Reasoning Comparison](fine-tuning/evaluation.md#reasoning-comparison).
+See [Evaluation — Reasoning Comparison](platform/fine-tuning/evaluation.md#reasoning-comparison).
 
 ### New: Eval result download and loading
 
 Download per-model eval rollout results as Parquet files with `lr.evals.download_results`, or load them directly into pandas DataFrames with `lr.evals.load_results`.
 
-See [Evaluation — Downloading Results](fine-tuning/evaluation.md#downloading-results).
+See [Evaluation — Downloading Results](platform/fine-tuning/evaluation.md#downloading-results).
 
 ## v0.1.22 — April 2026
 
@@ -32,13 +33,13 @@ The single `TrainingConfig` export is removed. Use **`GRPOTrainingConfig`** for 
 
 `lr.training.create`, `estimate_cost`, and `run` accept either config type. `TrainingJob.config` from the API remains a discriminated union of the generated API models.
 
-See [Training](fine-tuning/training.md) for field tables.
+See [Training](platform/fine-tuning/training.md) for field tables.
 
 ### Breaking: `evals.run` takes dataset and models; training defaults are `run_from_training_job`
 
 `lr.evals.run(dataset, models)` creates an eval job, waits, and shows live progress (same as before minus model inference from the training job). For the previous behavior—base + fine-tuned from a completed **`TrainingJob`**—use **`lr.evals.run_from_training_job(config, job, dataset, *, extra_models=None)`**. **`SFTTrainingConfig`** raises `NotImplementedError` from `run_from_training_job` until SFT eval metrics exist; use `lr.evals.run(dataset, models)` or `lr.evals.create(...)` with an explicit model list.
 
-See [Evaluation](fine-tuning/evaluation.md).
+See [Evaluation](platform/fine-tuning/evaluation.md).
 
 ### New: SFT getting-started notebook
 
@@ -56,7 +57,7 @@ Remove near-duplicate questions from your pipeline with exact or fuzzy field mat
 
 Default behavior matches on `question_text` (90% similarity) and `date_close` (exact). Customize with `KeyMatchConfig` to control which fields are compared and their similarity thresholds.
 
-See [Deduplication](dataset-generation/deduplication.md).
+See [Deduplication](platform/dataset-generation/deduplication.md).
 
 ## v0.1.19 — April 2026
 
@@ -64,31 +65,31 @@ See [Deduplication](dataset-generation/deduplication.md).
 
 A new answer type for questions that expect a single scalar point estimate (e.g. `42.5`) rather than a full `{mean, stddev}` distribution. Scored via `CONTINUOUS_VALUE_ONLY_LOG_SCORE`. Use `ContinuousAnswerType` when uncertainty-aware predictions are needed; use `ContinuousValueOnlyAnswerType` when you want a single number.
 
-See [Answer Types](dataset-generation/answer-types.md#continuousvalueonlyanswertype).
+See [Answer Types](platform/dataset-generation/answer-types.md#continuousvalueonlyanswertype).
 
 ### New: `CsvSeedGenerator`
 
 Generate seeds from a CSV file uploaded via `lr.files.upload()`. Each row becomes a seed. Configure which column maps to seed text, labels, and dates.
 
-See [Seed Generators](dataset-generation/seed-generators.md#csvseedgenerator).
+See [Seed Generators](platform/dataset-generation/seed-generators.md#csvseedgenerator).
 
 ### New: `TopicTreeSeedGenerator`
 
 Generate diverse seeds by recursively decomposing broad topics into specific subtopics. An LLM breaks each root topic into `tree_degree` subtopics, repeated `tree_depth` levels deep. Produces `tree_degree^tree_depth` seeds per root topic — useful for synthetic data generation without a news or document source.
 
-See [Seed Generators](dataset-generation/seed-generators.md#topictreeseedgenerator).
+See [Seed Generators](platform/dataset-generation/seed-generators.md#topictreeseedgenerator).
 
 ### New: `FileSetDocumentContextGenerator`
 
 A new context generator that resolves a **single document** by temporal ordering, downloads its full text, and appends it as context. Supports optional LLM processing before injection and a character limit. Use this instead of `QdrantContextGenerator` when you want the complete text of one specific document rather than RAG chunks from multiple documents.
 
-See [Labeling and Context](dataset-generation/labeling-and-context.md#filesetdocumentcontextgenerator).
+See [Labeling and Context](platform/dataset-generation/labeling-and-context.md#filesetdocumentcontextgenerator).
 
 ### New: `FileSetDocumentLabeler`
 
 A new labeler that resolves a **single document** by temporal ordering and uses an LLM to extract a structured label from its full text. Use this instead of `QdrantRAGLabeler` when labeling from the complete content of one document (e.g. Federal Reserve Beige Book reports).
 
-See [Labeling and Context](dataset-generation/labeling-and-context.md#filesetdocumentlabeler).
+See [Labeling and Context](platform/dataset-generation/labeling-and-context.md#filesetdocumentlabeler).
 
 ### Updated: `TemporalConstraint` — new values
 
@@ -100,7 +101,7 @@ See [Labeling and Context](dataset-generation/labeling-and-context.md#filesetdoc
 
 These are primarily used with `FileSetDocumentContextGenerator` and `FileSetDocumentLabeler`.
 
-See [Labeling and Context](dataset-generation/labeling-and-context.md#temporalconstraint).
+See [Labeling and Context](platform/dataset-generation/labeling-and-context.md#temporalconstraint).
 
 ### Updated: Multi-model evals and intermediate checkpoint access
 
@@ -126,7 +127,7 @@ lr.evals.run(
 )
 ```
 
-See [Evaluation](fine-tuning/evaluation.md).
+See [Evaluation](platform/fine-tuning/evaluation.md).
 
 ### New: Example builder utilities
 
@@ -140,4 +141,4 @@ Three helper functions for building formatted question example strings to pass a
 from lightningrod import binary_example, continuous_example, multiple_choice_example
 ```
 
-See [Answer Types — Example Builder Utilities](dataset-generation/answer-types.md#example-builder-utilities).
+See [Answer Types — Example Builder Utilities](platform/dataset-generation/answer-types.md#example-builder-utilities).

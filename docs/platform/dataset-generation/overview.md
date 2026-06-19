@@ -1,8 +1,11 @@
 ---
 icon: sitemap
+description: Turn news, documents, and custom sources into labeled forecasting datasets through a configurable pipeline.
 ---
 
-![Training examples grounded in real outcomes](../.gitbook/assets/dataset-generation.png)
+![Training examples grounded in real outcomes](../../.gitbook/assets/dataset-generation.png)
+
+# Dataset Generation
 
 Dataset generation turns raw data into labeled forecasting samples through a configurable pipeline. You define the sources, question style, and labeling approach; the SDK handles the rest.
 
@@ -69,4 +72,4 @@ Use `detach=True` for long-running jobs so the job continues even if your local 
 - [Rollouts & Scoring](rollouts-and-scoring.md) — QuestionRenderer, RolloutGenerator, RolloutScorer, model consensus analysis
 - [Answer Types](answer-types.md) — Binary, Continuous, MultipleChoice, FreeResponse
 - [Datasets](datasets.md) — Creating, fetching, and using datasets
-- [Examples](examples.md) — Notebooks and tutorials
+- [Examples](../examples.md) — Notebooks and tutorials

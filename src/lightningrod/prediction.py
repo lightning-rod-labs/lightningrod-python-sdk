@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 __all__ = [
+    "DEFAULT_MODEL",
     "AnswerType",
     "ReasoningEffort",
     "BinaryPrediction",
@@ -24,6 +25,11 @@ __all__ = [
     "Usage",
     "PredictionResult",
 ]
+
+# Latest hosted forecasting model, used when ``predict()`` is called without an
+# explicit ``model``. Uses the same provider ID as the OpenAI-compatible
+# endpoint.
+DEFAULT_MODEL = "LightningRodLabs/foresight-v4"
 
 
 class AnswerType(str, Enum):

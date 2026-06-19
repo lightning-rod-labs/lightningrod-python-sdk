@@ -289,4 +289,4 @@ eval_job = lr.evals.create(
 print_eval(eval_job)
 ```
 
-See [notebooks/getting_started/05_grpo_training.ipynb](../../notebooks/getting_started/05_grpo_training.ipynb) for the full GRPO workflow including `evals.run_from_training_job`.
+See [notebooks/getting_started/05_grpo_training.ipynb](../../../notebooks/getting_started/05_grpo_training.ipynb) for the full GRPO workflow including `evals.run_from_training_job`.
