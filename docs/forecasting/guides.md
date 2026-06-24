@@ -1,6 +1,6 @@
 ---
 icon: compass
-description: How to write good forecasting questions and how to interpret the calibrated probabilities Foresight returns.
+description: How to write good forecasting questions and improve forecasts.
 ---
 
 # Guides
@@ -17,17 +17,9 @@ Foresight is most accurate when a question has a single, unambiguous resolution.
 - **One event per question.** Split compound questions ("rate cut *and* a market rally") into separate forecasts so each gets its own probability.
 - **Match the question to the answer type.** Yes/no → `binary`; a numeric magnitude → `continuous`; a fixed set of outcomes → `multiple_choice`. Use `"auto"` if you want the server to classify for you.
 
-## Interpreting probabilities
-
-`binary` answers are calibrated probabilities between 0 and 1—not confidence scores or yes/no labels.
-
-- **0.5 means genuinely uncertain**, not "no answer." Treat it as a coin flip on current evidence.
-- **Calibration is the goal:** across many forecasts marked ~0.7, roughly 70% should resolve true. Evaluate the model over a *set* of questions, not a single call.
-- **Don't hard-threshold blindly.** Converting to a yes/no at 0.5 throws away the signal in how far from 0.5 the estimate sits. Use the probability directly where you can.
-- **For `continuous`,** the `standard_deviation` is the model's stated uncertainty—a wide band means low confidence in the point estimate.
-- **For `multiple_choice`,** probabilities across options sum toward 1; compare them to each other rather than to an absolute bar.
-
 ## Improving accuracy
+
+gather and provide current context
 
 - **Turn on `research`** for questions that depend on recent events—it lets the model gather live evidence and attach sources you can inspect via `result.sources`.
 - **Use `reasoning_effort="low"`** when you want to reduce reasoning budget; keep the default `"medium"` for harder questions.
