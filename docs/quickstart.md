@@ -20,7 +20,7 @@ response = client.chat.completions.create(
     messages=[
         {"role": "user", "content": "Will the Fed cut rates by 25bp in March 2026?"},
     ],
-    extra_body={"research": True},
+    extra_body={"research": True, "answer_type": "binary"},
 )
 print(response.choices[0].message.content)
 ```
