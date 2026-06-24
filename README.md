@@ -2,7 +2,7 @@
 
 # Lightning Rod Python SDK
 
-**Foresight** returns a calibrated probability for any question about the future through an OpenAI-compatible API. Ranked **#1 for forecasting accuracy on ProphetArena**.
+**Foresight** returns a calibrated probability for any question about the future through an OpenAI-compatible API.
 
 **Trusted for high-stakes predictions** by Numinous, Shore Capital Partners, Awardable (Tradewinds Solutions Marketplace), and ERIS Marketplace. Foresight processes **billions of tokens** and serves **100k+ inference requests every day**.
 
