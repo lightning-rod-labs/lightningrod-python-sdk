@@ -412,7 +412,7 @@
               }
             ],
             "title": "Reasoning Effort",
-            "description": "Lightning Rod extension. Reasoning budget the model spends before answering: `low`, `medium`, or `high`. Higher effort improves accuracy on harder questions at additional token cost. With raw OpenAI clients pass via `extra_body`."
+            "description": "Lightning Rod extension. Reasoning budget the model spends before answering: `low`, `medium`, or `high`. Defaults to `medium`; pass `low` to reduce reasoning budget. `high` is accepted for OpenAI compatibility and treated as `medium`. With raw OpenAI clients pass via `extra_body`."
           },
           "stream": {
             "anyOf": [
@@ -539,7 +539,7 @@
                 "google_news"
               ]
             },
-            "reasoning_effort": "high"
+            "reasoning_effort": "low"
           }
         ]
       },
@@ -778,7 +778,7 @@
               }
             ],
             "title": "Reasoning Effort",
-            "description": "Lightning Rod extension. Reasoning budget the model spends before answering: `low`, `medium`, or `high`. Higher effort improves accuracy on harder questions at additional token cost. With raw OpenAI clients pass via `extra_body`."
+            "description": "Lightning Rod extension. Reasoning budget the model spends before answering: `low`, `medium`, or `high`. Defaults to `medium`; pass `low` to reduce reasoning budget. `high` is accepted for OpenAI compatibility and treated as `medium`. With raw OpenAI clients pass via `extra_body`."
           },
           "stream": {
             "anyOf": [
