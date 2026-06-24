@@ -1,9 +1,7 @@
 ---
 icon: bolt
-description: Lightning Rod's Foresight models return calibrated probability forecasts through an OpenAI-compatible API — and a platform to fine-tune your own forecasting models.
+description: Forecast with Foresight or build domain-specific models on the Lightning Rod platform.
 ---
-
-## Introduction
 
 Lightning Rod's **Foresight** models return calibrated probability forecasts for any forward-looking question through an OpenAI-compatible API.
 
@@ -31,23 +29,23 @@ See [Guides](forecasting/guides.md) for how to write good forecasting prompts.
 
 ## Start forecasting
 
-* [Forecasting Reference](forecasting/reference.md) — models, usage paths, `answer_type`, `research`, and `reasoning_effort`
-* [Guides](forecasting/guides.md) — writing good questions and interpreting probabilities
+* [Forecasting Reference](forecasting/reference.md) — models, response shape, and answer types
+* [Guides](forecasting/guides.md) — writing good forecasting prompts
 
 ## Enterprise
 
-The hosted [Foresight](forecasting/reference.md) models answer forward-looking questions out of the box. When you need a model tailored to your domain, proprietary data, or internal workflows, Lightning Rod's enterprise platform helps your team build one.
+Use the Lightning Rod platform when you need a forecasting model tailored to your domain or data.
 
 We work with teams to:
 
 - **Generate** labeled forecasting datasets from your own sources—news, documents, and custom data—through a configurable pipeline, with no manual question writing or labeling.
 - **Fine-tune** specialized models on those datasets.
 - **Evaluate** performance against held-out test sets.
-- **Serve** the resulting models through the same `lr.predict()` and OpenAI-compatible API as Foresight.
+- **Serve** the resulting models through `lr.predict()` or the OpenAI-compatible API.
 
 [**Book a call →**](https://calendly.com/d/ctq4-7gd-nyq/lightning-rod-demo) to talk through your use case.
 
-See the [Platform Overview](platform/overview.md) to get started.
+See the [Platform Overview](platform/overview.md).
 
 ## Research
 

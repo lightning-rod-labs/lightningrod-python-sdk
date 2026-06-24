@@ -31,7 +31,7 @@ completion = client.chat.completions.create(
 print(completion.choices[0].message.content)
 ```
 
-That `0.34` is a **calibrated probability** — a 34% chance, not a confidence score or a yes/no. `0.5` means genuinely uncertain, and across many ~0.7 forecasts roughly 70% should come true. See the [forecasting reference](https://docs.lightningrod.ai/forecasting/reference) for answer types, research sources, and the full response shape.
+See the [forecasting guides](https://docs.lightningrod.ai/forecasting/guides) for how to write good forecasting prompts.
 
 ### Prefer an SDK helper?
 
@@ -55,7 +55,7 @@ print(result.binary.probability)  # e.g. 0.62
 
 ## 🏗️ Train an expert on your domain
 
-Need a model tuned to your domain? Our enterprise platform enables companies to turn raw sources into labeled datasets and fine-tunes models on them — served through the same API.
+Need a model tuned to your domain? The platform turns raw sources into labeled datasets and fine-tuned models.
 
 [**📅 Book a call with us**](https://calendly.com/d/ctq4-7gd-nyq/lightning-rod-demo)
 
@@ -67,7 +67,6 @@ train_dataset, test_dataset = prepare_for_training(dataset)
 train_config = GRPOTrainingConfig(base_model_id="openai/gpt-oss-120b")
 training_job = client.training.run(train_config, train_dataset)
 
-# your fine-tuned model is served through the same predict() / OpenAI API
 client.predict("Will the Fed cut rates by 25bp in the next 3 months?", model=training_job.model_id)
 ```
 
