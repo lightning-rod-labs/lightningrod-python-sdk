@@ -352,8 +352,8 @@ class TestPredictRequestBody:
 
     def test_research_list(self, lr_with_fake_openai) -> None:
         client, captured = lr_with_fake_openai
-        client.predict("q", model="m", research=["perplexity", "news"])
-        assert captured["extra_body"]["research"] == {"sources": ["perplexity", "news"]}
+        client.predict("q", model="m", research=["perplexity", "google_news"])
+        assert captured["extra_body"]["research"] == {"sources": ["perplexity", "google_news"]}
         assert "answer_type" not in captured["extra_body"]
 
     def test_research_false_omitted(self, lr_with_fake_openai) -> None:

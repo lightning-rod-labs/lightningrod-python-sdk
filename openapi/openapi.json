@@ -6843,7 +6843,7 @@
               "type": "string",
               "enum": [
                 "perplexity",
-                "news",
+                "google_news",
                 "google_search"
               ]
             },

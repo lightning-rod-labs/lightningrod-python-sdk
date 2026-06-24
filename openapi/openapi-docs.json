@@ -483,7 +483,7 @@
               }
             ],
             "title": "Research",
-            "description": "Lightning Rod extension. Opt-in web research before forecasting. Pass `true` to query all default sources, or a `ResearchOptions` object to select sources. Available sources: `perplexity` (Perplexity web search), `news` (recent news articles), `google_search` (Google web results). Each source runs as its own query and is billed as a separate RESEARCH event; when research runs, its cost is reported in `usage`. With raw OpenAI clients pass via `extra_body`."
+            "description": "Lightning Rod extension. Opt-in web research before forecasting. Pass `true` to query all default sources, or a `ResearchOptions` object to select sources. Available sources: `perplexity` (Perplexity web search), `google_news` (recent news articles), `google_search` (Google web results). Each source runs as its own query and is billed as a separate RESEARCH event; when research runs, its cost is reported in `usage`. With raw OpenAI clients pass via `extra_body`."
           },
           "answer_type": {
             "anyOf": [
@@ -536,7 +536,7 @@
             "research": {
               "sources": [
                 "perplexity",
-                "news"
+                "google_news"
               ]
             },
             "reasoning_effort": "high"
@@ -849,7 +849,7 @@
               }
             ],
             "title": "Research",
-            "description": "Lightning Rod extension. Opt-in web research before forecasting. Pass `true` to query all default sources, or a `ResearchOptions` object to select sources. Available sources: `perplexity` (Perplexity web search), `news` (recent news articles), `google_search` (Google web results). Each source runs as its own query and is billed as a separate RESEARCH event; when research runs, its cost is reported in `usage`. With raw OpenAI clients pass via `extra_body`."
+            "description": "Lightning Rod extension. Opt-in web research before forecasting. Pass `true` to query all default sources, or a `ResearchOptions` object to select sources. Available sources: `perplexity` (Perplexity web search), `google_news` (recent news articles), `google_search` (Google web results). Each source runs as its own query and is billed as a separate RESEARCH event; when research runs, its cost is reported in `usage`. With raw OpenAI clients pass via `extra_body`."
           },
           "answer_type": {
             "anyOf": [
@@ -1035,13 +1035,13 @@
               "type": "string",
               "enum": [
                 "perplexity",
-                "news",
+                "google_news",
                 "google_search"
               ]
             },
             "type": "array",
             "title": "Sources",
-            "description": "Which research providers to query in parallel: `perplexity` (Perplexity web search), `news` (recent news articles), `google_search` (Google web results). Each provider is billed as a separate RESEARCH event."
+            "description": "Which research providers to query in parallel: `perplexity` (Perplexity web search), `google_news` (recent news articles), `google_search` (Google web results). Each provider is billed as a separate RESEARCH event."
           }
         },
         "type": "object",
