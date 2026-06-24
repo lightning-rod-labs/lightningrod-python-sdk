@@ -111,7 +111,7 @@ Both `predict()` and the OpenAI-compatible endpoint accept the same model IDs—
 | Foresight v4 | `LightningRodLabs/foresight-v4` | **New** version of our frontier forecasting model. |
 | Foresight v3 | `LightningRodLabs/foresight-v3` |  |
 
-Foresight models are always available—no training or hosting setup required. Fine-tuned models you train on the [Platform](../platform/overview.md) are served through the same interface; pass the trained `model_id` to either `client.predict(...)` or `client.chat.completions.create(...)`. See [Inference](../platform/fine-tuning/inference.md) for their model IDs and availability.
+Fine-tuned models you train on the [Platform](../platform/overview.md) are served through the same interface as Foresight; pass the trained `model_id` to either `client.predict(...)` or `client.chat.completions.create(...)`. See [Inference](../platform/fine-tuning/inference.md) for their model IDs and availability.
 
 Each call reports its cost on the response (`result.usage.cost_usd`), broken down into inference and—when applicable—research and classification costs. See [dashboard.lightningrod.ai](https://dashboard.lightningrod.ai) for current rates.
 
