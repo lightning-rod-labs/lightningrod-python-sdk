@@ -2,7 +2,7 @@
 
 # Lightning Rod Python SDK
 
-**Foresight** returns a calibrated probability for any question about the future — through an OpenAI-compatible API. No fine-tuning, no setup. Ranked **#1 for forecasting accuracy on ProphetArena**.
+**Foresight** returns a calibrated probability for any question about the future through an OpenAI-compatible API. Ranked **#1 for forecasting accuracy on ProphetArena**.
 
 **Trusted for high-stakes predictions** by Numinous, Shore Capital Partners, Awardable (Tradewinds Solutions Marketplace), and ERIS Marketplace. Foresight processes **billions of tokens** and serves **100k+ inference requests every day**.
 
@@ -12,32 +12,23 @@
 
 Foresight is served behind an OpenAI-compatible endpoint, so any OpenAI client works — just point `base_url` at Lightning Rod.
 
-```bash
-pip install openai
-```
-
 ```python
 from openai import OpenAI
 
 client = OpenAI(
-    base_url="https://api.lightningrod.ai/api/public/v1/openai",
     api_key="your-api-key",
+    base_url="https://api.lightningrod.ai/api/public/v1/openai",
 )
 
 completion = client.chat.completions.create(
-    model="LightningRodLabs/foresight-v4",
+    model="foresight-v4",
     messages=[
         {"role": "user", "content": "Will the Fed cut rates at its next meeting?"},
     ],
-    extra_body={
-        "research": True,       # gather live web evidence before forecasting
-        "answer_type": "auto",  # append a structured answer in <answer></answer> tags
-    },
+    extra_body={"research": True},
 )
 
 print(completion.choices[0].message.content)
-# Foresight weighs the evidence and returns a calibrated probability,
-# e.g.: "... <answer>0.34</answer>"
 ```
 
 That `0.34` is a **calibrated probability** — a 34% chance, not a confidence score or a yes/no. `0.5` means genuinely uncertain, and across many ~0.7 forecasts roughly 70% should come true. See the [forecasting reference](https://docs.lightningrod.ai/forecasting/reference) for answer types, research sources, and the full response shape.
@@ -87,4 +78,3 @@ We used this to generate the [Future-as-Label training dataset](https://huggingf
 - [Documentation](https://docs.lightningrod.ai/) — quickstart, guides, recipes, and the REST API reference
 - [Example notebooks](notebooks/) — forecasting, dataset generation, training, and evaluation (runnable in Colab)
 - [SDK API reference](API.md) — every class and method in this repo
-

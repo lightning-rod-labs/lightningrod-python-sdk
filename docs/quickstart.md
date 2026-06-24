@@ -5,10 +5,9 @@ description: Lightning Rod's Foresight models return calibrated probability fore
 
 ## Introduction
 
-Lightning Rod's **Foresight** models return calibrated probability forecasts for any forward-looking question, through an OpenAI-compatible API. Ask a question, get a probability—no training and no dataset required.
+Lightning Rod's **Foresight** models return calibrated probability forecasts for any forward-looking question through an OpenAI-compatible API.
 
 ```python
-# pip install openai
 from openai import OpenAI
 
 client = OpenAI(
@@ -17,13 +16,13 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-    model="LightningRodLabs/foresight-v4",
+    model="foresight-v4",
     messages=[
         {"role": "user", "content": "Will the Fed cut rates by 25bp in March 2026?"},
     ],
-    extra_body={"answer_type": "auto"},  # let the server pick the structured format; or set "binary"/"continuous"/...
+    extra_body={"research": True},
 )
-print(response.choices[0].message.content) # e.g. "<answer>0.62</answer>\n..."
+print(response.choices[0].message.content)
 ```
 
 That `0.62` is a **calibrated probability**—a 62% chance, not a confidence score. `0.5` means genuinely uncertain. See [Guides](forecasting/guides.md) for how to write questions and read the numbers.

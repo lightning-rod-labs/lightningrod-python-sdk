@@ -3,7 +3,7 @@ icon: chart-line
 description: Calibrated probability forecasts from Lightning Rod's Foresight models via an OpenAI-compatible API. Models, usage paths, request fields, answer types, and the response shape.
 ---
 
-Lightning Rod's **Foresight** models return calibrated probability forecasts for any forward-looking question, through an OpenAI-compatible API. No training and no dataset required—get an API key, ask a question, receive a probability distribution in the response.
+Lightning Rod's **Foresight** models return calibrated probability forecasts for any forward-looking question through an OpenAI-compatible API.
 
 Forecasting is available through the same model-serving API in two ways:
 
@@ -17,7 +17,6 @@ Both paths call the same underlying API. The main difference is where request fi
 All our models are served using an OpenAI-compatible endpoint, so any OpenAI client works out of the box—just point it at the Lightning Rod base URL.
 
 ```python
-# pip install openai
 from openai import OpenAI
 
 client = OpenAI(
@@ -26,25 +25,17 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-    model="LightningRodLabs/foresight-v4",            # model to query; accepts short or full provider ID (full form shown here)
-    messages=[                                        # full chat history; the system instruction is just a system-role message
-        {"role": "system", "content": "Give calibrated forecasts and cite sources when research is used.",},
+    model="foresight-v4",
+    messages=[
         {"role": "user", "content": "Will the Fed cut rates by 25bp in March 2026?"},
     ],
-    temperature=0.2,                                  # standard OpenAI fields (temperature, max_tokens, top_p, ...) are top-level request fields
-    max_tokens=2048,
-    extra_body={                                      # Lightning Rod-specific fields go inside extra_body
-        "answer_type": "binary",                      # structured answer format: "binary" | "multiple_choice" | "continuous" | "free_response" | "auto". Omit for prose only
-        "research": {"sources": ["perplexity", "google_news"]},  # web research: True for all sources, or {"sources": [...]} to select sources
-        "reasoning_effort": "low",                    # reasoning budget: "low" | "medium" | "high"
-    },
 )
 
 message = response.choices[0].message
 print(message.content)
 ```
 
-OpenAI-standard fields such as `messages`, `temperature`, `max_tokens`, and `top_p` are sent as normal chat/completions fields. Lightning Rod-specific fields go in `extra_body`.
+OpenAI-standard fields such as `messages`, `temperature`, `max_tokens`, and `top_p` are sent as normal chat/completions fields. Lightning Rod-specific fields such as `research` and `answer_type` go in `extra_body`.
 
 Use this path when you need multi-turn conversations, an existing OpenAI-compatible framework such as LangChain or LiteLLM, streaming, or direct access to the raw response object.
 
