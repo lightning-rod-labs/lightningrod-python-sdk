@@ -29,13 +29,12 @@ response = client.chat.completions.create(
     messages=[
         {"role": "user", "content": "Will the Fed cut rates by 25bp in March 2026?"},
     ],
+    extra_body={"research": True, "answer_type": "binary"},
 )
 
 message = response.choices[0].message
 print(message.content)
 ```
-
-OpenAI-standard fields such as `messages`, `temperature`, `max_tokens`, and `top_p` are sent as normal chat/completions fields. Lightning Rod-specific fields such as `research` and `answer_type` go in `extra_body`.
 
 Use this path when you need multi-turn conversations, an existing OpenAI-compatible framework such as LangChain or LiteLLM, streaming, or direct access to the raw response object.
 
