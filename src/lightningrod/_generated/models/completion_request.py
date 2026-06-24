@@ -7,6 +7,7 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 from ..models.answer_type_enum import AnswerTypeEnum
+from ..models.completion_request_reasoning_effort_type_0 import CompletionRequestReasoningEffortType0
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
@@ -27,11 +28,13 @@ class CompletionRequest:
         top_p (float | None | Unset): Nucleus sampling parameter
         top_k (int | None | Unset): Number of top tokens to consider
         min_p (float | None | Unset): Minimum probability for a token to be considered
-        reasoning_effort (None | str | Unset): Reasoning effort: low, medium, or high
         stream (bool | None | Unset): Whether to stream back partial progress Default: False.
         n (int | None | Unset): Number of completions to generate Default: 1.
         stop (list[str] | None | str | Unset): Up to 4 sequences where the API will stop generating
         seed (int | None | Unset): Deterministic sampling seed
+        reasoning_effort (CompletionRequestReasoningEffortType0 | None | Unset): Reasoning effort for hosted Foresight
+            models. Defaults to medium; pass low to reduce reasoning budget. High is accepted for OpenAI compatibility and
+            treated as medium.
         research (bool | None | ResearchOptions | Unset): Opt-in: enrich the request with web research before
             forecasting. Pass `true` for default sources or an object to select sources. Each successful source is billed as
             a separate RESEARCH event.
@@ -47,11 +50,11 @@ class CompletionRequest:
     top_p: float | None | Unset = UNSET
     top_k: int | None | Unset = UNSET
     min_p: float | None | Unset = UNSET
-    reasoning_effort: None | str | Unset = UNSET
     stream: bool | None | Unset = False
     n: int | None | Unset = 1
     stop: list[str] | None | str | Unset = UNSET
     seed: int | None | Unset = UNSET
+    reasoning_effort: CompletionRequestReasoningEffortType0 | None | Unset = UNSET
     research: bool | None | ResearchOptions | Unset = UNSET
     answer_type: AnswerTypeEnum | Literal["auto"] | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -98,12 +101,6 @@ class CompletionRequest:
         else:
             min_p = self.min_p
 
-        reasoning_effort: None | str | Unset
-        if isinstance(self.reasoning_effort, Unset):
-            reasoning_effort = UNSET
-        else:
-            reasoning_effort = self.reasoning_effort
-
         stream: bool | None | Unset
         if isinstance(self.stream, Unset):
             stream = UNSET
@@ -130,6 +127,14 @@ class CompletionRequest:
             seed = UNSET
         else:
             seed = self.seed
+
+        reasoning_effort: None | str | Unset
+        if isinstance(self.reasoning_effort, Unset):
+            reasoning_effort = UNSET
+        elif isinstance(self.reasoning_effort, CompletionRequestReasoningEffortType0):
+            reasoning_effort = self.reasoning_effort.value
+        else:
+            reasoning_effort = self.reasoning_effort
 
         research: bool | dict[str, Any] | None | Unset
         if isinstance(self.research, Unset):
@@ -165,8 +170,6 @@ class CompletionRequest:
             field_dict["top_k"] = top_k
         if min_p is not UNSET:
             field_dict["min_p"] = min_p
-        if reasoning_effort is not UNSET:
-            field_dict["reasoning_effort"] = reasoning_effort
         if stream is not UNSET:
             field_dict["stream"] = stream
         if n is not UNSET:
@@ -175,6 +178,8 @@ class CompletionRequest:
             field_dict["stop"] = stop
         if seed is not UNSET:
             field_dict["seed"] = seed
+        if reasoning_effort is not UNSET:
+            field_dict["reasoning_effort"] = reasoning_effort
         if research is not UNSET:
             field_dict["research"] = research
         if answer_type is not UNSET:
@@ -247,15 +252,6 @@ class CompletionRequest:
 
         min_p = _parse_min_p(d.pop("min_p", UNSET))
 
-        def _parse_reasoning_effort(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        reasoning_effort = _parse_reasoning_effort(d.pop("reasoning_effort", UNSET))
-
         def _parse_stream(data: object) -> bool | None | Unset:
             if data is None:
                 return data
@@ -299,6 +295,23 @@ class CompletionRequest:
             return cast(int | None | Unset, data)
 
         seed = _parse_seed(d.pop("seed", UNSET))
+
+        def _parse_reasoning_effort(data: object) -> CompletionRequestReasoningEffortType0 | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                reasoning_effort_type_0 = CompletionRequestReasoningEffortType0(data)
+
+                return reasoning_effort_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(CompletionRequestReasoningEffortType0 | None | Unset, data)
+
+        reasoning_effort = _parse_reasoning_effort(d.pop("reasoning_effort", UNSET))
 
         def _parse_research(data: object) -> bool | None | ResearchOptions | Unset:
             if data is None:
@@ -346,11 +359,11 @@ class CompletionRequest:
             top_p=top_p,
             top_k=top_k,
             min_p=min_p,
-            reasoning_effort=reasoning_effort,
             stream=stream,
             n=n,
             stop=stop,
             seed=seed,
+            reasoning_effort=reasoning_effort,
             research=research,
             answer_type=answer_type,
         )

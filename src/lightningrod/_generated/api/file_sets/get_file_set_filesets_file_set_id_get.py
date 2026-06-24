@@ -14,6 +14,7 @@ from ...types import Response
 def _get_kwargs(
     file_set_id: str,
 ) -> dict[str, Any]:
+
     _kwargs: dict[str, Any] = {
         "method": "get",
         "url": "/filesets/{file_set_id}".format(

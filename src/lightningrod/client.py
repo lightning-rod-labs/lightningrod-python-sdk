@@ -101,7 +101,7 @@ class LightningRod:
                 checkpoint ID. Defaults to the latest hosted forecasting model
                 (:data:`~lightningrod.prediction.DEFAULT_MODEL`).
             research: Enable web research. ``True`` uses all available sources;
-                a list such as ``["perplexity", "news"]`` restricts to specific
+                a list such as ``["perplexity", "google_news"]`` restricts to specific
                 sources; ``False``/``None`` disables research.
             answer_type: Requested structured-answer format. Accepts an
                 :class:`AnswerType` or its string value. ``None`` omits answer

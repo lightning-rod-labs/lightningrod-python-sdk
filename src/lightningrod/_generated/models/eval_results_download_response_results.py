@@ -20,6 +20,7 @@ class EvalResultsDownloadResponseResults:
     additional_properties: dict[str, EvalModelResultDownload] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+
         field_dict: dict[str, Any] = {}
         for prop_name, prop in self.additional_properties.items():
             field_dict[prop_name] = prop.to_dict()

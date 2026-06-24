@@ -6,7 +6,6 @@ from typing import Any, Literal, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
-from dateutil.parser import isoparse
 
 from ..types import UNSET, Unset
 
@@ -63,9 +62,9 @@ class GdeltSeedGenerator:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        start_date = isoparse(d.pop("start_date"))
+        start_date = datetime.datetime.fromisoformat(d.pop("start_date"))
 
-        end_date = isoparse(d.pop("end_date"))
+        end_date = datetime.datetime.fromisoformat(d.pop("end_date"))
 
         config_type = cast(Literal["GDELT_SEED_GENERATOR"] | Unset, d.pop("config_type", UNSET))
         if config_type != "GDELT_SEED_GENERATOR" and not isinstance(config_type, Unset):

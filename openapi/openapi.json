@@ -1277,6 +1277,31 @@
       }
     },
     "/filesets/": {
+      "get": {
+        "tags": [
+          "FileSets"
+        ],
+        "summary": "List File Sets",
+        "description": "List all FileSets for the organization.",
+        "operationId": "list_file_sets_filesets__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListFileSetsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
       "post": {
         "tags": [
           "FileSets"
@@ -1284,20 +1309,15 @@
         "summary": "Create File Set",
         "description": "Create a new FileSet for the organization.",
         "operationId": "create_file_set_filesets__post",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
         "requestBody": {
-          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CreateFileSetRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "201": {
@@ -1320,42 +1340,12 @@
               }
             }
           }
-        }
-      },
-      "get": {
-        "tags": [
-          "FileSets"
-        ],
-        "summary": "List File Sets",
-        "description": "List all FileSets for the organization.",
-        "operationId": "list_file_sets_filesets__get",
+        },
         "security": [
           {
             "HTTPBearer": []
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ListFileSetsResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
+        ]
       }
     },
     "/filesets/{file_set_id}": {
@@ -1807,7 +1797,7 @@
           "folder_path": {
             "type": "string",
             "title": "Folder Path",
-            "description": "GCS folder path where files will be stored"
+            "description": "Cloud storage folder where files will be stored"
           },
           "upload_urls": {
             "additionalProperties": {
@@ -1815,7 +1805,15 @@
             },
             "type": "object",
             "title": "Upload Urls",
-            "description": "Mapping of filename -> signed upload URL"
+            "description": "Deprecated: filename -> signed URL. Use `uploads` instead."
+          },
+          "uploads": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/FileUploadTarget"
+            },
+            "type": "object",
+            "title": "Uploads",
+            "description": "filename -> upload target (url, method, headers). Provider-agnostic."
           }
         },
         "type": "object",
@@ -1998,18 +1996,6 @@
             "title": "Min P",
             "description": "Minimum probability for a token to be considered"
           },
-          "reasoning_effort": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Reasoning Effort",
-            "description": "Reasoning effort: low, medium, or high"
-          },
           "stream": {
             "anyOf": [
               {
@@ -2065,6 +2051,23 @@
             ],
             "title": "Seed",
             "description": "Deterministic sampling seed"
+          },
+          "reasoning_effort": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Effort",
+            "description": "Reasoning effort for hosted Foresight models. Defaults to medium; pass low to reduce reasoning budget. High is accepted for OpenAI compatibility and treated as medium."
           },
           "research": {
             "anyOf": [
@@ -2341,18 +2344,6 @@
             "title": "Min P",
             "description": "Minimum probability for a token to be considered"
           },
-          "reasoning_effort": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Reasoning Effort",
-            "description": "Reasoning effort: low, medium, or high"
-          },
           "stream": {
             "anyOf": [
               {
@@ -2408,6 +2399,23 @@
             ],
             "title": "Seed",
             "description": "Deterministic sampling seed"
+          },
+          "reasoning_effort": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Effort",
+            "description": "Reasoning effort for hosted Foresight models. Defaults to medium; pass low to reduce reasoning budget. High is accepted for OpenAI compatibility and treated as medium."
           },
           "research": {
             "anyOf": [
@@ -4185,6 +4193,35 @@
         ],
         "title": "FileSetSeedGenerator",
         "description": "Configuration for FileSet Seed Generator transform."
+      },
+      "FileUploadTarget": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url",
+            "description": "Pre-signed upload URL (GCS or S3)"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method",
+            "description": "HTTP method to use for the upload",
+            "default": "PUT"
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Headers",
+            "description": "Headers that must accompany the upload request"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "title": "FileUploadTarget",
+        "description": "Provider-agnostic upload instruction. The client issues `method` to `url`\nwith exactly these `headers` (the Content-Type must match the signature)."
       },
       "FilterCriteria": {
         "properties": {
@@ -6843,8 +6880,7 @@
               "type": "string",
               "enum": [
                 "perplexity",
-                "news",
-                "google_search"
+                "google_news"
               ]
             },
             "type": "array",
@@ -6895,7 +6931,9 @@
           "binary_weighted_brier",
           "binary_log_score",
           "multi_choice_log_score",
+          "multi_choice_brier",
           "continuous_log_score",
+          "continuous_crps",
           "continuous_value_only_log_score",
           "continuous_value_only_linear_score",
           "ranking_delta_ndcg"
@@ -8111,6 +8149,7 @@
           "EMBEDDING_DEDUPLICATION",
           "WEB_SEARCH_CONTEXT_GENERATOR",
           "PERPLEXITY_CONTEXT_GENERATOR",
+          "EXA_CONTEXT_GENERATOR",
           "AGGREGATE_CONTEXT_GENERATOR",
           "QDRANT_CONTEXT_GENERATOR",
           "QDRANT_RAG_LABELER",
@@ -8469,10 +8508,5 @@
         "scheme": "bearer"
       }
     }
-  },
-  "servers": [
-    {
-      "url": "/api/public/v1"
-    }
-  ]
+  }
 }

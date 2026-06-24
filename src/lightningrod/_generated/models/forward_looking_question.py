@@ -6,7 +6,6 @@ from typing import Any, Literal, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
-from dateutil.parser import isoparse
 
 from ..types import UNSET, Unset
 
@@ -74,9 +73,9 @@ class ForwardLookingQuestion:
         d = dict(src_dict)
         question_text = d.pop("question_text")
 
-        date_close = isoparse(d.pop("date_close"))
+        date_close = datetime.datetime.fromisoformat(d.pop("date_close"))
 
-        event_date = isoparse(d.pop("event_date"))
+        event_date = datetime.datetime.fromisoformat(d.pop("event_date"))
 
         resolution_criteria = d.pop("resolution_criteria")
 
@@ -92,7 +91,7 @@ class ForwardLookingQuestion:
             try:
                 if not isinstance(data, str):
                     raise TypeError()
-                prediction_date_type_0 = isoparse(data)
+                prediction_date_type_0 = datetime.datetime.fromisoformat(data)
 
                 return prediction_date_type_0
             except (TypeError, ValueError, AttributeError, KeyError):

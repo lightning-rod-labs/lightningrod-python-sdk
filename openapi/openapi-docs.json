@@ -405,14 +405,19 @@
           "reasoning_effort": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
               },
               {
                 "type": "null"
               }
             ],
             "title": "Reasoning Effort",
-            "description": "Lightning Rod extension. Reasoning budget the model spends before answering: `low`, `medium`, or `high`. Higher effort improves accuracy on harder questions at additional token cost. With raw OpenAI clients pass via `extra_body`."
+            "description": "Lightning Rod extension. Reasoning budget the model spends before answering: `low`, `medium`, or `high`. Defaults to `medium`; pass `low` to reduce reasoning budget. `high` is accepted for OpenAI compatibility and treated as `medium`. With raw OpenAI clients pass via `extra_body`."
           },
           "stream": {
             "anyOf": [
@@ -483,7 +488,7 @@
               }
             ],
             "title": "Research",
-            "description": "Lightning Rod extension. Opt-in web research before forecasting. Pass `true` to query all default sources, or a `ResearchOptions` object to select sources. Available sources: `perplexity` (Perplexity web search), `news` (recent news articles), `google_search` (Google web results). Each source runs as its own query and is billed as a separate RESEARCH event; when research runs, its cost is reported in `usage`. With raw OpenAI clients pass via `extra_body`."
+            "description": "Lightning Rod extension. Opt-in web research before forecasting. Pass `true` to query all default sources, or a `ResearchOptions` object to select sources. Available sources: `perplexity` (Perplexity web search) and `google_news` (recent Google News articles). Each source runs as its own query and is billed as a separate RESEARCH event; when research runs, its cost is reported in `usage`. With raw OpenAI clients pass via `extra_body`."
           },
           "answer_type": {
             "anyOf": [
@@ -536,10 +541,10 @@
             "research": {
               "sources": [
                 "perplexity",
-                "news"
+                "google_news"
               ]
             },
-            "reasoning_effort": "high"
+            "reasoning_effort": "low"
           }
         ]
       },
@@ -771,14 +776,19 @@
           "reasoning_effort": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
               },
               {
                 "type": "null"
               }
             ],
             "title": "Reasoning Effort",
-            "description": "Lightning Rod extension. Reasoning budget the model spends before answering: `low`, `medium`, or `high`. Higher effort improves accuracy on harder questions at additional token cost. With raw OpenAI clients pass via `extra_body`."
+            "description": "Lightning Rod extension. Reasoning budget the model spends before answering: `low`, `medium`, or `high`. Defaults to `medium`; pass `low` to reduce reasoning budget. `high` is accepted for OpenAI compatibility and treated as `medium`. With raw OpenAI clients pass via `extra_body`."
           },
           "stream": {
             "anyOf": [
@@ -849,7 +859,7 @@
               }
             ],
             "title": "Research",
-            "description": "Lightning Rod extension. Opt-in web research before forecasting. Pass `true` to query all default sources, or a `ResearchOptions` object to select sources. Available sources: `perplexity` (Perplexity web search), `news` (recent news articles), `google_search` (Google web results). Each source runs as its own query and is billed as a separate RESEARCH event; when research runs, its cost is reported in `usage`. With raw OpenAI clients pass via `extra_body`."
+            "description": "Lightning Rod extension. Opt-in web research before forecasting. Pass `true` to query all default sources, or a `ResearchOptions` object to select sources. Available sources: `perplexity` (Perplexity web search) and `google_news` (recent Google News articles). Each source runs as its own query and is billed as a separate RESEARCH event; when research runs, its cost is reported in `usage`. With raw OpenAI clients pass via `extra_body`."
           },
           "answer_type": {
             "anyOf": [
@@ -1035,13 +1045,12 @@
               "type": "string",
               "enum": [
                 "perplexity",
-                "news",
-                "google_search"
+                "google_news"
               ]
             },
             "type": "array",
             "title": "Sources",
-            "description": "Which research providers to query in parallel: `perplexity` (Perplexity web search), `news` (recent news articles), `google_search` (Google web results). Each provider is billed as a separate RESEARCH event."
+            "description": "Which research providers to query in parallel: `perplexity` (Perplexity web search) and `google_news` (recent Google News articles). Each provider is billed as a separate RESEARCH event."
           }
         },
         "type": "object",

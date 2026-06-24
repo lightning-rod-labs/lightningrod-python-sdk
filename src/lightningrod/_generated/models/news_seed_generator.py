@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
-from dateutil.parser import isoparse
 
 from ..types import UNSET, Unset
 
@@ -117,9 +116,9 @@ class NewsSeedGenerator:
         from ..models.filter_criteria import FilterCriteria
 
         d = dict(src_dict)
-        start_date = isoparse(d.pop("start_date"))
+        start_date = datetime.datetime.fromisoformat(d.pop("start_date"))
 
-        end_date = isoparse(d.pop("end_date"))
+        end_date = datetime.datetime.fromisoformat(d.pop("end_date"))
 
         def _parse_search_query(data: object) -> list[str] | str:
             try:

@@ -6,7 +6,6 @@ from typing import Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
-from dateutil.parser import isoparse
 
 T = TypeVar("T", bound="EvalModelResultDownload")
 
@@ -44,7 +43,7 @@ class EvalModelResultDownload:
         d = dict(src_dict)
         download_url = d.pop("download_url")
 
-        expires_at = isoparse(d.pop("expires_at"))
+        expires_at = datetime.datetime.fromisoformat(d.pop("expires_at"))
 
         eval_model_result_download = cls(
             download_url=download_url,
