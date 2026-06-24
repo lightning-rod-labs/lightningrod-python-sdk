@@ -3,8 +3,6 @@ icon: chart-line
 description: Calibrated probability forecasts from Lightning Rod's Foresight models via an OpenAI-compatible API. Models, usage paths, request fields, answer types, and the response shape.
 ---
 
-![LLMs tuned on our data have outperformed frontier models](../.gitbook/assets/forecasting.png)
-
 Lightning Rod's **Foresight** models return calibrated probability forecasts for any forward-looking question, through an OpenAI-compatible API. No training and no dataset required—get an API key, ask a question, receive a probability distribution in the response.
 
 Forecasting is available through the same model-serving API in two ways:
@@ -162,5 +160,4 @@ Need forecasting models tailored to your domain, proprietary data, or internal w
 ## Next steps
 
 * [Guides](guides.md) — writing good questions and interpreting probabilities
-* [Recipes](recipes.md) — Polymarket backtesting, model consensus, and more
 * [Platform Overview](../platform/overview.md) — generate datasets and fine-tune your own forecasting models

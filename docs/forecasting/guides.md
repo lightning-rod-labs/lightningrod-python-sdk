@@ -31,4 +31,4 @@ Foresight is most accurate when a question has a single, unambiguous resolution.
 
 - **Turn on `research`** for questions that depend on recent events—it lets the model gather live evidence and attach sources you can inspect via `result.sources`.
 - **Raise `reasoning_effort` to `"high"`** for multi-step or adversarial questions.
-- **Backtest before you trust it in production.** The [Polymarket recipe](recipes.md) shows how to score Foresight against resolved real-world markets.
+- **Backtest against your context/strategy.**

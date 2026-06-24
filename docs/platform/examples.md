@@ -1,6 +1,6 @@
 ---
 icon: rectangle-history
-description: Runnable Colab notebooks — forecasting recipes, dataset generation, answer types, and fine-tuning workflows.
+description: Runnable Colab notebooks — dataset generation, answer types, evaluation, and fine-tuning workflows.
 ---
 
 # Examples

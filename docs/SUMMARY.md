@@ -9,7 +9,6 @@
 
 * [Reference](forecasting/reference.md)
 * [Guides](forecasting/guides.md)
-* [Recipes](forecasting/recipes.md)
 
 ## Platform (Enterprise)
 

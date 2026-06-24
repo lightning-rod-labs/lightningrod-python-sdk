@@ -3,8 +3,6 @@ icon: bolt
 description: Lightning Rod's Foresight models return calibrated probability forecasts through an OpenAI-compatible API — and a platform to fine-tune your own forecasting models.
 ---
 
-![Calibrated forecasts from an API. Fine-tune your own.](.gitbook/assets/overview.png)
-
 ## Introduction
 
 Lightning Rod's **Foresight** models return calibrated probability forecasts for any forward-looking question, through an OpenAI-compatible API. Ask a question, get a probability—no training and no dataset required.
@@ -36,7 +34,6 @@ That `0.62` is a **calibrated probability**—a 62% chance, not a confidence sco
 
 * [Forecasting Reference](forecasting/reference.md) — models, usage paths, `answer_type`, `research`, and `reasoning_effort`
 * [Guides](forecasting/guides.md) — writing good questions and interpreting probabilities
-* [Recipes](forecasting/recipes.md) — Polymarket backtesting, model consensus, and more
 
 ## Enterprise
 
