@@ -30,5 +30,5 @@ Foresight is most accurate when a question has a single, unambiguous resolution.
 ## Improving accuracy
 
 - **Turn on `research`** for questions that depend on recent events—it lets the model gather live evidence and attach sources you can inspect via `result.sources`.
-- **Raise `reasoning_effort` to `"high"`** for multi-step or adversarial questions.
+- **Use `reasoning_effort="low"`** when you want to reduce reasoning budget; keep the default `"medium"` for harder questions.
 - **Backtest against your context/strategy.**

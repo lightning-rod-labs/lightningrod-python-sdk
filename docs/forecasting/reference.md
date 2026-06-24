@@ -36,7 +36,7 @@ response = client.chat.completions.create(
     extra_body={                                      # Lightning Rod-specific fields go inside extra_body
         "answer_type": "binary",                      # structured answer format: "binary" | "multiple_choice" | "continuous" | "free_response" | "auto". Omit for prose only
         "research": {"sources": ["perplexity", "google_news"]},  # web research: True for all sources, or {"sources": [...]} to select sources
-        "reasoning_effort": "high",                   # reasoning budget: "low" | "medium" | "high"
+        "reasoning_effort": "low",                    # reasoning budget: "low" | "medium" | "high"
     },
 )
 
@@ -84,7 +84,7 @@ result = client.predict(
     system_prompt="Give calibrated forecasts and cite sources when research is used.",  # optional, prepended as a system message
     answer_type="binary",                             # structured answer format: "binary" | "multiple_choice" | "continuous" | "free_response" | "auto". Omit for prose only
     research=["perplexity", "google_news"],           # web research: True for all sources, a list to select sources, or omit/False to disable
-    reasoning_effort="high",                          # reasoning budget: "low" | "medium" | "high". Defaults to "medium"
+    reasoning_effort="low",                           # reasoning budget: "low" | "medium" | "high". Defaults to "medium"
     temperature=0.2,                                  # standard chat/completions fields (temperature, max_tokens, top_p, ...) are forwarded as **kwargs
     max_tokens=2048,                                  # forwarded to openai.chat.completions.create
 )
@@ -133,7 +133,7 @@ These are custom Lightning Rod extensions to the standard OpenAI API compatible 
 | ------------------ | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `answer_type`      | `"binary"`, `"multiple_choice"`, `"continuous"`, `"free_response"`, `"auto"` | Adds output-format guidance and appends a structured answer between `<answer></answer>` tags. `"auto"` classifies the question server-side first. Omit for prose only. |
 | `research`         | `True`, or selected source keys (`"perplexity"`, `"google_news"`, `"google_search"`) | Opt-in web research before forecasting. Each source key maps to a distinct research provider the model can pull live evidence from: `"perplexity"` (Perplexity web search), `"google_news"` (recent news articles), and `"google_search"` (Google results). `True` queries all of them; pass a subset to control cost and which evidence the model sees. Each source runs as its own query and is billed as a separate research event. |
-| `reasoning_effort` | `"low"`, `"medium"`, `"high"`                                                | How much reasoning the model spends before answering. `predict()` defaults to `"medium"`. Higher effort helps on harder questions.                                     |
+| `reasoning_effort` | `"low"`, `"medium"`, `"high"`                                                | How much reasoning the model spends before answering. `predict()` defaults to `"medium"`. `"high"` is accepted for OpenAI compatibility and treated as `"medium"`.      |
 | `system_prompt`    | string                                                                       | Optional system message. In raw chat/completions requests, add this to `messages`; in `predict()`, use the first-class keyword argument.                               |
 
 
