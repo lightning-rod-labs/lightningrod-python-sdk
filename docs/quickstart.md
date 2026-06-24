@@ -25,7 +25,7 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
-That `0.62` is a **calibrated probability**—a 62% chance, not a confidence score. `0.5` means genuinely uncertain. See [Guides](forecasting/guides.md) for how to write questions and read the numbers.
+See [Guides](forecasting/guides.md) for how to write good forecasting prompts.
 
 [**Get an API key →**](https://dashboard.lightningrod.ai/sign-up?redirect=/api)
 
