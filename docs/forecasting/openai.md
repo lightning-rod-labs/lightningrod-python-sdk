@@ -1,3 +1,8 @@
+---
+icon: plug
+description: Use Foresight through any OpenAI-compatible client.
+---
+
 # OpenAI API
 
 ```python

@@ -64,4 +64,4 @@ Need forecasting models tailored to your domain? Use the [enterprise platform](.
 * [OpenAI](openai.md) - how to effectively use our OpenAI API
 * [SDK](sdk.md) - Python wrapper on top of the OpenAI API for ease of use
 * [Recipes](recipes.md) — writing good forecasting prompts
-* [Platform Overview](../platform/overview.md) — generate datasets and fine-tune your own forecasting models
+* [Enterprise Platform](../platform/overview.md) — generate datasets and fine-tune your own forecasting models

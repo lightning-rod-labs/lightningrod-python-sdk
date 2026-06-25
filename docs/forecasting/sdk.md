@@ -1,3 +1,8 @@
+---
+icon: python
+description: Structured predictions with lr.predict()
+---
+
 # Using our SDK
 
 ```python
