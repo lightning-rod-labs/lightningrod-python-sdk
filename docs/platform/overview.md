@@ -7,13 +7,6 @@ description: Generate labeled forecasting datasets from your sources and fine-tu
 
 The Lightning Rod platform turns your data into forecasting datasets and custom models.
 
-## When you need it
-
-| You want… | Use |
-|-----------|-----|
-| A forecast from a hosted model | **[Forecasting](../forecasting/reference.md)** |
-| A model specialized to your domain and data | **Platform** |
-
 ## The workflow
 
 1. **[Dataset Generation](dataset-generation/overview.md)** — Turn news, documents, and custom sources into labeled forecasting samples.
