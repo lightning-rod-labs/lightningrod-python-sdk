@@ -47,4 +47,4 @@ See the [Platform Overview](platform/overview.md).
 
 ## Research
 
-Lightning Rod is based on our research: [Future-as-Label: Scalable Supervision from Real-World Outcomes](https://arxiv.org/abs/2601.06336). We use this approach to generate the [Future-as-Label training dataset](https://huggingface.co/datasets/LightningRodLabs/future-as-label-paper-training-dataset) for our paper.
+Lightning Rod is based on our research: [Future-as-Label: Scalable Supervision from Real-World Outcomes](https://arxiv.org/abs/2601.06336). View public models and datasets on [Hugging Face](https://huggingface.co/LightningRodLabs).

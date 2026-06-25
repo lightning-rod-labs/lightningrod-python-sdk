@@ -59,7 +59,7 @@ Need a model tuned to your domain? Our platform turns raw sources into labeled d
 
 [**📅 Book a call with us**](https://calendly.com/d/ctq4-7gd-nyq/lightning-rod-demo)
 
-We used this to generate the [Future-as-Label training dataset](https://huggingface.co/datasets/LightningRodLabs/future-as-label-paper-training-dataset) from our paper, [Future-as-Label: Scalable Supervision from Real-World Outcomes](https://arxiv.org/abs/2601.06336).
+Read the [Future-as-Label paper](https://arxiv.org/abs/2601.06336) or view public models and datasets on [Hugging Face](https://huggingface.co/LightningRodLabs).
 
 ## 📚 Learn more
 

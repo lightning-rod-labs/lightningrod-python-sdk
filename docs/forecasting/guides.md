@@ -5,8 +5,6 @@ description: How to write good forecasting questions and improve forecasts.
 
 # Guides
 
-Practical guidance for getting reliable forecasts out of Foresight.
-
 ## Writing good questions
 
 Foresight works best when the question has clear resolution criteria: the event or value, the threshold, and the deadline.
