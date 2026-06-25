@@ -82,7 +82,7 @@ from lightningrod._generated.models import (
     EmbeddingDeduplicationSynonyms,
 )
 
-__version__ = "0.1.28"
+__version__ = "0.2.0"
 __all__ = [
     "preprocessing",
     "training",
