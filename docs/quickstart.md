@@ -23,8 +23,6 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
-See [Guides](forecasting/guides.md) for how to write good forecasting prompts.
-
 [**Get an API key →**](https://dashboard.lightningrod.ai/sign-up?redirect=/api)
 
 ## Start forecasting

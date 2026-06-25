@@ -3,7 +3,6 @@
 ## Getting Started
 
 * [Quickstart](quickstart.md)
-* [Changelog](changelog.md)
 
 ## Forecasting
 
