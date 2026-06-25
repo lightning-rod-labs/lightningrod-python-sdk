@@ -59,7 +59,7 @@ Need a model tuned to your domain? Our platform turns raw sources into labeled d
 
 [**📅 Book a call with us**](https://calendly.com/d/ctq4-7gd-nyq/lightning-rod-demo)
 
-View public models and datasets on [Hugging Face](https://huggingface.co/LightningRodLabs).
+Read the [Future-as-Label paper](https://arxiv.org/abs/2601.06336) or view public models and datasets on [Hugging Face](https://huggingface.co/LightningRodLabs).
 
 ## 📚 Learn more
 
