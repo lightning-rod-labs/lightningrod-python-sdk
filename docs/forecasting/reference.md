@@ -23,6 +23,7 @@ response = client.chat.completions.create(
     messages=[
         {"role": "user", "content": "Will the Fed cut rates by 25bp in March 2026?"},
     ],
+    reasoning_effort="low",
     extra_body={"research": True, "answer_type": "binary"},
 )
 
@@ -84,8 +85,8 @@ print(result.content)
 
 | Model | Model ID | Description |
 |-------|----------|-------------|
-| Foresight v4 | `foresight-v4` or `LightningRodLabs/foresight-v4` | Current forecasting model. |
-| Foresight v3 | `foresight-v3` or `LightningRodLabs/foresight-v3` | Previous forecasting model. |
+| Foresight v4 | `foresight-v4` | Current forecasting model. |
+| Foresight v3 | `foresight-v3` | Previous forecasting model. |
 | Military Strikes | `military-strikes` | Trained for Numinous forecasters, generally available. |
 
 ## Answer Types

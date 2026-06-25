@@ -38,7 +38,7 @@ See the [forecasting guides](https://docs.lightningrod.ai/forecasting/guides) fo
 `lr.predict()` wraps the same API and parses the structured answer for you:
 
 ```bash
-pip install lightningrod-ai openai
+pip install lightningrod-ai
 ```
 
 ```python
@@ -55,20 +55,9 @@ print(result.binary.probability)  # e.g. 0.62
 
 ## 🏗️ Train an expert on your domain
 
-Need a model tuned to your domain? The platform turns raw sources into labeled datasets and fine-tuned models.
+Need a model tuned to your domain? Our platform turns raw sources into labeled datasets and fine-tuned models.
 
 [**📅 Book a call with us**](https://calendly.com/d/ctq4-7gd-nyq/lightning-rod-demo)
-
-```python
-pipeline = QuestionPipeline(...)
-dataset = client.transforms.run(pipeline)
-
-train_dataset, test_dataset = prepare_for_training(dataset)
-train_config = GRPOTrainingConfig(base_model_id="openai/gpt-oss-120b")
-training_job = client.training.run(train_config, train_dataset)
-
-client.predict("Will the Fed cut rates by 25bp in the next 3 months?", model=training_job.model_id)
-```
 
 We used this to generate the [Future-as-Label training dataset](https://huggingface.co/datasets/LightningRodLabs/future-as-label-paper-training-dataset) from our paper, [Future-as-Label: Scalable Supervision from Real-World Outcomes](https://arxiv.org/abs/2601.06336).
 
