@@ -19,7 +19,6 @@ Foresight is most accurate when a question has a single, unambiguous resolution.
 
 ## Improving accuracy
 
-gather and provide current context
-
+- **Gather and provide current context.**
 - **Turn on `research`** for questions that depend on recent events—it lets the model gather live evidence and attach sources you can inspect via `result.sources`.
 - **Backtest against your context/strategy.**
