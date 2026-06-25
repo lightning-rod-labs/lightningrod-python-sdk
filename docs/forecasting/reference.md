@@ -60,9 +60,10 @@ result = client.predict(
     model="foresight-v4",
     answer_type="binary",
     research=True,
+    reasoning_effort="low",
 )
 
-print(result.binary.probability)  # e.g. 0.62
+print(result.binary.probability)
 print(result.content)
 ```
 

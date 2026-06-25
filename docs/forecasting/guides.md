@@ -9,13 +9,11 @@ Practical guidance for getting reliable forecasts out of Foresight.
 
 ## Writing good questions
 
-Foresight is most accurate when a question has a single, unambiguous resolution. Aim for questions a neutral observer could grade later without debate.
+Foresight works best when the question has clear resolution criteria: the event or value, the threshold, and the deadline.
 
-- **Be self-contained.** Include the entities, dates, and thresholds in the question itself rather than relying on prior context. *"Will OpenAI publicly release GPT-5 by March 15, 2026?"* beats *"Will they ship it soon?"*
-- **Pin the resolution date.** Forward-looking questions need a deadline. *"…by end of Q1 2026"* is gradable; *"…eventually"* is not.
-- **Make the threshold explicit.** Prefer *"close above 6,000"* to *"go up a lot."* Numbers resolve cleanly.
-- **One event per question.** Split compound questions ("rate cut *and* a market rally") into separate forecasts so each gets its own probability.
-- **Match the question to the answer type.** Yes/no → `binary`; a numeric magnitude → `continuous`; a fixed set of outcomes → `multiple_choice`. Use `"auto"` if you want the server to classify for you.
+- **Name the event and deadline.** *"Will the Federal Reserve lower the target federal funds rate by at least 25 bps by December 31, 2026?"* is clearer than *"Will the Fed cut soon?"*
+- **Use measurable thresholds.** *"Will the S&P 500 close above 7,000 on December 31, 2026?"* is clearer than *"Will stocks do well?"*
+- **Ask one thing and choose the right answer type.** Use `binary` for yes/no, `continuous` for a number, and `multiple_choice` for a fixed set of outcomes.
 
 ## Improving accuracy
 
