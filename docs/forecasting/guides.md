@@ -21,4 +21,5 @@ Foresight is most accurate when a question has a single, unambiguous resolution.
 
 - **Gather and provide current context.**
 - **Turn on `research`** for questions that depend on recent events—it lets the model gather live evidence and attach sources you can inspect via `result.sources`.
+- **Use ensemble predictions.** Send the same request multiple times and use the median response.
 - **Backtest against your context/strategy.**
