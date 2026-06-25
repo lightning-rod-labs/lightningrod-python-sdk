@@ -5,6 +5,13 @@ description: Generate labeled forecasting datasets from your sources and fine-tu
 
 # Platform (Enterprise)
 
-Lightning Rod can generate labeled forecasting datasets from domain-specific sources, fine-tune custom forecasting models, evaluate them, and serve them through the same APIs.
+Use the Lightning Rod platform when you need a forecasting model tailored to your domain or data.
 
-This is an enterprise capability for teams working directly with Lightning Rod. [Book a call](https://calendly.com/d/ctq4-7gd-nyq/lightning-rod-demo) to talk through your use case.
+We work with teams to:
+
+- **Generate** labeled forecasting datasets from your own sources—news, documents, and custom data—through a configurable pipeline, with no manual question writing or labeling.
+- **Fine-tune** specialized models on those datasets.
+- **Evaluate** performance against held-out test sets.
+- **Serve** the resulting models through an OpenAI-compatible API.
+
+[**Book a call →**](https://calendly.com/d/ctq4-7gd-nyq/lightning-rod-demo) to talk through your use case.

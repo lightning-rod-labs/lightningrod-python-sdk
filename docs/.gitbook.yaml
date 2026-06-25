@@ -21,3 +21,4 @@ redirects:
   fine-tuning/evaluation: platform/fine-tuning/evaluation.md
   fine-tuning/inference: platform/fine-tuning/inference.md
   examples: platform/examples.md
+  quickstart: forecasting/quickstart.md

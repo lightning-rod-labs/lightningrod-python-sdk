@@ -6,10 +6,10 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/chat/completions": {
+    "/openai/chat/completions": {
       "post": {
         "summary": "Chat Completions",
-        "description": "OpenAI-compatible chat/completions endpoint for Lightning Rod's **Foresight** forecasting models. Point an OpenAI client at `https://api.lightningrod.ai/api/public/v1/openai`. Use `extra_body` for Lightning Rod fields such as `answer_type` and `research`.",
+        "description": "OpenAI-compatible chat/completions endpoint for Lightning Rod's **Foresight** forecasting models. Any OpenAI client works out of the box\u2014point `base_url` at `https://api.lightningrod.ai/api/public/v1/openai`. Standard fields (`messages`, `temperature`, `max_tokens`, `top_p`, ...) behave as usual. Lightning Rod adds three optional extensions\u2014`answer_type`, `research`, and `reasoning_effort`\u2014which are top-level fields on this endpoint; with raw OpenAI clients pass them inside `extra_body`. When `answer_type` is set, the model appends a machine-readable answer between `<answer></answer>` tags in `choices[0].message.content` (see the `answer_type` field for the per-type shapes). When `research` is enabled, the model pulls live web evidence before forecasting and reports research cost in `usage`.",
         "operationId": "chat_completions_openai_chat_completions_post",
         "requestBody": {
           "content": {
@@ -244,7 +244,7 @@
         ]
       }
     },
-    "/models": {
+    "/openai/models": {
       "get": {
         "summary": "List Models",
         "description": "List available models.",
@@ -268,10 +268,10 @@
         ]
       }
     },
-    "/completions": {
+    "/openai/completions": {
       "post": {
         "summary": "Completions",
-        "description": "OpenAI-compatible text completion endpoint for Lightning Rod's **Foresight** forecasting models. Prefer chat/completions for new integrations. Use `extra_body` for Lightning Rod fields such as `answer_type` and `research`.",
+        "description": "OpenAI-compatible text completion endpoint for Lightning Rod's **Foresight** forecasting models. Takes a raw `prompt` instead of chat `messages`; the structured answer (when `answer_type` is set) is appended between `<answer></answer>` tags in `choices[0].text`. The same Lightning Rod extensions apply\u2014`answer_type`, `research`, and `reasoning_effort` (pass via `extra_body` with raw OpenAI clients). Prefer the chat/completions endpoint for multi-turn conversations and framework compatibility.",
         "operationId": "completions_openai_completions_post",
         "requestBody": {
           "content": {
@@ -310,6 +310,78 @@
             "HTTPBearer": []
           }
         ]
+      }
+    },
+    "/mpp/topup": {
+      "post": {
+        "tags": [
+          "MPP (Machine Payments Protocol)"
+        ],
+        "summary": "Add credits via MPP (Machine Payments Protocol)",
+        "description": "Pay via MPP to add credits and obtain (or refresh) an API key, then call the standard `/openai/*` endpoints with it as a `Bearer` token.\n\n**Flow:** call with no payment \u2192 `402` + `WWW-Authenticate: Payment` challenge (quotes the top-up amount, payable via card/Link Shared Payment Token) \u2192 pay \u2192 retry with `Authorization: Payment <credential>`.\n\n**Amount:** defaults to $5.00; pass `amount_cents` to choose a size (clamped to the credit-purchase limits). Send the **same** `amount_cents` on the paid retry as on the challenge call.\n\n**Headers:**\n- `Authorization: Payment <credential>` \u2014 the MPP payment credential.\n- `X-API-Key: sk_\u2026` *(optional)* \u2014 refill an existing org; omit to mint a new org + key (returned once in the response body).",
+        "operationId": "mpp_topup",
+        "parameters": [
+          {
+            "name": "amount_cents",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Amount Cents"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MppTopupResponse"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment required. The `WWW-Authenticate: Payment` header carries an MPP challenge quoting the top-up amount (USD), payable with a Stripe Shared Payment Token; pay it and retry.",
+            "headers": {
+              "WWW-Authenticate": {
+                "description": "MPP Payment challenge (scheme `Payment`).",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-payment-info": {
+          "offers": [
+            {
+              "amount": "500",
+              "currency": "usd",
+              "description": "Credit top-up (default $5.00). Pass amount_cents for $1.00\u2013$10,000.00; same value on challenge and paid retry. Returns an API key for POST /openai/chat/completions.",
+              "intent": "charge",
+              "method": "stripe"
+            }
+          ]
+        }
       }
     }
   },
@@ -412,7 +484,7 @@
               }
             ],
             "title": "Reasoning Effort",
-            "description": "OpenAI-compatible reasoning budget: `low`, `medium`, or `high`. Defaults to `medium`; `high` is accepted and treated as `medium`."
+            "description": "Lightning Rod extension. Reasoning budget the model spends before answering: `low`, `medium`, or `high`. Higher effort improves accuracy on harder questions at additional token cost. With raw OpenAI clients pass via `extra_body`."
           },
           "stream": {
             "anyOf": [
@@ -483,7 +555,7 @@
               }
             ],
             "title": "Research",
-            "description": "Opt-in web research before forecasting. Pass `true` for default sources, or a `ResearchOptions` object to select sources."
+            "description": "Lightning Rod extension. Opt-in web research before forecasting. Pass `true` to query all default sources, or a `ResearchOptions` object to select sources. Available sources: `perplexity` (Perplexity web search), `news` (recent news articles), `google_search` (Google web results). Each source runs as its own query and is billed as a separate RESEARCH event; when research runs, its cost is reported in `usage`. With raw OpenAI clients pass via `extra_body`."
           },
           "answer_type": {
             "anyOf": [
@@ -499,7 +571,7 @@
               }
             ],
             "title": "Answer Type",
-            "description": "Structured answer format. One of `binary`, `multiple_choice`, `continuous`, `free_response`, or `auto`. When set, the response content includes a machine-readable answer in `<answer></answer>` tags."
+            "description": "Lightning Rod extension that injects output-format guidance and appends a structured answer between `<answer></answer>` tags in the response content. One of `binary`, `multiple_choice`, `continuous`, `free_response`, or `auto`. Raw response shapes: `binary` -> `<answer>0.62</answer>` (probability between 0 and 1); `continuous` -> `<answer>{\"mean\": 42.5, \"standard_deviation\": 5.2}</answer>`; `multiple_choice` -> `<options>{\"A\": \"...\", \"B\": \"...\"}</options>` followed by `<answer>{\"A\": 0.55, \"B\": 0.45}</answer>`; `free_response` -> `<answer>...</answer>`. `auto` classifies the user question server-side first, then returns one of the above. Omit for prose only. With raw OpenAI clients pass via `extra_body`."
           }
         },
         "type": "object",
@@ -510,15 +582,36 @@
         "title": "ChatCompletionRequest",
         "examples": [
           {
-            "model": "foresight-v4",
             "messages": [
+              {
+                "content": "Will Bitcoin increase by more than 10% over the next 3 months? Answer as a probability between 0 and 1 between <answer></answer> tags.",
+                "role": "user"
+              }
+            ],
+            "model": "foresight-v4"
+          },
+          {
+            "model": "LightningRodLabs/foresight-v4",
+            "messages": [
+              {
+                "role": "system",
+                "content": "Give calibrated forecasts and cite sources when research is used."
+              },
               {
                 "role": "user",
                 "content": "Will the Fed cut rates by 25bp in March 2026?"
               }
             ],
+            "temperature": 0.2,
+            "max_tokens": 2048,
             "answer_type": "binary",
-            "research": true
+            "research": {
+              "sources": [
+                "perplexity",
+                "news"
+              ]
+            },
+            "reasoning_effort": "high"
           }
         ]
       },
@@ -757,7 +850,7 @@
               }
             ],
             "title": "Reasoning Effort",
-            "description": "OpenAI-compatible reasoning budget: `low`, `medium`, or `high`. Defaults to `medium`; `high` is accepted and treated as `medium`."
+            "description": "Lightning Rod extension. Reasoning budget the model spends before answering: `low`, `medium`, or `high`. Higher effort improves accuracy on harder questions at additional token cost. With raw OpenAI clients pass via `extra_body`."
           },
           "stream": {
             "anyOf": [
@@ -828,7 +921,7 @@
               }
             ],
             "title": "Research",
-            "description": "Opt-in web research before forecasting. Pass `true` for default sources, or a `ResearchOptions` object to select sources."
+            "description": "Lightning Rod extension. Opt-in web research before forecasting. Pass `true` to query all default sources, or a `ResearchOptions` object to select sources. Available sources: `perplexity` (Perplexity web search), `news` (recent news articles), `google_search` (Google web results). Each source runs as its own query and is billed as a separate RESEARCH event; when research runs, its cost is reported in `usage`. With raw OpenAI clients pass via `extra_body`."
           },
           "answer_type": {
             "anyOf": [
@@ -844,7 +937,7 @@
               }
             ],
             "title": "Answer Type",
-            "description": "Structured answer format. One of `binary`, `multiple_choice`, `continuous`, `free_response`, or `auto`. When set, the response text includes a machine-readable answer in `<answer></answer>` tags."
+            "description": "Lightning Rod extension that injects output-format guidance and appends a structured answer between `<answer></answer>` tags in the response text. One of `binary`, `multiple_choice`, `continuous`, `free_response`, or `auto`. Raw response shapes: `binary` -> `<answer>0.62</answer>` (probability between 0 and 1); `continuous` -> `<answer>{\"mean\": 42.5, \"standard_deviation\": 5.2}</answer>`; `multiple_choice` -> `<options>{\"A\": \"...\", \"B\": \"...\"}</options>` followed by `<answer>{\"A\": 0.55, \"B\": 0.45}</answer>`; `free_response` -> `<answer>...</answer>`. `auto` classifies the prompt server-side first, then returns one of the above. Omit for prose only. With raw OpenAI clients pass via `extra_body`."
           }
         },
         "type": "object",
@@ -1014,13 +1107,13 @@
               "type": "string",
               "enum": [
                 "perplexity",
-                "google_news",
+                "news",
                 "google_search"
               ]
             },
             "type": "array",
             "title": "Sources",
-            "description": "Which research providers to query in parallel: `perplexity` (Perplexity web search), `google_news` (recent news articles), `google_search` (Google web results). Each provider is billed as a separate RESEARCH event."
+            "description": "Which research providers to query in parallel: `perplexity` (Perplexity web search), `news` (recent news articles), `google_search` (Google web results). Each provider is billed as a separate RESEARCH event."
           }
         },
         "type": "object",
@@ -1235,6 +1328,46 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "MppTopupResponse": {
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "title": "Organization Id"
+          },
+          "credited_cents": {
+            "type": "integer",
+            "title": "Credited Cents"
+          },
+          "api_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "api_key_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_id",
+          "credited_cents"
+        ],
+        "title": "MppTopupResponse"
       }
     },
     "securitySchemes": {
@@ -1246,7 +1379,18 @@
   },
   "servers": [
     {
-      "url": "https://api.lightningrod.ai/api/public/v1/openai"
+      "url": "https://api.lightningrod.ai/v1"
     }
-  ]
+  ],
+  "x-service-info": {
+    "categories": [
+      "ai",
+      "forecasting"
+    ],
+    "docs": {
+      "homepage": "https://lightningrod.ai",
+      "apiReference": "https://www.lightningrod.ai/openapi.json",
+      "llms": "https://www.lightningrod.ai/llms.txt"
+    }
+  }
 }
