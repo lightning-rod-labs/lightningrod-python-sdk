@@ -38,7 +38,7 @@ See the [forecasting guides](https://docs.lightningrod.ai/forecasting/guides) fo
 `lr.predict()` wraps the same API and parses the structured answer for you:
 
 ```bash
-pip install lightningrod-ai openai
+pip install lightningrod-ai
 ```
 
 ```python
