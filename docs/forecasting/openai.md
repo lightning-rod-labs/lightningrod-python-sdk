@@ -56,7 +56,7 @@ print(response.choices[0].message.content) # ... <answer>0.62</answer>
 | `"continuous"`      | `<answer>{"mean": 42.5, "standard_deviation": 5.2}</answer>` |
 | `"multiple_choice"` | `<answer>{"A": 0.55, "B": 0.45}</answer>`                    |
 | `"free_response"`   | `<answer>...</answer>`                                       |
-| `"auto"`            | Server-selected structured answer                            |
+| `"auto"`            | Server-selected structured answer raw response shape                            |
 
 
 See our [API reference](https://docs.lightningrod.ai/api-reference) for more response examples.

@@ -14,7 +14,6 @@ client = lr.LightningRod(api_key="your-api-key")
 
 result = client.predict("Will the Fed cut rates by 25bp in March 2026?", model="foresight-v4")
 
-print(result.binary.probability)
 print(result.content)
 ```
 
@@ -57,7 +56,8 @@ print(result.content)
 | `"continuous"`      | `result.continuous.mean`, `result.continuous.standard_deviation`         |
 | `"multiple_choice"` | `result.multiple_choice.options`, `result.multiple_choice.probabilities` |
 | `"free_response"`   | `result.free_response.text`                                              |
-| `"auto"`            | Parsed into the best matching typed field                                |
+
+`answer_type="auto"` is not yet supported by `predict()` and raises a `ValueError`. Use it only with the raw [OpenAI client](./openai.md).
 
 See our [API reference](https://docs.lightningrod.ai/api-reference) for more response examples.
 
@@ -86,7 +86,7 @@ result = client.predict(
     reasoning_effort="low",
 )
 
-print(result.binary.probability)
+print(result.content)
 print(result.usage.total_tokens)
 ```
 
