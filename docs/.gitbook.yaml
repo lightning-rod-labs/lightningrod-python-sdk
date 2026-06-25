@@ -20,5 +20,4 @@ redirects:
   fine-tuning/training: platform/fine-tuning/training.md
   fine-tuning/evaluation: platform/fine-tuning/evaluation.md
   fine-tuning/inference: platform/fine-tuning/inference.md
-  agents: platform/agents.md
   examples: platform/examples.md
