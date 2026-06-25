@@ -86,6 +86,7 @@ print(result.content)
 |-------|----------|-------------|
 | Foresight v4 | `foresight-v4` or `LightningRodLabs/foresight-v4` | Current forecasting model. |
 | Foresight v3 | `foresight-v3` or `LightningRodLabs/foresight-v3` | Previous forecasting model. |
+| Military Strikes | `military-strikes` | Military strikes forecasting model. |
 
 ## Answer Types
 
