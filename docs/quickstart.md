@@ -10,7 +10,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="your-api-key",
-    base_url="https://api.lightningrod.ai/api/public/v1/openai",
+    base_url="https://api.lightningrod.ai/v1/openai",
 )
 
 response = client.chat.completions.create(
