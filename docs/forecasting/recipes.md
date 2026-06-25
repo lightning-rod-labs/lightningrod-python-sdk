@@ -1,9 +1,9 @@
 ---
 icon: compass
-description: How to write good forecasting questions and improve forecasts.
+description: Guidelines on how to effectively forecast using our API.
 ---
 
-# Guides
+# Recipes
 
 ## Writing good questions
 
@@ -15,6 +15,12 @@ Foresight works best when the question has clear resolution criteria: the event 
 
 ## Improving accuracy
 
-- **Gather and provide current context.**
+- **Gather and provide relevant context.**
 - **Turn on `research`** for questions that depend on recent events—it lets the model gather live evidence and attach sources you can inspect via `result.sources`.
 - **Use ensemble predictions.** Send the same request multiple times and use the median response.
+- **Fine-tune on your domain (enterprise).** If you want to achieve better accuracy and cost on your domain, leveraging your internal data, see [our enteprise platform](../platform/overview.md).
+
+## Optimizing costs
+
+- **Use low reasoning.** This will significantly reduce token usage, while still maintaining accuracy edge over the current frontier models.
+- **Curate your context.** Implement custom context aggregation logic, tuned for your forecasting question.

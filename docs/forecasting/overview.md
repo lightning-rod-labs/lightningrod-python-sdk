@@ -121,5 +121,5 @@ Need forecasting models tailored to your domain? Use the [Platform](../platform/
 
 ## Next steps
 
-* [Guides](guides.md) — writing good forecasting prompts
+* [Recipes](recipes.md) — writing good forecasting prompts
 * [Platform Overview](../platform/overview.md) — generate datasets and fine-tune your own forecasting models

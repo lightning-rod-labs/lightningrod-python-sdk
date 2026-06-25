@@ -28,7 +28,7 @@ print(response.choices[0].message.content)
 ## Start forecasting
 
 * [Forecasting Reference](forecasting/reference.md) — models, response shape, and answer types
-* [Guides](forecasting/guides.md) — writing good forecasting prompts
+* [Recipes](forecasting/recipes.md) — writing good forecasting prompts
 
 ## Enterprise
 

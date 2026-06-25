@@ -7,7 +7,7 @@
 ## Forecasting
 
 * [Overview](forecasting/overview.md)
-* [Guides](forecasting/guides.md)
+* [Recipes](forecasting/recipes.md)
 
 ## Platform (Enterprise)
 
