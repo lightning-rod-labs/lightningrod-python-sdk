@@ -9,7 +9,7 @@
     "/chat/completions": {
       "post": {
         "summary": "Chat Completions",
-        "description": "OpenAI-compatible chat/completions endpoint for Lightning Rod's **Foresight** forecasting models. Any OpenAI client works out of the box\u2014point `base_url` at `https://api.lightningrod.ai/api/public/v1/openai`. Standard fields (`messages`, `temperature`, `max_tokens`, `top_p`, ...) behave as usual. Lightning Rod adds three optional extensions\u2014`answer_type`, `research`, and `reasoning_effort`\u2014which are top-level fields on this endpoint; with raw OpenAI clients pass them inside `extra_body`. When `answer_type` is set, the model appends a machine-readable answer between `<answer></answer>` tags in `choices[0].message.content` (see the `answer_type` field for the per-type shapes). When `research` is enabled, the model pulls live web evidence before forecasting and reports research cost in `usage`.",
+        "description": "OpenAI-compatible chat/completions endpoint for Lightning Rod's **Foresight** forecasting models. Point an OpenAI client at `https://api.lightningrod.ai/api/public/v1/openai`. Use `extra_body` for Lightning Rod fields such as `answer_type` and `research`.",
         "operationId": "chat_completions_openai_chat_completions_post",
         "requestBody": {
           "content": {
@@ -271,7 +271,7 @@
     "/completions": {
       "post": {
         "summary": "Completions",
-        "description": "OpenAI-compatible text completion endpoint for Lightning Rod's **Foresight** forecasting models. Takes a raw `prompt` instead of chat `messages`; the structured answer (when `answer_type` is set) is appended between `<answer></answer>` tags in `choices[0].text`. The same Lightning Rod extensions apply\u2014`answer_type`, `research`, and `reasoning_effort` (pass via `extra_body` with raw OpenAI clients). Prefer the chat/completions endpoint for multi-turn conversations and framework compatibility.",
+        "description": "OpenAI-compatible text completion endpoint for Lightning Rod's **Foresight** forecasting models. Prefer chat/completions for new integrations. Use `extra_body` for Lightning Rod fields such as `answer_type` and `research`.",
         "operationId": "completions_openai_completions_post",
         "requestBody": {
           "content": {
@@ -412,7 +412,7 @@
               }
             ],
             "title": "Reasoning Effort",
-            "description": "Lightning Rod extension. Reasoning budget the model spends before answering: `low`, `medium`, or `high`. Defaults to `medium`; pass `low` to reduce reasoning budget. `high` is accepted for OpenAI compatibility and treated as `medium`. With raw OpenAI clients pass via `extra_body`."
+            "description": "OpenAI-compatible reasoning budget: `low`, `medium`, or `high`. Defaults to `medium`; `high` is accepted and treated as `medium`."
           },
           "stream": {
             "anyOf": [
@@ -483,7 +483,7 @@
               }
             ],
             "title": "Research",
-            "description": "Lightning Rod extension. Opt-in web research before forecasting. Pass `true` to query all default sources, or a `ResearchOptions` object to select sources. Available sources: `perplexity` (Perplexity web search), `google_news` (recent news articles), `google_search` (Google web results). Each source runs as its own query and is billed as a separate RESEARCH event; when research runs, its cost is reported in `usage`. With raw OpenAI clients pass via `extra_body`."
+            "description": "Opt-in web research before forecasting. Pass `true` for default sources, or a `ResearchOptions` object to select sources."
           },
           "answer_type": {
             "anyOf": [
@@ -499,7 +499,7 @@
               }
             ],
             "title": "Answer Type",
-            "description": "Lightning Rod extension that injects output-format guidance and appends a structured answer between `<answer></answer>` tags in the response content. One of `binary`, `multiple_choice`, `continuous`, `free_response`, or `auto`. Raw response shapes: `binary` -> `<answer>0.62</answer>` (probability between 0 and 1); `continuous` -> `<answer>{\"mean\": 42.5, \"standard_deviation\": 5.2}</answer>`; `multiple_choice` -> `<options>{\"A\": \"...\", \"B\": \"...\"}</options>` followed by `<answer>{\"A\": 0.55, \"B\": 0.45}</answer>`; `free_response` -> `<answer>...</answer>`. `auto` classifies the user question server-side first, then returns one of the above. Omit for prose only. With raw OpenAI clients pass via `extra_body`."
+            "description": "Structured answer format. One of `binary`, `multiple_choice`, `continuous`, `free_response`, or `auto`. When set, the response content includes a machine-readable answer in `<answer></answer>` tags."
           }
         },
         "type": "object",
@@ -510,36 +510,15 @@
         "title": "ChatCompletionRequest",
         "examples": [
           {
+            "model": "foresight-v4",
             "messages": [
-              {
-                "content": "Will Bitcoin increase by more than 10% over the next 3 months? Answer as a probability between 0 and 1 between <answer></answer> tags.",
-                "role": "user"
-              }
-            ],
-            "model": "foresight-v4"
-          },
-          {
-            "model": "LightningRodLabs/foresight-v4",
-            "messages": [
-              {
-                "role": "system",
-                "content": "Give calibrated forecasts and cite sources when research is used."
-              },
               {
                 "role": "user",
                 "content": "Will the Fed cut rates by 25bp in March 2026?"
               }
             ],
-            "temperature": 0.2,
-            "max_tokens": 2048,
             "answer_type": "binary",
-            "research": {
-              "sources": [
-                "perplexity",
-                "google_news"
-              ]
-            },
-            "reasoning_effort": "low"
+            "research": true
           }
         ]
       },
@@ -778,7 +757,7 @@
               }
             ],
             "title": "Reasoning Effort",
-            "description": "Lightning Rod extension. Reasoning budget the model spends before answering: `low`, `medium`, or `high`. Defaults to `medium`; pass `low` to reduce reasoning budget. `high` is accepted for OpenAI compatibility and treated as `medium`. With raw OpenAI clients pass via `extra_body`."
+            "description": "OpenAI-compatible reasoning budget: `low`, `medium`, or `high`. Defaults to `medium`; `high` is accepted and treated as `medium`."
           },
           "stream": {
             "anyOf": [
@@ -849,7 +828,7 @@
               }
             ],
             "title": "Research",
-            "description": "Lightning Rod extension. Opt-in web research before forecasting. Pass `true` to query all default sources, or a `ResearchOptions` object to select sources. Available sources: `perplexity` (Perplexity web search), `google_news` (recent news articles), `google_search` (Google web results). Each source runs as its own query and is billed as a separate RESEARCH event; when research runs, its cost is reported in `usage`. With raw OpenAI clients pass via `extra_body`."
+            "description": "Opt-in web research before forecasting. Pass `true` for default sources, or a `ResearchOptions` object to select sources."
           },
           "answer_type": {
             "anyOf": [
@@ -865,7 +844,7 @@
               }
             ],
             "title": "Answer Type",
-            "description": "Lightning Rod extension that injects output-format guidance and appends a structured answer between `<answer></answer>` tags in the response text. One of `binary`, `multiple_choice`, `continuous`, `free_response`, or `auto`. Raw response shapes: `binary` -> `<answer>0.62</answer>` (probability between 0 and 1); `continuous` -> `<answer>{\"mean\": 42.5, \"standard_deviation\": 5.2}</answer>`; `multiple_choice` -> `<options>{\"A\": \"...\", \"B\": \"...\"}</options>` followed by `<answer>{\"A\": 0.55, \"B\": 0.45}</answer>`; `free_response` -> `<answer>...</answer>`. `auto` classifies the prompt server-side first, then returns one of the above. Omit for prose only. With raw OpenAI clients pass via `extra_body`."
+            "description": "Structured answer format. One of `binary`, `multiple_choice`, `continuous`, `free_response`, or `auto`. When set, the response text includes a machine-readable answer in `<answer></answer>` tags."
           }
         },
         "type": "object",

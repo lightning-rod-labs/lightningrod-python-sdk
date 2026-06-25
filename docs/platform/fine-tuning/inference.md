@@ -1,11 +1,11 @@
 ---
 icon: wand-magic-sparkles
-description: Run predictions with your fine-tuned model via lr.predict() or the OpenAI-compatible API — the same interface as Foresight.
+description: Run predictions with your fine-tuned model via lr.predict() or the OpenAI-compatible API.
 ---
 
 # Inference
 
-Your fine-tuned model is served through the same interface as the hosted [Foresight](../../forecasting/reference.md) models. Everything in the [Forecasting](../../forecasting/reference.md) section applies—just pass your trained `model_id` instead of `foresight-v4`.
+Use your trained `model_id` with `lr.predict()` or the OpenAI-compatible API.
 
 ## LightningRod.predict()
 
@@ -20,30 +20,29 @@ result = client.predict(
 print(result.binary.probability)
 ```
 
-`predict()` returns a structured `PredictionResult` and accepts the same first-class parameters as Foresight—`answer_type`, `research`, `reasoning_effort`, and `system_prompt`. See the [Forecasting Reference](../../forecasting/reference.md) for the full reference.
+`predict()` returns a structured `PredictionResult`. See the [Forecasting Reference](../../forecasting/reference.md) for response fields and answer types.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `prompt` | str | — | The question or prompt text |
-| `model` | str \| None | latest Foresight model | Model to query—pass your trained model ID here |
+| `model` | str | — | Trained model ID |
 | `answer_type` | str \| None | `None` | Structured answer format (`"binary"`, `"continuous"`, …) |
 | `research` | bool \| list \| None | `None` | Opt-in web research before forecasting |
-| `reasoning_effort` | str | `"medium"` | `"low"`, `"medium"`, or `"high"` |
 | `system_prompt` | str \| None | `None` | Optional system message |
 | `**kwargs` | — | — | Forwarded to `openai.chat.completions.create` |
 
-Requires `pip install openai` (uses Lightning Rod's API key and base URL automatically).
+Requires `openai`.
 
 ## OpenAI-compatible API
 
-Use the OpenAI client with Lightning Rod's base URL for full control:
+Use the OpenAI client with Lightning Rod's base URL:
 
 ```python
 from openai import OpenAI
 
 client = OpenAI(
     api_key=api_key,
-    base_url="https://api.lightningrod.ai/api/public/v1/openai",
+    base_url="https://api.lightningrod.ai/v1/openai",
 )
 
 response = client.chat.completions.create(
