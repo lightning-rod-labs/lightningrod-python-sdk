@@ -6,7 +6,7 @@
 
 ## Forecasting
 
-* [Reference](forecasting/reference.md)
+* [Overview](forecasting/overview.md)
 * [Guides](forecasting/guides.md)
 
 ## Platform (Enterprise)

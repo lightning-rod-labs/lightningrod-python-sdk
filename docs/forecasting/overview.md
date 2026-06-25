@@ -1,6 +1,6 @@
 ---
 icon: chart-line
-description: Foresight forecasting API reference.
+description: Foresight forecasting API overview.
 ---
 
 **Foresight** returns calibrated forecasts through an OpenAI-compatible API.
@@ -90,7 +90,7 @@ print(result.content)
 | Foresight v3 | `foresight-v3` | Previous forecasting model. |
 | Military Strikes | `military-strikes` | Trained for Numinous forecasters, generally available. |
 
-## Answer Types
+## Answer types
 
 When `answer_type` is set, the response includes machine-readable tags. `predict()` parses them into typed fields.
 
@@ -101,6 +101,17 @@ When `answer_type` is set, the response includes machine-readable tags. `predict
 | `"multiple_choice"` | `<options>{"A": "...", "B": "..."}</options>` plus `<answer>{"A": 0.55, "B": 0.45}</answer>` | `result.multiple_choice.options`, `result.multiple_choice.probabilities` |
 | `"free_response"`   | `<answer>...</answer>`                                                                       | `result.free_response.text`                                              |
 | `"auto"`            | Server-selected structured answer                                                            | Parsed into the best matching typed field                                |
+
+## Research
+
+When `research=True` is set, our model will automatically gather and rank relevant context from supported sources listed below. You can also limit the sources to use using the `research.sources` array field.
+
+| Source | What it does |
+| ------ | ------------ |
+| `perplexity` | Queries Perplexity for web-grounded context. |
+| `google_news` | Pulls recent news articles from Google News. |
+
+If you'd like to see us support any other sources, please [submit an issue on Github](https://github.com/lightning-rod-labs/lightningrod-python-sdk/issues).
 
 ## Enterprise
 
