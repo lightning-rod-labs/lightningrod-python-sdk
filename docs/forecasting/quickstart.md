@@ -26,7 +26,7 @@ response = client.chat.completions.create(
         {"role": "user", "content": "Will Elon Musk still be the richest person by 2030?"},
     ],
 )
-print(response.choices[0].message.content) # unstructured markdown/text prediction
+print(response.choices[0].message.content)
 ```
 
 ## Available Models
@@ -35,7 +35,6 @@ print(response.choices[0].message.content) # unstructured markdown/text predicti
 |-------|----------|-------------|
 | Foresight v4 | `foresight-v4` | Latest forecasting model. |
 | Foresight v3 | `foresight-v3` | Previous forecasting model. |
-| Military Strikes | `military-strikes` | Trained for Numinous forecasters, generally available. |
 
 ## Structured Prediction
 
@@ -45,7 +44,7 @@ We offer a custom `answer_type` extension parameter to achieve exactly that. We 
 
 ## Prediction Context
 
-By default, none of the models have access to external sources - they are limited by their knowledge cutoff date (June 1, 2024).
+By default, none of the models have access to external sources - they are limited by the context they were trained on.
 
 To achieve accurate and useful prediction results, you should always provide relevant context alongside your question. There are currently two ways of doing that:
 1. provide your own custom-aggregated context (this is the "secret sauce" that can give you an edge)

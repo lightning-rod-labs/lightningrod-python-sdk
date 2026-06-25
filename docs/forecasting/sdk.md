@@ -3,26 +3,22 @@ icon: python
 description: Structured predictions with lr.predict()
 ---
 
-# Using our SDK
+# Python SDK
+
+## Minimal example
 
 ```python
 import lightningrod as lr
 
 client = lr.LightningRod(api_key="your-api-key")
 
-result = client.predict(
-    "Will the Fed cut rates by 25bp in March 2026?",
-    model="foresight-v4",
-    answer_type="binary",
-    research=True,
-    reasoning_effort="low",
-)
+result = client.predict("Will the Fed cut rates by 25bp in March 2026?", model="foresight-v4")
 
 print(result.binary.probability)
 print(result.content)
 ```
 
-## Response
+Response fields:
 
 | Field             | Type                    | Description                                                     |
 | ----------------- | ----------------------- | --------------------------------------------------------------- |
@@ -41,6 +37,20 @@ print(result.content)
 
 When `answer_type` is set, `predict()` parses the response tags into typed fields on `PredictionResult`.
 
+```python
+import lightningrod as lr
+
+client = lr.LightningRod(api_key="your-api-key")
+
+result = client.predict(
+    "Will the Fed cut rates by 25bp in March 2026?",
+    answer_type="binary",
+)
+
+print(result.binary.probability)
+print(result.content)
+```
+
 | `answer_type`       | `PredictionResult` field                                                 |
 | ------------------- | ------------------------------------------------------------------------ |
 | `"binary"`          | `result.binary.probability`                                              |
@@ -49,6 +59,8 @@ When `answer_type` is set, `predict()` parses the response tags into typed field
 | `"free_response"`   | `result.free_response.text`                                              |
 | `"auto"`            | Parsed into the best matching typed field                                |
 
+See our [API reference](https://docs.lightningrod.ai/api-reference) for more response examples.
+
 ## Research
 
 Pass `research=True` to query all default sources, or pass a list to restrict providers:
@@ -56,8 +68,6 @@ Pass `research=True` to query all default sources, or pass a list to restrict pr
 ```python
 result = client.predict(
     "Will the Fed cut rates by 25bp in March 2026?",
-    model="foresight-v4",
-    answer_type="binary",
     research=["perplexity", "google_news"],
 )
 
@@ -67,3 +77,19 @@ print(result.usage.research_cost_usd)
 ```
 
 See our [API reference](https://docs.lightningrod.ai/api-reference) for an up-to-date list of supported sources.
+
+## Reasoning effort
+
+```python
+result = client.predict(
+    "Will the Fed cut rates by 25bp in March 2026?",
+    reasoning_effort="low",
+)
+
+print(result.binary.probability)
+print(result.usage.total_tokens)
+```
+
+Recommendation: start with `low` reasoning, and increase only if necessary. This cuts token usage significantly while still beating current frontier models accuracy.
+
+See [Recipes](recipes.md) for more forecasting guidelines.

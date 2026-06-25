@@ -5,6 +5,8 @@ description: Use Foresight through any OpenAI-compatible client.
 
 # OpenAI API
 
+## Minimal example
+
 ```python
 from openai import OpenAI
 
@@ -18,15 +20,11 @@ response = client.chat.completions.create(
     messages=[
         {"role": "user", "content": "Will the Fed cut rates by 25bp in March 2026?"},
     ],
-    reasoning_effort="low", # Recommended default for lower costs
-    extra_body={"research": True, "answer_type": "auto"}, # Optional extension params
 )
 
 message = response.choices[0].message
 print(message.content)
 ```
-
-## Response
 
 A few useful response fields:
 - `response.choices[0].message.content` — model response, including `<answer></answer>` tags when `answer_type` is set.
@@ -40,6 +38,17 @@ See the [REST API reference](https://docs.lightningrod.ai/rest-api#post-openai-c
 
 When `answer_type` is set, `message.content` includes machine-readable tags.
 
+```python
+response = client.chat.completions.create(
+    model="foresight-v4",
+    messages=[
+        {"role": "user", "content": "Will the Fed cut rates by 25bp in March 2026?"},
+    ],
+    extra_body={"answer_type": "auto"},
+)
+
+print(response.choices[0].message.content) # ... <answer>0.62</answer>
+```
 
 | `answer_type`       | Raw response shape                                           |
 | ------------------- | ------------------------------------------------------------ |
@@ -49,6 +58,8 @@ When `answer_type` is set, `message.content` includes machine-readable tags.
 | `"free_response"`   | `<answer>...</answer>`                                       |
 | `"auto"`            | Server-selected structured answer                            |
 
+
+See our [API reference](https://docs.lightningrod.ai/api-reference) for more response examples.
 
 ## Research
 
@@ -68,3 +79,22 @@ response = client.chat.completions.create(
 ```
 
 See our [API reference](https://docs.lightningrod.ai/api-reference) for an up-to-date list of supported sources.
+
+## Reasoning effort
+
+```python
+response = client.chat.completions.create(
+    model="foresight-v4",
+    messages=[
+        {"role": "user", "content": "Will the Fed cut rates by 25bp in March 2026?"},
+    ],
+    reasoning_effort="low",
+)
+
+print(response.choices[0].message.content)
+print(response.usage.total_tokens)
+```
+
+Recommendation: start with `low` reasoning, and increase only if necessary. This cuts token usage significantly while still beating current frontier models accuracy.
+
+See [Recipes](recipes.md) for more forecasting guidelines.
