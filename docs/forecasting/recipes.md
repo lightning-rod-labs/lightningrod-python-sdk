@@ -22,5 +22,6 @@ Foresight works best when the question has clear resolution criteria: the event 
 
 ## Optimizing costs
 
-- **Use low reasoning.** This will significantly reduce token usage, while still maintaining accuracy edge over the current frontier models.
 - **Curate your context.** Implement custom context aggregation logic, tuned for your forecasting question.
+- **Use low reasoning.** This will significantly reduce token usage, while still maintaining accuracy edge over the current frontier models.
+Note: avoid setting low max_tokens as this can result in the response being truncated during reasoning and no final prediction captured. Use "low" reasoning effort instead. 

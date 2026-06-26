@@ -90,6 +90,6 @@ print(result.content)
 print(result.usage.total_tokens)
 ```
 
-Recommendation: start with `low` reasoning, and increase only if necessary. This cuts token usage significantly while still beating current frontier models accuracy.
+Recommendation: use `low` reasoning effort if cost and latency outweigh marginal improvements in accuracy.
 
 See [Recipes](recipes.md) for more forecasting guidelines.
