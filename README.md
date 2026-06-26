@@ -47,11 +47,11 @@ import lightningrod as lr
 
 client = lr.LightningRod(api_key="your-api-key")
 result = client.predict(
-    "Will the Fed cut rates by 25bp in March 2026?",
+    "Will the Fed cut interest rates in 2026?",
     answer_type="binary",
     research=True,
 )
-print(result.binary.probability)  # e.g. 0.62
+print(result.binary.probability)
 ```
 
 ## 🏗️ Train an expert on your domain

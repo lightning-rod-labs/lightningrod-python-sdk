@@ -18,7 +18,7 @@ client = OpenAI(
 response = client.chat.completions.create(
     model="foresight-v4",
     messages=[
-        {"role": "user", "content": "Will the Fed cut rates by 25bp in March 2026?"},
+        {"role": "user", "content": "Will the Fed cut interest rates in 2026?"},
     ],
 )
 
@@ -42,7 +42,7 @@ When `answer_type` is set, `message.content` includes machine-readable tags.
 response = client.chat.completions.create(
     model="foresight-v4",
     messages=[
-        {"role": "user", "content": "Will the Fed cut rates by 25bp in March 2026?"},
+        {"role": "user", "content": "Will the Fed cut interest rates in 2026?"},
     ],
     extra_body={"answer_type": "auto"},
 )
@@ -69,7 +69,7 @@ Pass `research` in `extra_body` to gather live web context before forecasting. S
 response = client.chat.completions.create(
     model="foresight-v4",
     messages=[
-        {"role": "user", "content": "Will the Fed cut rates by 25bp in March 2026?"},
+        {"role": "user", "content": "Will the Fed cut interest rates in 2026?"},
     ],
     extra_body={
         "research": {"sources": ["perplexity", "google_news"]},
@@ -86,7 +86,7 @@ See our [API reference](https://docs.lightningrod.ai/api-reference) for an up-to
 response = client.chat.completions.create(
     model="foresight-v4",
     messages=[
-        {"role": "user", "content": "Will the Fed cut rates by 25bp in March 2026?"},
+        {"role": "user", "content": "Will the Fed cut interest rates in 2026?"},
     ],
     reasoning_effort="low",
 )
@@ -95,6 +95,6 @@ print(response.choices[0].message.content)
 print(response.usage.total_tokens)
 ```
 
-Recommendation: start with `low` reasoning, and increase only if necessary. This cuts token usage significantly while still beating current frontier models accuracy.
+Recommendation: use `low` reasoning effort if cost and latency outweigh marginal improvements in accuracy.
 
 See [Recipes](recipes.md) for more forecasting guidelines.

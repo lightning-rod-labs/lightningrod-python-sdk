@@ -13,7 +13,7 @@ Use your trained `model_id` with `lr.predict()` or the OpenAI-compatible API.
 client = lr.LightningRod(api_key="your-api-key")
 
 result = client.predict(
-    "Will the Fed cut rates by 25bp in March 2026?",
+    "Will the Fed cut interest rates in 2026?",
     model=job.model_id,
     answer_type="binary",
 )
@@ -48,7 +48,7 @@ client = OpenAI(
 response = client.chat.completions.create(
     model=job.model_id,
     messages=[
-        {"role": "user", "content": "Will the Fed cut rates by 25bp in March 2026?"},
+        {"role": "user", "content": "Will the Fed cut interest rates in 2026?"},
     ],
     extra_body={"answer_type": "binary"},
 )

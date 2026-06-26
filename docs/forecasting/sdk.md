@@ -12,7 +12,7 @@ import lightningrod as lr
 
 client = lr.LightningRod(api_key="your-api-key")
 
-result = client.predict("Will the Fed cut rates by 25bp in March 2026?", model="foresight-v4")
+result = client.predict("Will the Fed cut interest rates in 2026?", model="foresight-v4")
 
 print(result.content)
 ```
@@ -42,7 +42,7 @@ import lightningrod as lr
 client = lr.LightningRod(api_key="your-api-key")
 
 result = client.predict(
-    "Will the Fed cut rates by 25bp in March 2026?",
+    "Will the Fed cut interest rates in 2026?",
     answer_type="binary",
 )
 
@@ -67,7 +67,7 @@ Pass `research=True` to query all default sources, or pass a list to restrict pr
 
 ```python
 result = client.predict(
-    "Will the Fed cut rates by 25bp in March 2026?",
+    "Will the Fed cut interest rates in 2026?",
     research=["perplexity", "google_news"],
 )
 
@@ -82,7 +82,7 @@ See our [API reference](https://docs.lightningrod.ai/api-reference) for an up-to
 
 ```python
 result = client.predict(
-    "Will the Fed cut rates by 25bp in March 2026?",
+    "Will the Fed cut interest rates in 2026?",
     reasoning_effort="low",
 )
 
@@ -90,6 +90,6 @@ print(result.content)
 print(result.usage.total_tokens)
 ```
 
-Recommendation: start with `low` reasoning, and increase only if necessary. This cuts token usage significantly while still beating current frontier models accuracy.
+Recommendation: use `low` reasoning effort if cost and latency outweigh marginal improvements in accuracy.
 
 See [Recipes](recipes.md) for more forecasting guidelines.

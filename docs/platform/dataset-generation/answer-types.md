@@ -97,7 +97,7 @@ binary_example(question: str, comment: str | None = None) -> str
 
 ```python
 # Good example — no comment
-binary_example("Will the Fed cut rates at its May 6, 2026 FOMC meeting?")
+binary_example("Will the Fed cut interest rates in 2026?")
 
 # Bad example — explain why it's bad
 binary_example(
