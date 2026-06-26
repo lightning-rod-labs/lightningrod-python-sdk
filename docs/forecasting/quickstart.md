@@ -23,7 +23,7 @@ client = OpenAI(
 response = client.chat.completions.create(
     model="foresight-v4",
     messages=[
-        {"role": "user", "content": "Will Elon Musk still be the richest person by 2030?"},
+        {"role": "user", "content": "Will any company operate a commercial AI data center in space before January 1, 2028?"},
     ],
 )
 print(response.choices[0].message.content)
