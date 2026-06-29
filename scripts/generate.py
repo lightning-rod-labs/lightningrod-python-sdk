@@ -15,7 +15,7 @@ from pathlib import Path
 from urllib.request import urlopen
 from urllib.error import URLError
 
-API_URL = "http://localhost:8080/api/public/v1/openapi.json"
+API_URL = "http://localhost:8080/api/public/v1/openapi-sdk.json"
 SDK_ROOT = Path(__file__).parent.parent
 OPENAPI_FILE = SDK_ROOT / "openapi" / "openapi.json"
 GENERATED_DIR = SDK_ROOT / "src" / "lightningrod" / "_generated"

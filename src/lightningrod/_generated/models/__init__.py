@@ -8,14 +8,17 @@ from .balance_response import BalanceResponse
 from .batch_upload_request import BatchUploadRequest
 from .batch_upload_response import BatchUploadResponse
 from .batch_upload_response_upload_urls import BatchUploadResponseUploadUrls
+from .batch_upload_response_uploads import BatchUploadResponseUploads
 from .big_query_seed_generator import BigQuerySeedGenerator
 from .binary_answer_type import BinaryAnswerType
 from .chat_completion_request import ChatCompletionRequest
+from .chat_completion_request_reasoning_effort_type_0 import ChatCompletionRequestReasoningEffortType0
 from .chat_completion_response import ChatCompletionResponse
 from .chat_message import ChatMessage
 from .choice import Choice
 from .completion_choice import CompletionChoice
 from .completion_request import CompletionRequest
+from .completion_request_reasoning_effort_type_0 import CompletionRequestReasoningEffortType0
 from .completion_response import CompletionResponse
 from .continuous_answer_type import ContinuousAnswerType
 from .continuous_value_only_answer_type import ContinuousValueOnlyAnswerType
@@ -57,6 +60,8 @@ from .file_set_document_labeler import FileSetDocumentLabeler
 from .file_set_metadata_schema import FileSetMetadataSchema
 from .file_set_metadata_schema_input import FileSetMetadataSchemaInput
 from .file_set_seed_generator import FileSetSeedGenerator
+from .file_upload_target import FileUploadTarget
+from .file_upload_target_headers import FileUploadTargetHeaders
 from .filter_criteria import FilterCriteria
 from .forward_looking_question import ForwardLookingQuestion
 from .forward_looking_question_generator import ForwardLookingQuestionGenerator
@@ -86,6 +91,7 @@ from .model_list_response import ModelListResponse
 from .model_object import ModelObject
 from .model_object_pricing import ModelObjectPricing
 from .model_source_type import ModelSourceType
+from .mpp_topup_response import MppTopupResponse
 from .multiple_choice_answer_type import MultipleChoiceAnswerType
 from .multiple_choice_answer_type_multiple_choice_options_type_0 import (
     MultipleChoiceAnswerTypeMultipleChoiceOptionsType0,
@@ -169,15 +175,18 @@ __all__ = (
     "BalanceResponse",
     "BatchUploadRequest",
     "BatchUploadResponse",
+    "BatchUploadResponseUploads",
     "BatchUploadResponseUploadUrls",
     "BigQuerySeedGenerator",
     "BinaryAnswerType",
     "ChatCompletionRequest",
+    "ChatCompletionRequestReasoningEffortType0",
     "ChatCompletionResponse",
     "ChatMessage",
     "Choice",
     "CompletionChoice",
     "CompletionRequest",
+    "CompletionRequestReasoningEffortType0",
     "CompletionResponse",
     "ContinuousAnswerType",
     "ContinuousValueOnlyAnswerType",
@@ -219,6 +228,8 @@ __all__ = (
     "FileSetMetadataSchema",
     "FileSetMetadataSchemaInput",
     "FileSetSeedGenerator",
+    "FileUploadTarget",
+    "FileUploadTargetHeaders",
     "FilterCriteria",
     "ForwardLookingQuestion",
     "ForwardLookingQuestionGenerator",
@@ -248,6 +259,7 @@ __all__ = (
     "ModelObject",
     "ModelObjectPricing",
     "ModelSourceType",
+    "MppTopupResponse",
     "MultipleChoiceAnswerType",
     "MultipleChoiceAnswerTypeMultipleChoiceOptionsType0",
     "NewsContext",

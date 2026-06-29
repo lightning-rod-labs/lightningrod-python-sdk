@@ -52,7 +52,7 @@ class LightningRod:
     def __init__(
         self,
         api_key: str | None = None,
-        base_url: str = "https://api.lightningrod.ai/api/public/v1"
+        base_url: str = "https://api.lightningrod.ai/v1"
     ):
         # Resolve credentials lazily (at instantiation, not at import time) so a
         # missing key doesn't blow up `import lightningrod`.

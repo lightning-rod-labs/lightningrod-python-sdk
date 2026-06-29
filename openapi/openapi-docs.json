@@ -9,7 +9,7 @@
     "/openai/chat/completions": {
       "post": {
         "summary": "Chat Completions",
-        "description": "OpenAI-compatible chat/completions endpoint for Lightning Rod's **Foresight** forecasting models. Any OpenAI client works out of the box\u2014point `base_url` at `https://api.lightningrod.ai/api/public/v1/openai`. Standard fields (`messages`, `temperature`, `max_tokens`, `top_p`, ...) behave as usual. Lightning Rod adds three optional extensions\u2014`answer_type`, `research`, and `reasoning_effort`\u2014which are top-level fields on this endpoint; with raw OpenAI clients pass them inside `extra_body`. When `answer_type` is set, the model appends a machine-readable answer between `<answer></answer>` tags in `choices[0].message.content` (see the `answer_type` field for the per-type shapes). When `research` is enabled, the model pulls live web evidence before forecasting and reports research cost in `usage`.",
+        "description": "OpenAI-compatible chat/completions endpoint for Lightning Rod's **Foresight** forecasting models. Any OpenAI client works out of the box\u2014point `base_url` at `https://api.lightningrod.ai/v1/openai`. Standard fields (`messages`, `temperature`, `max_tokens`, `top_p`, ...) behave as usual. Lightning Rod adds three optional extensions\u2014`answer_type`, `research`, and `reasoning_effort`\u2014which are top-level fields on this endpoint; with raw OpenAI clients pass them inside `extra_body`. When `answer_type` is set, the model appends a machine-readable answer between `<answer></answer>` tags in `choices[0].message.content` (see the `answer_type` field for the per-type shapes). When `research` is enabled, the model pulls live web evidence before forecasting and reports research cost in `usage`.",
         "operationId": "chat_completions_openai_chat_completions_post",
         "requestBody": {
           "content": {
@@ -1385,7 +1385,10 @@
   "x-service-info": {
     "categories": [
       "ai",
-      "forecasting"
+      "llm",
+      "ai agents",
+      "forecasting",
+      "prediction markets"
     ],
     "docs": {
       "homepage": "https://lightningrod.ai",
