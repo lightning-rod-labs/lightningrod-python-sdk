@@ -6,12 +6,12 @@ from typing import Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="TrainingJobModelIdByStepType0")
+T = TypeVar("T", bound="FileUploadTargetHeaders")
 
 
 @_attrs_define
-class TrainingJobModelIdByStepType0:
-    """ """
+class FileUploadTargetHeaders:
+    """Headers that must accompany the upload request"""
 
     additional_properties: dict[str, str] = _attrs_field(init=False, factory=dict)
 
@@ -25,10 +25,10 @@ class TrainingJobModelIdByStepType0:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        training_job_model_id_by_step_type_0 = cls()
+        file_upload_target_headers = cls()
 
-        training_job_model_id_by_step_type_0.additional_properties = d
-        return training_job_model_id_by_step_type_0
+        file_upload_target_headers.additional_properties = d
+        return file_upload_target_headers
 
     @property
     def additional_keys(self) -> list[str]:

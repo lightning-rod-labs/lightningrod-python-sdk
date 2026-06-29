@@ -1,0 +1,1399 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "LightningRod API",
+    "description": "Generate verified, grounded datasets at scale for LLM fine-tuning and evaluation",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/openai/chat/completions": {
+      "post": {
+        "summary": "Chat Completions",
+        "description": "OpenAI-compatible chat/completions endpoint for Lightning Rod's **Foresight** forecasting models. Any OpenAI client works out of the box\u2014point `base_url` at `https://api.lightningrod.ai/api/public/v1/openai`. Standard fields (`messages`, `temperature`, `max_tokens`, `top_p`, ...) behave as usual. Lightning Rod adds three optional extensions\u2014`answer_type`, `research`, and `reasoning_effort`\u2014which are top-level fields on this endpoint; with raw OpenAI clients pass them inside `extra_body`. When `answer_type` is set, the model appends a machine-readable answer between `<answer></answer>` tags in `choices[0].message.content` (see the `answer_type` field for the per-type shapes). When `research` is enabled, the model pulls live web evidence before forecasting and reports research cost in `usage`.",
+        "operationId": "chat_completions_openai_chat_completions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatCompletionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatCompletionResponse"
+                },
+                "examples": {
+                  "binary_forecast": {
+                    "summary": "Binary forecast (answer_type=binary)",
+                    "description": "The probability is embedded in `choices[0].message.content` between `<answer></answer>` tags.",
+                    "value": {
+                      "id": "chatcmpl-abc123",
+                      "object": "chat.completion",
+                      "created": 1718712345,
+                      "model": "LightningRodLabs/foresight-v4",
+                      "choices": [
+                        {
+                          "index": 0,
+                          "message": {
+                            "role": "assistant",
+                            "thinking": "Recent FOMC guidance and CPI prints point to a likely 25bp cut...",
+                            "content": "Considering recent inflation data and Fed signaling, a 25bp cut in March is more likely than not. <answer>0.62</answer>"
+                          },
+                          "finish_reason": "stop"
+                        }
+                      ],
+                      "usage": {
+                        "prompt_tokens": 320,
+                        "completion_tokens": 540,
+                        "total_tokens": 860,
+                        "cost_usd": 0.0091,
+                        "inference_cost_usd": 0.0091,
+                        "research_cost_usd": null,
+                        "classification_cost_usd": null
+                      }
+                    }
+                  },
+                  "multiple_choice_forecast": {
+                    "summary": "Multiple-choice forecast (answer_type=multiple_choice)",
+                    "description": "Options are listed in `<options>` tags and the probability distribution over them in `<answer>` tags.",
+                    "value": {
+                      "id": "chatcmpl-def456",
+                      "object": "chat.completion",
+                      "created": 1718712400,
+                      "model": "LightningRodLabs/foresight-v4",
+                      "choices": [
+                        {
+                          "index": 0,
+                          "message": {
+                            "role": "assistant",
+                            "content": "<options>{\"A\": \"No cut\", \"B\": \"25bp cut\", \"C\": \"50bp cut\"}</options>\n<answer>{\"A\": 0.30, \"B\": 0.62, \"C\": 0.08}</answer>"
+                          },
+                          "finish_reason": "stop"
+                        }
+                      ],
+                      "usage": {
+                        "prompt_tokens": 280,
+                        "completion_tokens": 410,
+                        "total_tokens": 690,
+                        "cost_usd": 0.0089,
+                        "inference_cost_usd": 0.0089,
+                        "research_cost_usd": null,
+                        "classification_cost_usd": null
+                      }
+                    }
+                  },
+                  "continuous_forecast": {
+                    "summary": "Continuous forecast (answer_type=continuous)",
+                    "description": "A point estimate with uncertainty is returned as JSON between `<answer></answer>` tags, parsed into `mean` and `standard_deviation`.",
+                    "value": {
+                      "id": "chatcmpl-ghi789",
+                      "object": "chat.completion",
+                      "created": 1718712500,
+                      "model": "LightningRodLabs/foresight-v4",
+                      "choices": [
+                        {
+                          "index": 0,
+                          "message": {
+                            "role": "assistant",
+                            "content": "Based on recent guidance and historical dispersion, my central estimate is around 42.5. <answer>{\"mean\": 42.5, \"standard_deviation\": 5.2}</answer>"
+                          },
+                          "finish_reason": "stop"
+                        }
+                      ],
+                      "usage": {
+                        "prompt_tokens": 300,
+                        "completion_tokens": 360,
+                        "total_tokens": 660,
+                        "cost_usd": 0.0078,
+                        "inference_cost_usd": 0.0078,
+                        "research_cost_usd": null,
+                        "classification_cost_usd": null
+                      }
+                    }
+                  },
+                  "free_response_forecast": {
+                    "summary": "Free-response answer (answer_type=free_response)",
+                    "description": "A free-text answer is returned between `<answer></answer>` tags.",
+                    "value": {
+                      "id": "chatcmpl-jkl012",
+                      "object": "chat.completion",
+                      "created": 1718712600,
+                      "model": "LightningRodLabs/foresight-v4",
+                      "choices": [
+                        {
+                          "index": 0,
+                          "message": {
+                            "role": "assistant",
+                            "content": "Weighing the leading candidates and current polling, one name stands out. <answer>The current deputy governor is the most likely successor.</answer>"
+                          },
+                          "finish_reason": "stop"
+                        }
+                      ],
+                      "usage": {
+                        "prompt_tokens": 260,
+                        "completion_tokens": 290,
+                        "total_tokens": 550,
+                        "cost_usd": 0.0061,
+                        "inference_cost_usd": 0.0061,
+                        "research_cost_usd": null,
+                        "classification_cost_usd": null
+                      }
+                    }
+                  },
+                  "auto_answer_type_forecast": {
+                    "summary": "Auto answer type (answer_type=auto)",
+                    "description": "The server classifies the question first (adding a classification cost), then returns the best-fit structured answer. Here it selected `binary`.",
+                    "value": {
+                      "id": "chatcmpl-mno345",
+                      "object": "chat.completion",
+                      "created": 1718712700,
+                      "model": "LightningRodLabs/foresight-v4",
+                      "choices": [
+                        {
+                          "index": 0,
+                          "message": {
+                            "role": "assistant",
+                            "content": "This is a yes/no outcome, so a probability is the natural answer. <answer>0.41</answer>"
+                          },
+                          "finish_reason": "stop"
+                        }
+                      ],
+                      "usage": {
+                        "prompt_tokens": 310,
+                        "completion_tokens": 400,
+                        "total_tokens": 710,
+                        "cost_usd": 0.0103,
+                        "inference_cost_usd": 0.0088,
+                        "research_cost_usd": null,
+                        "classification_cost_usd": 0.0015
+                      }
+                    }
+                  },
+                  "research_forecast": {
+                    "summary": "Forecast with research",
+                    "description": "When `research` runs, the model pulls live web evidence first. The sources it used are returned as `url_citation` entries in `choices[0].message.annotations`, and `usage` includes a `research_cost_usd` (each source is billed as a separate RESEARCH event).",
+                    "value": {
+                      "id": "chatcmpl-pqr678",
+                      "object": "chat.completion",
+                      "created": 1718712800,
+                      "model": "LightningRodLabs/foresight-v4",
+                      "choices": [
+                        {
+                          "index": 0,
+                          "message": {
+                            "role": "assistant",
+                            "thinking": "Recent FOMC guidance and CPI prints point to a likely 25bp cut...",
+                            "content": "Considering recent inflation data and Fed signaling, a 25bp cut in March is more likely than not. <answer>0.62</answer>",
+                            "annotations": [
+                              {
+                                "type": "url_citation",
+                                "url_citation": {
+                                  "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260318a.htm",
+                                  "title": "Federal Reserve issues FOMC statement"
+                                }
+                              },
+                              {
+                                "type": "url_citation",
+                                "url_citation": {
+                                  "url": "https://www.bls.gov/news.release/cpi.nr0.htm",
+                                  "title": "Consumer Price Index Summary"
+                                }
+                              }
+                            ]
+                          },
+                          "finish_reason": "stop"
+                        }
+                      ],
+                      "usage": {
+                        "prompt_tokens": 320,
+                        "completion_tokens": 540,
+                        "total_tokens": 860,
+                        "cost_usd": 0.0142,
+                        "inference_cost_usd": 0.0091,
+                        "research_cost_usd": 0.0051,
+                        "classification_cost_usd": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/openai/models": {
+      "get": {
+        "summary": "List Models",
+        "description": "List available models.",
+        "operationId": "list_models_openai_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelListResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/openai/completions": {
+      "post": {
+        "summary": "Completions",
+        "description": "OpenAI-compatible text completion endpoint for Lightning Rod's **Foresight** forecasting models. Takes a raw `prompt` instead of chat `messages`; the structured answer (when `answer_type` is set) is appended between `<answer></answer>` tags in `choices[0].text`. The same Lightning Rod extensions apply\u2014`answer_type`, `research`, and `reasoning_effort` (pass via `extra_body` with raw OpenAI clients). Prefer the chat/completions endpoint for multi-turn conversations and framework compatibility.",
+        "operationId": "completions_openai_completions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompletionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/mpp/topup": {
+      "post": {
+        "tags": [
+          "MPP (Machine Payments Protocol)"
+        ],
+        "summary": "Add credits via MPP (Machine Payments Protocol)",
+        "description": "Pay via MPP to add credits and obtain (or refresh) an API key, then call the standard `/openai/*` endpoints with it as a `Bearer` token.\n\n**Flow:** call with no payment \u2192 `402` + `WWW-Authenticate: Payment` challenge (quotes the top-up amount, payable via card/Link Shared Payment Token) \u2192 pay \u2192 retry with `Authorization: Payment <credential>`.\n\n**Amount:** defaults to $5.00; pass `amount_cents` to choose a size (clamped to the credit-purchase limits). Send the **same** `amount_cents` on the paid retry as on the challenge call.\n\n**Headers:**\n- `Authorization: Payment <credential>` \u2014 the MPP payment credential.\n- `X-API-Key: sk_\u2026` *(optional)* \u2014 refill an existing org; omit to mint a new org + key (returned once in the response body).",
+        "operationId": "mpp_topup",
+        "parameters": [
+          {
+            "name": "amount_cents",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Amount Cents"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MppTopupResponse"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment required. The `WWW-Authenticate: Payment` header carries an MPP challenge quoting the top-up amount (USD), payable with a Stripe Shared Payment Token; pay it and retry.",
+            "headers": {
+              "WWW-Authenticate": {
+                "description": "MPP Payment challenge (scheme `Payment`).",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-payment-info": {
+          "offers": [
+            {
+              "amount": "500",
+              "currency": "usd",
+              "description": "Credit top-up (default $5.00). Pass amount_cents for $1.00\u2013$10,000.00; same value on challenge and paid retry. Returns an API key for POST /openai/chat/completions.",
+              "intent": "charge",
+              "method": "stripe"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnswerTypeEnum": {
+        "type": "string",
+        "enum": [
+          "BINARY",
+          "MULTIPLE_CHOICE",
+          "CONTINUOUS",
+          "CONTINUOUS_VALUE_ONLY",
+          "FREE_RESPONSE"
+        ],
+        "title": "AnswerTypeEnum"
+      },
+      "ChatCompletionRequest": {
+        "properties": {
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "ID of the model to use"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/ChatMessage"
+            },
+            "type": "array",
+            "title": "Messages",
+            "description": "A list of messages comprising the conversation so far"
+          },
+          "temperature": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temperature",
+            "description": "Sampling temperature between 0 and 2",
+            "default": 0.6
+          },
+          "max_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Tokens",
+            "description": "Maximum number of tokens to generate"
+          },
+          "top_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top P",
+            "description": "Nucleus sampling parameter"
+          },
+          "top_k": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top K",
+            "description": "Number of top tokens to consider"
+          },
+          "min_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min P",
+            "description": "Minimum probability for a token to be considered"
+          },
+          "reasoning_effort": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Effort",
+            "description": "Lightning Rod extension. Reasoning budget the model spends before answering: `low`, `medium`, or `high`. Higher effort improves accuracy on harder questions at additional token cost. With raw OpenAI clients pass via `extra_body`."
+          },
+          "stream": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stream",
+            "description": "Whether to stream back partial progress",
+            "default": false
+          },
+          "n": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "N",
+            "description": "Number of chat completion choices to generate",
+            "default": 1
+          },
+          "stop": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop",
+            "description": "Up to 4 sequences where the API will stop generating"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed",
+            "description": "Deterministic sampling seed"
+          },
+          "research": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "$ref": "#/components/schemas/ResearchOptions"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Research",
+            "description": "Lightning Rod extension. Opt-in web research before forecasting. Pass `true` to query all default sources, or a `ResearchOptions` object to select sources. Available sources: `perplexity` (Perplexity web search), `news` (recent news articles), `google_search` (Google web results). Each source runs as its own query and is billed as a separate RESEARCH event; when research runs, its cost is reported in `usage`. With raw OpenAI clients pass via `extra_body`."
+          },
+          "answer_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerTypeEnum"
+              },
+              {
+                "type": "string",
+                "const": "auto"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer Type",
+            "description": "Lightning Rod extension that injects output-format guidance and appends a structured answer between `<answer></answer>` tags in the response content. One of `binary`, `multiple_choice`, `continuous`, `free_response`, or `auto`. Raw response shapes: `binary` -> `<answer>0.62</answer>` (probability between 0 and 1); `continuous` -> `<answer>{\"mean\": 42.5, \"standard_deviation\": 5.2}</answer>`; `multiple_choice` -> `<options>{\"A\": \"...\", \"B\": \"...\"}</options>` followed by `<answer>{\"A\": 0.55, \"B\": 0.45}</answer>`; `free_response` -> `<answer>...</answer>`. `auto` classifies the user question server-side first, then returns one of the above. Omit for prose only. With raw OpenAI clients pass via `extra_body`."
+          }
+        },
+        "type": "object",
+        "required": [
+          "model",
+          "messages"
+        ],
+        "title": "ChatCompletionRequest",
+        "examples": [
+          {
+            "messages": [
+              {
+                "content": "Will Bitcoin increase by more than 10% over the next 3 months? Answer as a probability between 0 and 1 between <answer></answer> tags.",
+                "role": "user"
+              }
+            ],
+            "model": "foresight-v4"
+          },
+          {
+            "model": "LightningRodLabs/foresight-v4",
+            "messages": [
+              {
+                "role": "system",
+                "content": "Give calibrated forecasts and cite sources when research is used."
+              },
+              {
+                "role": "user",
+                "content": "Will the Fed cut rates by 25bp in March 2026?"
+              }
+            ],
+            "temperature": 0.2,
+            "max_tokens": 2048,
+            "answer_type": "binary",
+            "research": {
+              "sources": [
+                "perplexity",
+                "news"
+              ]
+            },
+            "reasoning_effort": "high"
+          }
+        ]
+      },
+      "ChatCompletionResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "A unique identifier for the chat completion"
+          },
+          "object": {
+            "type": "string",
+            "const": "chat.completion",
+            "title": "Object",
+            "description": "The object type",
+            "default": "chat.completion"
+          },
+          "created": {
+            "type": "integer",
+            "title": "Created",
+            "description": "Unix timestamp of when the completion was created"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "The model used for the chat completion"
+          },
+          "choices": {
+            "items": {
+              "$ref": "#/components/schemas/Choice"
+            },
+            "type": "array",
+            "title": "Choices",
+            "description": "A list of chat completion choices"
+          },
+          "usage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Usage"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Usage statistics for the completion request"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "created",
+          "model",
+          "choices"
+        ],
+        "title": "ChatCompletionResponse"
+      },
+      "ChatMessage": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "description": "The role of the message author (system, user, or assistant)"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "The content of the message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "ChatMessage",
+        "examples": [
+          {
+            "content": "Will the S&P 500 close above 6000 by the end of 2025?",
+            "role": "user"
+          }
+        ]
+      },
+      "Choice": {
+        "properties": {
+          "index": {
+            "type": "integer",
+            "title": "Index",
+            "description": "The index of this choice"
+          },
+          "message": {
+            "$ref": "#/components/schemas/ResponseMessage",
+            "description": "The message generated by the model"
+          },
+          "finish_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finish Reason",
+            "description": "The reason the model stopped generating tokens"
+          }
+        },
+        "type": "object",
+        "required": [
+          "index",
+          "message"
+        ],
+        "title": "Choice"
+      },
+      "CompletionChoice": {
+        "properties": {
+          "index": {
+            "type": "integer",
+            "title": "Index",
+            "description": "The index of this choice"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "The generated text"
+          },
+          "finish_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finish Reason",
+            "description": "The reason the model stopped generating tokens"
+          }
+        },
+        "type": "object",
+        "required": [
+          "index",
+          "text"
+        ],
+        "title": "CompletionChoice"
+      },
+      "CompletionRequest": {
+        "properties": {
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "ID of the model to use"
+          },
+          "prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "Prompt",
+            "description": "The prompt(s) to generate completions for"
+          },
+          "temperature": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temperature",
+            "description": "Sampling temperature between 0 and 2",
+            "default": 0.6
+          },
+          "max_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Tokens",
+            "description": "Maximum number of tokens to generate"
+          },
+          "top_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top P",
+            "description": "Nucleus sampling parameter"
+          },
+          "top_k": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top K",
+            "description": "Number of top tokens to consider"
+          },
+          "min_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min P",
+            "description": "Minimum probability for a token to be considered"
+          },
+          "reasoning_effort": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Effort",
+            "description": "Lightning Rod extension. Reasoning budget the model spends before answering: `low`, `medium`, or `high`. Higher effort improves accuracy on harder questions at additional token cost. With raw OpenAI clients pass via `extra_body`."
+          },
+          "stream": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stream",
+            "description": "Whether to stream back partial progress",
+            "default": false
+          },
+          "n": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "N",
+            "description": "Number of completions to generate",
+            "default": 1
+          },
+          "stop": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop",
+            "description": "Up to 4 sequences where the API will stop generating"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed",
+            "description": "Deterministic sampling seed"
+          },
+          "research": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "$ref": "#/components/schemas/ResearchOptions"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Research",
+            "description": "Lightning Rod extension. Opt-in web research before forecasting. Pass `true` to query all default sources, or a `ResearchOptions` object to select sources. Available sources: `perplexity` (Perplexity web search), `news` (recent news articles), `google_search` (Google web results). Each source runs as its own query and is billed as a separate RESEARCH event; when research runs, its cost is reported in `usage`. With raw OpenAI clients pass via `extra_body`."
+          },
+          "answer_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerTypeEnum"
+              },
+              {
+                "type": "string",
+                "const": "auto"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer Type",
+            "description": "Lightning Rod extension that injects output-format guidance and appends a structured answer between `<answer></answer>` tags in the response text. One of `binary`, `multiple_choice`, `continuous`, `free_response`, or `auto`. Raw response shapes: `binary` -> `<answer>0.62</answer>` (probability between 0 and 1); `continuous` -> `<answer>{\"mean\": 42.5, \"standard_deviation\": 5.2}</answer>`; `multiple_choice` -> `<options>{\"A\": \"...\", \"B\": \"...\"}</options>` followed by `<answer>{\"A\": 0.55, \"B\": 0.45}</answer>`; `free_response` -> `<answer>...</answer>`. `auto` classifies the prompt server-side first, then returns one of the above. Omit for prose only. With raw OpenAI clients pass via `extra_body`."
+          }
+        },
+        "type": "object",
+        "required": [
+          "model",
+          "prompt"
+        ],
+        "title": "CompletionRequest"
+      },
+      "CompletionResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "A unique identifier for the completion"
+          },
+          "object": {
+            "type": "string",
+            "const": "text_completion",
+            "title": "Object",
+            "description": "The object type",
+            "default": "text_completion"
+          },
+          "created": {
+            "type": "integer",
+            "title": "Created",
+            "description": "Unix timestamp of when the completion was created"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "The model used for the completion"
+          },
+          "choices": {
+            "items": {
+              "$ref": "#/components/schemas/CompletionChoice"
+            },
+            "type": "array",
+            "title": "Choices",
+            "description": "A list of completion choices"
+          },
+          "usage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Usage"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Usage statistics for the completion request"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "created",
+          "model",
+          "choices"
+        ],
+        "title": "CompletionResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ModelListResponse": {
+        "properties": {
+          "object": {
+            "type": "string",
+            "const": "list",
+            "title": "Object",
+            "description": "The object type",
+            "default": "list"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ModelObject"
+            },
+            "type": "array",
+            "title": "Data",
+            "description": "A list of model objects"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ModelListResponse"
+      },
+      "ModelObject": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "The model identifier"
+          },
+          "object": {
+            "type": "string",
+            "const": "model",
+            "title": "Object",
+            "description": "The object type",
+            "default": "model"
+          },
+          "created": {
+            "type": "integer",
+            "title": "Created",
+            "description": "Unix timestamp of when the model was created",
+            "default": 0
+          },
+          "owned_by": {
+            "type": "string",
+            "title": "Owned By",
+            "description": "The organization that owns the model",
+            "default": "lightningrodlabs"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Display name of the model",
+            "default": ""
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Description of the model",
+            "default": ""
+          },
+          "context_length": {
+            "type": "integer",
+            "title": "Context Length",
+            "description": "Maximum context length in tokens",
+            "default": 0
+          },
+          "max_completion_tokens": {
+            "type": "integer",
+            "title": "Max Completion Tokens",
+            "description": "Maximum number of tokens to generate",
+            "default": 0
+          },
+          "pricing": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Pricing",
+            "description": "Per-token pricing"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "ModelObject"
+      },
+      "ResearchOptions": {
+        "properties": {
+          "sources": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "perplexity",
+                "news",
+                "google_search"
+              ]
+            },
+            "type": "array",
+            "title": "Sources",
+            "description": "Which research providers to query in parallel: `perplexity` (Perplexity web search), `news` (recent news articles), `google_search` (Google web results). Each provider is billed as a separate RESEARCH event."
+          }
+        },
+        "type": "object",
+        "title": "ResearchOptions",
+        "description": "Opt-in research enrichment for forecasting requests.\n\nWhen set, the API fetches web-grounded context from the requested sources\nand injects it into the prompt before calling the model. Each successful\nsource produces a billable RESEARCH event."
+      },
+      "ResponseMessage": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "description": "The role of the message author"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "The model's full response. When `answer_type` was set on the request, a machine-readable answer is embedded between `<answer></answer>` tags at the end (e.g. `<answer>0.62</answer>` for a binary probability). See the request's `answer_type` field for the per-type shapes."
+          },
+          "thinking": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thinking",
+            "description": "The model's reasoning/thinking chain, when returned by the model."
+          },
+          "annotations": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/UrlCitationAnnotation"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Annotations",
+            "description": "Source citations from web research, present only when `research` ran. Each entry is a `url_citation` referencing a source the model used."
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "ResponseMessage"
+      },
+      "UrlCitationAnnotation": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "url_citation",
+            "title": "Type",
+            "description": "The annotation type. Always `url_citation`.",
+            "default": "url_citation"
+          },
+          "url_citation": {
+            "$ref": "#/components/schemas/UrlCitation",
+            "description": "The cited source."
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "url_citation"
+        ],
+        "title": "UrlCitationAnnotation"
+      },
+      "UrlCitation": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url",
+            "description": "URL of the cited source."
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title",
+            "description": "Title of the cited source, when available."
+          }
+        },
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "title": "UrlCitation"
+      },
+      "Usage": {
+        "properties": {
+          "prompt_tokens": {
+            "type": "integer",
+            "title": "Prompt Tokens",
+            "description": "Number of tokens in the prompt"
+          },
+          "completion_tokens": {
+            "type": "integer",
+            "title": "Completion Tokens",
+            "description": "Number of tokens in the completion"
+          },
+          "total_tokens": {
+            "type": "integer",
+            "title": "Total Tokens",
+            "description": "Total number of tokens used"
+          },
+          "cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Usd",
+            "description": "Lightning Rod total cost of the call in USD, summing inference and any research/classification costs."
+          },
+          "inference_cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inference Cost Usd",
+            "description": "Lightning Rod cost in USD attributable to model inference."
+          },
+          "research_cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Research Cost Usd",
+            "description": "Lightning Rod cost in USD for web research, when `research` was enabled. Each source is billed as a separate RESEARCH event."
+          },
+          "classification_cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Classification Cost Usd",
+            "description": "Lightning Rod cost in USD for question classification, when `answer_type` was `auto`."
+          }
+        },
+        "type": "object",
+        "required": [
+          "prompt_tokens",
+          "completion_tokens",
+          "total_tokens"
+        ],
+        "title": "Usage",
+        "description": "Token counts plus Lightning Rod cost fields. The `*_cost_usd` fields are present when applicable (research and classification costs only appear when those steps ran)."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "MppTopupResponse": {
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "title": "Organization Id"
+          },
+          "credited_cents": {
+            "type": "integer",
+            "title": "Credited Cents"
+          },
+          "api_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "api_key_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_id",
+          "credited_cents"
+        ],
+        "title": "MppTopupResponse"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.lightningrod.ai/v1"
+    }
+  ],
+  "x-service-info": {
+    "categories": [
+      "ai",
+      "llm",
+      "ai agents",
+      "forecasting",
+      "prediction markets"
+    ],
+    "docs": {
+      "homepage": "https://lightningrod.ai",
+      "apiReference": "https://www.lightningrod.ai/openapi.json",
+      "llms": "https://www.lightningrod.ai/llms.txt"
+    }
+  }
+}

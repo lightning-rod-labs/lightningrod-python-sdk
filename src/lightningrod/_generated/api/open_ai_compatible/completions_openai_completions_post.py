@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any
+from typing import Any, cast
 
 import httpx
 
@@ -32,11 +32,15 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> CompletionResponse | HTTPValidationError | None:
+) -> Any | CompletionResponse | HTTPValidationError | None:
     if response.status_code == 200:
         response_200 = CompletionResponse.from_dict(response.json())
 
         return response_200
+
+    if response.status_code == 402:
+        response_402 = cast(Any, None)
+        return response_402
 
     if response.status_code == 422:
         response_422 = HTTPValidationError.from_dict(response.json())
@@ -51,7 +55,7 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[CompletionResponse | HTTPValidationError]:
+) -> Response[Any | CompletionResponse | HTTPValidationError]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -64,7 +68,7 @@ def sync_detailed(
     *,
     client: AuthenticatedClient,
     body: CompletionRequest,
-) -> Response[CompletionResponse | HTTPValidationError]:
+) -> Response[Any | CompletionResponse | HTTPValidationError]:
     """Completions
 
      OpenAI-compatible text completion endpoint.
@@ -77,7 +81,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[CompletionResponse | HTTPValidationError]
+        Response[Any | CompletionResponse | HTTPValidationError]
     """
 
     kwargs = _get_kwargs(
@@ -95,7 +99,7 @@ def sync(
     *,
     client: AuthenticatedClient,
     body: CompletionRequest,
-) -> CompletionResponse | HTTPValidationError | None:
+) -> Any | CompletionResponse | HTTPValidationError | None:
     """Completions
 
      OpenAI-compatible text completion endpoint.
@@ -108,7 +112,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        CompletionResponse | HTTPValidationError
+        Any | CompletionResponse | HTTPValidationError
     """
 
     return sync_detailed(
@@ -121,7 +125,7 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
     body: CompletionRequest,
-) -> Response[CompletionResponse | HTTPValidationError]:
+) -> Response[Any | CompletionResponse | HTTPValidationError]:
     """Completions
 
      OpenAI-compatible text completion endpoint.
@@ -134,7 +138,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[CompletionResponse | HTTPValidationError]
+        Response[Any | CompletionResponse | HTTPValidationError]
     """
 
     kwargs = _get_kwargs(
@@ -150,7 +154,7 @@ async def asyncio(
     *,
     client: AuthenticatedClient,
     body: CompletionRequest,
-) -> CompletionResponse | HTTPValidationError | None:
+) -> Any | CompletionResponse | HTTPValidationError | None:
     """Completions
 
      OpenAI-compatible text completion endpoint.
@@ -163,7 +167,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        CompletionResponse | HTTPValidationError
+        Any | CompletionResponse | HTTPValidationError
     """
 
     return (

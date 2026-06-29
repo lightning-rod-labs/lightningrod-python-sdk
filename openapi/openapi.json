@@ -35,6 +35,19 @@
               }
             }
           },
+          "402": {
+            "description": "Insufficient credit balance \u2014 add credits to continue (see detail).",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "message": "Insufficient credit balance.",
+                    "description": "Add credits to continue. Humans: add credits on your Lightning Rod dashboard billing page (https://dashboard.lightningrod.ai). Agents: pay via MPP (Machine Payments Protocol) at POST /api/public/v1/mpp/topup to add credits and obtain or refresh an API key, then retry."
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -109,6 +122,19 @@
               }
             }
           },
+          "402": {
+            "description": "Insufficient credit balance \u2014 add credits to continue (see detail).",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "message": "Insufficient credit balance.",
+                    "description": "Add credits to continue. Humans: add credits on your Lightning Rod dashboard billing page (https://dashboard.lightningrod.ai). Agents: pay via MPP (Machine Payments Protocol) at POST /api/public/v1/mpp/topup to add credits and obtain or refresh an API key, then retry."
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -125,6 +151,67 @@
             "HTTPBearer": []
           }
         ]
+      }
+    },
+    "/mpp/topup": {
+      "post": {
+        "tags": [
+          "MPP (Machine Payments)"
+        ],
+        "summary": "Add credits via MPP (Machine Payments Protocol)",
+        "description": "Pay via MPP to add credits and obtain (or refresh) an API key, then call the standard `/openai/*` endpoints with it as a `Bearer` token.\n\n**Flow:** call with no payment \u2192 `402` + `WWW-Authenticate: Payment` challenge (quotes the top-up amount, payable via card/Link Shared Payment Token) \u2192 pay \u2192 retry with `Authorization: Payment <credential>`.\n\n**Amount:** defaults to 500 cents ($5.00); pass `amount_cents` to choose a size (clamped to the credit-purchase limits). Send the **same** `amount_cents` on the paid retry as on the challenge call.\n\n**Headers:**\n- `Authorization: Payment <credential>` \u2014 the MPP payment credential.\n- `X-API-Key: sk_\u2026` *(optional)* \u2014 refill an existing org; omit to mint a new org + key (returned once in the response body).\n\nBeta.",
+        "operationId": "mpp_topup_mpp_topup_post",
+        "parameters": [
+          {
+            "name": "amount_cents",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Amount Cents"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MppTopupResponse"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment required. The `WWW-Authenticate: Payment` header carries an MPP challenge quoting the top-up amount (USD), payable with a Stripe Shared Payment Token; pay it and retry.",
+            "headers": {
+              "WWW-Authenticate": {
+                "description": "MPP Payment challenge (scheme `Payment`).",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/transform-jobs": {
@@ -1277,6 +1364,31 @@
       }
     },
     "/filesets/": {
+      "get": {
+        "tags": [
+          "FileSets"
+        ],
+        "summary": "List File Sets",
+        "description": "List all FileSets for the organization.",
+        "operationId": "list_file_sets_filesets__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListFileSetsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
       "post": {
         "tags": [
           "FileSets"
@@ -1284,20 +1396,15 @@
         "summary": "Create File Set",
         "description": "Create a new FileSet for the organization.",
         "operationId": "create_file_set_filesets__post",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
         "requestBody": {
-          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CreateFileSetRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "201": {
@@ -1320,42 +1427,12 @@
               }
             }
           }
-        }
-      },
-      "get": {
-        "tags": [
-          "FileSets"
-        ],
-        "summary": "List File Sets",
-        "description": "List all FileSets for the organization.",
-        "operationId": "list_file_sets_filesets__get",
+        },
         "security": [
           {
             "HTTPBearer": []
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ListFileSetsResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
+        ]
       }
     },
     "/filesets/{file_set_id}": {
@@ -1807,7 +1884,7 @@
           "folder_path": {
             "type": "string",
             "title": "Folder Path",
-            "description": "GCS folder path where files will be stored"
+            "description": "Cloud storage folder where files will be stored"
           },
           "upload_urls": {
             "additionalProperties": {
@@ -1815,7 +1892,15 @@
             },
             "type": "object",
             "title": "Upload Urls",
-            "description": "Mapping of filename -> signed upload URL"
+            "description": "Deprecated: filename -> signed URL. Use `uploads` instead."
+          },
+          "uploads": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/FileUploadTarget"
+            },
+            "type": "object",
+            "title": "Uploads",
+            "description": "filename -> upload target (url, method, headers). Provider-agnostic."
           }
         },
         "type": "object",
@@ -1998,18 +2083,6 @@
             "title": "Min P",
             "description": "Minimum probability for a token to be considered"
           },
-          "reasoning_effort": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Reasoning Effort",
-            "description": "Reasoning effort: low, medium, or high"
-          },
           "stream": {
             "anyOf": [
               {
@@ -2065,6 +2138,23 @@
             ],
             "title": "Seed",
             "description": "Deterministic sampling seed"
+          },
+          "reasoning_effort": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Effort",
+            "description": "Reasoning effort for hosted Foresight models. Defaults to medium; pass low to reduce reasoning budget. High is accepted for OpenAI compatibility and treated as medium."
           },
           "research": {
             "anyOf": [
@@ -2341,18 +2431,6 @@
             "title": "Min P",
             "description": "Minimum probability for a token to be considered"
           },
-          "reasoning_effort": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Reasoning Effort",
-            "description": "Reasoning effort: low, medium, or high"
-          },
           "stream": {
             "anyOf": [
               {
@@ -2408,6 +2486,23 @@
             ],
             "title": "Seed",
             "description": "Deterministic sampling seed"
+          },
+          "reasoning_effort": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Effort",
+            "description": "Reasoning effort for hosted Foresight models. Defaults to medium; pass low to reduce reasoning budget. High is accepted for OpenAI compatibility and treated as medium."
           },
           "research": {
             "anyOf": [
@@ -4186,6 +4281,35 @@
         "title": "FileSetSeedGenerator",
         "description": "Configuration for FileSet Seed Generator transform."
       },
+      "FileUploadTarget": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url",
+            "description": "Pre-signed upload URL (GCS or S3)"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method",
+            "description": "HTTP method to use for the upload",
+            "default": "PUT"
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Headers",
+            "description": "Headers that must accompany the upload request"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "title": "FileUploadTarget",
+        "description": "Provider-agnostic upload instruction. The client issues `method` to `url`\nwith exactly these `headers` (the Content-Type must match the signature)."
+      },
       "FilterCriteria": {
         "properties": {
           "rubric": {
@@ -5436,6 +5560,46 @@
           "MODAL_LORA_VLLM"
         ],
         "title": "ModelSourceType"
+      },
+      "MppTopupResponse": {
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "title": "Organization Id"
+          },
+          "credited_cents": {
+            "type": "integer",
+            "title": "Credited Cents"
+          },
+          "api_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "api_key_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_id",
+          "credited_cents"
+        ],
+        "title": "MppTopupResponse"
       },
       "MultipleChoiceAnswerType": {
         "properties": {
@@ -6843,8 +7007,7 @@
               "type": "string",
               "enum": [
                 "perplexity",
-                "news",
-                "google_search"
+                "google_news"
               ]
             },
             "type": "array",
@@ -6895,7 +7058,9 @@
           "binary_weighted_brier",
           "binary_log_score",
           "multi_choice_log_score",
+          "multi_choice_brier",
           "continuous_log_score",
+          "continuous_crps",
           "continuous_value_only_log_score",
           "continuous_value_only_linear_score",
           "ranking_delta_ndcg"
@@ -8111,6 +8276,7 @@
           "EMBEDDING_DEDUPLICATION",
           "WEB_SEARCH_CONTEXT_GENERATOR",
           "PERPLEXITY_CONTEXT_GENERATOR",
+          "EXA_CONTEXT_GENERATOR",
           "AGGREGATE_CONTEXT_GENERATOR",
           "QDRANT_CONTEXT_GENERATOR",
           "QDRANT_RAG_LABELER",
@@ -8469,10 +8635,5 @@
         "scheme": "bearer"
       }
     }
-  },
-  "servers": [
-    {
-      "url": "/api/public/v1"
-    }
-  ]
+  }
 }
