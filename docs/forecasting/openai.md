@@ -32,7 +32,7 @@ A few useful response fields:
 - `response.choices[0].message.annotations` — citations, when research runs.
 - `response.usage` — cost metadata.
 
-See the [REST API reference](https://docs.lightningrod.ai/rest-api#post-openai-chat-completions) for more details.
+See the [REST API reference](https://docs.lightningrod.ai/api-reference) for more details.
 
 ## Answer formats
 
