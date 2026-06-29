@@ -290,3 +290,5 @@ print_eval(eval_job)
 ```
 
 See [notebooks/getting_started/05_grpo_training.ipynb](../../../notebooks/getting_started/05_grpo_training.ipynb) for the full GRPO workflow including `evals.run_from_training_job`.
+
+Note: this API requires enterprise access. [Book a call](https://calendly.com/d/ctq4-7gd-nyq/lightning-rod-demo) to get started.

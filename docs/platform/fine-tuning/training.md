@@ -116,3 +116,5 @@ for job in response.jobs:
 ## Example
 
 See [notebooks/getting_started/05_grpo_training.ipynb](../../../notebooks/getting_started/05_grpo_training.ipynb) for GRPO forecasting workflow and [notebooks/getting_started/06_sft_training.ipynb](../../../notebooks/getting_started/06_sft_training.ipynb) for SFT.
+
+Note: this API requires enterprise access. [Book a call](https://calendly.com/d/ctq4-7gd-nyq/lightning-rod-demo) to get started.

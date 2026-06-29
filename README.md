@@ -62,6 +62,5 @@ Need a model tuned to your domain? Our platform turns raw sources into labeled d
 
 ## 📚 Learn more
 
-- [Documentation](https://docs.lightningrod.ai/) — quickstart, guides, recipes, and the REST API reference
-- [Example notebooks](notebooks/) — forecasting, dataset generation, training, and evaluation (runnable in Colab)
-- [SDK API reference](API.md) — every class and method in this repo
+- [Documentation & API reference](https://docs.lightningrod.ai/) — quickstart, guides, recipes, and the REST API reference
+- [Enterprise examples](notebooks/) — forecasting, dataset generation, training, and evaluation
