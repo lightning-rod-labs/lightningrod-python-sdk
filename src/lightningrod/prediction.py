@@ -52,24 +52,38 @@ class ReasoningEffort(str, Enum):
 
 @dataclass
 class BinaryPrediction:
+    """Yes/no forecast parsed from ``<answer>0.62</answer>``."""
+
     probability: float
+    """Affirmative probability in [0, 1], e.g. ``0.62``."""
 
 
 @dataclass
 class ContinuousPrediction:
+    """Numeric forecast with uncertainty."""
+
     mean: float
+    """Point estimate, e.g. ``3.4``."""
     standard_deviation: float
+    """Uncertainty around ``mean``, e.g. ``0.45``."""
 
 
 @dataclass
 class MultiChoicePrediction:
+    """Discrete-option forecast."""
+
     options: dict[str, str]
+    """Option key to label, e.g. ``{"Rate cut": "Rate cut", "Hold": "Hold"}`` or legacy ``{"option_0": "Rate cut"}``."""
     probabilities: dict[str, float]
+    """Per-option probability keyed by ``options``, e.g. ``{"Rate cut": 0.28, "Hold": 0.72}``."""
 
 
 @dataclass
 class FreeResponsePrediction:
+    """Open-ended textual answer."""
+
     text: str
+    """Model answer text, e.g. ``"The Fed will likely hold rates steady."``."""
 
 
 @dataclass

@@ -3,13 +3,17 @@
 These hit a live chat-completions endpoint and are skipped unless an API key
 is provided, so they never run in plain unit-test/CI contexts.
 
+Run against production (default):
+
+    LIGHTNINGROD_E2E_API_KEY=sk_... pytest tests/test_inference_e2e.py -v
+
 Run against the local server with:
 
     LIGHTNINGROD_E2E_API_KEY=sk_... \
     LIGHTNINGROD_E2E_BASE_URL=http://localhost:8080/api/public/v1 \
     pytest tests/test_inference_e2e.py -v
 
-`LIGHTNINGROD_E2E_BASE_URL` defaults to the local server. The model defaults
+`LIGHTNINGROD_E2E_BASE_URL` defaults to production. The model defaults
 to `foresight-v4` and can be overridden with `LIGHTNINGROD_E2E_MODEL`.
 """
 
@@ -32,7 +36,7 @@ pytest.importorskip("openai")
 
 API_KEY = os.environ.get("LIGHTNINGROD_E2E_API_KEY")
 BASE_URL = os.environ.get(
-    "LIGHTNINGROD_E2E_BASE_URL", "http://localhost:8080/api/public/v1"
+    "LIGHTNINGROD_E2E_BASE_URL", "https://api.lightningrod.ai/v1"
 )
 MODEL = os.environ.get("LIGHTNINGROD_E2E_MODEL", "foresight-v4")
 
@@ -140,28 +144,54 @@ def test_multiple_choice(client: LightningRod) -> None:
     assert set(probs).issubset(set(options))
 
 
-def test_auto_classifies_server_side(client: LightningRod) -> None:
+def _assert_auto_classified(result: PredictionResult, expected: str) -> None:
+    populated = [
+        name
+        for name in ("binary", "continuous", "multiple_choice", "free_response")
+        if getattr(result, name) is not None
+    ]
+    assert len(populated) == 1, f"expected one populated prediction, got {populated}"
+    assert populated[0] == expected, f"expected {expected}, got {populated[0]}"
+    assert result.usage.classification_cost_usd is not None
+
+    if expected == "binary":
+        assert isinstance(result.binary, BinaryPrediction)
+        assert 0.0 <= result.binary.probability <= 1.0
+    elif expected == "continuous":
+        assert isinstance(result.continuous, ContinuousPrediction)
+        assert isinstance(result.continuous.mean, (int, float))
+        assert result.continuous.standard_deviation >= 0
+    elif expected == "multiple_choice":
+        assert isinstance(result.multiple_choice, MultiChoicePrediction)
+        options = result.multiple_choice.options
+        probs = result.multiple_choice.probabilities
+        assert options and probs
+        assert set(probs).issubset(set(options))
+    elif expected == "free_response":
+        assert isinstance(result.free_response, FreeResponsePrediction)
+        assert result.free_response.text.strip()
+
+
+@pytest.mark.parametrize(
+    ("prompt", "expected"),
+    [
+        ("Will it rain in Seattle tomorrow?", "binary"),
+        ("How many moons does Mars have?", "continuous"),
+        ("Is the sky blue, green, or red?", "multiple_choice"),
+        ("Name one US president.", "free_response"),
+    ],
+)
+def test_auto_infers_classified_answer_type(
+    client: LightningRod, prompt: str, expected: str
+) -> None:
     result = client.predict(
-        "Will it rain in Seattle tomorrow?",
+        prompt,
         model=MODEL,
         answer_type="auto",
         reasoning_effort="low",
     )
     _assert_common(result)
-    # The server classifies the type, so exactly one prediction field is set.
-    populated = [
-        p
-        for p in (
-            result.binary,
-            result.continuous,
-            result.multiple_choice,
-            result.free_response,
-        )
-        if p is not None
-    ]
-    assert len(populated) == 1, f"expected one populated prediction, got {populated}"
-    # The classifier stage ran, so its cost is reported.
-    assert result.usage.classification_cost_usd is not None
+    _assert_auto_classified(result, expected)
 
 
 def test_no_answer_type_returns_prose(client: LightningRod) -> None:

@@ -104,8 +104,10 @@ class LightningRod:
                 a list such as ``["perplexity", "google_news"]`` restricts to specific
                 sources; ``False``/``None`` disables research.
             answer_type: Requested structured-answer format. Accepts an
-                :class:`AnswerType` or its string value. ``None`` omits answer
-                formatting and returns prose only.
+                :class:`AnswerType` or its string value. ``"auto"`` classifies
+                the question server-side and infers the answer shape from the
+                response. ``None`` omits answer formatting and returns prose
+                only.
             reasoning_effort: ``"low"``, ``"medium"`` or ``"high"`` (default
                 medium). Accepts a :class:`ReasoningEffort` or its string value.
             system_prompt: Optional system message prepended to the request.
@@ -126,14 +128,6 @@ class LightningRod:
             ``answer_type`` and ``reasoning_effort`` parameters are first-class
             keyword arguments rather than ``extra_body`` passthroughs.
         """
-        _at = answer_type.value if isinstance(answer_type, AnswerType) else answer_type
-        if _at == "auto":
-            raise ValueError(
-                "answer_type='auto' is not supported by predict(). "
-                "Use a specific answer_type ('binary', 'continuous', 'multiple_choice', "
-                "or 'free_response'), or omit it for unstructured prose."
-            )
-
         try:
             from openai import OpenAI
         except ImportError:

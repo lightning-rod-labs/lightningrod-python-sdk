@@ -245,22 +245,39 @@ class TestBuildPredictionResult:
         assert result.continuous == ContinuousPrediction(mean=3.4, standard_deviation=0.45)
         assert result.binary is None
 
-    def test_multiple_choice_field_populated(self) -> None:
-        payload = _make_payload(
-            {
-                "content": (
+    @pytest.mark.parametrize(
+        ("content", "expected"),
+        [
+            (
+                (
                     '<options>{"option_0": "Cut", "option_1": "Hold"}</options>'
                     '<answer>{"option_0": 0.3, "option_1": 0.7}</answer>'
-                )
-            }
-        )
+                ),
+                MultiChoicePrediction(
+                    options={"option_0": "Cut", "option_1": "Hold"},
+                    probabilities={"option_0": 0.3, "option_1": 0.7},
+                ),
+            ),
+            (
+                '<answer>{"Rate cut": 0.28, "Hold": 0.72}</answer>',
+                MultiChoicePrediction(
+                    options={"Rate cut": "Rate cut", "Hold": "Hold"},
+                    probabilities={"Rate cut": 0.28, "Hold": 0.72},
+                ),
+            ),
+        ],
+        ids=["options_and_answer", "label_keyed_answer_only"],
+    )
+    def test_multiple_choice_both_formats(
+        self, content: str, expected: MultiChoicePrediction
+    ) -> None:
         result = LightningRod._build_prediction_result(
-            _StubResponse(payload), "multiple_choice"
+            _StubResponse(_make_payload({"content": content})), "multiple_choice"
         )
-        assert result.multiple_choice == MultiChoicePrediction(
-            options={"option_0": "Cut", "option_1": "Hold"},
-            probabilities={"option_0": 0.3, "option_1": 0.7},
-        )
+        assert result.multiple_choice == expected
+        assert result.binary is None
+        assert result.continuous is None
+        assert result.free_response is None
 
     def test_free_response_field_populated(self) -> None:
         payload = _make_payload({"content": "<answer>Rates hold steady.</answer>"})
@@ -268,6 +285,63 @@ class TestBuildPredictionResult:
             _StubResponse(payload), "free_response"
         )
         assert result.free_response == FreeResponsePrediction(text="Rates hold steady.")
+
+    @pytest.mark.parametrize(
+        ("content", "expected"),
+        [
+            (
+                "prose\n\n<answer>0.62</answer>",
+                ("binary", BinaryPrediction(probability=0.62)),
+            ),
+            (
+                '<answer>{"mean": 3.4, "standard_deviation": 0.45}</answer>',
+                ("continuous", ContinuousPrediction(mean=3.4, standard_deviation=0.45)),
+            ),
+            (
+                (
+                    '<options>{"option_0": "Cut", "option_1": "Hold"}</options>'
+                    '<answer>{"option_0": 0.3, "option_1": 0.7}</answer>'
+                ),
+                (
+                    "multiple_choice",
+                    MultiChoicePrediction(
+                        options={"option_0": "Cut", "option_1": "Hold"},
+                        probabilities={"option_0": 0.3, "option_1": 0.7},
+                    ),
+                ),
+            ),
+            (
+                '<answer>{"Rate cut": 0.28, "Hold": 0.72}</answer>',
+                (
+                    "multiple_choice",
+                    MultiChoicePrediction(
+                        options={"Rate cut": "Rate cut", "Hold": "Hold"},
+                        probabilities={"Rate cut": 0.28, "Hold": 0.72},
+                    ),
+                ),
+            ),
+            (
+                "<answer>Rates hold steady.</answer>",
+                ("free_response", FreeResponsePrediction(text="Rates hold steady.")),
+            ),
+        ],
+        ids=[
+            "binary",
+            "continuous",
+            "multiple_choice_options_and_answer",
+            "multiple_choice_label_keyed",
+            "free_response",
+        ],
+    )
+    def test_auto_infers_answer_field(self, content: str, expected: tuple) -> None:
+        field_name, expected_prediction = expected
+        result = LightningRod._build_prediction_result(
+            _StubResponse(_make_payload({"content": content})), "auto"
+        )
+        assert getattr(result, field_name) == expected_prediction
+        for other in ("binary", "continuous", "multiple_choice", "free_response"):
+            if other != field_name:
+                assert getattr(result, other) is None
 
     def test_no_answer_type_leaves_all_predictions_none(self) -> None:
         payload = _make_payload({"content": "Just some prose, no answer tags."})
@@ -312,37 +386,41 @@ class TestBuildPredictionResult:
 # --------------------------------------------------------------------------- #
 @pytest.fixture
 def lr_with_fake_openai(monkeypatch):
-    """Yields (client, captured) where captured holds the create() kwargs."""
-    captured: dict = {}
+    """Yields a factory: ``make_client(content) -> (client, captured)``."""
 
-    class _FakeCompletions:
-        def create(self, **kwargs):
-            captured.clear()
-            captured.update(kwargs)
-            return _StubResponse(_make_payload({"content": "p <answer>0.4</answer>"}))
+    def make_client(content: str = "p <answer>0.4</answer>"):
+        captured: dict = {}
 
-    class _FakeChat:
-        completions = _FakeCompletions()
+        class _FakeCompletions:
+            def create(self, **kwargs):
+                captured.clear()
+                captured.update(kwargs)
+                return _StubResponse(_make_payload({"content": content}))
 
-    class _FakeOpenAI:
-        def __init__(self, **kwargs):
-            captured["_init"] = kwargs
+        class _FakeChat:
+            completions = _FakeCompletions()
 
-        chat = _FakeChat()
+        class _FakeOpenAI:
+            def __init__(self, **kwargs):
+                captured["_init"] = kwargs
 
-    fake_module = types.ModuleType("openai")
-    fake_module.OpenAI = _FakeOpenAI
-    monkeypatch.setitem(sys.modules, "openai", fake_module)
+            chat = _FakeChat()
 
-    client = LightningRod.__new__(LightningRod)
-    client.api_key = "test-key"
-    client.base_url = "https://api.lightningrod.ai/v1"
-    return client, captured
+        fake_module = types.ModuleType("openai")
+        fake_module.OpenAI = _FakeOpenAI
+        monkeypatch.setitem(sys.modules, "openai", fake_module)
+
+        client = LightningRod.__new__(LightningRod)
+        client.api_key = "test-key"
+        client.base_url = "https://api.lightningrod.ai/v1"
+        return client, captured
+
+    return make_client
 
 
 class TestPredictRequestBody:
     def test_research_true(self, lr_with_fake_openai) -> None:
-        client, captured = lr_with_fake_openai
+        client, captured = lr_with_fake_openai()
         client.predict("q", model="m", research=True, answer_type="binary")
         assert captured["extra_body"] == {
             "reasoning_effort": "medium",
@@ -351,43 +429,133 @@ class TestPredictRequestBody:
         }
 
     def test_research_list(self, lr_with_fake_openai) -> None:
-        client, captured = lr_with_fake_openai
+        client, captured = lr_with_fake_openai()
         client.predict("q", model="m", research=["perplexity", "google_news"])
         assert captured["extra_body"]["research"] == {"sources": ["perplexity", "google_news"]}
         assert "answer_type" not in captured["extra_body"]
 
     def test_research_false_omitted(self, lr_with_fake_openai) -> None:
-        client, captured = lr_with_fake_openai
+        client, captured = lr_with_fake_openai()
         client.predict("q", model="m", research=False)
         assert "research" not in captured["extra_body"]
 
     def test_research_none_omitted(self, lr_with_fake_openai) -> None:
-        client, captured = lr_with_fake_openai
+        client, captured = lr_with_fake_openai()
         client.predict("q", model="m")
         assert "research" not in captured["extra_body"]
 
     def test_reasoning_effort_enum_serialized(self, lr_with_fake_openai) -> None:
-        client, captured = lr_with_fake_openai
+        client, captured = lr_with_fake_openai()
         client.predict("q", model="m", reasoning_effort=ReasoningEffort.HIGH)
         assert captured["extra_body"]["reasoning_effort"] == "high"
 
     def test_reasoning_effort_string(self, lr_with_fake_openai) -> None:
-        client, captured = lr_with_fake_openai
+        client, captured = lr_with_fake_openai()
         client.predict("q", model="m", reasoning_effort="low")
         assert captured["extra_body"]["reasoning_effort"] == "low"
 
     def test_answer_type_enum_serialized(self, lr_with_fake_openai) -> None:
-        client, captured = lr_with_fake_openai
+        client, captured = lr_with_fake_openai()
         client.predict("q", model="m", answer_type=AnswerType.AUTO)
         assert captured["extra_body"]["answer_type"] == "auto"
 
+    @pytest.mark.parametrize(
+        ("content", "expected"),
+        [
+            (
+                (
+                    'p <options>{"option_0": "Cut", "option_1": "Hold"}</options>'
+                    '<answer>{"option_0": 0.3, "option_1": 0.7}</answer>'
+                ),
+                MultiChoicePrediction(
+                    options={"option_0": "Cut", "option_1": "Hold"},
+                    probabilities={"option_0": 0.3, "option_1": 0.7},
+                ),
+            ),
+            (
+                'p <answer>{"Rate cut": 0.28, "Hold": 0.72}</answer>',
+                MultiChoicePrediction(
+                    options={"Rate cut": "Rate cut", "Hold": "Hold"},
+                    probabilities={"Rate cut": 0.28, "Hold": 0.72},
+                ),
+            ),
+        ],
+        ids=["options_and_answer", "label_keyed_answer_only"],
+    )
+    def test_multiple_choice_parses_both_formats(
+        self, lr_with_fake_openai, content: str, expected: MultiChoicePrediction
+    ) -> None:
+        client, _ = lr_with_fake_openai(content)
+        result = client.predict("q", model="m", answer_type="multiple_choice")
+        assert result.multiple_choice == expected
+        assert result.binary is None
+        assert result.continuous is None
+        assert result.free_response is None
+
+    @pytest.mark.parametrize(
+        ("content", "field_name", "expected"),
+        [
+            ("p <answer>0.4</answer>", "binary", BinaryPrediction(probability=0.4)),
+            (
+                'p <answer>{"mean": 3.4, "standard_deviation": 0.45}</answer>',
+                "continuous",
+                ContinuousPrediction(mean=3.4, standard_deviation=0.45),
+            ),
+            (
+                (
+                    'p <options>{"option_0": "Cut", "option_1": "Hold"}</options>'
+                    '<answer>{"option_0": 0.3, "option_1": 0.7}</answer>'
+                ),
+                "multiple_choice",
+                MultiChoicePrediction(
+                    options={"option_0": "Cut", "option_1": "Hold"},
+                    probabilities={"option_0": 0.3, "option_1": 0.7},
+                ),
+            ),
+            (
+                'p <answer>{"Rate cut": 0.28, "Hold": 0.72}</answer>',
+                "multiple_choice",
+                MultiChoicePrediction(
+                    options={"Rate cut": "Rate cut", "Hold": "Hold"},
+                    probabilities={"Rate cut": 0.28, "Hold": 0.72},
+                ),
+            ),
+            (
+                "p <answer>Rates hold steady.</answer>",
+                "free_response",
+                FreeResponsePrediction(text="Rates hold steady."),
+            ),
+        ],
+        ids=[
+            "binary",
+            "continuous",
+            "multiple_choice_options_and_answer",
+            "multiple_choice_label_keyed",
+            "free_response",
+        ],
+    )
+    def test_auto_parses_all_answer_formats(
+        self,
+        lr_with_fake_openai,
+        content: str,
+        field_name: str,
+        expected: object,
+    ) -> None:
+        client, captured = lr_with_fake_openai(content)
+        result = client.predict("q", model="m", answer_type="auto")
+        assert captured["extra_body"]["answer_type"] == "auto"
+        assert getattr(result, field_name) == expected
+        for other in ("binary", "continuous", "multiple_choice", "free_response"):
+            if other != field_name:
+                assert getattr(result, other) is None
+
     def test_default_reasoning_effort_is_medium(self, lr_with_fake_openai) -> None:
-        client, captured = lr_with_fake_openai
+        client, captured = lr_with_fake_openai()
         client.predict("q", model="m")
         assert captured["extra_body"]["reasoning_effort"] == "medium"
 
     def test_system_prompt_prepended(self, lr_with_fake_openai) -> None:
-        client, captured = lr_with_fake_openai
+        client, captured = lr_with_fake_openai()
         client.predict("the question", model="m", system_prompt="be terse")
         assert captured["messages"] == [
             {"role": "system", "content": "be terse"},
@@ -395,28 +563,28 @@ class TestPredictRequestBody:
         ]
 
     def test_no_system_prompt(self, lr_with_fake_openai) -> None:
-        client, captured = lr_with_fake_openai
+        client, captured = lr_with_fake_openai()
         client.predict("the question", model="m")
         assert captured["messages"] == [{"role": "user", "content": "the question"}]
 
     def test_returns_prediction_result(self, lr_with_fake_openai) -> None:
-        client, _ = lr_with_fake_openai
+        client, _ = lr_with_fake_openai()
         result = client.predict("q", model="m", answer_type="binary")
         assert isinstance(result, PredictionResult)
         assert result.binary == BinaryPrediction(probability=0.4)
 
     def test_caller_extra_body_merged(self, lr_with_fake_openai) -> None:
-        client, captured = lr_with_fake_openai
+        client, captured = lr_with_fake_openai()
         client.predict("q", model="m", extra_body={"custom_flag": True})
         assert captured["extra_body"]["custom_flag"] is True
         assert captured["extra_body"]["reasoning_effort"] == "medium"
 
     def test_model_defaults_to_latest(self, lr_with_fake_openai) -> None:
-        client, captured = lr_with_fake_openai
+        client, captured = lr_with_fake_openai()
         client.predict("q")
         assert captured["model"] == DEFAULT_MODEL
 
     def test_model_override(self, lr_with_fake_openai) -> None:
-        client, captured = lr_with_fake_openai
+        client, captured = lr_with_fake_openai()
         client.predict("q", model="LightningRodLabs/foresight-v4")
         assert captured["model"] == "LightningRodLabs/foresight-v4"

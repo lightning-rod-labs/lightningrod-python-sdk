@@ -56,8 +56,10 @@ print(result.content)
 | `"continuous"`      | `result.continuous.mean`, `result.continuous.standard_deviation`         |
 | `"multiple_choice"` | `result.multiple_choice.options`, `result.multiple_choice.probabilities` |
 | `"free_response"`   | `result.free_response.text`                                              |
+| `"auto"`            | One of the above fields, inferred from the server-classified answer type |
 
-`answer_type="auto"` is not yet supported by `predict()` and raises a `ValueError`. Use it only with the raw [OpenAI client](./openai.md).
+`answer_type="auto"` classifies the question server-side and populates the matching
+prediction field. `result.usage.classification_cost_usd` is set when classification runs (cost is negligible).
 
 See our [API reference](https://docs.lightningrod.ai/api-reference) for more response examples.
 
