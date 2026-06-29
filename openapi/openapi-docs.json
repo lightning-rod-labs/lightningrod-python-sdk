@@ -2,14 +2,17 @@
   "openapi": "3.1.0",
   "info": {
     "title": "LightningRod API",
-    "description": "Generate verified, grounded datasets at scale for LLM fine-tuning and evaluation",
+    "description": "Predict anything with AI",
     "version": "1.0.0"
   },
   "paths": {
     "/openai/chat/completions": {
       "post": {
+        "tags": [
+          "OpenAI API"
+        ],
         "summary": "Chat Completions",
-        "description": "OpenAI-compatible chat/completions endpoint for Lightning Rod's **Foresight** forecasting models. Any OpenAI client works out of the box\u2014point `base_url` at `https://api.lightningrod.ai/v1/openai`. Standard fields (`messages`, `temperature`, `max_tokens`, `top_p`, ...) behave as usual. Lightning Rod adds three optional extensions\u2014`answer_type`, `research`, and `reasoning_effort`\u2014which are top-level fields on this endpoint; with raw OpenAI clients pass them inside `extra_body`. When `answer_type` is set, the model appends a machine-readable answer between `<answer></answer>` tags in `choices[0].message.content` (see the `answer_type` field for the per-type shapes). When `research` is enabled, the model pulls live web evidence before forecasting and reports research cost in `usage`.",
+        "description": "OpenAI-compatible chat/completions endpoint for Lightning Rod's **Foresight** forecasting models.\n\n**Quick start:** Any OpenAI client works out of the box\u2014point `base_url` at `https://api.lightningrod.ai/v1/openai`.\n\n**Standard fields:** `messages`, `temperature`, `max_tokens`, `top_p`, ... behave as usual.\n\n**Extensions:** `answer_type`, `research`, and `reasoning_effort` are top-level fields on this endpoint; with raw OpenAI clients pass them inside `extra_body`.\n\n- **`answer_type`:** appends a machine-readable answer between `<answer></answer>` tags in `choices[0].message.content` (see the field for per-type shapes).\n- **`research`:** pulls live web evidence before forecasting; cost is reported in `usage`.\n\n**Rate limits:** The default limit is **120 requests per minute** per organization (sliding window). Exceeded requests receive a `429`; check `Retry-After` and `X-RateLimit-*` headers to pace retries. Contact `support@lightningrod.ai` for higher limits.",
         "operationId": "chat_completions_openai_chat_completions_post",
         "requestBody": {
           "content": {
@@ -224,6 +227,17 @@
                   }
                 }
               }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
             }
           },
           "422": {
@@ -235,6 +249,9 @@
                 }
               }
             }
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
           }
         },
         "security": [
@@ -246,6 +263,9 @@
     },
     "/openai/models": {
       "get": {
+        "tags": [
+          "OpenAI API"
+        ],
         "summary": "List Models",
         "description": "List available models.",
         "operationId": "list_models_openai_models_get",
@@ -270,8 +290,11 @@
     },
     "/openai/completions": {
       "post": {
+        "tags": [
+          "OpenAI API"
+        ],
         "summary": "Completions",
-        "description": "OpenAI-compatible text completion endpoint for Lightning Rod's **Foresight** forecasting models. Takes a raw `prompt` instead of chat `messages`; the structured answer (when `answer_type` is set) is appended between `<answer></answer>` tags in `choices[0].text`. The same Lightning Rod extensions apply\u2014`answer_type`, `research`, and `reasoning_effort` (pass via `extra_body` with raw OpenAI clients). Prefer the chat/completions endpoint for multi-turn conversations and framework compatibility.",
+        "description": "OpenAI-compatible text completion endpoint for Lightning Rod's **Foresight** forecasting models.\n\nTakes a raw `prompt` instead of chat `messages`. When `answer_type` is set, the structured answer is appended between `<answer></answer>` tags in `choices[0].text`.\n\n**Extensions:** the same Lightning Rod fields apply\u2014`answer_type`, `research`, and `reasoning_effort` (pass via `extra_body` with raw OpenAI clients).\n\nPrefer the **chat/completions** endpoint for multi-turn conversations and framework compatibility.\n\n**Rate limits:** The default limit is **120 requests per minute** per organization (sliding window). Exceeded requests receive a `429`; check `Retry-After` and `X-RateLimit-*` headers to pace retries. Contact `support@lightningrod.ai` for higher limits.",
         "operationId": "completions_openai_completions_post",
         "requestBody": {
           "content": {
@@ -292,6 +315,17 @@
                   "$ref": "#/components/schemas/CompletionResponse"
                 }
               }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
             }
           },
           "422": {
@@ -303,6 +337,9 @@
                 }
               }
             }
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
           }
         },
         "security": [
@@ -315,7 +352,7 @@
     "/mpp/topup": {
       "post": {
         "tags": [
-          "MPP (Machine Payments Protocol)"
+          "Agentic Payments"
         ],
         "summary": "Add credits via MPP (Machine Payments Protocol)",
         "description": "Pay via MPP to add credits and obtain (or refresh) an API key, then call the standard `/openai/*` endpoints with it as a `Bearer` token.\n\n**Flow:** call with no payment \u2192 `402` + `WWW-Authenticate: Payment` challenge (quotes the top-up amount, payable via card/Link Shared Payment Token) \u2192 pay \u2192 retry with `Authorization: Payment <credential>`.\n\n**Amount:** defaults to $5.00; pass `amount_cents` to choose a size (clamped to the credit-purchase limits). Send the **same** `amount_cents` on the paid retry as on the challenge call.\n\n**Headers:**\n- `Authorization: Payment <credential>` \u2014 the MPP payment credential.\n- `X-API-Key: sk_\u2026` *(optional)* \u2014 refill an existing org; omit to mint a new org + key (returned once in the response body).",
@@ -555,7 +592,7 @@
               }
             ],
             "title": "Research",
-            "description": "Lightning Rod extension. Opt-in web research before forecasting. Pass `true` to query all default sources, or a `ResearchOptions` object to select sources. Available sources: `perplexity` (Perplexity web search), `news` (recent news articles), `google_search` (Google web results). Each source runs as its own query and is billed as a separate RESEARCH event; when research runs, its cost is reported in `usage`. With raw OpenAI clients pass via `extra_body`."
+            "description": "Lightning Rod extension. Opt-in web research before forecasting. Pass `true` to query all default sources, or a `ResearchOptions` object to select sources. Each source is billed as a separate research event; when research runs, its cost is reported in `usage`. With raw OpenAI clients pass via `extra_body`."
           },
           "answer_type": {
             "anyOf": [
@@ -584,7 +621,7 @@
           {
             "messages": [
               {
-                "content": "Will Bitcoin increase by more than 10% over the next 3 months? Answer as a probability between 0 and 1 between <answer></answer> tags.",
+                "content": "Will Bitcoin increase by more than 10% over the next 3 months?",
                 "role": "user"
               }
             ],
@@ -608,7 +645,7 @@
             "research": {
               "sources": [
                 "perplexity",
-                "news"
+                "google_news"
               ]
             },
             "reasoning_effort": "high"
@@ -921,7 +958,7 @@
               }
             ],
             "title": "Research",
-            "description": "Lightning Rod extension. Opt-in web research before forecasting. Pass `true` to query all default sources, or a `ResearchOptions` object to select sources. Available sources: `perplexity` (Perplexity web search), `news` (recent news articles), `google_search` (Google web results). Each source runs as its own query and is billed as a separate RESEARCH event; when research runs, its cost is reported in `usage`. With raw OpenAI clients pass via `extra_body`."
+            "description": "Lightning Rod extension. Opt-in web research before forecasting. Pass `true` to query all default sources, or a `ResearchOptions` object to select sources. Available sources: `perplexity` (Perplexity web search), `google_news` (recent Google News articles). Each source runs as its own query and is billed as a separate RESEARCH event; when research runs, its cost is reported in `usage`. With raw OpenAI clients pass via `extra_body`."
           },
           "answer_type": {
             "anyOf": [
@@ -1107,13 +1144,12 @@
               "type": "string",
               "enum": [
                 "perplexity",
-                "news",
-                "google_search"
+                "google_news"
               ]
             },
             "type": "array",
             "title": "Sources",
-            "description": "Which research providers to query in parallel: `perplexity` (Perplexity web search), `news` (recent news articles), `google_search` (Google web results). Each provider is billed as a separate RESEARCH event."
+            "description": "Which research source providers to use. Each provider is billed separately."
           }
         },
         "type": "object",
@@ -1374,6 +1410,61 @@
       "HTTPBearer": {
         "type": "http",
         "scheme": "bearer"
+      }
+    },
+    "headers": {
+      "X-RateLimit-Limit": {
+        "description": "Default request limit per minute for this organization (120 requests per minute). Contact `support@lightningrod.ai` for higher limits.",
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "X-RateLimit-Remaining": {
+        "description": "Number of requests remaining in the current 60-second window.",
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "X-RateLimit-Reset": {
+        "description": "Unix timestamp (seconds) when the current rate-limit window resets.",
+        "schema": {
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "TooManyRequests": {
+        "description": "Rate limit exceeded. Retry after the number of seconds in `Retry-After`.",
+        "headers": {
+          "Retry-After": {
+            "description": "Seconds to wait before retrying.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          },
+          "X-RateLimit-Reset": {
+            "$ref": "#/components/headers/X-RateLimit-Reset"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "string",
+                  "example": "Rate limit exceeded"
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
