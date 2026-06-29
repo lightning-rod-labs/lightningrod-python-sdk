@@ -12,7 +12,7 @@
           "OpenAI API"
         ],
         "summary": "Chat Completions",
-        "description": "OpenAI-compatible chat/completions endpoint for Lightning Rod's **Foresight** forecasting models.\n\n**Quick start:** Any OpenAI client works out of the box\u2014point `base_url` at `https://api.lightningrod.ai/v1/openai`.\n\n**Standard fields:** `messages`, `temperature`, `max_tokens`, `top_p`, ... behave as usual.\n\n**Extensions:** `answer_type`, `research`, and `reasoning_effort` are top-level fields on this endpoint; with raw OpenAI clients pass them inside `extra_body`.\n\n- **`answer_type`:** appends a machine-readable answer between `<answer></answer>` tags in `choices[0].message.content` (see the field for per-type shapes).\n- **`research`:** pulls live web evidence before forecasting; cost is reported in `usage`.\n\n**Rate limits:** The default limit is **120 requests per minute** per organization (sliding window). Exceeded requests receive a `429`; check `Retry-After` and `X-RateLimit-*` headers to pace retries. Contact `support@lightningrod.ai` for higher limits.",
+        "description": "OpenAI-compatible chat/completions endpoint for Lightning Rod's **Foresight** forecasting models.\n\nThe default limit is **120 requests per minute** per organization (sliding window). Exceeded requests receive a `429`; check `Retry-After` and `X-RateLimit-*` headers to pace retries. Contact [support@lightningrod.ai](mailto:support@lightningrod.ai) for higher limits.",
         "operationId": "chat_completions_openai_chat_completions_post",
         "requestBody": {
           "content": {
@@ -261,40 +261,13 @@
         ]
       }
     },
-    "/openai/models": {
-      "get": {
-        "tags": [
-          "OpenAI API"
-        ],
-        "summary": "List Models",
-        "description": "List available models.",
-        "operationId": "list_models_openai_models_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ModelListResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
     "/openai/completions": {
       "post": {
         "tags": [
           "OpenAI API"
         ],
         "summary": "Completions",
-        "description": "OpenAI-compatible text completion endpoint for Lightning Rod's **Foresight** forecasting models.\n\nTakes a raw `prompt` instead of chat `messages`. When `answer_type` is set, the structured answer is appended between `<answer></answer>` tags in `choices[0].text`.\n\n**Extensions:** the same Lightning Rod fields apply\u2014`answer_type`, `research`, and `reasoning_effort` (pass via `extra_body` with raw OpenAI clients).\n\nPrefer the **chat/completions** endpoint for multi-turn conversations and framework compatibility.\n\n**Rate limits:** The default limit is **120 requests per minute** per organization (sliding window). Exceeded requests receive a `429`; check `Retry-After` and `X-RateLimit-*` headers to pace retries. Contact `support@lightningrod.ai` for higher limits.",
+        "description": "OpenAI-compatible text completion endpoint for Lightning Rod's **Foresight** forecasting models.\n\nPrefer the **chat/completions** endpoint for multi-turn conversations and framework compatibility.\n\nThe default limit is **120 requests per minute** per organization (sliding window). Exceeded requests receive a `429`; check `Retry-After` and `X-RateLimit-*` headers to pace retries. Contact [support@lightningrod.ai](mailto:support@lightningrod.ai) for higher limits.",
         "operationId": "completions_openai_completions_post",
         "requestBody": {
           "content": {
@@ -340,6 +313,33 @@
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequests"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/openai/models": {
+      "get": {
+        "tags": [
+          "OpenAI API"
+        ],
+        "summary": "List Models",
+        "description": "List available models.",
+        "operationId": "list_models_openai_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelListResponse"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -608,7 +608,7 @@
               }
             ],
             "title": "Answer Type",
-            "description": "Lightning Rod extension that injects output-format guidance and appends a structured answer between `<answer></answer>` tags in the response content. One of `binary`, `multiple_choice`, `continuous`, `free_response`, or `auto`. Raw response shapes: `binary` -> `<answer>0.62</answer>` (probability between 0 and 1); `continuous` -> `<answer>{\"mean\": 42.5, \"standard_deviation\": 5.2}</answer>`; `multiple_choice` -> `<options>{\"A\": \"...\", \"B\": \"...\"}</options>` followed by `<answer>{\"A\": 0.55, \"B\": 0.45}</answer>`; `free_response` -> `<answer>...</answer>`. `auto` classifies the user question server-side first, then returns one of the above. Omit for prose only. With raw OpenAI clients pass via `extra_body`."
+            "description": "Lightning Rod extension that injects output-format guidance and appends a structured answer between `<answer></answer>` tags in the response content. One of `binary`, `multiple_choice`, `continuous`, `free_response`, or `auto`. Raw response shapes: `binary` -> `<answer>0.62</answer>` (probability between 0 and 1); `continuous` -> `<answer>{\"mean\": 42.5, \"standard_deviation\": 5.2}</answer>`; `multiple_choice` -> `<answer>{\"A\": 0.55, \"B\": 0.45}</answer>`; `free_response` -> `<answer>...</answer>`. `auto` classifies the user question server-side first, then returns one of the above. Omit for prose only. With raw OpenAI clients pass via `extra_body`."
           }
         },
         "type": "object",
