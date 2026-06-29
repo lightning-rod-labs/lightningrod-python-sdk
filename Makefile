@@ -43,6 +43,7 @@ build:
 
 publish-new-version: 
 	@rm -rf dist/*
+	@python -m pip install build twine
 	@make build
 	@make upload
 
