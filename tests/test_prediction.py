@@ -58,7 +58,6 @@ class TestParseMultipleChoice:
         content = '<answer>{"Rate cut": 0.28, "Hold": 0.72}</answer>'
         result = _parse_prediction(content, "multiple_choice")
         assert result == MultiChoicePrediction(
-            options={"Rate cut": "Rate cut", "Hold": "Hold"},
             probabilities={"Rate cut": 0.28, "Hold": 0.72},
         )
 
@@ -70,8 +69,17 @@ class TestParseMultipleChoice:
         )
         result = _parse_prediction(content, "multiple_choice")
         assert result == MultiChoicePrediction(
-            options={"option_0": "Rate cut", "option_1": "Hold"},
-            probabilities={"option_0": 0.28, "option_1": 0.72},
+            probabilities={"Rate cut": 0.28, "Hold": 0.72},
+        )
+
+    def test_parses_options_legend_to_label_keys(self) -> None:
+        content = (
+            '<options>{"A": "No cut", "B": "25bp cut"}</options>'
+            '<answer>{"A": 0.30, "B": 0.62}</answer>'
+        )
+        result = _parse_prediction(content, "multiple_choice")
+        assert result == MultiChoicePrediction(
+            probabilities={"No cut": 0.30, "25bp cut": 0.62},
         )
 
     def test_non_dict_answer_returns_none(self) -> None:
@@ -100,14 +108,13 @@ class TestParseAuto:
     def test_auto_multiple_choice(self) -> None:
         content = '<options>{"o": "A"}</options><answer>{"o": 1.0}</answer>'
         assert _parse_prediction(content, "auto") == MultiChoicePrediction(
-            options={"o": "A"}, probabilities={"o": 1.0}
+            probabilities={"A": 1.0}
         )
 
     def test_auto_label_keyed_multiple_choice(self) -> None:
         # Current format under auto: a dict of label -> probability, no legend.
         content = '<answer>{"Cut": 0.6, "Hold": 0.4}</answer>'
         assert _parse_prediction(content, "auto") == MultiChoicePrediction(
-            options={"Cut": "Cut", "Hold": "Hold"},
             probabilities={"Cut": 0.6, "Hold": 0.4},
         )
 
@@ -254,14 +261,12 @@ class TestBuildPredictionResult:
                     '<answer>{"option_0": 0.3, "option_1": 0.7}</answer>'
                 ),
                 MultiChoicePrediction(
-                    options={"option_0": "Cut", "option_1": "Hold"},
-                    probabilities={"option_0": 0.3, "option_1": 0.7},
+                    probabilities={"Cut": 0.3, "Hold": 0.7},
                 ),
             ),
             (
                 '<answer>{"Rate cut": 0.28, "Hold": 0.72}</answer>',
                 MultiChoicePrediction(
-                    options={"Rate cut": "Rate cut", "Hold": "Hold"},
                     probabilities={"Rate cut": 0.28, "Hold": 0.72},
                 ),
             ),
@@ -305,8 +310,7 @@ class TestBuildPredictionResult:
                 (
                     "multiple_choice",
                     MultiChoicePrediction(
-                        options={"option_0": "Cut", "option_1": "Hold"},
-                        probabilities={"option_0": 0.3, "option_1": 0.7},
+                        probabilities={"Cut": 0.3, "Hold": 0.7},
                     ),
                 ),
             ),
@@ -315,7 +319,6 @@ class TestBuildPredictionResult:
                 (
                     "multiple_choice",
                     MultiChoicePrediction(
-                        options={"Rate cut": "Rate cut", "Hold": "Hold"},
                         probabilities={"Rate cut": 0.28, "Hold": 0.72},
                     ),
                 ),
@@ -468,14 +471,12 @@ class TestPredictRequestBody:
                     '<answer>{"option_0": 0.3, "option_1": 0.7}</answer>'
                 ),
                 MultiChoicePrediction(
-                    options={"option_0": "Cut", "option_1": "Hold"},
-                    probabilities={"option_0": 0.3, "option_1": 0.7},
+                    probabilities={"Cut": 0.3, "Hold": 0.7},
                 ),
             ),
             (
                 'p <answer>{"Rate cut": 0.28, "Hold": 0.72}</answer>',
                 MultiChoicePrediction(
-                    options={"Rate cut": "Rate cut", "Hold": "Hold"},
                     probabilities={"Rate cut": 0.28, "Hold": 0.72},
                 ),
             ),
@@ -508,15 +509,13 @@ class TestPredictRequestBody:
                 ),
                 "multiple_choice",
                 MultiChoicePrediction(
-                    options={"option_0": "Cut", "option_1": "Hold"},
-                    probabilities={"option_0": 0.3, "option_1": 0.7},
+                    probabilities={"Cut": 0.3, "Hold": 0.7},
                 ),
             ),
             (
                 'p <answer>{"Rate cut": 0.28, "Hold": 0.72}</answer>',
                 "multiple_choice",
                 MultiChoicePrediction(
-                    options={"Rate cut": "Rate cut", "Hold": "Hold"},
                     probabilities={"Rate cut": 0.28, "Hold": 0.72},
                 ),
             ),

@@ -137,11 +137,8 @@ def test_multiple_choice(client: LightningRod) -> None:
     )
     _assert_common(result)
     assert isinstance(result.multiple_choice, MultiChoicePrediction)
-    options = result.multiple_choice.options
     probs = result.multiple_choice.probabilities
-    assert options and probs
-    # Probability keys should reference declared options.
-    assert set(probs).issubset(set(options))
+    assert probs
 
 
 def _assert_auto_classified(result: PredictionResult, expected: str) -> None:
@@ -163,10 +160,7 @@ def _assert_auto_classified(result: PredictionResult, expected: str) -> None:
         assert result.continuous.standard_deviation >= 0
     elif expected == "multiple_choice":
         assert isinstance(result.multiple_choice, MultiChoicePrediction)
-        options = result.multiple_choice.options
-        probs = result.multiple_choice.probabilities
-        assert options and probs
-        assert set(probs).issubset(set(options))
+        assert result.multiple_choice.probabilities
     elif expected == "free_response":
         assert isinstance(result.free_response, FreeResponsePrediction)
         assert result.free_response.text.strip()

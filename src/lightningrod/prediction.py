@@ -72,10 +72,8 @@ class ContinuousPrediction:
 class MultiChoicePrediction:
     """Discrete-option forecast."""
 
-    options: dict[str, str]
-    """Option key to label, e.g. ``{"Rate cut": "Rate cut", "Hold": "Hold"}`` or legacy ``{"option_0": "Rate cut"}``."""
     probabilities: dict[str, float]
-    """Per-option probability keyed by ``options``, e.g. ``{"Rate cut": 0.28, "Hold": 0.72}``."""
+    """Per-option probability keyed by human-readable label, e.g. ``{"Rate cut": 0.28, "Hold": 0.72}``."""
 
 
 @dataclass
@@ -129,6 +127,29 @@ _ANSWER_RE = re.compile(r"<answer>(.*?)</answer>", re.DOTALL)
 _OPTIONS_RE = re.compile(r"<options>(.*?)</options>", re.DOTALL)
 
 
+def _label_keyed_probabilities(
+    probabilities: dict[str, float],
+    options: dict[str, str] | None,
+) -> dict[str, float]:
+    """Map machine keys in ``probabilities`` to human-readable option labels."""
+    if options is None:
+        return probabilities
+    return {options.get(key, key): value for key, value in probabilities.items()}
+
+
+def _parse_multiple_choice(content: str, raw: str) -> MultiChoicePrediction | None:
+    probabilities = json.loads(raw)
+    if not isinstance(probabilities, dict):
+        return None
+    options_match = _OPTIONS_RE.search(content)
+    options = json.loads(options_match.group(1)) if options_match is not None else None
+    if options is not None and not isinstance(options, dict):
+        return None
+    return MultiChoicePrediction(
+        probabilities=_label_keyed_probabilities(probabilities, options),
+    )
+
+
 def _parse_prediction(
     content: str,
     answer_type: "AnswerType | str | None",
@@ -166,19 +187,7 @@ def _parse_prediction(
             )
 
         if value == AnswerType.MULTIPLE_CHOICE.value:
-            probabilities = json.loads(raw)
-            if not isinstance(probabilities, dict):
-                return None
-            options_match = _OPTIONS_RE.search(content)
-            if options_match is not None:
-                # Legacy two-tag format: a separate <options> legend maps the
-                # option keys (option_0, …) to human-readable labels.
-                options = json.loads(options_match.group(1))
-            else:
-                # Current format: labels are the <answer> keys directly, so the
-                # legend is the identity map.
-                options = {key: key for key in probabilities}
-            return MultiChoicePrediction(options=options, probabilities=probabilities)
+            return _parse_multiple_choice(content, raw)
 
         if value == AnswerType.FREE_RESPONSE.value:
             return FreeResponsePrediction(text=raw.strip())
@@ -208,10 +217,11 @@ def _parse_auto(content: str, raw: str):
         options_match = _OPTIONS_RE.search(content)
         if options_match is not None:
             try:
-                return MultiChoicePrediction(
-                    options=json.loads(options_match.group(1)),
-                    probabilities=data,
-                )
+                options = json.loads(options_match.group(1))
+                if isinstance(options, dict):
+                    return MultiChoicePrediction(
+                        probabilities=_label_keyed_probabilities(data, options),
+                    )
             except (ValueError, TypeError):
                 pass
         if "mean" in data and "standard_deviation" in data:
@@ -219,15 +229,10 @@ def _parse_auto(content: str, raw: str):
                 mean=data["mean"],
                 standard_deviation=data["standard_deviation"],
             )
-        # Current multiple-choice format: a dict of label -> probability, with the
-        # labels as keys and no <options> legend.
         if data and all(
             isinstance(v, (int, float)) and not isinstance(v, bool)
             for v in data.values()
         ):
-            return MultiChoicePrediction(
-                options={key: key for key in data},
-                probabilities=data,
-            )
+            return MultiChoicePrediction(probabilities=data)
 
     return FreeResponsePrediction(text=raw.strip())

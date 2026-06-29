@@ -54,7 +54,7 @@ print(result.content)
 | ------------------- | ------------------------------------------------------------------------ |
 | `"binary"`          | `result.binary.probability`                                              |
 | `"continuous"`      | `result.continuous.mean`, `result.continuous.standard_deviation`         |
-| `"multiple_choice"` | `result.multiple_choice.options`, `result.multiple_choice.probabilities` |
+| `"multiple_choice"` | `result.multiple_choice.probabilities` |
 | `"free_response"`   | `result.free_response.text`                                              |
 | `"auto"`            | One of the above fields, inferred from the server-classified answer type |
 
