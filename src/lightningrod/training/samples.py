@@ -669,7 +669,8 @@ def to_messages(
     Args:
         sample: A LightningRod sample.
         template: Optional format string with placeholders (question_text, context,
-            answer_instructions, date_close, etc.). If None, uses default sections.
+            answer_instructions, date_close, etc.). Used only when sample.prompt is
+            missing or blank. If no prompt or template exists, uses default sections.
         answer_type: Optional answer type for answer_format_instruction in the prompt.
         include_assistant: If True and sample has a label, append an assistant message
             with the correct answer. Use for SFT; omit for GRPO, inference, or when
@@ -679,6 +680,14 @@ def to_messages(
         List of chat dicts, e.g. [{"role": "user", "content": "..."}] or
         [{"role": "user", ...}, {"role": "assistant", "content": "..."}] when include_assistant.
     """
+    if not isinstance(sample.prompt, Unset) and sample.prompt is not None and sample.prompt.strip():
+        messages = [{"role": "user", "content": sample.prompt}]
+        if include_assistant and answer_type:
+            label = sample_label(sample, answer_type)
+            if label is not None:
+                messages.append({"role": "assistant", "content": f"<answer>{str(label)}</answer>"})
+        return messages
+
     template_values: dict[str, Any] = {}
     question = sample.question if not isinstance(sample.question, Unset) else None
     question_text = question.question_text if question else ""

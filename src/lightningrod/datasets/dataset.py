@@ -21,8 +21,9 @@ class SampleDataset:
     Attributes:
         id: Unique identifier for the dataset
         num_rows: Number of rows in the dataset
-        prompt_template: Optional template string for formatting prompts. When set,
-            used by preview_prompts() and passed to training/eval API calls.
+        prompt_template: Optional template string for formatting prompts when samples
+            do not already have rendered prompts. When set, used by preview_prompts()
+            and passed to training/eval API calls.
     
     Example:
         >>> lr = LightningRod(api_key="your-api-key")
