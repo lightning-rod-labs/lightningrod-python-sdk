@@ -38,9 +38,16 @@ make publish-new-version  # Build + upload to PyPI
 - `notebooks/` has user-facing examples (getting started, evaluation, fine-tuning, custom filesets).
 - `docs/` contains GitBook documentation source.
 
+### OpenAPI specs (`openapi/`)
+
+There are two OpenAPI files, used for different purposes:
+
+- **`openapi/openapi.json`** — the full, **auto-generated** spec. Fetched from the local API server by `scripts/generate.py` and consumed by `openapi-python-client` to produce `_generated/`. **Do not hand-edit** — it is overwritten on every `make generate`.
+- **`openapi/openapi-docs.json`** — a hand-maintained spec used **only for the public GitBook docs** (the REST API reference). It is intentionally trimmed to the public surface — currently just the OpenAI-compatible endpoints (`/openai/*`) and the schemas they reference — and is enriched with extra descriptions and examples for `answer_type`, `research`, `reasoning_effort`, response shapes, etc. Edit this file by hand when improving the published API reference; it is **not** used for code generation. When the underlying API changes, update it manually (optionally diffing against `openapi.json`) rather than regenerating.
+
 ### Code generation flow
 
-The `_generated/` package is produced by `scripts/generate.py`, which fetches `openapi.json` from a local API server and runs `openapi-python-client`. When the API adds new endpoints or models, regenerate and then update imports in `__init__.py` and the relevant sub-client.
+The `_generated/` package is produced by `scripts/generate.py`, which fetches `openapi.json` from a local API server and runs `openapi-python-client`. When the API adds new endpoints or models, regenerate and then update imports in `__init__.py` and the relevant sub-client. This flow only touches `openapi.json` — `openapi-docs.json` is left alone.
 
 ## SDK Agent (`agents/lightningrod-assistant`)
 

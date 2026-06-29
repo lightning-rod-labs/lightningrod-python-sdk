@@ -4,6 +4,7 @@ from datetime import datetime
 
 import pytest
 
+from lightningrod._generated.models.binary_answer_type import BinaryAnswerType
 from lightningrod._generated.models.label import Label
 from lightningrod._generated.models.sample import Sample
 from lightningrod._generated.models.seed import Seed
@@ -15,7 +16,9 @@ from lightningrod.training.samples import (
     SplitParams,
     filter_samples,
     prepare_for_training,
+    to_messages,
     to_record,
+    to_training_record,
 )
 from lightningrod._generated.models.forward_looking_question import ForwardLookingQuestion
 from lightningrod.training.multi_choice_options import extract_options_from_question_text
@@ -296,6 +299,57 @@ def test_to_record_normalizes_answer_type() -> None:
     record = to_record(sample)
     assert record["answer_type"] == "binary"
     assert record["label"] == 1
+
+
+def _binary_rendered_prompt_sample(prompt: str | None = "PRE-RENDERED PROMPT") -> Sample:
+    return Sample(
+        id="s-rendered",
+        prompt=prompt,
+        question=ForwardLookingQuestion(
+            question_text="This question should only appear when rendering is needed.",
+            date_close=datetime(2030, 1, 1),
+            event_date=datetime(2030, 1, 1),
+            resolution_criteria="resolves yes if...",
+        ),
+        label=Label(label="1", label_confidence=1.0, answer_type="binary"),
+    )
+
+
+def test_to_messages_preserves_existing_sample_prompt() -> None:
+    sample = _binary_rendered_prompt_sample()
+
+    messages = to_messages(
+        sample,
+        answer_type=BinaryAnswerType(),
+        template="TEMPLATE: {question_text}",
+    )
+
+    assert messages == [{"role": "user", "content": "PRE-RENDERED PROMPT"}]
+
+
+def test_to_training_record_preserves_existing_sample_prompt_for_sft() -> None:
+    sample = _binary_rendered_prompt_sample()
+
+    row = to_training_record(sample, BinaryAnswerType(), include_assistant=True)
+
+    assert row["prompt"] == [
+        {"role": "user", "content": "PRE-RENDERED PROMPT"},
+        {"role": "assistant", "content": "<answer>1</answer>"},
+    ]
+
+
+def test_to_messages_renders_when_sample_prompt_is_missing_or_blank() -> None:
+    for prompt in (None, "   "):
+        sample = _binary_rendered_prompt_sample(prompt=prompt)
+
+        messages = to_messages(sample, answer_type=BinaryAnswerType())
+
+        assert messages[0]["role"] == "user"
+        assert (
+            "QUESTION:\nThis question should only appear when rendering is needed."
+            in messages[0]["content"]
+        )
+        assert "ANSWER FORMAT:" in messages[0]["content"]
 
 
 # --- extract_options_from_question_text: cases derived from real production MC question text.

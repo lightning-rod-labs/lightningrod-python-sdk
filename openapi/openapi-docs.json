@@ -599,7 +599,7 @@
               },
               {
                 "role": "user",
-                "content": "Will the Fed cut rates by 25bp in March 2026?"
+                "content": "Will the Fed cut interest rates in 2026?"
               }
             ],
             "temperature": 0.2,

@@ -115,4 +115,4 @@ for job in response.jobs:
 
 ## Example
 
-See [notebooks/getting_started/05_grpo_training.ipynb](../../notebooks/getting_started/05_grpo_training.ipynb) for GRPO forecasting workflow and [notebooks/getting_started/06_sft_training.ipynb](../../notebooks/getting_started/06_sft_training.ipynb) for SFT.
+See [notebooks/getting_started/05_grpo_training.ipynb](../../../notebooks/getting_started/05_grpo_training.ipynb) for GRPO forecasting workflow and [notebooks/getting_started/06_sft_training.ipynb](../../../notebooks/getting_started/06_sft_training.ipynb) for SFT.

@@ -5,6 +5,7 @@ import pytest
 
 from lightningrod.client import LightningRod, _build_usage
 from lightningrod.prediction import (
+    DEFAULT_MODEL,
     AnswerType,
     BinaryPrediction,
     ContinuousPrediction,
@@ -52,7 +53,17 @@ class TestParseContinuous:
 
 
 class TestParseMultipleChoice:
-    def test_parses_options_and_probabilities(self) -> None:
+    def test_parses_label_keyed_answer(self) -> None:
+        # Current format: human-readable labels are the <answer> keys; no legend.
+        content = '<answer>{"Rate cut": 0.28, "Hold": 0.72}</answer>'
+        result = _parse_prediction(content, "multiple_choice")
+        assert result == MultiChoicePrediction(
+            options={"Rate cut": "Rate cut", "Hold": "Hold"},
+            probabilities={"Rate cut": 0.28, "Hold": 0.72},
+        )
+
+    def test_parses_legacy_options_and_probabilities(self) -> None:
+        # Backward compatibility: legacy two-tag <options>/<answer> with option_N keys.
         content = (
             '<options>{"option_0": "Rate cut", "option_1": "Hold"}</options>'
             '<answer>{"option_0": 0.28, "option_1": 0.72}</answer>'
@@ -63,12 +74,11 @@ class TestParseMultipleChoice:
             probabilities={"option_0": 0.28, "option_1": 0.72},
         )
 
-    def test_missing_options_returns_none(self) -> None:
-        content = '<answer>{"option_0": 0.28, "option_1": 0.72}</answer>'
-        assert _parse_prediction(content, "multiple_choice") is None
+    def test_non_dict_answer_returns_none(self) -> None:
+        assert _parse_prediction("<answer>0.5</answer>", "multiple_choice") is None
 
     def test_invalid_json_returns_none(self) -> None:
-        content = "<options>{bad}</options><answer>{bad}</answer>"
+        content = "<answer>{bad}</answer>"
         assert _parse_prediction(content, "multiple_choice") is None
 
 
@@ -91,6 +101,14 @@ class TestParseAuto:
         content = '<options>{"o": "A"}</options><answer>{"o": 1.0}</answer>'
         assert _parse_prediction(content, "auto") == MultiChoicePrediction(
             options={"o": "A"}, probabilities={"o": 1.0}
+        )
+
+    def test_auto_label_keyed_multiple_choice(self) -> None:
+        # Current format under auto: a dict of label -> probability, no legend.
+        content = '<answer>{"Cut": 0.6, "Hold": 0.4}</answer>'
+        assert _parse_prediction(content, "auto") == MultiChoicePrediction(
+            options={"Cut": "Cut", "Hold": "Hold"},
+            probabilities={"Cut": 0.6, "Hold": 0.4},
         )
 
     def test_auto_free_response_fallback(self) -> None:
@@ -325,7 +343,7 @@ def lr_with_fake_openai(monkeypatch):
 class TestPredictRequestBody:
     def test_research_true(self, lr_with_fake_openai) -> None:
         client, captured = lr_with_fake_openai
-        client.predict("m", "q", research=True, answer_type="binary")
+        client.predict("q", model="m", research=True, answer_type="binary")
         assert captured["extra_body"] == {
             "reasoning_effort": "medium",
             "research": True,
@@ -334,43 +352,43 @@ class TestPredictRequestBody:
 
     def test_research_list(self, lr_with_fake_openai) -> None:
         client, captured = lr_with_fake_openai
-        client.predict("m", "q", research=["perplexity", "news"])
-        assert captured["extra_body"]["research"] == {"sources": ["perplexity", "news"]}
+        client.predict("q", model="m", research=["perplexity", "google_news"])
+        assert captured["extra_body"]["research"] == {"sources": ["perplexity", "google_news"]}
         assert "answer_type" not in captured["extra_body"]
 
     def test_research_false_omitted(self, lr_with_fake_openai) -> None:
         client, captured = lr_with_fake_openai
-        client.predict("m", "q", research=False)
+        client.predict("q", model="m", research=False)
         assert "research" not in captured["extra_body"]
 
     def test_research_none_omitted(self, lr_with_fake_openai) -> None:
         client, captured = lr_with_fake_openai
-        client.predict("m", "q")
+        client.predict("q", model="m")
         assert "research" not in captured["extra_body"]
 
     def test_reasoning_effort_enum_serialized(self, lr_with_fake_openai) -> None:
         client, captured = lr_with_fake_openai
-        client.predict("m", "q", reasoning_effort=ReasoningEffort.HIGH)
+        client.predict("q", model="m", reasoning_effort=ReasoningEffort.HIGH)
         assert captured["extra_body"]["reasoning_effort"] == "high"
 
     def test_reasoning_effort_string(self, lr_with_fake_openai) -> None:
         client, captured = lr_with_fake_openai
-        client.predict("m", "q", reasoning_effort="low")
+        client.predict("q", model="m", reasoning_effort="low")
         assert captured["extra_body"]["reasoning_effort"] == "low"
 
     def test_answer_type_enum_serialized(self, lr_with_fake_openai) -> None:
         client, captured = lr_with_fake_openai
-        client.predict("m", "q", answer_type=AnswerType.AUTO)
+        client.predict("q", model="m", answer_type=AnswerType.AUTO)
         assert captured["extra_body"]["answer_type"] == "auto"
 
     def test_default_reasoning_effort_is_medium(self, lr_with_fake_openai) -> None:
         client, captured = lr_with_fake_openai
-        client.predict("m", "q")
+        client.predict("q", model="m")
         assert captured["extra_body"]["reasoning_effort"] == "medium"
 
     def test_system_prompt_prepended(self, lr_with_fake_openai) -> None:
         client, captured = lr_with_fake_openai
-        client.predict("m", "the question", system_prompt="be terse")
+        client.predict("the question", model="m", system_prompt="be terse")
         assert captured["messages"] == [
             {"role": "system", "content": "be terse"},
             {"role": "user", "content": "the question"},
@@ -378,17 +396,27 @@ class TestPredictRequestBody:
 
     def test_no_system_prompt(self, lr_with_fake_openai) -> None:
         client, captured = lr_with_fake_openai
-        client.predict("m", "the question")
+        client.predict("the question", model="m")
         assert captured["messages"] == [{"role": "user", "content": "the question"}]
 
     def test_returns_prediction_result(self, lr_with_fake_openai) -> None:
         client, _ = lr_with_fake_openai
-        result = client.predict("m", "q", answer_type="binary")
+        result = client.predict("q", model="m", answer_type="binary")
         assert isinstance(result, PredictionResult)
         assert result.binary == BinaryPrediction(probability=0.4)
 
     def test_caller_extra_body_merged(self, lr_with_fake_openai) -> None:
         client, captured = lr_with_fake_openai
-        client.predict("m", "q", extra_body={"custom_flag": True})
+        client.predict("q", model="m", extra_body={"custom_flag": True})
         assert captured["extra_body"]["custom_flag"] is True
         assert captured["extra_body"]["reasoning_effort"] == "medium"
+
+    def test_model_defaults_to_latest(self, lr_with_fake_openai) -> None:
+        client, captured = lr_with_fake_openai
+        client.predict("q")
+        assert captured["model"] == DEFAULT_MODEL
+
+    def test_model_override(self, lr_with_fake_openai) -> None:
+        client, captured = lr_with_fake_openai
+        client.predict("q", model="LightningRodLabs/foresight-v4")
+        assert captured["model"] == "LightningRodLabs/foresight-v4"

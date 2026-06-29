@@ -8,6 +8,7 @@ from lightningrod.utils import config
 from lightningrod.files.client import FilesClient
 from lightningrod.filesets.client import FileSetsClient
 from lightningrod.prediction import (
+    DEFAULT_MODEL,
     AnswerType,
     BinaryPrediction,
     ContinuousPrediction,
@@ -80,9 +81,9 @@ class LightningRod:
 
     def predict(
         self,
-        model_id: str,
         prompt: str,
         *,
+        model: str | None = None,
         research: bool | list[str] | None = None,
         answer_type: AnswerType | str | None = None,
         reasoning_effort: ReasoningEffort | str = ReasoningEffort.MEDIUM,
@@ -92,11 +93,15 @@ class LightningRod:
         """Run a single prediction against a Lightning Rod model.
 
         Args:
-            model_id: The model to query (e.g. a trained checkpoint or
-                ``"foresight-v4"``).
             prompt: The question or prompt text.
+            model: The model to query. Accepts the same IDs as the
+                OpenAI-compatible endpoint, in either short form
+                (``"foresight-v4"``) or full provider form
+                (``"LightningRodLabs/foresight-v4"``), as well as a trained
+                checkpoint ID. Defaults to the latest hosted forecasting model
+                (:data:`~lightningrod.prediction.DEFAULT_MODEL`).
             research: Enable web research. ``True`` uses all available sources;
-                a list such as ``["perplexity", "news"]`` restricts to specific
+                a list such as ``["perplexity", "google_news"]`` restricts to specific
                 sources; ``False``/``None`` disables research.
             answer_type: Requested structured-answer format. Accepts an
                 :class:`AnswerType` or its string value. ``None`` omits answer
@@ -112,13 +117,23 @@ class LightningRod:
             sources, usage and the typed prediction matching ``answer_type``.
 
         .. note::
-            **Breaking change:** ``predict()`` previously returned the raw
-            content string. It now returns a structured
-            :class:`PredictionResult`; the raw string is available as
-            ``result.content``. The ``research``, ``answer_type`` and
-            ``reasoning_effort`` parameters are now first-class keyword
-            arguments rather than ``extra_body`` passthroughs.
+            **Breaking change:** ``prompt`` is now the first positional
+            argument and the model moved to an optional ``model`` keyword
+            argument (was the required first positional ``model_id``).
+            ``predict()`` also now returns a structured
+            :class:`PredictionResult` rather than the raw content string; the
+            raw string is available as ``result.content``. The ``research``,
+            ``answer_type`` and ``reasoning_effort`` parameters are first-class
+            keyword arguments rather than ``extra_body`` passthroughs.
         """
+        _at = answer_type.value if isinstance(answer_type, AnswerType) else answer_type
+        if _at == "auto":
+            raise ValueError(
+                "answer_type='auto' is not supported by predict(). "
+                "Use a specific answer_type ('binary', 'continuous', 'multiple_choice', "
+                "or 'free_response'), or omit it for unstructured prose."
+            )
+
         try:
             from openai import OpenAI
         except ImportError:
@@ -149,7 +164,7 @@ class LightningRod:
             )
 
         response = client.chat.completions.create(
-            model=model_id,
+            model=model or DEFAULT_MODEL,
             messages=messages,
             extra_body=extra_body,
             **kwargs,
