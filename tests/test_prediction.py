@@ -336,7 +336,7 @@ def lr_with_fake_openai(monkeypatch):
 
     client = LightningRod.__new__(LightningRod)
     client.api_key = "test-key"
-    client.base_url = "https://api.lightningrod.ai/api/public/v1"
+    client.base_url = "https://api.lightningrod.ai/v1"
     return client, captured
 
 
