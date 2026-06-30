@@ -1,4 +1,4 @@
-<img width="2540" height="1520" alt="04-product-ui" src="https://github.com/user-attachments/assets/66056c7a-6c6e-4040-a1a0-9852f709a0c5" />
+![](https://github.com/user-attachments/assets/66056c7a-6c6e-4040-a1a0-9852f709a0c5)
 
 
 # Lightning Rod Python SDK
