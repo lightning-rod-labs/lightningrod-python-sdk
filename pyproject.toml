@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lightningrod-ai"
-version = "0.2.2"
+version = "0.2.3"
 description = "Predict anything with AI. Python SDK for Foresight forecasting models, built on top of OpenAI compatible inference API."
 readme = "README.md"
 requires-python = ">=3.10"
