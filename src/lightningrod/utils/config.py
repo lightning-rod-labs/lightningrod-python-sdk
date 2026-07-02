@@ -2,11 +2,20 @@ import os
 import sys
 import getpass
 from pathlib import Path
-from lightningrod._display import _is_colab_notebook
 
 
 class LightningrodAuthError(RuntimeError):
     """Raised when required configuration (API key, etc.) is missing and cannot be prompted for."""
+
+
+def _is_colab_notebook() -> bool:
+    """Check if we're running inside a Google Colab notebook."""
+    try:
+        import google.colab.userdata
+    except ImportError:
+        return False
+    else:
+        return True
 
 
 _DOTENV_LOADED = False

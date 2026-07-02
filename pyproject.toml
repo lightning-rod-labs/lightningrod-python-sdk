@@ -20,35 +20,14 @@ authors = [
     {name = "Lightning Rod Labs", email = "support@lightningrod.ai"}
 ]
 dependencies = [
-    "requests>=2.31.0",
-    "pydantic>=2.0.0",
-    "httpx>=0.25.0",
-    "attrs>=23.1.0",
-    "python-dateutil>=2.8.0",
-    "pyarrow>=14.0.0",
-    "fsspec>=2023.0.0",
-    "rich>=13.0.0",
+    "openai>=1.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "build>=1.0.0",
-    "openapi-python-client>=0.15.0",
     "pytest>=7.0.0",
     "twine>=5.0.0",
-]
-transfer = [
-    "google-cloud-storage>=2.0.0",
-]
-visual = [
-    "PyMuPDF>=1.24.0",
-    "openai>=1.0.0",
-]
-extract = [
-    "openai>=1.0.0",
-    "pypdf>=4.0.0",
-    "pypdfium2>=4.0.0",
-    "pillow>=10.0.0",
 ]
 
 [tool.setuptools]
