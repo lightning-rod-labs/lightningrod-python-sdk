@@ -63,4 +63,4 @@ Need a model tuned to your domain? Our platform turns raw sources into labeled d
 ## 📚 Learn more
 
 - [Documentation & API reference](https://docs.lightningrod.ai/) — quickstart, guides, recipes, and the REST API reference
-- [Quickstart notebook](notebooks/00_quickstart.ipynb) — OpenAI-compatible client and `lr.predict()`, side by side (runnable in Colab)
+- [Quickstart notebook](notebooks/quickstart.ipynb) — OpenAI-compatible client and `lr.predict()`, side by side (runnable in Colab)

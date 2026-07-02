@@ -38,8 +38,8 @@ make publish-new-version  # Build + upload to PyPI
 - `predict()` is a thin wrapper around the `openai` Python client — no custom
   HTTP/auth layer. Lightning Rod-specific params (`research`, `answer_type`,
   `reasoning_effort`) travel via `extra_body`.
-- `notebooks/00_quickstart.ipynb` is the one example notebook, showing both
-  the raw OpenAI-compatible client and the `lr.predict()` helper.
+- `notebooks/quickstart.ipynb` is the one example notebook, showing both
+  the raw OpenAI-compatible client and the Python SDK.
 - `docs/` contains GitBook documentation source. `docs/forecasting/*` documents
   the inference API/SDK; `docs/platform/overview.md` is an enterprise pitch
   page (dataset generation and fine-tuning are no longer part of the public
