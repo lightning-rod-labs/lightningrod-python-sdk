@@ -1,4 +1,4 @@
-.PHONY: help setup install install-dev test pytest build clean generate filter-openapi publish upload bump-version bump-patch bump-minor bump-major
+.PHONY: help setup install install-dev test pytest build clean publish upload bump-version bump-patch bump-minor bump-major
 
 help:
 	@echo "Lightning Rod Python SDK - Development Commands"
@@ -12,8 +12,6 @@ help:
 	@echo "  make publish     - Build and upload to PyPI"
 	@echo "  make upload      - Upload distribution packages to PyPI (requires build first)"
 	@echo "  make clean       - Clean build artifacts"
-	@echo "  make generate       - Regenerate client from OpenAPI spec"
-	@echo "  make filter-openapi - Fetch and filter OpenAPI spec for docs"
 	@echo "  make bump-patch   - Bump patch version (0.1.5 -> 0.1.6)"
 	@echo "  make bump-minor   - Bump minor version (0.1.5 -> 0.2.0)"
 	@echo "  make bump-major   - Bump major version (0.1.5 -> 1.0.0)"
@@ -58,13 +56,6 @@ clean:
 	@rm -rf *.egg-info
 	@find . -type d -name __pycache__ -exec rm -r {} + 2>/dev/null || true
 	@find . -type f -name "*.pyc" -delete
-
-generate:
-	@echo "Generating Python SDK client library..."
-	@python ./scripts/generate.py
-
-filter-openapi:
-	@python ./scripts/filter_openapi.py
 
 bump-version:
 	@if [ -z "$(TYPE)" ]; then \

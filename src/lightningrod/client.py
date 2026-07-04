@@ -1,12 +1,4 @@
-from lightningrod._generated.client import AuthenticatedClient
-from lightningrod.datasets.client import DatasetSamplesClient, DatasetsClient
-from lightningrod.organization.client import OrganizationsClient
-from lightningrod.transforms.client import TransformsClient
-from lightningrod.training.client import TrainingClient
-from lightningrod.training.evals import EvalsClient
 from lightningrod.utils import config
-from lightningrod.files.client import FilesClient
-from lightningrod.filesets.client import FileSetsClient
 from lightningrod.prediction import (
     DEFAULT_MODEL,
     AnswerType,
@@ -37,18 +29,17 @@ def _build_usage(usage: dict) -> Usage:
 class LightningRod:
     """
     Python SDK for the Lightning Rod API.
-    
+
     Args:
         api_key: Your Lightning Rod API key
         base_url: Base URL for the API (defaults to production)
-    
+
     Example:
         >>> lr = LightningRod(api_key="your-api-key")
-        >>> config = QuestionPipeline(...)
-        >>> dataset = lr.transforms.run(config)
-        >>> samples = dataset.to_samples()
+        >>> result = lr.predict("Will the Fed cut rates by 25bp in March 2026?", answer_type="binary")
+        >>> print(result.binary.probability)
     """
-    
+
     def __init__(
         self,
         api_key: str | None = None,
@@ -63,21 +54,6 @@ class LightningRod:
 
         self.api_key: str = api_key
         self.base_url: str = base_url.rstrip("/")
-        self._generated_client: AuthenticatedClient = AuthenticatedClient(
-            base_url=self.base_url,
-            token=api_key,
-            prefix="Bearer",
-            auth_header_name="Authorization",
-        )
-        
-        self._dataset_samples: DatasetSamplesClient = DatasetSamplesClient(self._generated_client)
-        self.transforms: TransformsClient = TransformsClient(self._generated_client, self._dataset_samples)
-        self.datasets: DatasetsClient = DatasetsClient(self._generated_client, self._dataset_samples)
-        self.organization: OrganizationsClient = OrganizationsClient(self._generated_client)
-        self.training: TrainingClient = TrainingClient(self._generated_client)
-        self.evals: EvalsClient = EvalsClient(self._generated_client)
-        self.files: FilesClient = FilesClient(self._generated_client)
-        self.filesets: FileSetsClient = FileSetsClient(self._generated_client)
 
     def predict(
         self,
@@ -104,10 +80,8 @@ class LightningRod:
                 a list such as ``["perplexity", "google_news"]`` restricts to specific
                 sources; ``False``/``None`` disables research.
             answer_type: Requested structured-answer format. Accepts an
-                :class:`AnswerType` or its string value. ``"auto"`` classifies
-                the question server-side and infers the answer shape from the
-                response. ``None`` omits answer formatting and returns prose
-                only.
+                :class:`AnswerType` or its string value. ``None`` omits answer
+                formatting and returns prose only.
             reasoning_effort: ``"low"``, ``"medium"`` or ``"high"`` (default
                 medium). Accepts a :class:`ReasoningEffort` or its string value.
             system_prompt: Optional system message prepended to the request.

@@ -2,16 +2,16 @@
 
 ## What This Is
 
-Python SDK for Lightning Rod — an AI-powered platform for generating forecasting datasets to train LLMs. Users build `QuestionPipeline` configs (seed generators → question generators → labelers) and run them via `lr.transforms.run(pipeline)` to produce labeled datasets.
+Python SDK for Lightning Rod's **Foresight** forecasting models. The SDK wraps
+an OpenAI-compatible inference API — `lr.predict()` sends a prompt and parses
+back a calibrated probability forecast (optionally with live web research).
 
 ## Commands
 
 ```bash
 make install-dev          # Install with dev deps (editable mode)
 make test                 # Run all tests: pytest tests/ -v
-python -m pytest tests/test_tabular.py -v   # Single test file
-python -m pytest tests/test_tabular.py::test_name -v  # Single test
-make generate             # Regenerate _generated/ client (requires local API on :8080)
+python -m pytest tests/test_prediction.py -v   # Single test file
 make bump-patch           # Version bump (also: bump-minor, bump-major)
 make publish-new-version  # Build + upload to PyPI
 ```
@@ -20,75 +20,33 @@ make publish-new-version  # Build + upload to PyPI
 
 ### Source layout (`src/lightningrod/`)
 
-- **`client.py`** — `LightningRod` is the main entry point. Instantiates sub-clients for each API domain (transforms, datasets, training, evals, files, filesets, organization). Also provides `lr.predict()` via OpenAI-compatible API.
-- **`_generated/`** — Auto-generated from `openapi/openapi.json` via `openapi-python-client`. **Do not edit manually** — run `make generate` instead (needs the API server running locally on port 8080).
-- **`transforms/`** — `TransformsClient` orchestrates pipeline jobs: create, poll, cancel, cost estimation. `lr.transforms.run()` is the primary user-facing method.
-- **`datasets/`** — `SampleDataset` / `AsyncDataset` wrap API results with `.to_samples()`, `.flattened()`, `.to_dataframe()`. `DatasetsClient` handles CRUD. `linting.py` provides dataset quality analysis.
-- **`training/`** — `TrainingClient` for fine-tuning jobs (GRPO/SFT configs). `EvalsClient` for evaluation runs. `samples.py` has `prepare_for_training()` for filtering/dedup/splitting.
-- **`files/` + `filesets/`** — Upload and manage custom document collections.
-- **`utils/`** — Helpers: `config.py` (env var overrides), `models.py` (OpenRouter integration), `examples.py` (example factories for answer types), `sample.py` (sample creation), `tabular.py` (tabular data handling), `metrics.py`.
-- **`_display.py`** — Rich-based terminal/notebook display for job progress and lint results.
-- **`_errors.py`** — Centralized API error handling.
-- **`__init__.py`** — Re-exports all public types from `_generated.models` plus SDK utilities. This is the public API surface — all pipeline components, answer types, and configs are importable from `lightningrod` directly.
+- **`client.py`** — `LightningRod` is the entire public entry point. `predict()`
+  builds a chat-completion request against the OpenAI-compatible endpoint
+  (`{base_url}/openai`) via the `openai` package, and parses the response into
+  a typed `PredictionResult`.
+- **`prediction.py`** — `AnswerType`, `ReasoningEffort`, the per-answer-type
+  prediction dataclasses (`BinaryPrediction`, `ContinuousPrediction`,
+  `MultiChoicePrediction`, `FreeResponsePrediction`), `Source`, `Usage`,
+  `PredictionResult`, and `_parse_prediction()` — the `<answer>` tag parser.
+- **`utils/config.py`** — `get_config_value()` resolves API key/base URL from
+  env vars, a project-local `.env`, or Colab secrets; `LightningrodAuthError`.
+- **`__init__.py`** — re-exports `LightningRod` plus the prediction types.
+  This is the entire public API surface.
 
 ### Key patterns
 
-- All API calls go through `_generated.client.AuthenticatedClient` (httpx-based, Bearer auth).
-- Pipeline types (`QuestionPipeline`, seed generators, labelers, answer types) are Pydantic/attrs models defined in `_generated/models/` — the SDK re-exports them from `__init__.py`.
-- `notebooks/` has user-facing examples (getting started, evaluation, fine-tuning, custom filesets).
-- `docs/` contains GitBook documentation source.
+- `predict()` is a thin wrapper around the `openai` Python client — no custom
+  HTTP/auth layer. Lightning Rod-specific params (`research`, `answer_type`,
+  `reasoning_effort`) travel via `extra_body`.
+- `notebooks/quickstart.ipynb` is the one example notebook, showing both
+  the raw OpenAI-compatible client and the Python SDK.
+- `docs/` contains GitBook documentation source. `docs/forecasting/*` documents
+  the inference API/SDK; `docs/platform/overview.md` is an enterprise pitch
+  page (dataset generation and fine-tuning are no longer part of the public
+  SDK, but the enterprise offering is still described there for potential
+  customers).
 
-### OpenAPI specs (`openapi/`)
+## Publishing
 
-There are two OpenAPI files, used for different purposes:
-
-- **`openapi/openapi.json`** — the full, **auto-generated** spec. Fetched from the local API server by `scripts/generate.py` and consumed by `openapi-python-client` to produce `_generated/`. **Do not hand-edit** — it is overwritten on every `make generate`.
-- **`openapi/openapi-docs.json`** — a hand-maintained spec used **only for the public GitBook docs** (the REST API reference). It is intentionally trimmed to the public surface — currently just the OpenAI-compatible endpoints (`/openai/*`) and the schemas they reference — and is enriched with extra descriptions and examples for `answer_type`, `research`, `reasoning_effort`, response shapes, etc. Edit this file by hand when improving the published API reference; it is **not** used for code generation. When the underlying API changes, update it manually (optionally diffing against `openapi.json`) rather than regenerating.
-
-### Code generation flow
-
-The `_generated/` package is produced by `scripts/generate.py`, which fetches `openapi.json` from a local API server and runs `openapi-python-client`. When the API adds new endpoints or models, regenerate and then update imports in `__init__.py` and the relevant sub-client. This flow only touches `openapi.json` — `openapi-docs.json` is left alone.
-
-## SDK Agent (`agents/lightningrod-assistant`)
-
-A Claude Code agent that sits on top of the SDK and guides users through forecasting dataset generation and fine-tuning flows. It is a standalone component — it uses the SDK as a library but has its own system prompt, skills, and MCP integration. Also distributed as a Claude Code plugin (see `.claude-plugin/`).
-
-### Agent definition
-
-`agents/lightningrod-assistant.md` (symlinked from `.claude/agents/`) — the full system prompt. Defines the agent's personality (domain-first, opinionated, no menus), the step-by-step flow (understand topic → draft example questions → build pipeline → test at scale → review → train → eval), hard constraints (never switch data sources as a quality fix, never invent custom filtering, etc.), answer type selection logic, environment setup rules, and the SDK surface reference.
-
-Key behavioral rules baked into the agent prompt:
-- First response is always text with drafted example questions — no tool calls.
-- Uses `AskUserQuestion` for all clarifications, never plain-text question lists.
-- Writes to `./userland/<project-name>/` by default.
-- Runs notebook cells one at a time, never batch-executes.
-- Picks data sources and answer types opinionatedly — does not present options as menus.
-- Always calls `estimate_cost()` before scaling up.
-- Compares trained models against gpt-5 in eval.
-
-### Skills (`skills/`)
-
-Skills live in the top-level `skills/` directory (symlinked from `.claude/skills` for Claude Code compatibility). Each skill is a `SKILL.md` file containing reference patterns, production configs, and domain knowledge the agent loads on demand. This placement makes skills discoverable by other agent frameworks (Hermes, OpenClaw, Codex) in addition to Claude Code. See `docs/agents.md` for cross-tool installation instructions.
-
-| Skill | Purpose |
-|-------|---------|
-| **`lightningrod-assistant`** | End-to-end orchestration skill mirroring the Claude Code agent prompt. Lets non-Claude-Code frameworks (Hermes, OpenClaw, Codex) get the same flow, constraints, and vocabulary. |
-| **`examples-guide`** | Decision tree: forward-looking (GRPO) vs content learning (SFT) vs tabular. Starting point for new projects. |
-| **`forward-looking-examples`** | Production GRPO configs: golf, Trump policy, military strikes, Foresight/GDELT, FileSet RAG. The go-to reference for forecasting pipelines. |
-| **`content-learning-examples`** | SFT patterns: TopicTree + WebSearch (survival guide), FileSet + QuestionAndLabel (medical textbooks). |
-| **`tabular-examples`** | Structured data → Sample mapping: `create_sample()`, `TemplateQuestionGenerator`, supply chain shock detection walkthrough. |
-| **`bigquery-seeds`** | BigQuery seed patterns. Key detail: no GCP credentials needed — LR manages access internally. Includes known-queryable public datasets. |
-| **`custom-dataset-seeds`** | File/CSV/PDF → seeds via `preprocessing.files_to_samples()`, FileSet uploads, and `CsvSeedGenerator`. |
-| **`public-dataset-exploration`** | Finding raw datasets on Kaggle, HuggingFace, GitHub when the user has a domain but no data. |
-| **`transform-pipeline-verification`** | Post-`run()` inspection pattern: download samples, spot-check quality, iterate before scaling. |
-
-### MCP integration
-
-The agent connects to the Lightning Rod docs MCP server (`docs.lightningrod.ai/~gitbook/mcp`) and uses `mcp__lightningrod-docs__search-docs` to look up SDK documentation on demand.
-
-### Developing the agent
-
-When modifying the agent, keep these layers separate:
-- **Agent prompt** (`lightningrod-assistant.md`) — behavioral rules, flow structure, communication style. Changes here affect how the agent interacts with users.
-- **Skills** (`skills/*/SKILL.md`) — reference patterns, production configs, code examples. Changes here affect what the agent knows about specific SDK features.
-- **SDK itself** (`src/lightningrod/`) — the actual library. The agent consumes it; changes here may require updating skills to reflect new APIs or patterns.
+See `DEVELOPMENT.md` for the release process (`make bump-patch/minor/major`,
+`make publish-new-version`).

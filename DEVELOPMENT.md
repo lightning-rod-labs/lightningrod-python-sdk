@@ -27,7 +27,6 @@ pip install -e ".[dev]"
 - `make test` - Run tests
 - `make build` - Build distribution packages
 - `make clean` - Clean build artifacts
-- `make generate` - Regenerate client from OpenAPI spec
 - `make bump-patch` - Bump patch version (e.g. 0.1.5 -> 0.1.6)
 - `make bump-minor` - Bump minor version (e.g. 0.1.5 -> 0.2.0)
 - `make bump-major` - Bump major version (e.g. 0.1.5 -> 1.0.0)
