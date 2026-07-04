@@ -102,14 +102,6 @@ class LightningRod:
             ``answer_type`` and ``reasoning_effort`` parameters are first-class
             keyword arguments rather than ``extra_body`` passthroughs.
         """
-        _at = answer_type.value if isinstance(answer_type, AnswerType) else answer_type
-        if _at == "auto":
-            raise ValueError(
-                "answer_type='auto' is not supported by predict(). "
-                "Use a specific answer_type ('binary', 'continuous', 'multiple_choice', "
-                "or 'free_response'), or omit it for unstructured prose."
-            )
-
         try:
             from openai import OpenAI
         except ImportError:
