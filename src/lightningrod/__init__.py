@@ -19,7 +19,7 @@ from lightningrod.prediction import (
 )
 from lightningrod.utils.config import LightningrodAuthError
 
-__version__ = "0.2.3"
+__version__ = "1.1.0"
 __all__ = [
     "LightningRod",
     "DEFAULT_MODEL",

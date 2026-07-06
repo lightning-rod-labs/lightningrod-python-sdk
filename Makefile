@@ -1,4 +1,4 @@
-.PHONY: help setup install install-dev test pytest build clean publish upload bump-version bump-patch bump-minor bump-major
+.PHONY: help setup install install-dev test pytest build clean publish upload bump-version bump-patch bump-minor bump-major release
 
 help:
 	@echo "Lightning Rod Python SDK - Development Commands"
@@ -15,6 +15,8 @@ help:
 	@echo "  make bump-patch   - Bump patch version (0.1.5 -> 0.1.6)"
 	@echo "  make bump-minor   - Bump minor version (0.1.5 -> 0.2.0)"
 	@echo "  make bump-major   - Bump major version (0.1.5 -> 1.0.0)"
+	@echo "  make bump-version VERSION=X.Y.Z - Set an explicit version"
+	@echo "  make release TYPE=minor|major|X.Y.Z - Bump, commit, and tag"
 	@echo ""
 
 setup:
@@ -57,44 +59,31 @@ clean:
 	@find . -type d -name __pycache__ -exec rm -r {} + 2>/dev/null || true
 	@find . -type f -name "*.pyc" -delete
 
+# Bump version across pyproject.toml, __init__.py, and README.
+# Accepts a bump type via TYPE= (patch|minor|major) or an explicit VERSION=X.Y.Z.
 bump-version:
-	@if [ -z "$(TYPE)" ]; then \
-		echo "Usage: make bump-version TYPE=patch|minor|major"; \
+	@if [ -n "$(VERSION)" ]; then \
+		python3 scripts/bump_version.py "$(VERSION)"; \
+	elif [ -n "$(TYPE)" ]; then \
+		python3 scripts/bump_version.py "$(TYPE)"; \
+	else \
+		echo "Usage: make bump-version TYPE=patch|minor|major | VERSION=X.Y.Z"; \
 		exit 1; \
 	fi
-	@CURRENT_VERSION=$$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
-	IFS='.' read -r MAJOR MINOR PATCH <<< "$$CURRENT_VERSION"; \
-	case "$(TYPE)" in \
-		patch) \
-			PATCH=$$((PATCH + 1)) \
-			;; \
-		minor) \
-			MINOR=$$((MINOR + 1)); \
-			PATCH=0 \
-			;; \
-		major) \
-			MAJOR=$$((MAJOR + 1)); \
-			MINOR=0; \
-			PATCH=0 \
-			;; \
-		*) \
-			echo "Invalid TYPE. Use patch, minor, or major"; \
-			exit 1 \
-			;; \
-	esac; \
-	NEW_VERSION="$$MAJOR.$$MINOR.$$PATCH"; \
-	echo "Bumping version from $$CURRENT_VERSION to $$NEW_VERSION"; \
-	sed -i '' 's/^version = ".*"/version = "'"$$NEW_VERSION"'"/' pyproject.toml; \
-	sed -i '' -E 's/badge\/beta-[0-9]+\.[0-9]+\.[0-9]+/badge\/beta-'"$$NEW_VERSION"'/g' README.md; \
-	sed -i '' -E 's/pypi\.org\/project\/lightningrod-ai\/[0-9]+\.[0-9]+\.[0-9]+/pypi.org\/project\/lightningrod-ai\/'"$$NEW_VERSION"'/g' README.md; \
-	sed -i '' 's/^__version__ = ".*"/__version__ = "'"$$NEW_VERSION"'"/' src/lightningrod/__init__.py; \
-	echo "Version bumped to $$NEW_VERSION"
 
 bump-patch:
-	@$(MAKE) bump-version TYPE=patch
+	@python3 scripts/bump_version.py patch
 
 bump-minor:
-	@$(MAKE) bump-version TYPE=minor
+	@python3 scripts/bump_version.py minor
 
 bump-major:
-	@$(MAKE) bump-version TYPE=major
+	@python3 scripts/bump_version.py major
+
+# Bump, commit, and tag in one step. TYPE= accepts patch|minor|major or X.Y.Z.
+release:
+	@if [ -z "$(TYPE)" ]; then \
+		echo "Usage: make release TYPE=patch|minor|major|X.Y.Z [PUSH=1]"; \
+		exit 1; \
+	fi
+	@python3 scripts/bump_version.py "$(TYPE)" --tag $(if $(PUSH),--push,)
