@@ -3,10 +3,16 @@
   "info": {
     "title": "LightningRod API",
     "description": "Predict anything with AI",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "contact": {
+      "name": "Lightning Rod Labs Support",
+      "email": "support@lightningrod.ai",
+      "url": "https://lightningrod.ai"
+    },
+    "x-guidance": "Forecasting inference API for autonomous agents. To pay and get access: POST /v1/mpp/topup and pay the returned MPP challenge on either offered rail — Stripe (card/Link) or Tempo (on-chain USDC) — then retry with `Authorization: Payment <credential>`. A successful top-up returns credits and an API key (`sk_…`). Call the forecasting product at POST /v1/openai/chat/completions (OpenAI-compatible) with `Authorization: Bearer sk_…`; per-call cost is metered from prepaid credits and reported in the response `usage` field, so these endpoints do not carry a fixed price. If a call returns 402 (insufficient balance), top up again via /v1/mpp/topup."
   },
   "paths": {
-    "/openai/chat/completions": {
+    "/v1/openai/chat/completions": {
       "post": {
         "tags": [
           "OpenAI API"
@@ -256,12 +262,12 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "apiKey": []
           }
         ]
       }
     },
-    "/openai/completions": {
+    "/v1/openai/completions": {
       "post": {
         "tags": [
           "OpenAI API"
@@ -317,12 +323,12 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "apiKey": []
           }
         ]
       }
     },
-    "/openai/models": {
+    "/v1/openai/models": {
       "get": {
         "tags": [
           "OpenAI API"
@@ -344,37 +350,41 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "apiKey": []
           }
         ]
       }
     },
-    "/mpp/topup": {
+    "/v1/mpp/topup": {
       "post": {
         "tags": [
           "Agentic Payments"
         ],
         "summary": "Add credits via MPP (Machine Payments Protocol)",
-        "description": "Pay via MPP to add credits and obtain (or refresh) an API key, then call the standard `/openai/*` endpoints with it as a `Bearer` token.\n\n**Flow:** call with no payment \u2192 `402` + `WWW-Authenticate: Payment` challenge (quotes the top-up amount, payable via card/Link Shared Payment Token) \u2192 pay \u2192 retry with `Authorization: Payment <credential>`.\n\n**Amount:** defaults to $5.00; pass `amount_cents` to choose a size (clamped to the credit-purchase limits). Send the **same** `amount_cents` on the paid retry as on the challenge call.\n\n**Headers:**\n- `Authorization: Payment <credential>` \u2014 the MPP payment credential.\n- `X-API-Key: sk_\u2026` *(optional)* \u2014 refill an existing org; omit to mint a new org + key (returned once in the response body).",
+        "description": "Pay via MPP to add credits and obtain (or refresh) an API key, then call the standard `/v1/openai/*` endpoints with it as a `Bearer` token.\n\n**Payment rails:** every challenge offers both, as two separate `WWW-Authenticate` header instances. Pay whichever one you can and retry with that rail's credential:\n\n- **Stripe** (`method=\"stripe\"`): pay with a Stripe card or Link Shared Payment Token. Retry with `Authorization: Payment <stripe-credential>`.\n\n- **Tempo** (`method=\"tempo\"`): pay with on-chain USDC on the Tempo network. Retry with `Authorization: Payment <tempo-credential>`.\n\n**Amount:** defaults to $5.00; pass `amount_cents` to choose a size (clamped to the credit-purchase limits). Send the **same** `amount_cents` on the paid retry as on the challenge call.\n\n**Headers:**\n- `Authorization: Payment <credential>` \u2014 the MPP payment credential.\n- `X-API-Key: sk_\u2026` *(optional)* \u2014 refill an existing org; omit to mint a new org + key (returned once in the response body).",
         "operationId": "mpp_topup",
-        "parameters": [
-          {
-            "name": "amount_cents",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "integer"
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "title": "MppTopupRequest",
+                "properties": {
+                  "amount_cents": {
+                    "type": "integer",
+                    "title": "Amount Cents",
+                    "description": "Top-up size in cents. Defaults to 500 ($5.00). Range $1.00–$10,000.00. Must be identical on the challenge call and the paid retry.",
+                    "default": 500,
+                    "minimum": 100,
+                    "maximum": 1000000
+                  }
                 },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Amount Cents"
+                "additionalProperties": false
+              }
             }
-          }
-        ],
+          },
+          "required": false
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -387,10 +397,10 @@
             }
           },
           "402": {
-            "description": "Payment required. The `WWW-Authenticate: Payment` header carries an MPP challenge quoting the top-up amount (USD), payable with a Stripe Shared Payment Token; pay it and retry.",
+            "description": "Payment required. Two `WWW-Authenticate: Payment` header instances are returned, one per supported rail (`method=\"stripe\"` and `method=\"tempo\"`), each quoting the top-up amount; pay either and retry.",
             "headers": {
               "WWW-Authenticate": {
-                "description": "MPP Payment challenge (scheme `Payment`).",
+                "description": "MPP Payment challenge (scheme `Payment`). Sent once per each supported payment rail.",
                 "schema": {
                   "type": "string"
                 }
@@ -409,13 +419,45 @@
           }
         },
         "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "5.000000"
+          },
+          "protocols": [
+            {
+              "mpp": {
+                "method": "stripe",
+                "intent": "charge",
+                "currency": "usd"
+              }
+            },
+            {
+              "mpp": {
+                "method": "tempo",
+                "intent": "charge",
+                "currency": "0x20C000000000000000000000b9537d11c60E8b50"
+              }
+            }
+          ],
           "offers": [
             {
               "amount": "500",
               "currency": "usd",
-              "description": "Credit top-up (default $5.00). Pass amount_cents for $1.00\u2013$10,000.00; same value on challenge and paid retry. Returns an API key for POST /openai/chat/completions.",
+              "description": "Credit top-up (default $5.00). Pass amount_cents for $1.00\u2013$10,000.00; same value on challenge and paid retry. Returns an API key for POST /v1/openai/chat/completions.",
               "intent": "charge",
               "method": "stripe"
+            },
+            {
+              "amount": "5000000",
+              "currency": "0x20C000000000000000000000b9537d11c60E8b50",
+              "decimals": 6,
+              "methodDetails": {
+                "chainId": 4217
+              },
+              "description": "Credit top-up (default $5.00 USDC on Tempo). Pass amount_cents for $1.00\u2013$10,000.00; same value on challenge and paid retry. Returns an API key for POST /v1/openai/chat/completions.",
+              "intent": "charge",
+              "method": "tempo"
             }
           ]
         }
@@ -1365,6 +1407,24 @@
         ],
         "title": "ValidationError"
       },
+      "MppTopupRequest": {
+        "properties": {
+          "amount_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Cents",
+            "description": "Top-up size in cents. Defaults to 500 ($5.00). Must be identical on the challenge call and the paid retry."
+          }
+        },
+        "type": "object",
+        "title": "MppTopupRequest"
+      },
       "MppTopupResponse": {
         "properties": {
           "organization_id": {
@@ -1407,9 +1467,10 @@
       }
     },
     "securitySchemes": {
-      "HTTPBearer": {
+      "apiKey": {
         "type": "http",
-        "scheme": "bearer"
+        "scheme": "bearer",
+        "description": "Lightning Rod API key (`sk_…`) sent as a Bearer token. Obtain one via `POST /v1/mpp/topup` (agents) or the dashboard (humans)."
       }
     },
     "headers": {
@@ -1470,7 +1531,7 @@
   },
   "servers": [
     {
-      "url": "https://api.lightningrod.ai/v1"
+      "url": "https://api.lightningrod.ai"
     }
   ],
   "x-service-info": {
