@@ -5,7 +5,9 @@ description: Get an API key and credits with no human, no signup, no dashboard �
 
 # Agentic Payments (MPP)
 
-Agents can obtain an API key and credits without a human — no signup, no dashboard. Pay a fixed **$5.00** credit top-up over [MPP](https://datatracker.ietf.org/doc/draft-ietf-httpauth-payment/) (`Machine Payments Protocol`) and get an API key back, then use it against the standard [OpenAI-compatible API](openai.md).
+Agents can obtain an API key and credits without a human — no signup, no dashboard. Pay a credit top-up over [MPP](https://datatracker.ietf.org/doc/draft-ietf-httpauth-payment/) (`Machine Payments Protocol`) and get an API key back, then use it against the standard [OpenAI-compatible API](openai.md).
+
+The amount is **your choice**: it defaults to **$5.00**, and you can pay as little as **$1.00** by passing `amount_cents` in the request body (e.g. `{"amount_cents": 100}`). The challenge call and the paid retry must quote the **same** amount — MPP binds the credential to it.
 
 The top-up endpoint offers **two payment rails** — pay whichever your wallet supports:
 
@@ -20,7 +22,7 @@ If you have a Tempo wallet (`tempo wallet login`):
 tempo request -X POST https://api.lightningrod.ai/v1/mpp/topup
 ```
 
-This pays the $5.00 USDC-on-Tempo challenge and returns credits + an API key automatically. Any other MPP-aware client (`mppx`, `link-cli`) works the same way — point it at the same URL.
+This pays the default $5.00 USDC-on-Tempo challenge and returns credits + an API key automatically. Pass `-d '{"amount_cents": 100}'` to top up a different amount (min $1.00). Any other MPP-aware client (`mppx`, `link-cli`) works the same way — point it at the same URL.
 
 ## Manual flow (raw HTTP, any MPP client)
 
