@@ -10,6 +10,8 @@ Lightning Rod's **Foresight** models return calibrated probability forecasts for
 
 To get started, [get an API key](https://dashboard.lightningrod.ai/sign-up?redirect=/api) in our dashboard and configure the `api_key` and `base_url` of any [OpenAI API client](https://developers.openai.com/api/docs/libraries) or query [our REST API](https://docs.lightningrod.ai/api-reference) directly.
 
+> **Building an agent?** Get an API key and credits with no signup or dashboard by paying a $5 top-up over MPP — see [Agentic Payments](agentic-payments.md).
+
 Minimal example code using Python:
 
 ```python
