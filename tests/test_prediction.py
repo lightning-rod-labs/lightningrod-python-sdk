@@ -1,5 +1,6 @@
 import sys
 import types
+from datetime import datetime, timezone
 
 import pytest
 
@@ -577,6 +578,45 @@ class TestPredictRequestBody:
         client.predict("q", model="m", extra_body={"custom_flag": True})
         assert captured["extra_body"]["custom_flag"] is True
         assert captured["extra_body"]["reasoning_effort"] == "medium"
+
+    def test_prediction_date_datetime_serialized(self, lr_with_fake_openai) -> None:
+        client, captured = lr_with_fake_openai()
+        prediction_date = datetime(2024, 6, 1, 12, 30, tzinfo=timezone.utc)
+        client.predict("q", model="m", prediction_date=prediction_date)
+        assert captured["extra_body"]["prediction_date"] == "2024-06-01T12:30:00+00:00"
+
+    def test_prediction_date_string_passed_through(self, lr_with_fake_openai) -> None:
+        client, captured = lr_with_fake_openai()
+        client.predict("q", model="m", prediction_date="2024-06-01T12:30:00Z")
+        assert captured["extra_body"]["prediction_date"] == "2024-06-01T12:30:00Z"
+
+    def test_prediction_date_omitted(self, lr_with_fake_openai) -> None:
+        client, captured = lr_with_fake_openai()
+        client.predict("q", model="m")
+        assert "prediction_date" not in captured["extra_body"]
+
+    def test_prediction_date_overrides_extra_body(self, lr_with_fake_openai) -> None:
+        client, captured = lr_with_fake_openai()
+        client.predict(
+            "q",
+            model="m",
+            prediction_date="2024-06-01",
+            extra_body={"prediction_date": "2023-01-01"},
+        )
+        assert captured["extra_body"]["prediction_date"] == "2024-06-01"
+
+    def test_prediction_date_preserves_extra_body_when_omitted(self, lr_with_fake_openai) -> None:
+        client, captured = lr_with_fake_openai()
+        client.predict("q", model="m", extra_body={"prediction_date": "2023-01-01"})
+        assert captured["extra_body"]["prediction_date"] == "2023-01-01"
+
+    def test_prediction_date_compatible_with_research(self, lr_with_fake_openai) -> None:
+        client, captured = lr_with_fake_openai()
+        client.predict(
+            "q", model="m", research=["google_news"], prediction_date="2024-06-01"
+        )
+        assert captured["extra_body"]["research"] == {"sources": ["google_news"]}
+        assert captured["extra_body"]["prediction_date"] == "2024-06-01"
 
     def test_model_defaults_to_latest(self, lr_with_fake_openai) -> None:
         client, captured = lr_with_fake_openai()

@@ -9,10 +9,10 @@
       "email": "support@lightningrod.ai",
       "url": "https://lightningrod.ai"
     },
-    "x-guidance": "Forecasting inference API for autonomous agents. To pay and get access: POST /v1/mpp/topup and pay the returned MPP challenge on either offered rail — Stripe (card/Link) or Tempo (on-chain USDC) — then retry with `Authorization: Payment <credential>`. A successful top-up returns credits and an API key (`sk_…`). Call the forecasting product at POST /v1/openai/chat/completions (OpenAI-compatible) with `Authorization: Bearer sk_…`; per-call cost is metered from prepaid credits and reported in the response `usage` field, so these endpoints do not carry a fixed price. If a call returns 402 (insufficient balance), top up again via /v1/mpp/topup."
+    "x-guidance": "Forecasting inference API for autonomous agents. To pay and get access: POST /v1/mpp/topup and pay the returned MPP challenge on either offered rail — Stripe (card/Link) or Tempo (on-chain USDC) — then retry with `Authorization: Payment <credential>`. A successful top-up returns credits and an API key (`sk_…`). Call the forecasting product at POST /v1/chat/completions (OpenAI-compatible) with `Authorization: Bearer sk_…`; per-call cost is metered from prepaid credits and reported in the response `usage` field, so these endpoints do not carry a fixed price. If a call returns 402 (insufficient balance), top up again via /v1/mpp/topup."
   },
   "paths": {
-    "/v1/openai/chat/completions": {
+    "/v1/chat/completions": {
       "post": {
         "tags": [
           "OpenAI API"
@@ -267,7 +267,34 @@
         ]
       }
     },
-    "/v1/openai/completions": {
+    "/v1/models": {
+      "get": {
+        "tags": [
+          "OpenAI API"
+        ],
+        "summary": "List Models",
+        "description": "List available models.",
+        "operationId": "list_models_openai_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelListResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/v1/completions": {
       "post": {
         "tags": [
           "OpenAI API"
@@ -328,40 +355,13 @@
         ]
       }
     },
-    "/v1/openai/models": {
-      "get": {
-        "tags": [
-          "OpenAI API"
-        ],
-        "summary": "List Models",
-        "description": "List available models.",
-        "operationId": "list_models_openai_models_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ModelListResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "apiKey": []
-          }
-        ]
-      }
-    },
     "/v1/mpp/topup": {
       "post": {
         "tags": [
           "Agentic Payments"
         ],
         "summary": "Add credits via MPP (Machine Payments Protocol)",
-        "description": "Pay via MPP to add credits and obtain (or refresh) an API key, then call the standard `/v1/openai/*` endpoints with it as a `Bearer` token.\n\n**Payment rails:** every challenge offers both, as two separate `WWW-Authenticate` header instances. Pay whichever one you can and retry with that rail's credential:\n\n- **Stripe** (`method=\"stripe\"`): pay with a Stripe card or Link Shared Payment Token. Retry with `Authorization: Payment <stripe-credential>`.\n\n- **Tempo** (`method=\"tempo\"`): pay with on-chain USDC on the Tempo network. Retry with `Authorization: Payment <tempo-credential>`.\n\n**Amount:** defaults to $5.00; pass `amount_cents` to choose a size (clamped to the credit-purchase limits). Send the **same** `amount_cents` on the paid retry as on the challenge call.\n\n**Headers:**\n- `Authorization: Payment <credential>` \u2014 the MPP payment credential.\n- `X-API-Key: sk_\u2026` *(optional)* \u2014 refill an existing org; omit to mint a new org + key (returned once in the response body).",
+        "description": "Pay via MPP to add credits and obtain (or refresh) an API key, then call the standard `/v1/openai/*` endpoints with it as a `Bearer` token.\n\n**Payment rails:** every challenge offers both, as two separate `WWW-Authenticate` header instances. Pay whichever one you can and retry with that rail's credential:\n\n- **Stripe** (`method=\"stripe\"`): pay with a Stripe card or Link Shared Payment Token. Retry with `Authorization: Payment <stripe-credential>`.\n\n- **Tempo** (`method=\"tempo\"`): pay with on-chain USDC on the Tempo network. Retry with `Authorization: Payment <tempo-credential>`.\n\n**Amount:** defaults to $5.00; pass `amount_cents` to choose a size (clamped to the credit-purchase limits). Send the **same** `amount_cents` on the paid retry as on the challenge call.\n\n**Headers:**\n- `Authorization: Payment <credential>` — the MPP payment credential.\n- `X-API-Key: sk_…` *(optional)* — refill an existing org; omit to mint a new org + key (returned once in the response body).",
         "operationId": "mpp_topup",
         "requestBody": {
           "content": {
@@ -444,7 +444,7 @@
             {
               "amount": "500",
               "currency": "usd",
-              "description": "Credit top-up (default $5.00). Pass amount_cents for $1.00\u2013$10,000.00; same value on challenge and paid retry. Returns an API key for POST /v1/openai/chat/completions.",
+              "description": "Credit top-up (default $5.00). Pass amount_cents for $1.00–$10,000.00; same value on challenge and paid retry. Returns an API key for POST /v1/openai/chat/completions.",
               "intent": "charge",
               "method": "stripe"
             },
@@ -455,11 +455,406 @@
               "methodDetails": {
                 "chainId": 4217
               },
-              "description": "Credit top-up (default $5.00 USDC on Tempo). Pass amount_cents for $1.00\u2013$10,000.00; same value on challenge and paid retry. Returns an API key for POST /v1/openai/chat/completions.",
+              "description": "Credit top-up (default $5.00 USDC on Tempo). Pass amount_cents for $1.00–$10,000.00; same value on challenge and paid retry. Returns an API key for POST /v1/openai/chat/completions.",
               "intent": "charge",
               "method": "tempo"
             }
           ]
+        }
+      }
+    },
+    "/v1/files": {
+      "post": {
+        "tags": [
+          "OpenAI Compatible",
+          "OpenAI Compatible"
+        ],
+        "summary": "Upload File",
+        "operationId": "upload_file_files_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_file_files_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileObject"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/v1/files/{file_id}/content": {
+      "get": {
+        "tags": [
+          "OpenAI Compatible",
+          "OpenAI Compatible"
+        ],
+        "summary": "Retrieve File Content",
+        "operationId": "retrieve_file_content_files__file_id__content_get",
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File content",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/files/{file_id}": {
+      "get": {
+        "tags": [
+          "OpenAI Compatible",
+          "OpenAI Compatible"
+        ],
+        "summary": "Retrieve File",
+        "operationId": "retrieve_file_files__file_id__get",
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileObject"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "OpenAI Compatible",
+          "OpenAI Compatible"
+        ],
+        "summary": "Delete File",
+        "operationId": "delete_file_files__file_id__delete",
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileDeleted"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/batches": {
+      "post": {
+        "tags": [
+          "OpenAI Compatible",
+          "OpenAI Compatible"
+        ],
+        "summary": "Create Batch",
+        "operationId": "create_batch_batches_post",
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchObject"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "OpenAI Compatible",
+          "OpenAI Compatible"
+        ],
+        "summary": "List Batches",
+        "operationId": "list_batches_batches_get",
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "After"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/batches/{batch_id}": {
+      "get": {
+        "tags": [
+          "OpenAI Compatible",
+          "OpenAI Compatible"
+        ],
+        "summary": "Retrieve Batch",
+        "operationId": "retrieve_batch_batches__batch_id__get",
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchObject"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/batches/{batch_id}/cancel": {
+      "post": {
+        "tags": [
+          "OpenAI Compatible",
+          "OpenAI Compatible"
+        ],
+        "summary": "Cancel Batch",
+        "operationId": "cancel_batch_batches__batch_id__cancel_post",
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchObject"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -476,6 +871,523 @@
           "FREE_RESPONSE"
         ],
         "title": "AnswerTypeEnum"
+      },
+      "BalanceResponse": {
+        "properties": {
+          "balance_dollars": {
+            "type": "number",
+            "title": "Balance Dollars"
+          }
+        },
+        "type": "object",
+        "required": [
+          "balance_dollars"
+        ],
+        "title": "BalanceResponse"
+      },
+      "BatchCreateRequest": {
+        "properties": {
+          "input_file_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Input File Id"
+          },
+          "endpoint": {
+            "type": "string",
+            "const": "/v1/chat/completions",
+            "title": "Endpoint"
+          },
+          "completion_window": {
+            "type": "string",
+            "const": "24h",
+            "title": "Completion Window"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          },
+          "output_expires_after": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExpirationPolicy"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "input_file_id",
+          "endpoint",
+          "completion_window"
+        ],
+        "title": "BatchCreateRequest"
+      },
+      "BatchError": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "line": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "param": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Param"
+          }
+        },
+        "type": "object",
+        "title": "BatchError"
+      },
+      "BatchErrors": {
+        "properties": {
+          "object": {
+            "type": "string",
+            "const": "list",
+            "title": "Object",
+            "default": "list"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/BatchError"
+            },
+            "type": "array",
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "title": "BatchErrors"
+      },
+      "BatchInputTokensDetails": {
+        "properties": {
+          "cached_tokens": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Cached Tokens",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "BatchInputTokensDetails"
+      },
+      "BatchListResponse": {
+        "properties": {
+          "object": {
+            "type": "string",
+            "const": "list",
+            "title": "Object",
+            "default": "list"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/BatchObject"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "first_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Id"
+          },
+          "last_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Id"
+          },
+          "has_more": {
+            "type": "boolean",
+            "title": "Has More"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "has_more"
+        ],
+        "title": "BatchListResponse"
+      },
+      "BatchObject": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "object": {
+            "type": "string",
+            "const": "batch",
+            "title": "Object",
+            "default": "batch"
+          },
+          "endpoint": {
+            "type": "string",
+            "const": "/v1/chat/completions",
+            "title": "Endpoint"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BatchErrors"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "input_file_id": {
+            "type": "string",
+            "title": "Input File Id"
+          },
+          "completion_window": {
+            "type": "string",
+            "const": "24h",
+            "title": "Completion Window",
+            "default": "24h"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "validating",
+              "failed",
+              "in_progress",
+              "finalizing",
+              "completed",
+              "expired",
+              "cancelling",
+              "cancelled"
+            ],
+            "title": "Status"
+          },
+          "output_file_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output File Id"
+          },
+          "error_file_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error File Id"
+          },
+          "created_at": {
+            "type": "integer",
+            "title": "Created At"
+          },
+          "in_progress_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "In Progress At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "finalizing_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finalizing At"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "failed_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failed At"
+          },
+          "expired_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expired At"
+          },
+          "cancelling_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancelling At"
+          },
+          "cancelled_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancelled At"
+          },
+          "request_counts": {
+            "$ref": "#/components/schemas/BatchRequestCounts"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "usage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BatchUsage"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "endpoint",
+          "input_file_id",
+          "status",
+          "created_at"
+        ],
+        "title": "BatchObject"
+      },
+      "BatchOutputTokensDetails": {
+        "properties": {
+          "reasoning_tokens": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Reasoning Tokens",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "BatchOutputTokensDetails"
+      },
+      "BatchRequestCounts": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "default": 0
+          },
+          "completed": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Completed",
+            "default": 0
+          },
+          "failed": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Failed",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "BatchRequestCounts"
+      },
+      "BatchUsage": {
+        "properties": {
+          "input_tokens": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Input Tokens"
+          },
+          "input_tokens_details": {
+            "$ref": "#/components/schemas/BatchInputTokensDetails"
+          },
+          "output_tokens": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Output Tokens"
+          },
+          "output_tokens_details": {
+            "$ref": "#/components/schemas/BatchOutputTokensDetails"
+          },
+          "total_tokens": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total Tokens"
+          }
+        },
+        "type": "object",
+        "required": [
+          "input_tokens",
+          "output_tokens",
+          "total_tokens"
+        ],
+        "title": "BatchUsage"
+      },
+      "Body_upload_file_files_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "purpose": {
+            "type": "string",
+            "title": "Purpose"
+          },
+          "expires_after[anchor]": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires After[Anchor]"
+          },
+          "expires_after[seconds]": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires After[Seconds]"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "purpose"
+        ],
+        "title": "Body_upload_file_files_post"
       },
       "ChatCompletionRequest": {
         "properties": {
@@ -651,6 +1563,19 @@
             ],
             "title": "Answer Type",
             "description": "Lightning Rod extension that injects output-format guidance and appends a structured answer between `<answer></answer>` tags in the response content. One of `binary`, `multiple_choice`, `continuous`, `free_response`, or `auto`. Raw response shapes: `binary` -> `<answer>0.62</answer>` (probability between 0 and 1); `continuous` -> `<answer>{\"mean\": 42.5, \"standard_deviation\": 5.2}</answer>`; `multiple_choice` -> `<answer>{\"A\": 0.55, \"B\": 0.45}</answer>`; `free_response` -> `<answer>...</answer>`. `auto` classifies the user question server-side first, then returns one of the above. Omit for prose only. With raw OpenAI clients pass via `extra_body`."
+          },
+          "prediction_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prediction Date",
+            "description": "Lightning Rod extension. ISO-8601 date-time for a historical/as-of forecast. It is both the temporal anchor the model treats as today and the cutoff for research results; when omitted, the current UTC date is used. Automatic research retains only providers that can honor the cutoff (currently Google News). Explicitly requesting Perplexity together with `prediction_date` returns a client error. With raw OpenAI clients pass via `extra_body`."
           }
         },
         "type": "object",
@@ -690,7 +1615,8 @@
                 "google_news"
               ]
             },
-            "reasoning_effort": "high"
+            "reasoning_effort": "high",
+            "prediction_date": "2024-06-01T00:00:00Z"
           }
         ]
       },
@@ -1079,6 +2005,129 @@
         ],
         "title": "CompletionResponse"
       },
+      "ExpirationPolicy": {
+        "properties": {
+          "anchor": {
+            "type": "string",
+            "const": "created_at",
+            "title": "Anchor"
+          },
+          "seconds": {
+            "type": "integer",
+            "maximum": 2592000.0,
+            "minimum": 3600.0,
+            "title": "Seconds"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "anchor",
+          "seconds"
+        ],
+        "title": "ExpirationPolicy"
+      },
+      "FileDeleted": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "object": {
+            "type": "string",
+            "const": "file",
+            "title": "Object",
+            "default": "file"
+          },
+          "deleted": {
+            "type": "boolean",
+            "const": true,
+            "title": "Deleted",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "FileDeleted"
+      },
+      "FileObject": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Bytes"
+          },
+          "created_at": {
+            "type": "integer",
+            "title": "Created At"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "object": {
+            "type": "string",
+            "const": "file",
+            "title": "Object",
+            "default": "file"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "batch",
+              "batch_output"
+            ],
+            "title": "Purpose"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "uploaded",
+              "processed",
+              "error"
+            ],
+            "title": "Status",
+            "default": "processed"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "status_details": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status Details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "bytes",
+          "created_at",
+          "filename",
+          "purpose"
+        ],
+        "title": "FileObject"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1179,6 +2228,64 @@
         ],
         "title": "ModelObject"
       },
+      "MppTopupRequest": {
+        "properties": {
+          "amount_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Cents",
+            "description": "Top-up size in cents. Defaults to 500 ($5.00). Must be identical on the challenge call and the paid retry."
+          }
+        },
+        "type": "object",
+        "title": "MppTopupRequest"
+      },
+      "MppTopupResponse": {
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "title": "Organization Id"
+          },
+          "credited_cents": {
+            "type": "integer",
+            "title": "Credited Cents"
+          },
+          "api_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "api_key_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_id",
+          "credited_cents"
+        ],
+        "title": "MppTopupResponse"
+      },
       "ResearchOptions": {
         "properties": {
           "sources": {
@@ -1244,53 +2351,6 @@
           "content"
         ],
         "title": "ResponseMessage"
-      },
-      "UrlCitationAnnotation": {
-        "properties": {
-          "type": {
-            "type": "string",
-            "const": "url_citation",
-            "title": "Type",
-            "description": "The annotation type. Always `url_citation`.",
-            "default": "url_citation"
-          },
-          "url_citation": {
-            "$ref": "#/components/schemas/UrlCitation",
-            "description": "The cited source."
-          }
-        },
-        "type": "object",
-        "required": [
-          "type",
-          "url_citation"
-        ],
-        "title": "UrlCitationAnnotation"
-      },
-      "UrlCitation": {
-        "properties": {
-          "url": {
-            "type": "string",
-            "title": "Url",
-            "description": "URL of the cited source."
-          },
-          "title": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Title",
-            "description": "Title of the cited source, when available."
-          }
-        },
-        "type": "object",
-        "required": [
-          "url"
-        ],
-        "title": "UrlCitation"
       },
       "Usage": {
         "properties": {
@@ -1407,63 +2467,52 @@
         ],
         "title": "ValidationError"
       },
-      "MppTopupRequest": {
+      "UrlCitationAnnotation": {
         "properties": {
-          "amount_cents": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Amount Cents",
-            "description": "Top-up size in cents. Defaults to 500 ($5.00). Must be identical on the challenge call and the paid retry."
-          }
-        },
-        "type": "object",
-        "title": "MppTopupRequest"
-      },
-      "MppTopupResponse": {
-        "properties": {
-          "organization_id": {
+          "type": {
             "type": "string",
-            "title": "Organization Id"
+            "const": "url_citation",
+            "title": "Type",
+            "description": "The annotation type. Always `url_citation`.",
+            "default": "url_citation"
           },
-          "credited_cents": {
-            "type": "integer",
-            "title": "Credited Cents"
-          },
-          "api_key": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Api Key"
-          },
-          "api_key_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Api Key Id"
+          "url_citation": {
+            "$ref": "#/components/schemas/UrlCitation",
+            "description": "The cited source."
           }
         },
         "type": "object",
         "required": [
-          "organization_id",
-          "credited_cents"
+          "type",
+          "url_citation"
         ],
-        "title": "MppTopupResponse"
+        "title": "UrlCitationAnnotation"
+      },
+      "UrlCitation": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url",
+            "description": "URL of the cited source."
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title",
+            "description": "Title of the cited source, when available."
+          }
+        },
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "title": "UrlCitation"
       }
     },
     "securitySchemes": {

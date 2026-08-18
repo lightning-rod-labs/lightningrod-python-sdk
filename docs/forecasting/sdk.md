@@ -80,6 +80,27 @@ print(result.usage.research_cost_usd)
 
 See our [API reference](https://docs.lightningrod.ai/api-reference) for an up-to-date list of supported sources.
 
+## Historical forecasts
+
+Set `prediction_date` to an ISO-8601 string or a `datetime`. It anchors what the
+model considers "today" and limits research results to information available by
+that time:
+
+```python
+from datetime import datetime, timezone
+
+result = client.predict(
+    "Will the Fed cut interest rates in 2025?",
+    prediction_date=datetime(2024, 6, 1, tzinfo=timezone.utc),
+    research=["google_news"],
+)
+```
+
+Automatic research keeps only cutoff-capable providers when `prediction_date`
+is set; currently that is Google News. Explicitly combining Perplexity with a
+prediction date returns a client error. The underlying text-completions endpoint
+does not support this field.
+
 ## Reasoning effort
 
 ```python
