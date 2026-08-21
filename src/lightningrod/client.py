@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from lightningrod.utils import config
 from lightningrod.prediction import (
     DEFAULT_MODEL,
@@ -64,6 +66,7 @@ class LightningRod:
         answer_type: AnswerType | str | None = None,
         reasoning_effort: ReasoningEffort | str = ReasoningEffort.MEDIUM,
         system_prompt: str | None = None,
+        prediction_date: datetime | str | None = None,
         **kwargs,
     ) -> PredictionResult:
         """Run a single prediction against a Lightning Rod model.
@@ -85,6 +88,9 @@ class LightningRod:
             reasoning_effort: ``"low"``, ``"medium"`` or ``"high"`` (default
                 medium). Accepts a :class:`ReasoningEffort` or its string value.
             system_prompt: Optional system message prepended to the request.
+            prediction_date: ISO-8601 date/time the model should treat as today
+                and use as the research cutoff. Datetimes are serialized with
+                :meth:`datetime.isoformat`; strings are passed through unchanged.
             **kwargs: Forwarded to ``openai.chat.completions.create`` for any
                 additional parameters.
 
@@ -129,6 +135,12 @@ class LightningRod:
         if answer_type is not None:
             extra_body["answer_type"] = (
                 answer_type.value if isinstance(answer_type, AnswerType) else answer_type
+            )
+        if prediction_date is not None:
+            extra_body["prediction_date"] = (
+                prediction_date.isoformat()
+                if isinstance(prediction_date, datetime)
+                else prediction_date
             )
 
         response = client.chat.completions.create(

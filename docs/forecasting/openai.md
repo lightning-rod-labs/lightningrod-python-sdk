@@ -80,6 +80,30 @@ response = client.chat.completions.create(
 
 See our [API reference](https://docs.lightningrod.ai/api-reference) for an up-to-date list of supported sources.
 
+## Historical forecasts
+
+Pass `prediction_date` in `extra_body` to make a historical, as-of forecast. The
+ISO-8601 value becomes both the model's temporal anchor (the date it treats as
+today) and the cutoff for research results:
+
+```python
+response = client.chat.completions.create(
+    model="foresight-v4",
+    messages=[
+        {"role": "user", "content": "Will the Fed cut interest rates in 2025?"},
+    ],
+    extra_body={
+        "prediction_date": "2024-06-01T00:00:00Z",
+        "research": {"sources": ["google_news"]},
+    },
+)
+```
+
+When a prediction date is set, automatic research retains only providers that
+can honor the cutoff; currently that is Google News. Explicitly requesting
+Perplexity with `prediction_date` returns a client error. This field is supported
+only by chat completions, not the text-completions endpoint.
+
 ## Reasoning effort
 
 ```python
