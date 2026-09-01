@@ -14,4 +14,4 @@ We work with teams to:
 - **Evaluate** performance against held-out test sets.
 - **Serve** the resulting models through an OpenAI-compatible API.
 
-[**Book a call →**](https://calendly.com/d/ctq4-7gd-nyq/lightning-rod-demo) to talk through your use case.
+[**Book a call →**](https://calendar.app.google/R2KfU74n7kwBNJKT8) to talk through your use case.
