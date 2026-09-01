@@ -58,7 +58,7 @@ See how you can configure research mode using [OpenAI clients](openai.md) or our
 
 Need forecasting models tailored to your domain? Use the [enterprise platform](../platform/overview.md) to generate datasets, fine-tune models, and evaluate performance.
 
-[Book a call](https://calendly.com/d/ctq4-7gd-nyq/lightning-rod-demo) to talk through your use case.
+[Book a call](https://calendar.app.google/R2KfU74n7kwBNJKT8) to talk through your use case.
 
 ## Next steps
 
